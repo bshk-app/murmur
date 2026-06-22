@@ -19,7 +19,7 @@ tuist xcodebuild build   # build the menu-bar app from the CLI
 
 ## Vision
 
-- **Push-to-talk**: hold a global hotkey (default ⌥Space), speak, release.
+- **Push-to-talk**: hold a global hotkey (default ⌃⌥Space), speak, release.
 - **On-device STT**: streaming transcription from the
   [`mlx-audio-swift`](../mlx-audio-swift) stack (Voxtral Realtime / Nemotron /
   Parakeet). EN + RU.
@@ -31,8 +31,8 @@ tuist xcodebuild build   # build the menu-bar app from the CLI
 ## Roadmap (progressive, atomic steps)
 
 1. ✅ Menu-bar agent scaffold (Tuist `.app`)
-2. ☐ Global push-to-talk hotkey (Input Monitoring)
-3. ☐ Mic capture while held (AVAudioEngine, 16 kHz mono) — port `Mic.swift`
+2. ✅ Global push-to-talk hotkey (⌃⌥Space, CGEvent tap — swallows the chord; Accessibility)
+3. ✅ Mic capture while held (AVAudioEngine → 16 kHz mono) — ported from `Mic.swift`
 4. ☐ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (Nemotron stream + Voxtral + `TwoTierSession`)
 5. ☐ Live HUD overlay for partials (`<…>`)
 6. ☐ Text injection into the focused field (Accessibility, append-only)

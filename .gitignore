@@ -13,3 +13,7 @@ Derived/
 .tuist/
 Tuist/.build/
 graph.*
+
+# Xcode build output
+build/
+*.dSYM/

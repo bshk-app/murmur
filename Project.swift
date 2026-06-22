@@ -18,7 +18,8 @@ let project = Project(
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
             ]),
-            sources: ["Sources/Murmur/**"]
+            sources: ["Sources/Murmur/**"],
+            settings: .settings(base: ["SWIFT_VERSION": "5.0"])
         )
     ]
 )

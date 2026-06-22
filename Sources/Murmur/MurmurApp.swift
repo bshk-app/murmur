@@ -5,16 +5,15 @@ import SwiftUI
 /// Hold a global hotkey, speak, and the transcription is typed into the focused
 /// field of whatever app you're in. Everything runs on-device via MLX (no cloud).
 ///
-/// This file is the scaffold: a menu-bar agent shell. The real pieces —
-/// global hotkey capture, mic streaming, on-device STT, a live HUD, and text
-/// injection into the focused field — land in follow-up steps.
+/// Step A wires the menu-bar agent to the global hotkey + mic capture. STT, the
+/// live HUD, and text injection land in follow-up steps.
 @main
 struct MurmurApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         MenuBarExtra("Murmur", systemImage: "mic.circle") {
-            MenuContent()
+            MenuContent(dictation: appDelegate.dictation)
         }
     }
 }
