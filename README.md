@@ -13,8 +13,8 @@ Scaffold only — a menu-bar agent shell that compiles and runs. The dictation
 pipeline is not wired yet.
 
 ```
-swift build          # compiles the menu-bar shell
-swift run Murmur      # launches the agent (menu-bar icon, no Dock icon)
+tuist generate          # generate & open Murmur.xcodeproj in Xcode
+tuist xcodebuild build   # build the menu-bar app from the CLI
 ```
 
 ## Vision
@@ -30,14 +30,14 @@ swift run Murmur      # launches the agent (menu-bar icon, no Dock icon)
 
 ## Roadmap (progressive, atomic steps)
 
-1. ✅ Menu-bar agent scaffold
+1. ✅ Menu-bar agent scaffold (Tuist `.app`)
 2. ☐ Global push-to-talk hotkey (Input Monitoring)
-3. ☐ Mic capture while held (AVAudioEngine, 16 kHz mono)
-4. ☐ Wire on-device STT (`.package(path: "../mlx-audio-swift")`)
-5. ☐ Live HUD overlay for partials
-6. ☐ Text injection into the focused field (Accessibility)
+3. ☐ Mic capture while held (AVAudioEngine, 16 kHz mono) — port `Mic.swift`
+4. ☐ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (Nemotron stream + Voxtral + `TwoTierSession`)
+5. ☐ Live HUD overlay for partials (`<…>`)
+6. ☐ Text injection into the focused field (Accessibility, append-only)
 7. ☐ Settings: hotkey, language, model, insertion mode
-8. ☐ App bundle + permission strings + signing
+8. ☐ Code signing + notarization (Developer ID)
 
 ## Permissions (when bundled)
 

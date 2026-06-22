@@ -1,8 +1,15 @@
 .DS_Store
 /.build
 /Packages
-*.xcodeproj
 .swiftpm/
 DerivedData/
 xcuserdata/
 *.profraw
+
+# Tuist (generated)
+*.xcodeproj
+*.xcworkspace
+Derived/
+.tuist/
+Tuist/.build/
+graph.*
