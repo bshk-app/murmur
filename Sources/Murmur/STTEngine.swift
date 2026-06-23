@@ -14,7 +14,17 @@ final class STTEngine: @unchecked Sendable {
     /// Heavy; downloads the models from Hugging Face on first run, caps Metal memory.
     func load() async throws {
         let engine = try await TwoTierEngine.load()
-        queue.sync { loader = engine }
+        // Warm-up: the first inference JIT-compiles every Metal kernel (tens of
+        // seconds of stalls). Do it here on silence — off the hot path, under
+        // "Loading models…" — so the first real dictation is realtime. This is
+        // what the mic-compare CLI does; without it the cold-start compile lands
+        // on the user's first hotkey press (the 30–40 s "freeze").
+        queue.sync {
+            let warm = engine.makeSession(language: nil)
+            _ = warm.step([Float](repeating: 0, count: 16000))   // 1 s of silence
+            _ = warm.finish()
+            loader = engine
+        }
     }
 
     /// Open a clean session for a new utterance.
