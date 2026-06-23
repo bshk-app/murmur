@@ -14,10 +14,14 @@ final class MicCapture: @unchecked Sendable {
         let peakRMS: Float
     }
 
-    /// Fixed-size 16 kHz mono chunks (80 ms), delivered on the capture queue.
+    /// Fixed-size 16 kHz mono chunks delivered on the capture queue.
     var onChunk: ([Float]) -> Void = { _ in }
 
-    private let chunkSize = 1280                          // 80 ms @ 16 kHz
+    // 480 ms per `session.step`, matching the mic-compare CLI's feedMs=480. This
+    // is the FEED size, NOT Nemotron's internal chunk (that's fastChunkMs=80,
+    // already set on the session) — feeding at 80 ms calls step 6× as often and
+    // the per-call MLX overhead pushes RTF > 1 → backlog → freeze.
+    private let chunkSize = 7680                          // 480 ms @ 16 kHz
     private let queue = DispatchQueue(label: "murmur.mic.capture")
     private let engine = AVAudioEngine()
     private var converter: AVAudioConverter?
