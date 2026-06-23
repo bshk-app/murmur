@@ -27,10 +27,6 @@ final class DictationController {
     private let session = DictationSession()
     private var promptedAccessibility = false
 
-    /// Confirmed text already echoed to the console (reset per utterance).
-    /// Touched only from `echo` on the mic queue (and reset before capture starts).
-    @ObservationIgnored nonisolated(unsafe) private var lastConfirmed = ""
-
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
     }
@@ -50,7 +46,7 @@ final class DictationController {
     }
 
     func bootstrap() {
-        session.onUpdate = { [weak self] confirmed, _ in self?.echo(confirmed) }
+        session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
         KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.beginRecording() }
         KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.endRecording() }
         session.requestMicrophonePermission()            // surface the mic prompt early
@@ -73,7 +69,6 @@ final class DictationController {
 
     private func beginRecording() {
         guard session.isLoaded, state != .recording, state != .transcribing else { return }
-        lastConfirmed = ""
         do {
             try session.start()
             state = .recording
@@ -82,15 +77,14 @@ final class DictationController {
         }
     }
 
-    /// Runs on the mic capture queue (via `onUpdate`). Echoes only newly-confirmed
-    /// text — printing the whole growing line every chunk floods stderr.
-    private nonisolated func echo(_ confirmed: String) {
-        guard confirmed.hasPrefix(lastConfirmed), confirmed.count > lastConfirmed.count else {
-            lastConfirmed = confirmed
-            return
-        }
-        FileHandle.standardError.write(Data(confirmed.suffix(confirmed.count - lastConfirmed.count).utf8))
-        lastConfirmed = confirmed
+    /// Runs on the mic capture queue (via `onUpdate`). Live two-tier view, redrawn
+    /// in place: confirmed (Voxtral) prefix + fast Nemotron tail in ⟨⟩. The HUD
+    /// (a later step) is the in-app home for this; the console echo helps when
+    /// running from Xcode.
+    private nonisolated func echo(_ confirmed: String, _ partial: String) {
+        let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
+        let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
+        FileHandle.standardError.write(Data("\r\u{1B}[2K\(tail)".utf8))
     }
 
     private func endRecording() {

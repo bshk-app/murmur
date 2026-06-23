@@ -52,14 +52,13 @@ if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     print("\ntext: \(r.text)")
 } else {
     // ---- Live mic ----
-    var lastConfirmed = ""
-    session.onUpdate = { confirmed, _ in
-        guard confirmed.hasPrefix(lastConfirmed), confirmed.count > lastConfirmed.count else {
-            lastConfirmed = confirmed
-            return
-        }
-        FileHandle.standardError.write(Data(confirmed.suffix(confirmed.count - lastConfirmed.count).utf8))
-        lastConfirmed = confirmed
+    // Live two-tier view, redrawn in place: confirmed (Voxtral) prefix + the fast
+    // Nemotron tail in ⟨⟩, which arrives ~960 ms ahead of the finals. Showing the
+    // last ~100 chars keeps it to one terminal line (no flood).
+    session.onUpdate = { confirmed, partial in
+        let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
+        let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
+        FileHandle.standardError.write(Data("\r\u{1B}[2K\(tail)".utf8))
     }
 
     FileHandle.standardError.write(Data("loading models (warming up MLX)…\n".utf8))
