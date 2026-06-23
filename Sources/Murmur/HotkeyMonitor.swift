@@ -3,21 +3,31 @@ import CoreGraphics
 
 /// Global push-to-talk hotkey via a CGEvent tap.
 ///
-/// Fires `onPress` when the chord (default ⌃⌥Space) goes down and `onRelease`
-/// when it lets go — and SWALLOWS those key events so the Space never leaks into
-/// the focused app. The tap needs Accessibility trust; `start()` returns `false`
-/// if the tap couldn't be created (not yet trusted), so the caller can prompt.
+/// Fires `onPress` when the configured chord goes down and `onRelease` when it
+/// lets go — and SWALLOWS those key events so the key never leaks into the
+/// focused app. The tap needs Accessibility trust; `start()` returns `false` if
+/// the tap couldn't be created (not yet trusted), so the caller can prompt.
 ///
 /// Callbacks fire on the main run loop (where the tap source is attached) and
-/// are hopped onto the main actor.
+/// are hopped onto the main actor. `update(_:)` re-points the matched chord live.
 final class HotkeyMonitor {
     var onPress: () -> Void = {}
     var onRelease: () -> Void = {}
 
-    private let keyCode: Int64 = 49                       // Space
+    private var hotkey: Hotkey = .default
     private var tap: CFMachPort?
     private var source: CFRunLoopSource?
     private var active = false                            // chord currently held
+
+    /// Swap the matched chord. Cancels an in-flight hold so a rebind mid-press
+    /// can't strand the recorder in `.recording`.
+    func update(_ hotkey: Hotkey) {
+        self.hotkey = hotkey
+        if active {
+            active = false
+            fire(onRelease)
+        }
+    }
 
     @discardableResult
     func start() -> Bool {
@@ -54,9 +64,13 @@ final class HotkeyMonitor {
         active = false
     }
 
-    /// Required modifiers present (Control+Option, but not Command).
-    private func chordHeld(_ flags: CGEventFlags) -> Bool {
-        flags.contains(.maskControl) && flags.contains(.maskAlternate) && !flags.contains(.maskCommand)
+    /// Exact modifier match — required modifiers present AND nothing extra — so a
+    /// ⌃⌥ binding doesn't also fire under ⌃⌥⌘.
+    private func modsMatch(_ flags: CGEventFlags) -> Bool {
+        flags.contains(.maskControl) == hotkey.control
+            && flags.contains(.maskAlternate) == hotkey.option
+            && flags.contains(.maskShift) == hotkey.shift
+            && flags.contains(.maskCommand) == hotkey.command
     }
 
     private func handle(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
@@ -66,9 +80,10 @@ final class HotkeyMonitor {
             return Unmanaged.passUnretained(event)
         }
 
+        let keyCode = Int64(hotkey.keyCode)
         switch type {
         case .keyDown where event.getIntegerValueField(.keyboardEventKeycode) == keyCode:
-            if chordHeld(event.flags), !active {
+            if modsMatch(event.flags), !active {
                 active = true
                 fire(onPress)
                 return nil                                // swallow the chord
@@ -82,7 +97,7 @@ final class HotkeyMonitor {
                 return nil
             }
 
-        case .flagsChanged where active && !chordHeld(event.flags):
+        case .flagsChanged where active && !modsMatch(event.flags):
             // A required modifier let go mid-hold ends the gesture.
             active = false
             fire(onRelease)

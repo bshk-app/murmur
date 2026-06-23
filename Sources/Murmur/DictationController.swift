@@ -19,13 +19,14 @@ final class DictationController {
     }
 
     private(set) var state: State = .idle
+    let settings = HotkeySettings()
 
-    private let hotkey = HotkeyMonitor()
+    private let monitor = HotkeyMonitor()
     private var mic = MicCapture()
 
     var statusLine: String {
         switch state {
-        case .idle: return "Idle — hold ⌃⌥Space"
+        case .idle: return "Idle — hold \(settings.hotkey.displayString)"
         case .needsAccessibility: return "Grant Accessibility to enable the hotkey"
         case .recording: return "Recording…"
         case let .captured(d, rms): return String(format: "Captured %.1fs · peak %.3f", d, rms)
@@ -34,15 +35,17 @@ final class DictationController {
     }
 
     func bootstrap() {
-        hotkey.onPress = { [weak self] in self?.beginRecording() }
-        hotkey.onRelease = { [weak self] in self?.endRecording() }
+        monitor.onPress = { [weak self] in self?.beginRecording() }
+        monitor.onRelease = { [weak self] in self?.endRecording() }
+        monitor.update(settings.hotkey)
+        settings.onChange = { [weak self] hk in self?.monitor.update(hk) }
         MicCapture.requestPermission { _ in }            // surface the mic prompt early
         enableHotkey()
     }
 
     /// Try to arm the hotkey tap; if not yet trusted, prompt and poll until it is.
     func enableHotkey() {
-        if hotkey.start() {
+        if monitor.start() {
             if state == .needsAccessibility { state = .idle }
             return
         }
@@ -51,7 +54,7 @@ final class DictationController {
         Task { @MainActor in
             for _ in 0 ..< 120 {                          // ~60 s of 500 ms polls
                 try? await Task.sleep(for: .milliseconds(500))
-                if hotkey.start() { state = .idle; return }
+                if monitor.start() { state = .idle; return }
             }
         }
     }

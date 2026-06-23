@@ -36,7 +36,7 @@ tuist xcodebuild build   # build the menu-bar app from the CLI
 4. ☐ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (Nemotron stream + Voxtral + `TwoTierSession`)
 5. ☐ Live HUD overlay for partials (`<…>`)
 6. ☐ Text injection into the focused field (Accessibility, append-only)
-7. ☐ Settings: hotkey, language, model, insertion mode
+7. ◐ Settings — ✅ rebindable hotkey (recorder + persistence); ☐ language, model, insertion mode
 8. ☐ Code signing + notarization (Developer ID)
 
 ## Permissions (when bundled)
