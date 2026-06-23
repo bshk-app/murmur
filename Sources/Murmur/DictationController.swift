@@ -26,6 +26,7 @@ final class DictationController {
 
     private let session = DictationSession()
     private let liveInjector = LiveAppendInjector()
+    private let hud = HUDController()
     private var promptedAccessibility = false
 
     var shortcutLabel: String {
@@ -76,19 +77,21 @@ final class DictationController {
             liveInjector.begin(enabled: Accessibility.isTrusted)
             try session.start()
             state = .recording
+            hud.show()
         } catch {
             state = .error(error.localizedDescription)
         }
     }
 
-    /// Runs on the mic capture queue (via `onUpdate`). Two jobs:
+    /// Runs on the mic capture queue (via `onUpdate`). Three jobs:
     ///  1. live-type newly confirmed (Voxtral) words into the focused field —
     ///     append-only, the volatile `partial` is never injected (model A);
-    ///  2. echo the two-tier view (confirmed prefix + fast Nemotron tail in ⟨⟩),
-    ///     redrawn in place. The HUD (a later step) is the in-app home for the
-    ///     ⟨⟩ tail; the console echo helps when running from Xcode.
+    ///  2. drive the HUD overlay (confirmed prefix + the fast Nemotron `⟨tail⟩`),
+    ///     hopping to the main actor since the panel is UI;
+    ///  3. echo the same view to the console, redrawn in place — handy from Xcode.
     private nonisolated func echo(_ confirmed: String, _ partial: String) {
         liveInjector.appendConfirmed(confirmed)
+        Task { @MainActor in self.hud.update(confirmed: confirmed, partial: partial) }
         let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
         let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
         FileHandle.standardError.write(Data("\r\u{1B}[2K\(tail)".utf8))
@@ -107,6 +110,7 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
+                self.hud.finish(final)               // show the final for a beat, then fade
                 // Nothing was typed because we lack Accessibility — ask once.
                 if !final.isEmpty, !Accessibility.isTrusted, !self.promptedAccessibility {
                     self.promptedAccessibility = true
