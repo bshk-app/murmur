@@ -19,7 +19,7 @@ let project = Project(
             destinations: .macOS,
             product: .app,
             bundleId: "dev.beshkenadze.Murmur",
-            deploymentTargets: .macOS("14.0"),
+            deploymentTargets: .macOS("15.0"),   // MLXAudioSTT (dev/nemo-mic) requires macOS 15
             infoPlist: .extendingDefault(with: [
                 "LSUIElement": true,                       // menu-bar agent: no Dock icon
                 "CFBundleDisplayName": "Murmur",

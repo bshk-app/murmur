@@ -38,7 +38,7 @@ at `/Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session` (see `Project.swif
 1. ✅ Menu-bar agent scaffold (Tuist `.app`)
 2. ✅ Global push-to-talk hotkey (⌃⌥Space, CGEvent tap — swallows the chord; Accessibility)
 3. ✅ Mic capture while held (AVAudioEngine → 16 kHz mono) — ported from `Mic.swift`
-4. ☐ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (Nemotron stream + Voxtral + `TwoTierSession`)
+4. ✅ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (`TwoTierEngine` → Nemotron partials + Voxtral finals; live transcript to console, final to menu)
 5. ☐ Live HUD overlay for partials (`<…>`)
 6. ☐ Text injection into the focused field (Accessibility, append-only)
 7. ◐ Settings — ✅ rebindable hotkey (recorder + persistence); ☐ language, model, insertion mode

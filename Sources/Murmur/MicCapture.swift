@@ -1,10 +1,10 @@
 @preconcurrency import AVFoundation
 import Foundation
 
-/// Captures the default input device and resamples to 16 kHz mono Float — the
-/// format the STT models expect. Ported from the mic-compare CLI's `MicRunner`.
+/// Captures the default input and resamples to 16 kHz mono Float, delivering
+/// fixed 80 ms chunks via `onChunk`. Ported from the mic-compare CLI's MicRunner.
 ///
-/// `@unchecked Sendable`: the input-tap closure is invoked on the realtime audio
+/// `@unchecked Sendable`: the input-tap closure runs on the realtime audio
 /// thread, so it must NOT inherit actor isolation. All mutable state is confined
 /// to `queue`; a single stateful `AVAudioConverter` keeps resampler continuity.
 final class MicCapture: @unchecked Sendable {
@@ -14,16 +14,21 @@ final class MicCapture: @unchecked Sendable {
         let peakRMS: Float
     }
 
+    /// Fixed-size 16 kHz mono chunks (80 ms), delivered on the capture queue.
+    var onChunk: ([Float]) -> Void = { _ in }
+
+    private let chunkSize = 1280                          // 80 ms @ 16 kHz
     private let queue = DispatchQueue(label: "murmur.mic.capture")
     private let engine = AVAudioEngine()
     private var converter: AVAudioConverter?
     private var outFmt: AVAudioFormat?
 
-    private var samples: [Float] = []
+    private var pending: [Float] = []
+    private var totalSamples = 0
     private var peak: Float = 0
 
     func start() throws {
-        queue.sync { samples.removeAll(keepingCapacity: true); peak = 0 }
+        queue.sync { pending.removeAll(keepingCapacity: true); totalSamples = 0; peak = 0 }
 
         let input = engine.inputNode
         let inFmt = input.outputFormat(forBus: 0)
@@ -44,13 +49,18 @@ final class MicCapture: @unchecked Sendable {
         try engine.start()
     }
 
+    /// Stop capture, flush the trailing partial chunk, and report what was heard.
     func stop() -> Result {
         engine.stop()
         engine.inputNode.removeTap(onBus: 0)
         return queue.sync {
-            Result(sampleCount: samples.count,
-                   durationS: Double(samples.count) / 16000.0,
-                   peakRMS: peak)
+            if !pending.isEmpty {
+                onChunk(pending)
+                pending.removeAll(keepingCapacity: true)
+            }
+            return Result(sampleCount: totalSamples,
+                          durationS: Double(totalSamples) / 16000.0,
+                          peakRMS: peak)
         }
     }
 
@@ -77,8 +87,14 @@ final class MicCapture: @unchecked Sendable {
         let rms = (sum / Float(max(1, n))).squareRoot()
 
         queue.async { [self] in
-            samples.append(contentsOf: chunk)
+            totalSamples += n
             if rms > peak { peak = rms }
+            pending.append(contentsOf: chunk)
+            while pending.count >= chunkSize {
+                let c = Array(pending.prefix(chunkSize))
+                pending.removeFirst(chunkSize)
+                onChunk(c)
+            }
         }
     }
 
