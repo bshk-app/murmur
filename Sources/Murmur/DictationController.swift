@@ -104,6 +104,9 @@ final class DictationController {
         let final = engine.finish()
         mic = MicCapture()                               // fresh engine for the next gesture
         FileHandle.standardError.write(Data("\n".utf8))
+        if !final.isEmpty {
+            TextInjector.type(final + " ")               // into the focused field of any app
+        }
         state = .transcribed(final)
     }
 }
