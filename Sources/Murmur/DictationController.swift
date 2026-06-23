@@ -1,38 +1,41 @@
 import AppKit
 import Foundation
+import KeyboardShortcuts
 import Observation
 
-/// Wires the global hotkey + mic capture to the on-device two-tier STT engine
-/// and exposes a human-readable status for the menu bar.
+/// Wires the global push-to-talk hotkey + mic capture to the on-device two-tier
+/// STT engine and exposes a human-readable status for the menu bar.
 ///
-/// Step B: hold the hotkey → stream mic → live two-tier transcript (Nemotron
-/// partials, Voxtral finals). On release the final transcript is shown in the
-/// menu and printed to the console. Text injection into the focused field is a
-/// later step.
+/// The hotkey is Carbon-based (KeyboardShortcuts) so it needs no permission.
+/// Accessibility is required only to *type* the result into other apps.
 @MainActor
 @Observable
 final class DictationController {
     enum State: Equatable {
         case loadingModels
         case idle
-        case needsAccessibility
         case recording
         case transcribed(String)
         case error(String)
     }
 
     private(set) var state: State = .loadingModels
-    let settings = HotkeySettings()
 
-    private let monitor = HotkeyMonitor()
     private var mic = MicCapture()
     private let engine = STTEngine()
+    private var promptedAccessibility = false
+
+    var shortcutLabel: String {
+        KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
+    }
+
+    /// Typing into other apps needs Accessibility (the hotkey itself does not).
+    var needsAccessibilityToType: Bool { !Accessibility.isTrusted }
 
     var statusLine: String {
         switch state {
         case .loadingModels: return "Loading models…"
-        case .idle: return "Idle — hold \(settings.hotkey.displayString)"
-        case .needsAccessibility: return "Grant Accessibility to enable the hotkey"
+        case .idle: return "Idle — hold \(shortcutLabel)"
         case .recording: return "Listening…"
         case let .transcribed(t): return t.isEmpty ? "…(no speech detected)" : t
         case let .error(m): return "Error: \(m)"
@@ -40,15 +43,13 @@ final class DictationController {
     }
 
     func bootstrap() {
-        monitor.onPress = { [weak self] in self?.beginRecording() }
-        monitor.onRelease = { [weak self] in self?.endRecording() }
-        monitor.update(settings.hotkey)
-        settings.onChange = { [weak self] hk in self?.monitor.update(hk) }
-
+        KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.beginRecording() }
+        KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.endRecording() }
         MicCapture.requestPermission { _ in }            // surface the mic prompt early
-        enableHotkey()
         loadModels()
     }
+
+    func requestAccessibility() { Accessibility.prompt() }
 
     private func loadModels() {
         state = .loadingModels
@@ -58,22 +59,6 @@ final class DictationController {
                 if state == .loadingModels { state = .idle }
             } catch {
                 state = .error("model load: \(error.localizedDescription)")
-            }
-        }
-    }
-
-    /// Try to arm the hotkey tap; if not yet trusted, prompt and poll until it is.
-    func enableHotkey() {
-        if monitor.start() {
-            if state == .needsAccessibility { state = engine.isLoaded ? .idle : .loadingModels }
-            return
-        }
-        state = .needsAccessibility
-        Accessibility.prompt()
-        Task { @MainActor in
-            for _ in 0 ..< 120 {                          // ~60 s of 500 ms polls
-                try? await Task.sleep(for: .milliseconds(500))
-                if monitor.start() { state = engine.isLoaded ? .idle : .loadingModels; return }
             }
         }
     }
@@ -105,7 +90,12 @@ final class DictationController {
         mic = MicCapture()                               // fresh engine for the next gesture
         FileHandle.standardError.write(Data("\n".utf8))
         if !final.isEmpty {
-            TextInjector.type(final + " ")               // into the focused field of any app
+            if Accessibility.isTrusted {
+                TextInjector.type(final + " ")           // into the focused field of any app
+            } else if !promptedAccessibility {
+                promptedAccessibility = true             // ask once; transcript still shown in menu
+                Accessibility.prompt()
+            }
         }
         state = .transcribed(final)
     }

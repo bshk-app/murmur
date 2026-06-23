@@ -6,7 +6,7 @@
 WORKSPACE = Murmur.xcworkspace
 SCHEME    = Murmur
 XCB = tuist xcodebuild build -workspace $(WORKSPACE) -scheme $(SCHEME) \
-	-configuration Debug -destination 'generic/platform=macOS' \
+	-configuration Debug -destination 'generic/platform=macOS' -allowProvisioningUpdates \
 	ARCHS=arm64 ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO
 
 .PHONY: gen build run clean
