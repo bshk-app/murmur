@@ -53,4 +53,40 @@ public final class DictationSession: @unchecked Sendable {
         mic = MicCapture()                               // fresh engine for the next gesture
         return final
     }
+
+    /// Offline transcription of pre-loaded 16 kHz mono samples, feeding the same
+    /// 480 ms chunks the mic path uses and timing the STT compute. For
+    /// benchmarking against the CLI on a fixed file (no mic involved).
+    public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680) -> OfflineResult {
+        engine.begin(language: nil)
+        let wall0 = ProcessInfo.processInfo.systemUptime
+        var compute = 0.0
+        var i = 0
+        while i < samples.count {
+            let end = min(i + chunkSamples, samples.count)
+            let chunk = Array(samples[i ..< end])
+            let t0 = ProcessInfo.processInfo.systemUptime
+            _ = engine.step(chunk)
+            compute += ProcessInfo.processInfo.systemUptime - t0
+            i = end
+        }
+        let tf = ProcessInfo.processInfo.systemUptime
+        let text = engine.finish()
+        compute += ProcessInfo.processInfo.systemUptime - tf
+        let wall = ProcessInfo.processInfo.systemUptime - wall0
+        return OfflineResult(
+            text: text,
+            audioSeconds: Double(samples.count) / 16000.0,
+            computeSeconds: compute,
+            wallSeconds: wall
+        )
+    }
+}
+
+public struct OfflineResult: Sendable {
+    public let text: String
+    public let audioSeconds: Double
+    public let computeSeconds: Double   // sum of step + finish time
+    public let wallSeconds: Double      // total incl. chunk slicing overhead
+    public var rtf: Double { audioSeconds > 0 ? computeSeconds / audioSeconds : 0 }
 }
