@@ -9,13 +9,18 @@ words are typed into the focused field of whatever app you're in — like
 
 ## Status
 
-Scaffold only — a menu-bar agent shell that compiles and runs. The dictation
-pipeline is not wired yet.
+Menu-bar agent with global push-to-talk + 16 kHz mic capture, and the on-device
+two-tier STT stack (Nemotron + Voxtral) linked in. Transcription wiring is next.
 
 ```
-tuist generate          # generate & open Murmur.xcodeproj in Xcode
-tuist xcodebuild build   # build the menu-bar app from the CLI
+make gen     # tuist generate
+make build   # build (arm64; Explicit Modules off — Xcode 26 workaround)
+make run     # build + launch the menu-bar agent
 ```
+
+STT comes from the fork's `dev/nemo-mic` branch (Nemotron stream + Voxtral
+Realtime + `TwoTierSession`), consumed via Xcode-native SPM from its git worktree
+at `/Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session` (see `Project.swift`).
 
 ## Vision
 
