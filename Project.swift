@@ -1,16 +1,16 @@
 import ProjectDescription
 
 // Tuist is the source of truth for the Murmur app target — it regenerates the
-// .xcodeproj, so bundle id and signing MUST live here, not in Xcode (manual
-// project edits get clobbered on `tuist generate`).
+// .xcodeproj, so bundle id and signing MUST live here (Xcode edits get clobbered).
 //
-// STT comes from the fork's `dev/nemo-mic` branch (Nemotron + Voxtral +
-// TwoTierEngine) via Xcode-native SPM from its git worktree. The global hotkey
-// uses Carbon `RegisterEventHotKey` (KeyboardShortcuts) — no Accessibility.
+// The app is a thin UI over MurmurKit, the shared dictation core it builds from
+// the local `MurmurKit/` Swift package (which pulls STT from the fork's
+// `dev/nemo-mic` worktree). The same MurmurKit powers `murmur-cli`. The global
+// hotkey uses Carbon `RegisterEventHotKey` (KeyboardShortcuts) — no Accessibility.
 let project = Project(
     name: "Murmur",
     packages: [
-        .local(path: "/Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session"),
+        .local(path: "MurmurKit"),
         .remote(url: "https://github.com/sindresorhus/KeyboardShortcuts",
                 requirement: .upToNextMajor(from: "2.0.0")),
     ],
@@ -29,13 +29,12 @@ let project = Project(
             ]),
             sources: ["Sources/Murmur/**"],
             dependencies: [
-                .package(product: "MLXAudioSTT"),
+                .package(product: "MurmurKit"),
                 .package(product: "KeyboardShortcuts"),
             ],
             settings: .settings(base: [
                 "SWIFT_VERSION": "5.0",
-                // Stable signature so the Accessibility (typing) grant persists
-                // across rebuilds — ad-hoc cdhash churn invalidates TCC every build.
+                // Stable signature so the Accessibility (typing) grant persists.
                 "CODE_SIGN_STYLE": "Automatic",
                 "DEVELOPMENT_TEAM": "Q8H6GWJ658",
                 "CODE_SIGN_IDENTITY": "Apple Development",

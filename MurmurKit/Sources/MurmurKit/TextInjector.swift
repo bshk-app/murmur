@@ -3,13 +3,10 @@ import Foundation
 
 /// Types text into the focused field of the frontmost app by posting synthetic
 /// key events that carry the Unicode payload — no keycode mapping, no clipboard
-/// clobber. Requires Accessibility trust (the same grant the hotkey tap uses).
-///
-/// Murmur is a menu-bar `.accessory`, so it never steals focus: whatever field
-/// was focused while you held the hotkey is still focused on release.
-enum TextInjector {
+/// clobber. Requires Accessibility trust.
+public enum TextInjector {
     /// Post `text` one character at a time into the focused field.
-    static func type(_ text: String) {
+    public static func type(_ text: String) {
         guard !text.isEmpty else { return }
         // A private source so synthetic events don't inherit currently-held
         // physical modifiers (you may still be holding the hotkey's ⌃⌥).

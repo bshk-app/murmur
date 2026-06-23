@@ -1,0 +1,56 @@
+import Foundation
+
+/// The UI-agnostic dictation pipeline shared by the menu-bar app and the CLI:
+/// load the two-tier models (with warm-up), capture the mic in 480 ms chunks,
+/// stream `(confirmed, partial)` updates, and flush a final transcript on stop.
+///
+/// No SwiftUI, no hotkey library, no text injection — callers wire those. The
+/// only difference between the app and the CLI is who drives `start()`/`stop()`
+/// and what they do with the transcript.
+///
+/// `@unchecked Sendable`: `onUpdate` fires on the mic capture queue and `stop()`
+/// is meant to be called off the main thread; `start()`/`stop()` never overlap
+/// (the caller's state machine guarantees it).
+public final class DictationSession: @unchecked Sendable {
+    private let engine = STTEngine()
+    private var mic = MicCapture()
+
+    /// Live update per fed chunk: `(confirmed, provisional)`. Called on the mic
+    /// capture queue — hop to your UI thread as needed.
+    public var onUpdate: ((_ confirmed: String, _ partial: String) -> Void)?
+
+    public init() {}
+
+    public var isLoaded: Bool { engine.isLoaded }
+
+    /// Download (first run) + load + warm up MLX. Heavy; await before `start()`.
+    public func load() async throws {
+        try await engine.load()
+    }
+
+    /// Surface the microphone permission prompt early (no-op once granted).
+    public func requestMicrophonePermission(_ completion: @escaping (Bool) -> Void = { _ in }) {
+        MicCapture.requestPermission(completion)
+    }
+
+    /// Begin a fresh utterance and start capturing.
+    public func start() throws {
+        engine.begin(language: nil)
+        mic.onChunk = { [weak self] chunk in
+            guard let self else { return }
+            let (confirmed, partial) = self.engine.step(chunk)
+            self.onUpdate?(confirmed, partial)
+        }
+        try mic.start()
+    }
+
+    /// Stop capture, flush, and return the final transcript. Blocks while the
+    /// backlog drains — call off the main thread.
+    @discardableResult
+    public func stop() -> String {
+        _ = mic.stop()
+        let final = engine.finish()
+        mic = MicCapture()                               // fresh engine for the next gesture
+        return final
+    }
+}

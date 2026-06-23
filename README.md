@@ -9,13 +9,14 @@ words are typed into the focused field of whatever app you're in — like
 
 ## Status
 
-Menu-bar agent with global push-to-talk + 16 kHz mic capture, and the on-device
-two-tier STT stack (Nemotron + Voxtral) linked in. Transcription wiring is next.
+Menu-bar dictation: hold the hotkey → on-device two-tier STT (Nemotron + Voxtral)
+→ types into the focused field. The core lives in the **`MurmurKit`** Swift
+package, shared verbatim by the app and **`murmur-cli`**.
 
 ```
-make gen     # tuist generate
-make build   # build (arm64; Explicit Modules off — Xcode 26 workaround)
-make run     # build + launch the menu-bar agent
+make build    # build the menu-bar app (arm64; Explicit Modules off — Xcode 26 workaround)
+make run      # build + launch the menu-bar agent
+make run-cli  # run the terminal version (same MurmurKit core — handy for profiling)
 ```
 
 STT comes from the fork's `dev/nemo-mic` branch (Nemotron stream + Voxtral
