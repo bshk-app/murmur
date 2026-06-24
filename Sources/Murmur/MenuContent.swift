@@ -6,11 +6,16 @@ import SwiftUI
 struct MenuContent: View {
     let dictation: DictationController
     @Environment(\.openSettings) private var openSettings
+    @AppStorage(InsertMode.defaultsKey) private var insertModeRaw = InsertMode.inField.rawValue
 
     var body: some View {
         Text(dictation.statusLine)
         Divider()
-        if dictation.needsAccessibilityToType {
+        Picker("Insert", selection: $insertModeRaw) {
+            Text("In field").tag(InsertMode.inField.rawValue)
+            Text("HUD only").tag(InsertMode.hudOnly.rawValue)
+        }
+        if dictation.needsAccessibilityToType, insertModeRaw == InsertMode.inField.rawValue {
             Button("Grant Accessibility (to type into apps)…") { dictation.requestAccessibility() }
         }
         Button("Settings…") {

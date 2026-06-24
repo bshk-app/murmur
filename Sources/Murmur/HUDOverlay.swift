@@ -2,125 +2,256 @@ import AppKit
 import Observation
 import SwiftUI
 
-/// A floating caption HUD that shows the live two-tier transcription while you
-/// dictate: confirmed (Voxtral) text solid, the volatile Nemotron `⟨partial⟩`
-/// tail dimmed. It must sit above every window **without taking keyboard focus**
-/// — we're typing into another app's field at the same moment — so it's a
-/// non-activating borderless `NSPanel`, click-through, hosting a SwiftUI pill.
-///
-/// IMPORTANT: the panel is a **fixed size**. An earlier version let the window
-/// auto-size to the SwiftUI content (`NSHostingController.preferredContentSize`)
-/// and repositioned it every update — that made the window frame and the content
-/// size drive each other through AutoLayout, recursing
-/// `_changeWindowFrameFromConstraintsIfNecessary` ↔ `NSPerformVisuallyAtomicChange`
-/// until the main-thread stack overflowed (EXC_BAD_ACCESS). The window must NOT
-/// resize from its content. So: fixed transparent window, the pill sizes itself
-/// inside it, positioned once on show.
+/// Floating dictation HUD (design: MurMur.dc.html). A non-activating, click-through
+/// borderless NSPanel (we type into another app's field at the same time) hosting a
+/// SwiftUI glass pill that adapts to light/dark. Three states — listening,
+/// transcribing (two-tier coloured text), error — plus a larger "presentation"
+/// subtitle variant for HUD-only mode.
 
-/// Observable text state driving the pill.
 @Observable
 final class HUDModel {
+    enum Phase { case listening, transcribing, error }
+    var phase: Phase = .listening
     var confirmed = ""
     var partial = ""
+    var lang = "Auto"
+    var errorText = "Open Privacy in Settings →"
+    var presentation = false      // HUD-only / subtitles
     var recording = false
 }
 
-/// The styled pill, centered inside the fixed transparent window.
-private struct HUDView: View {
-    let model: HUDModel
+// MARK: - Building blocks
 
-    @State private var pulse = false
-
-    private var isEmpty: Bool { model.confirmed.isEmpty && model.partial.isEmpty }
-
+/// Animated orange level bars (the `murbar` keyframe: scaleY .32↔1, staggered).
+private struct LevelBars: View {
+    var color: Color
+    var count: Int = 4
+    var barHeight: CGFloat = 13
+    @State private var up = false
     var body: some View {
-        pill
-            // Fill the fixed window and center the pill; the window never resizes
-            // to fit, so there is no content↔frame layout feedback loop.
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-    }
-
-    private var pill: some View {
-        HStack(spacing: 10) {
-            Circle()
-                .fill(model.recording ? Color.red : Color.secondary)
-                .frame(width: 9, height: 9)
-                .opacity(pulse ? 1 : 0.35)
-                .onAppear { pulse = true }
-                .animation(.easeInOut(duration: 0.85).repeatForever(autoreverses: true), value: pulse)
-
-            transcript
-                .font(.system(size: 15, weight: .medium, design: .rounded))
-                .lineLimit(2)
-                .truncationMode(.head)               // keep the most recent words visible
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: 520, alignment: .leading)
+        HStack(spacing: 2) {
+            ForEach(0 ..< count, id: \.self) { i in
+                Capsule().fill(color)
+                    .frame(width: 2.5, height: barHeight)
+                    .scaleEffect(y: up ? 1 : 0.32, anchor: .center)
+                    .animation(.easeInOut(duration: 0.45).repeatForever(autoreverses: true)
+                        .delay(Double(i) * 0.12), value: up)
+            }
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(.white.opacity(0.12), lineWidth: 1)
-        )
-        .shadow(color: .black.opacity(0.28), radius: 18, y: 8)
-        .fixedSize()                                  // pill hugs its content within the fixed window
-    }
-
-    /// Confirmed prefix (primary) + provisional tail (secondary, in ⟨⟩).
-    private var transcript: Text {
-        if isEmpty {
-            return Text("Listening…").foregroundStyle(.secondary)
-        }
-        let head = Text(model.confirmed).foregroundStyle(.primary)
-        guard !model.partial.isEmpty else { return head }
-        let sep = model.confirmed.isEmpty ? "" : " "
-        return head + Text("\(sep)⟨\(model.partial)⟩").foregroundStyle(.secondary)
+        .onAppear { up = true }
     }
 }
 
-/// Owns the panel and its lifecycle. MainActor — all window work is on the main
-/// thread; the controller pushes `(confirmed, partial)` here from the UI side.
+/// Pulsing status dot (`murpulse`).
+private struct PulseDot: View {
+    var color: Color
+    var size: CGFloat = 8
+    @State private var on = false
+    var body: some View {
+        Circle().fill(color).frame(width: size, height: size)
+            .opacity(on ? 0.4 : 1).scaleEffect(on ? 0.78 : 1)
+            .animation(.easeInOut(duration: 0.75).repeatForever(autoreverses: true), value: on)
+            .onAppear { on = true }
+    }
+}
+
+private func catIcon(_ size: CGFloat) -> some View {
+    Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
+        .frame(width: size, height: size)
+}
+
+// MARK: - HUD view
+
+private struct HUDView: View {
+    let model: HUDModel
+    @Environment(\.colorScheme) private var scheme
+
+    var body: some View {
+        Group {
+            switch model.phase {
+            case .error:        errorPill
+            case .listening:    listeningPill
+            case .transcribing: transcribePill
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, 30)
+        .padding(.horizontal, 40)
+    }
+
+    // Header: cat + animated bars + language badge.
+    private var header: some View {
+        HStack(spacing: 10) {
+            catIcon(18)
+            LevelBars(color: Mur.accent, count: 4, barHeight: 13)
+            Spacer(minLength: 8)
+            Text(model.lang.uppercased())
+                .font(.system(size: 10, weight: .medium)).tracking(0.4)
+                .foregroundStyle(scheme == .dark ? Color.white.opacity(0.4) : Mur.ink.opacity(0.5))
+                .padding(.horizontal, 7).padding(.vertical, 3)
+                .background(scheme == .dark ? Color.white.opacity(0.08) : Mur.ink.opacity(0.07),
+                            in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+    }
+
+    // Two-tier coloured transcript + blinking accent caret.
+    private var transcribePill: some View {
+        let big = model.presentation
+        return VStack(alignment: .leading, spacing: big ? 12 : 9) {
+            header
+            TimelineView(.periodic(from: .now, by: 0.5)) { ctx in
+                let on = Int(ctx.date.timeIntervalSinceReferenceDate / 0.5) % 2 == 0
+                (transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
+                    .font(.system(size: big ? 30 : 21))
+                    .lineSpacing(big ? 8 : 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(.horizontal, big ? 24 : 16)
+        .padding(.vertical, big ? 18 : 13)
+        .frame(maxWidth: big ? 820 : 460, alignment: .leading)
+        .murPill(scheme, radius: big ? 18 : 16, border: borderColor)
+    }
+
+    private var transcript: Text {
+        let crisp = Mur.crisp(scheme), draft = Mur.draft(scheme)
+        let conf = Self.words(model.confirmed)
+        let part = Self.words(model.partial)
+        var t = Text("")
+        for (i, w) in conf.enumerated() {
+            // Approximated "refine flash": the newest confirmed word glows accent.
+            let hot = i == conf.count - 1
+            t = t + Text(w).foregroundColor(hot ? Mur.accent : crisp).fontWeight(.medium) + Text(" ")
+        }
+        for w in part {
+            t = t + Text(w).foregroundColor(draft).fontWeight(.regular) + Text(" ")
+        }
+        if conf.isEmpty, part.isEmpty {
+            return Text("Listening…").foregroundColor(draft)
+        }
+        return t
+    }
+
+    private var listeningPill: some View {
+        HStack(spacing: 13) {
+            PulseDot(color: Mur.accent, size: 8)
+            Text("Listening…").font(.system(size: 15))
+                .foregroundStyle(scheme == .dark ? Color.white.opacity(0.92) : Mur.ink)
+            LevelBars(color: Mur.accent, count: 5, barHeight: 16)
+            hotkeyBadge
+        }
+        .padding(.horizontal, 17).padding(.vertical, 11)
+        .murPill(scheme, radius: 14, border: borderColor)
+    }
+
+    private var errorPill: some View {
+        HStack(spacing: 12) {
+            catIcon(22).overlay(alignment: .bottomTrailing) {
+                Circle().fill(Mur.error).frame(width: 12, height: 12)
+                    .overlay(Text("!").font(.system(size: 9, weight: .bold)).foregroundStyle(.white))
+                    .offset(x: 4, y: 2)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text("No microphone access").font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(scheme == .dark ? Color.white.opacity(0.95) : Mur.ink)
+                Text(model.errorText).font(.system(size: 11.5))
+                    .foregroundStyle(scheme == .dark ? Color.white.opacity(0.55) : Mur.ink.opacity(0.6))
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 11)
+        .murPill(scheme, radius: 14, border: Mur.error.opacity(0.4))
+    }
+
+    private var hotkeyBadge: some View {
+        Text("⌥ Space").font(.system(size: 11, design: .monospaced))
+            .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
+            .padding(.horizontal, 6).padding(.vertical, 3)
+            .background(scheme == .dark ? Color.white.opacity(0.09) : Mur.ink.opacity(0.07),
+                        in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+    }
+
+    private var borderColor: Color {
+        scheme == .dark ? Color.white.opacity(0.1) : Mur.ink.opacity(0.1)
+    }
+
+    private static func words(_ s: String) -> [String] {
+        s.split(whereSeparator: { $0 == " " || $0 == "\n" }).map(String.init)
+    }
+}
+
+/// Glass-pill background: blurred material + warm tint + hairline border + shadow.
+private extension View {
+    func murPill(_ scheme: ColorScheme, radius: CGFloat, border: Color) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        return self
+            .background(Mur.glass(scheme), in: shape)
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(shape.strokeBorder(border, lineWidth: 1))
+            .shadow(color: .black.opacity(scheme == .dark ? 0.42 : 0.18), radius: 22, y: 14)
+    }
+}
+
+// MARK: - Panel controller
+
 @MainActor
 final class HUDController {
     private let model = HUDModel()
     private var panel: NSPanel?
     private var hideWork: DispatchWorkItem?
+    private let size = NSSize(width: 940, height: 260)
 
-    // Fixed window footprint: a wide, short transparent band near the bottom.
-    // The pill floats inside it; the window itself never changes size.
-    private let size = NSSize(width: 760, height: 120)
-
-    /// Reveal the HUD for a new utterance (fade in, reset text).
-    func show() {
+    /// Reveal the HUD for a new utterance.
+    func begin(presentation: Bool, lang: String) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
+        model.presentation = presentation
+        model.lang = lang
+        model.phase = .listening
+        model.confirmed = ""; model.partial = ""
         model.recording = true
-        model.confirmed = ""
-        model.partial = ""
         position(panel)
         panel.alphaValue = 0
-        panel.orderFrontRegardless()                 // show without activating the app
+        panel.orderFrontRegardless()
         NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
     }
 
-    /// Live update during the hold. Text-only — the window is fixed, so there is
-    /// nothing to resize or reposition here (that was the crash).
+    /// Live two-tier update.
     func update(confirmed: String, partial: String) {
         model.confirmed = confirmed
         model.partial = partial
+        if model.phase != .error {
+            model.phase = (confirmed.isEmpty && partial.isEmpty) ? .listening : .transcribing
+        }
     }
 
-    /// Show the final text for a beat, then fade out.
+    /// Surface a mic/permission error in the HUD.
+    func error(_ text: String) {
+        let panel = ensurePanel()
+        model.phase = .error
+        if !text.isEmpty { model.errorText = text }
+        model.recording = false
+        position(panel)
+        panel.alphaValue = 0
+        panel.orderFrontRegardless()
+        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+        scheduleHide(after: 3.2)
+    }
+
+    /// Show the final text, then fade — lingering longer in presentation mode.
     func finish(_ finalText: String) {
         guard panel != nil else { return }
         model.recording = false
-        model.partial = ""
-        if !finalText.isEmpty { model.confirmed = finalText }
+        if !finalText.isEmpty {
+            model.confirmed = finalText; model.partial = ""; model.phase = .transcribing
+        }
+        scheduleHide(after: model.presentation ? 4.0 : 1.0)
+    }
 
+    private func scheduleHide(after delay: TimeInterval) {
         let work = DispatchWorkItem { [weak self] in self?.fadeOut() }
         hideWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.9, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
     private func fadeOut() {
@@ -131,23 +262,18 @@ final class HUDController {
 
     private func ensurePanel() -> NSPanel {
         if let panel { return panel }
-        let panel = NSPanel(
-            contentRect: NSRect(origin: .zero, size: size),
-            styleMask: [.nonactivatingPanel, .borderless],
-            backing: .buffered, defer: false
-        )
+        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: size),
+                            styleMask: [.nonactivatingPanel, .borderless],
+                            backing: .buffered, defer: false)
         panel.isOpaque = false
         panel.backgroundColor = .clear
-        panel.hasShadow = false                      // the SwiftUI pill draws its own
-        panel.level = .statusBar                     // float above normal windows
+        panel.hasShadow = false
+        panel.level = .statusBar
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
         panel.isFloatingPanel = true
         panel.becomesKeyOnlyIfNeeded = true
         panel.hidesOnDeactivate = false
-        panel.ignoresMouseEvents = true              // click-through to the app underneath
-
-        // No .preferredContentSize: the window stays fixed; the hosting view fills
-        // it and the pill centers, so content never drives the window frame.
+        panel.ignoresMouseEvents = true
         let host = NSHostingView(rootView: HUDView(model: model))
         host.frame = NSRect(origin: .zero, size: size)
         host.autoresizingMask = [.width, .height]
@@ -156,13 +282,10 @@ final class HUDController {
         return panel
     }
 
-    /// Bottom-center on the active screen (fixed size, so once is enough).
     private func position(_ panel: NSPanel) {
         guard let screen = NSScreen.main else { return }
-        let visible = screen.visibleFrame
-        panel.setFrame(
-            NSRect(x: visible.midX - size.width / 2, y: visible.minY + 80, width: size.width, height: size.height),
-            display: true
-        )
+        let v = screen.visibleFrame
+        panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,
+                              width: size.width, height: size.height), display: true)
     }
 }

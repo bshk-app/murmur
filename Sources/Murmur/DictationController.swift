@@ -71,15 +71,17 @@ final class DictationController {
 
     private func beginRecording() {
         guard session.isLoaded, state != .recording, state != .transcribing else { return }
+        let mode = InsertMode.current
         do {
-            // Live-type confirmed words during the hold only if we can already
-            // type; otherwise stay quiet and let the release path prompt once.
-            liveInjector.begin(enabled: Accessibility.isTrusted)
+            // Live-type confirmed words only when inserting into a field AND we can
+            // type. In HUD-only (presentation) mode nothing is injected.
+            liveInjector.begin(enabled: mode == .inField && Accessibility.isTrusted)
             try session.start()
             state = .recording
-            hud.show()
+            hud.begin(presentation: mode == .hudOnly, lang: "Auto")
         } catch {
             state = .error(error.localizedDescription)
+            hud.error("Open Privacy in Settings →")
         }
     }
 
@@ -110,9 +112,11 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                self.hud.finish(final)               // show the final for a beat, then fade
-                // Nothing was typed because we lack Accessibility — ask once.
-                if !final.isEmpty, !Accessibility.isTrusted, !self.promptedAccessibility {
+                self.hud.finish(final)               // show the final (lingers in presentation), then fade
+                // Only In-field mode types into other apps — that's the only mode
+                // that needs Accessibility, so only prompt there.
+                if InsertMode.current == .inField, !final.isEmpty,
+                   !Accessibility.isTrusted, !self.promptedAccessibility {
                     self.promptedAccessibility = true
                     Accessibility.prompt()
                 }
