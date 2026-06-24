@@ -1,10 +1,15 @@
 // swift-tools-version: 6.0
 import PackageDescription
 
-// Shared core for both the Murmur menu-bar app and the murmur-cli tool: mic
-// capture, the two-tier STT engine wrapper, text injection, and the dictation
-// orchestrator. STT comes from the fork's `dev/nemo-mic` branch via its git
-// worktree (a local path dependency; identity = the worktree dir name).
+// Shared core for the Murmur menu-bar app and the murmur-cli tool: mic capture,
+// the two-tier STT composition, the Silero speech gate, text injection, and the
+// dictation orchestrator.
+//
+// STT + VAD come from the fork `beshkenadze/mlx-audio-swift` as a normal external
+// dependency over HTTPS, pinned to `main` (which already carries the merged
+// Nemotron/Voxtral streaming sessions + Silero VAD, all public, no dev-only
+// tooling). The two-tier composition itself lives here in MurmurKit, not the
+// library — it's application policy (which models, how to merge, memory budget).
 let package = Package(
     name: "MurmurKit",
     platforms: [.macOS(.v15)],
@@ -13,12 +18,15 @@ let package = Package(
         .executable(name: "murmur-cli", targets: ["murmur-cli"]),
     ],
     dependencies: [
-        .package(path: "/Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session"),
+        .package(url: "https://github.com/beshkenadze/mlx-audio-swift.git", branch: "main"),
     ],
     targets: [
         .target(
             name: "MurmurKit",
-            dependencies: [.product(name: "MLXAudioSTT", package: "nemotron-session")]
+            dependencies: [
+                .product(name: "MLXAudioSTT", package: "mlx-audio-swift"),
+                .product(name: "MLXAudioVAD", package: "mlx-audio-swift"),   // Silero 32ms speech gate
+            ]
         ),
         .executableTarget(
             name: "murmur-cli",
