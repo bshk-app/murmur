@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 /// Murmur — local push-to-talk dictation for macOS.
@@ -9,11 +10,25 @@ struct MurmurApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra("Murmur", systemImage: "mic.circle") {
+        MenuBarExtra {
             MenuContent(dictation: appDelegate.dictation)
+        } label: {
+            Image(nsImage: Self.menuIcon)
         }
         Settings {
             SettingsView()
         }
     }
+
+    /// The menu-bar glyph: `cat_fill` (Media.xcassets) rendered as a **template**
+    /// — monochrome, auto-tinted for light/dark menu bars — sized to the menu bar.
+    /// Falls back to an SF Symbol if the asset is somehow missing.
+    private static let menuIcon: NSImage = {
+        let image = NSImage(named: "cat_fill")
+            ?? NSImage(systemSymbolName: "mic.circle", accessibilityDescription: "Murmur")
+            ?? NSImage()
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        return image
+    }()
 }

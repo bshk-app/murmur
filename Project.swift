@@ -27,13 +27,15 @@ let project = Project(
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
             ]),
-            sources: ["Sources/Murmur/**"],
+            sources: ["Sources/Murmur/**/*.swift"],
+            resources: ["Sources/Murmur/Resources/**"],
             dependencies: [
                 .package(product: "MurmurKit"),
                 .package(product: "KeyboardShortcuts"),
             ],
             settings: .settings(base: [
                 "SWIFT_VERSION": "5.0",
+                "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",   // Media.xcassets/AppIcon (cat)
                 // Stable signature so the Accessibility (typing) grant persists.
                 "CODE_SIGN_STYLE": "Automatic",
                 "DEVELOPMENT_TEAM": "Q8H6GWJ658",
