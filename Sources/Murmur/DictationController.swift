@@ -47,10 +47,26 @@ final class DictationController {
         }
     }
 
+    /// Compact status for the menu popover.
+    var shortStatus: String {
+        switch state {
+        case .loadingModels: return "Loading…"
+        case .idle, .transcribed: return "Ready"
+        case .recording: return "Listening"
+        case .transcribing: return "Transcribing"
+        case let .error(m): return m
+        }
+    }
+
+    /// True while a dictation is in flight (drives the popover pulse dot).
+    var isActive: Bool {
+        state == .recording || state == .transcribing
+    }
+
     func bootstrap() {
         session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
-        KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.beginRecording() }
-        KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.endRecording() }
+        KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown() }
+        KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
         session.requestMicrophonePermission()            // surface the mic prompt early
         loadModels()
     }
@@ -69,16 +85,34 @@ final class DictationController {
         }
     }
 
+    /// Hotkey press: hold-mode starts; toggle-mode flips start/stop. Gated by the
+    /// master enable.
+    private func hotkeyDown() {
+        guard DictationEnabled.value else { return }
+        switch TriggerMode.current {
+        case .hold:   beginRecording()
+        case .toggle: if state == .recording { endRecording() } else { beginRecording() }
+        }
+    }
+
+    /// Hotkey release only ends dictation in hold mode (toggle ignores release).
+    private func hotkeyUp() {
+        if TriggerMode.current == .hold { endRecording() }
+    }
+
     private func beginRecording() {
         guard session.isLoaded, state != .recording, state != .transcribing else { return }
         let mode = InsertMode.current
+        let toggle = TriggerMode.current == .toggle
         do {
             // Live-type confirmed words only when inserting into a field AND we can
             // type. In HUD-only (presentation) mode nothing is injected.
             liveInjector.begin(enabled: mode == .inField && Accessibility.isTrusted)
             try session.start()
             state = .recording
-            hud.begin(presentation: mode == .hudOnly, lang: "Auto")
+            // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
+            hud.begin(presentation: mode == .hudOnly, lang: "Auto",
+                      interactive: toggle, onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)
             hud.error("Open Privacy in Settings →")

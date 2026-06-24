@@ -25,6 +25,29 @@ enum Mur {
     }
 }
 
+/// How the push-to-talk hotkey behaves.
+enum TriggerMode: String, CaseIterable, Identifiable {
+    case hold      // record while held, stop on release (push-to-talk)
+    case toggle    // tap to start, tap again (or the HUD Stop button) to stop
+
+    var id: String { rawValue }
+    var label: String { self == .hold ? "Hold to talk" : "Tap on / off" }
+
+    static let defaultsKey = "murmur.triggerMode"
+    static var current: TriggerMode {
+        TriggerMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .hold
+    }
+}
+
+/// Master on/off — when off, the hotkey is ignored.
+enum DictationEnabled {
+    static let key = "murmur.enabled"
+    /// Defaults to `true` when unset.
+    static var value: Bool {
+        UserDefaults.standard.object(forKey: key) == nil ? true : UserDefaults.standard.bool(forKey: key)
+    }
+}
+
 /// Where the transcript goes when you release the hotkey.
 enum InsertMode: String, CaseIterable, Identifiable {
     case inField   // type into the focused field of any app (needs Accessibility)

@@ -11,10 +11,11 @@ struct MurmurApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            MenuContent(dictation: appDelegate.dictation)
+            MenuPopover(dictation: appDelegate.dictation)
         } label: {
             Image(nsImage: Self.menuIcon)
         }
+        .menuBarExtraStyle(.window)
         Settings {
             SettingsView()
         }

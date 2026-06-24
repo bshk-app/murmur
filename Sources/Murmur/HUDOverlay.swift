@@ -18,6 +18,8 @@ final class HUDModel {
     var errorText = "Open Privacy in Settings →"
     var presentation = false      // HUD-only / subtitles
     var recording = false
+    var showStop = false          // toggle-mode: HUD shows a clickable Stop
+    var onStop: () -> Void = {}
 }
 
 // MARK: - Building blocks
@@ -91,7 +93,20 @@ private struct HUDView: View {
                 .padding(.horizontal, 7).padding(.vertical, 3)
                 .background(scheme == .dark ? Color.white.opacity(0.08) : Mur.ink.opacity(0.07),
                             in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+            if model.showStop { stopButton }
         }
+    }
+
+    /// Clickable Stop (toggle mode). The panel accepts mouse events while this shows.
+    private var stopButton: some View {
+        Button(action: model.onStop) {
+            Image(systemName: "stop.fill")
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(scheme == .dark ? Color.white.opacity(0.85) : Mur.ink.opacity(0.7))
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(scheme == .dark ? Color.white.opacity(0.12) : Mur.ink.opacity(0.08)))
+        }
+        .buttonStyle(.plain)
     }
 
     // Two-tier coloured transcript + blinking accent caret.
@@ -139,7 +154,7 @@ private struct HUDView: View {
             Text("Listening…").font(.system(size: 15))
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.92) : Mur.ink)
             LevelBars(color: Mur.accent, count: 5, barHeight: 16)
-            hotkeyBadge
+            if model.showStop { stopButton } else { hotkeyBadge }
         }
         .padding(.horizontal, 17).padding(.vertical, 11)
         .murPill(scheme, radius: 14, border: borderColor)
@@ -201,8 +216,9 @@ final class HUDController {
     private var hideWork: DispatchWorkItem?
     private let size = NSSize(width: 940, height: 260)
 
-    /// Reveal the HUD for a new utterance.
-    func begin(presentation: Bool, lang: String) {
+    /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
+    /// panel accept clicks so the Stop button works.
+    func begin(presentation: Bool, lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
         model.presentation = presentation
@@ -210,6 +226,9 @@ final class HUDController {
         model.phase = .listening
         model.confirmed = ""; model.partial = ""
         model.recording = true
+        model.showStop = interactive
+        model.onStop = onStop
+        panel.ignoresMouseEvents = !interactive
         position(panel)
         panel.alphaValue = 0
         panel.orderFrontRegardless()
@@ -242,6 +261,7 @@ final class HUDController {
     func finish(_ finalText: String) {
         guard panel != nil else { return }
         model.recording = false
+        model.showStop = false
         if !finalText.isEmpty {
             model.confirmed = finalText; model.partial = ""; model.phase = .transcribing
         }

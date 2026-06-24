@@ -23,6 +23,7 @@ let project = Project(
             deploymentTargets: .macOS("15.0"),   // MLXAudioSTT (dev/nemo-mic) requires macOS 15
             infoPlist: .extendingDefault(with: [
                 "LSUIElement": true,                       // menu-bar agent: no Dock icon
+                "LSApplicationCategoryType": "public.app-category.productivity",
                 "CFBundleDisplayName": "Murmur",
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
