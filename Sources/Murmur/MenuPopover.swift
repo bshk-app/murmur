@@ -1,4 +1,5 @@
 import AppKit
+import MurmurKit
 import SwiftUI
 
 /// The menu-bar dropdown (design: MurMur.dc.html) shown as a `.window`-style
@@ -12,7 +13,7 @@ struct MenuPopover: View {
     @AppStorage(DictationEnabled.key) private var enabled = true
     @AppStorage(InsertMode.defaultsKey) private var insertRaw = InsertMode.inField.rawValue
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
-    @AppStorage("murmur.model") private var modelRaw = "auto"
+    @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
 
     var body: some View {
         VStack(spacing: 0) {
@@ -73,7 +74,9 @@ struct MenuPopover: View {
         VStack(alignment: .leading, spacing: 0) {
             label("Model")
             MurSegment(selection: $modelRaw,
-                       options: [("fast", "Fast"), ("auto", "Auto"), ("accurate", "Accurate")])
+                       options: [(DictationMode.fast.rawValue, "Fast"),
+                                 (DictationMode.hybrid.rawValue, "Hybrid"),
+                                 (DictationMode.accurate.rawValue, "Accurate")])
             label("Insert").padding(.top, 11)
             MurSegment(selection: $insertRaw,
                        options: [(InsertMode.inField.rawValue, "In field"),

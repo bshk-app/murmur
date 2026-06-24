@@ -108,7 +108,7 @@ final class DictationController {
             // Live-type confirmed words only when inserting into a field AND we can
             // type. In HUD-only (presentation) mode nothing is injected.
             liveInjector.begin(enabled: mode == .inField && Accessibility.isTrusted)
-            try session.start()
+            try session.start(mode: ModelSetting.current)
             state = .recording
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
             hud.begin(presentation: mode == .hudOnly, lang: "Auto",

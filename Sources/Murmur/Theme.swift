@@ -1,3 +1,4 @@
+import MurmurKit
 import SwiftUI
 
 /// MurMur design tokens (from the Claude Design handoff: MurMur.dc.html).
@@ -45,6 +46,14 @@ enum DictationEnabled {
     /// Defaults to `true` when unset.
     static var value: Bool {
         UserDefaults.standard.object(forKey: key) == nil ? true : UserDefaults.standard.bool(forKey: key)
+    }
+}
+
+/// Which model(s) transcribe — persisted; read by DictationController at begin.
+enum ModelSetting {
+    static let key = "murmur.model"
+    static var current: DictationMode {
+        DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .hybrid
     }
 }
 

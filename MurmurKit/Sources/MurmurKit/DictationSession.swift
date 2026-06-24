@@ -33,9 +33,9 @@ public final class DictationSession: @unchecked Sendable {
         MicCapture.requestPermission(completion)
     }
 
-    /// Begin a fresh utterance and start capturing.
-    public func start() throws {
-        engine.begin(language: nil)
+    /// Begin a fresh utterance and start capturing, with the chosen model mode.
+    public func start(mode: DictationMode = .hybrid) throws {
+        engine.begin(language: nil, mode: mode)
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }
             let (confirmed, partial) = self.engine.step(chunk)
@@ -57,8 +57,8 @@ public final class DictationSession: @unchecked Sendable {
     /// Offline transcription of pre-loaded 16 kHz mono samples, feeding the same
     /// 480 ms chunks the mic path uses and timing the STT compute. For
     /// benchmarking against the CLI on a fixed file (no mic involved).
-    public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680) -> OfflineResult {
-        engine.begin(language: nil)
+    public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680, mode: DictationMode = .hybrid) -> OfflineResult {
+        engine.begin(language: nil, mode: mode)
         let wall0 = ProcessInfo.processInfo.systemUptime
         var compute = 0.0
         var i = 0

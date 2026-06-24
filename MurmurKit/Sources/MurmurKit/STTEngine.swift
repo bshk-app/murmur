@@ -9,8 +9,8 @@ import MLXAudioVAD
 final class STTEngine: @unchecked Sendable {
     private let queue = DispatchQueue(label: "murmur.stt")
     private var loader: TwoTierEngine?
-    private var session: TwoTierSession?
-    private var vad: SileroVAD?          // shared model; a fresh SpeechGate wraps it per utterance
+    private var session: UtteranceSession?   // two-tier, Nemotron-only or Voxtral-only per mode
+    private var vad: SileroVAD?              // shared model; a fresh SpeechGate wraps it per utterance
     private var gate: SpeechGate?
 
     var isLoaded: Bool { queue.sync { loader != nil } }
@@ -36,10 +36,14 @@ final class STTEngine: @unchecked Sendable {
         }
     }
 
-    /// Open a clean session + gate for a new utterance.
-    func begin(language: String?) {
+    /// Open a clean session + gate for a new utterance, per the chosen model mode.
+    func begin(language: String?, mode: DictationMode) {
         queue.sync {
-            session = loader?.makeSession(language: language)
+            switch mode {
+            case .hybrid:   session = loader?.makeSession(language: language)
+            case .fast:     session = loader?.makeFastSession(language: language)
+            case .accurate: session = loader?.makeAccurateSession()
+            }
             gate = vad.flatMap { try? SpeechGate(vad: $0) }
         }
     }
@@ -52,7 +56,7 @@ final class STTEngine: @unchecked Sendable {
         queue.sync {
             guard let session else { return ("", "") }
             if let gate, !gate.shouldFeed(samples) {
-                return (session.confirmed, session.partial)
+                return session.currentText
             }
             return session.step(samples)
         }
@@ -61,7 +65,7 @@ final class STTEngine: @unchecked Sendable {
     /// Flush and end the utterance; returns the final transcript (Voxtral text).
     func finish() -> String {
         queue.sync {
-            let text = session?.finish().confirmed ?? ""
+            let text = session?.finishText() ?? ""
             session = nil
             gate = nil
             return text

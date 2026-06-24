@@ -47,4 +47,14 @@ public final class TwoTierEngine {
             language: language, fastChunkMs: fastChunkMs, voxtralDelayMs: voxtralDelayMs
         )
     }
+
+    /// Fast lane only (Nemotron). Internal — STTEngine vends it per `DictationMode`.
+    func makeFastSession(language: String? = nil, chunkMs: Int = 80) -> UtteranceSession {
+        NemotronOnlySession(nemotron, language: language, chunkMs: chunkMs)
+    }
+
+    /// Accurate lane only (Voxtral native streaming).
+    func makeAccurateSession(voxtralDelayMs: Int = 960) -> UtteranceSession {
+        VoxtralOnlySession(voxtral, delayMs: voxtralDelayMs)
+    }
 }
