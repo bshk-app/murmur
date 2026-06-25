@@ -8,11 +8,6 @@ import SwiftUI
 /// keeps working) while staying out of the Dock and ⌘-Tab switcher.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    /// Drives the menu-bar item's visibility (`@AppStorage` in `MurmurApp`). A
-    /// transient session flag — reset to false at every launch, set true only when
-    /// the menu app actually starts (onboarding finished, or a returning user).
-    static let menuReadyKey = "murmur.menuReady"
-
     let dictation = DictationController()
 
     /// Drives the onboarding window. Lazy so it builds after `dictation` exists,
@@ -24,11 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        UserDefaults.standard.set(false, forKey: Self.menuReadyKey)   // hide the icon until setup is done
         // Router: first run → onboarding ONLY. The live menu app (hotkey, mic prompt,
-        // model warm-up) and its menu-bar icon appear only when onboarding finishes —
-        // so nothing prompts or loads at launch, and the app is never half-configured.
-        // A returning user goes straight to the menu app.
+        // model warm-up) is bootstrapped only when onboarding finishes — so nothing
+        // prompts or loads at launch, and the app is never half-configured. A
+        // returning user goes straight to the menu app.
         onboarding.onFinished = { [weak self] in self?.startMenuApp() }
         if OnboardingModel.shouldShow {
             presentOnboarding()
@@ -43,7 +37,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func startMenuApp() {
         guard !didStartMenuApp else { return }
         didStartMenuApp = true
-        UserDefaults.standard.set(true, forKey: Self.menuReadyKey)    // reveal the menu-bar icon
         dictation.bootstrap()
     }
 
