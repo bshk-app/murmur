@@ -32,6 +32,10 @@ let package = Package(
             name: "murmur-cli",
             dependencies: ["MurmurKit"]
         ),
+        .testTarget(
+            name: "MurmurKitTests",
+            dependencies: ["MurmurKit"]
+        ),
     ],
     swiftLanguageModes: [.v5]
 )
