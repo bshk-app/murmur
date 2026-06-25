@@ -113,7 +113,7 @@ private struct WelcomeScreen: View {
     }
 
     private func keyBadge(_ s: String) -> some View {
-        Text(s).font(.system(size: 13, weight: .semibold, design: .monospaced)).foregroundStyle(t.ink)
+        Text(verbatim: s).font(.system(size: 13, weight: .semibold, design: .monospaced)).foregroundStyle(t.ink)
             .padding(.horizontal, 11).frame(height: 30)
             .background(t.line(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
@@ -148,7 +148,7 @@ private struct WelcomeScreen: View {
         let gb = String(format: "%.1f GB", OnboardingFlow.totalGB)
         let body = Text("Two models, one trick. ").fontWeight(.bold).foregroundColor(t.ink)
             + Text("A fast model types an instant draft, then an accurate one sharpens each word a blink later. To do that on-device, setup installs both models — about ")
-            + Text(gb).fontWeight(.bold).foregroundColor(t.ink)
+            + Text(verbatim: gb).fontWeight(.bold).foregroundColor(t.ink)   // "3.6 GB" — runtime value
             + Text(". Nothing you say ever leaves your Mac.")
         return HStack(alignment: .top, spacing: 11) {
             onboardingCat(30).padding(.top, 1)

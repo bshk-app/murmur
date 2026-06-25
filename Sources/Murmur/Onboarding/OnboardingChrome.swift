@@ -160,10 +160,10 @@ struct OnboardingTitleBar: View {
                 Spacer()
             }
             HStack(spacing: 0) {
-                Text("Mur").foregroundStyle(t.ink)
-                Text("Mur").foregroundStyle(Mur.accent)
-                Text(" · ").foregroundStyle(t.muted(0.5))
-                Text(titleLabel).foregroundStyle(t.muted(0.62))
+                Text(verbatim: "Mur").foregroundStyle(t.ink)         // brand — not localized
+                Text(verbatim: "Mur").foregroundStyle(Mur.accent)
+                Text(verbatim: " · ").foregroundStyle(t.muted(0.5))
+                Text(titleLabel).foregroundStyle(t.muted(0.62))      // step label — localized
             }
             .font(.system(size: 13, weight: .semibold))
         }
