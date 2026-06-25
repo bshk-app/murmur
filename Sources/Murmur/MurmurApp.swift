@@ -8,16 +8,16 @@ import SwiftUI
 @main
 struct MurmurApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    // The menu-bar icon is inserted only once setup is complete — during first-run
+    // onboarding there's no menu app. `@AppStorage` is reliably reactive in a Scene
+    // (the AppDelegate flips this key); a `Binding` over an `@Observable` is not.
+    @AppStorage(AppDelegate.menuReadyKey) private var menuReady = false
 
     var body: some Scene {
-        // The menu-bar icon is inserted only once setup is complete (`menuReady`) —
-        // during first-run onboarding there's no menu app. The onboarding window
-        // itself is an AppKit `NSWindow` owned by the AppDelegate (a SwiftUI `Window`
-        // scene hides on deactivation and can't open reliably at launch here).
-        MenuBarExtra(isInserted: Binding(
-            get: { appDelegate.state.menuReady },
-            set: { appDelegate.state.menuReady = $0 }
-        )) {
+        // The onboarding window itself is an AppKit `NSWindow` owned by the AppDelegate
+        // (a SwiftUI `Window` scene hides on deactivation and can't open reliably at
+        // launch here).
+        MenuBarExtra(isInserted: $menuReady) {
             MenuPopover(dictation: appDelegate.dictation,
                         onSetupTour: { appDelegate.replayOnboarding() })
         } label: {

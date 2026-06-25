@@ -1,15 +1,5 @@
 import AppKit
-import Observation
 import SwiftUI
-
-/// Drives the menu-bar item's visibility. The icon — and the live dictation app
-/// behind it — only appear once setup is complete (or immediately for a returning
-/// user); during first-run onboarding there is no menu app at all.
-@MainActor
-@Observable
-final class AppState {
-    var menuReady = false
-}
 
 /// Runs Murmur as a menu-bar agent, owns the dictation controller, and hosts the
 /// onboarding window.
@@ -18,8 +8,12 @@ final class AppState {
 /// keeps working) while staying out of the Dock and ⌘-Tab switcher.
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+    /// Drives the menu-bar item's visibility (`@AppStorage` in `MurmurApp`). A
+    /// transient session flag — reset to false at every launch, set true only when
+    /// the menu app actually starts (onboarding finished, or a returning user).
+    static let menuReadyKey = "murmur.menuReady"
+
     let dictation = DictationController()
-    let state = AppState()
 
     /// Drives the onboarding window. Lazy so it builds after `dictation` exists,
     /// reusing the controller's already-warmed `DictationSession`.
@@ -30,6 +24,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        UserDefaults.standard.set(false, forKey: Self.menuReadyKey)   // hide the icon until setup is done
         // Router: first run → onboarding ONLY. The live menu app (hotkey, mic prompt,
         // model warm-up) and its menu-bar icon appear only when onboarding finishes —
         // so nothing prompts or loads at launch, and the app is never half-configured.
@@ -48,7 +43,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private func startMenuApp() {
         guard !didStartMenuApp else { return }
         didStartMenuApp = true
-        state.menuReady = true
+        UserDefaults.standard.set(true, forKey: Self.menuReadyKey)    // reveal the menu-bar icon
         dictation.bootstrap()
     }
 
