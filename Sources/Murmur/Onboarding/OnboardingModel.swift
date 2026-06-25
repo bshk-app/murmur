@@ -115,8 +115,11 @@ final class OnboardingModel {
         Task {
             do {
                 try await OnboardingDownloader.download { p in
-                    self.flow.fastFraction = p.fast
-                    self.flow.accurateFraction = p.accurate
+                    // Monotonic: progress ticks arrive unordered (per-tick Tasks),
+                    // so a stale sub-1.0 tick must never regress a finished lane —
+                    // else the gate (both ≥ 1) could hang at full-looking bars (I1).
+                    self.flow.fastFraction = max(self.flow.fastFraction, p.fast)
+                    self.flow.accurateFraction = max(self.flow.accurateFraction, p.accurate)
                 }
                 try await self.session.load(mode: .hybrid)   // warm both (cache hit)
             } catch {
@@ -129,8 +132,10 @@ final class OnboardingModel {
     /// Reset and re-run the download after a failure (Download screen "Retry").
     func retryDownload() {
         downloadError = nil
-        flow.fastFraction = 0
-        flow.accurateFraction = 0
+        // Only restart the unfinished lane(s) — don't blink an already-cached
+        // model's bar from 1 → 0 → 1 (I2). The monotonic max-clamp keeps it stable.
+        if flow.fastFraction < 1 { flow.fastFraction = 0 }
+        if flow.accurateFraction < 1 { flow.accurateFraction = 0 }
         startDownload()
     }
 
