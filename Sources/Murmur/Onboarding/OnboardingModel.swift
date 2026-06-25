@@ -156,6 +156,7 @@ final class OnboardingModel {
                     self.flow.accurateFraction = max(self.flow.accurateFraction, p.accurate)
                 }
                 try await self.session.load(mode: .hybrid)   // warm both (cache hit)
+                self.modelsReady = true                       // pipeline in memory → try-it button enables
                 PostHogSDK.shared.capture("model_download_completed", properties: [
                     "total_gb": OnboardingFlow.totalGB,
                 ])
@@ -176,6 +177,7 @@ final class OnboardingModel {
         // model's bar from 1 → 0 → 1 (I2). The monotonic max-clamp keeps it stable.
         if flow.fastFraction < 1 { flow.fastFraction = 0 }
         if flow.accurateFraction < 1 { flow.accurateFraction = 0 }
+        modelsReady = session.isReady(.hybrid)    // already loaded on a replay → try-it works at once
         startDownload()
     }
 
@@ -187,9 +189,11 @@ final class OnboardingModel {
     var tryPartial = ""
     var tryListening = false
 
-    /// Is the Hybrid pipeline warmed enough for the try-it button? (Should be true
-    /// post-download; the screen disables the button until it is.)
-    var tryReady: Bool { session.isReady(.hybrid) }
+    /// True once the Hybrid pipeline is loaded into memory (set after the Download
+    /// step's `session.load`). Observable — so the try-it button re-enables the moment
+    /// loading finishes, which lags the download bars (`session.isReady` isn't tracked).
+    var modelsReady = false
+    var tryReady: Bool { modelsReady }
 
     /// The controller's HUD `onUpdate` handler, parked while the try-it field
     /// borrows `session.onUpdate`, and restored when the dictation ends — the

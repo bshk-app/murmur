@@ -96,6 +96,8 @@ struct TryItScreen: View {
                 }
                 .buttonStyle(.plain)
             }
+        } else if !ready {
+            label("Warming up the models…", color: t.muted(0.5))
         } else {
             label("Ready when you are.", color: t.muted(0.5))
         }
