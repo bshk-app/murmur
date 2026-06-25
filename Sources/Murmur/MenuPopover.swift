@@ -7,8 +7,8 @@ import SwiftUI
 /// Model / Insert / Hotkey segmented controls, and a Settings/Quit footer.
 struct MenuPopover: View {
     let dictation: DictationController
-    let model: OnboardingModel
-    let router: AppRouter
+    /// Re-open the onboarding window (resets to Welcome + presents it).
+    let onSetupTour: () -> Void
     @Environment(\.openSettings) private var openSettings
     @Environment(\.colorScheme) private var scheme
 
@@ -112,11 +112,7 @@ struct MenuPopover: View {
             footerRow("Settings…", "⌘ ,") { NSApp.activate(ignoringOtherApps: true); openSettings() }
             // Re-run the first-run tour: reset to Welcome, then ask the App scene
             // (via the router) to open the onboarding window.
-            footerRow("Setup tour…", "") {
-                NSApp.activate(ignoringOtherApps: true)
-                model.replay()
-                router.showOnboarding = true
-            }
+            footerRow("Setup tour…", "") { onSetupTour() }
             footerRow("Quit MurMur", "⌘ Q") { NSApplication.shared.terminate(nil) }
         }
         .padding(.horizontal, 6).padding(.vertical, 5)

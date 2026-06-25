@@ -152,30 +152,21 @@ struct OnboardingTitleBar: View {
     }
 
     var body: some View {
-        ZStack {
-            HStack(spacing: 8) {
-                trafficLight(OnTheme.rgb(236, 106, 94))
-                trafficLight(OnTheme.rgb(244, 191, 79))
-                trafficLight(OnTheme.rgb(97, 197, 84))
-                Spacer()
-            }
-            HStack(spacing: 0) {
-                Text(verbatim: "Mur").foregroundStyle(t.ink)         // brand — not localized
-                Text(verbatim: "Mur").foregroundStyle(Mur.accent)
-                Text(verbatim: " · ").foregroundStyle(t.muted(0.5))
-                Text(titleLabel).foregroundStyle(t.muted(0.62))      // step label — localized
-            }
-            .font(.system(size: 13, weight: .semibold))
+        // Centered brand + step. The window's real macOS traffic lights sit at the
+        // top-left (the window uses a transparent title bar so this row IS the title
+        // bar) — so we draw no fake lights, just leave them their space.
+        HStack(spacing: 0) {
+            Text(verbatim: "Mur").foregroundStyle(t.ink)             // brand — not localized
+            Text(verbatim: "Mur").foregroundStyle(Mur.accent)
+            Text(verbatim: " · ").foregroundStyle(t.muted(0.5))
+            Text(titleLabel).foregroundStyle(t.muted(0.62))          // step label — localized
         }
+        .font(.system(size: 13, weight: .semibold))
+        .frame(maxWidth: .infinity)
         .padding(.horizontal, 15)
         .frame(height: 40)
         .background(t.dark ? OnTheme.rgb(31, 23, 16) : OnTheme.rgb(250, 243, 232))
         .overlay(alignment: .bottom) { Rectangle().fill(t.line(0.08)).frame(height: 1) }
-    }
-
-    private func trafficLight(_ color: Color) -> some View {
-        Circle().fill(color).frame(width: 12, height: 12)
-            .overlay(Circle().strokeBorder(Color.black.opacity(0.12), lineWidth: 0.5))
     }
 }
 

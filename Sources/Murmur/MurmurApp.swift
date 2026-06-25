@@ -11,28 +11,19 @@ struct MurmurApp: App {
 
     var body: some Scene {
         MenuBarExtra {
+            // The onboarding window is an AppKit `NSWindow` owned by the AppDelegate
+            // (see `presentOnboarding`) — a SwiftUI `Window` scene hides on
+            // deactivation and can't be opened reliably at launch in a menu-bar app.
             MenuPopover(dictation: appDelegate.dictation,
-                        model: appDelegate.onboarding,
-                        router: appDelegate.router)
+                        onSetupTour: { appDelegate.replayOnboarding() })
         } label: {
-            // The opener lives on the LABEL (not the popover content): a
-            // `.window`-style MenuBarExtra doesn't instantiate its content until the
-            // menu is first opened, but the label renders at launch and stays alive —
-            // so it's the only place that can catch the first-run trigger.
-            MenuBarLabel(icon: Self.menuIcon, router: appDelegate.router)
+            Image(nsImage: Self.menuIcon)
         }
         .menuBarExtraStyle(.window)
 
         Settings {
             SettingsView()
         }
-
-        Window("MurMur Setup", id: "onboarding") {
-            OnboardingView(model: appDelegate.onboarding)
-                .frame(width: 880, height: 580)
-        }
-        .windowResizability(.contentSize)
-        .defaultPosition(.center)
     }
 
     /// The menu-bar glyph: `cat_fill` (Media.xcassets) rendered as a **template**
@@ -48,26 +39,3 @@ struct MurmurApp: App {
     }()
 }
 
-/// The menu-bar icon, doubling as the always-alive opener for the onboarding
-/// window. When the router's `showOnboarding` flips true (first run via
-/// `applicationDidFinishLaunching`, or "Setup tour…" from the popover), it opens
-/// the SwiftUI `Window` and resets the flag. `.onAppear` catches a flip that
-/// already happened before the label rendered; `.onChange` catches later flips —
-/// together they cover whichever runs first at launch.
-private struct MenuBarLabel: View {
-    let icon: NSImage
-    let router: AppRouter
-    @Environment(\.openWindow) private var openWindow
-
-    var body: some View {
-        Image(nsImage: icon)
-            .onAppear { openOnboardingIfRequested() }
-            .onChange(of: router.showOnboarding) { _, _ in openOnboardingIfRequested() }
-    }
-
-    private func openOnboardingIfRequested() {
-        guard router.showOnboarding else { return }
-        openWindow(id: "onboarding")
-        router.showOnboarding = false
-    }
-}
