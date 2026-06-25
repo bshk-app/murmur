@@ -4,8 +4,8 @@ import SwiftUI
 /// The first-run onboarding window (design: MurMur Onboarding.dc.html). A 6-step
 /// wizard: title bar + left narrator rail + a right content pane that switches on
 /// `OnboardingFlow.Step`, with a Back/Continue footer gated by `model.canContinue`.
-/// Welcome + Done are fully built here; permissions/shortcut/download/try-it are
-/// compiling placeholders filled in by later phases. Theme-adaptive via `OnTheme`.
+/// All six steps are real (mic/accessibility, shortcut, live download, in-window
+/// try-it). Theme-adaptive via `OnTheme`.
 struct OnboardingView: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme

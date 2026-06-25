@@ -122,12 +122,12 @@ struct MenuPopover: View {
         .padding(.horizontal, 6).padding(.vertical, 5)
     }
 
-    private func footerRow(_ title: String, _ key: String, action: @escaping () -> Void) -> some View {
+    private func footerRow(_ title: LocalizedStringKey, _ key: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
                 Text(title).font(.system(size: 13)).foregroundStyle(primary)
                 Spacer()
-                Text(key).font(.system(size: 11, design: .monospaced)).foregroundStyle(tertiary)
+                Text(verbatim: key).font(.system(size: 11, design: .monospaced)).foregroundStyle(tertiary)
             }
             .padding(.horizontal, 10).padding(.vertical, 7).contentShape(Rectangle())
         }

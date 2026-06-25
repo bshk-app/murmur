@@ -62,6 +62,15 @@ final class OnboardingModel {
     }
     func replay() {
         flow = OnboardingFlow.State(); finished = false; downloadError = nil
+        tryConfirmed = ""; tryPartial = ""
+        // Re-arm the download trigger; the models are already on disk from the first
+        // run, so show the Download step as instantly complete instead of a 0-bar
+        // soft-lock (the guard would otherwise early-return and never gate-open).
+        downloadStarted = false
+        if session.isReady(.hybrid) {
+            flow.fastFraction = 1
+            flow.accurateFraction = 1
+        }
     }
 
     // MARK: permissions — mic (hard gate) + accessibility (skippable)
