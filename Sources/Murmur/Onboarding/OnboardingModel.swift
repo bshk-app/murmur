@@ -20,6 +20,10 @@ final class OnboardingModel {
     var finished = false
     var downloadError: String?
 
+    /// Guards `startDownload` so the overlap-from-Welcome trigger and a manual
+    /// Retry never spawn two concurrent downloads.
+    private var downloadStarted = false
+
     private let session: DictationSession
 
     /// Polls AX trust while the Permissions step is open — there's no
@@ -98,9 +102,40 @@ final class OnboardingModel {
         accPollTimer = nil
     }
 
+    // MARK: download — real per-repo progress (Task 3.2)
+
+    /// Pre-download both model repos with live per-repo progress into the HF cache
+    /// `*.fromPretrained` reads, then warm the Hybrid pipeline (cache hit, no
+    /// re-download). Triggered on Welcome→next so it overlaps the later steps;
+    /// re-callable as a Retry after `downloadError` clears `downloadStarted`.
+    func startDownload() {
+        guard !downloadStarted else { return }
+        downloadStarted = true
+        downloadError = nil
+        Task {
+            do {
+                try await OnboardingDownloader.download { p in
+                    self.flow.fastFraction = p.fast
+                    self.flow.accurateFraction = p.accurate
+                }
+                try await self.session.load(mode: .hybrid)   // warm both (cache hit)
+            } catch {
+                self.downloadError = error.localizedDescription
+                self.downloadStarted = false                 // allow Retry
+            }
+        }
+    }
+
+    /// Reset and re-run the download after a failure (Download screen "Retry").
+    func retryDownload() {
+        downloadError = nil
+        flow.fastFraction = 0
+        flow.accurateFraction = 0
+        startDownload()
+    }
+
     // MARK: subsystem hooks — implemented in later phases
 
-    func startDownload() {}         // Task 3.2
     func tryStart() {}              // Task 4.1
     func tryEnd() {}                // Task 4.1
 
