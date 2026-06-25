@@ -1,3 +1,4 @@
+import AVFoundation
 import Foundation
 import KeyboardShortcuts
 import MurmurKit
@@ -21,7 +22,13 @@ final class OnboardingModel {
 
     private let session: DictationSession
 
+    /// Polls AX trust while the Permissions step is open — there's no
+    /// notification for Accessibility-trust changes, so we have to ask.
+    private var accPollTimer: Timer?
+
     init(session: DictationSession) { self.session = session }
+
+    deinit { accPollTimer?.invalidate() }
 
     // MARK: navigation
 
@@ -35,11 +42,15 @@ final class OnboardingModel {
 
     func next() {
         guard canContinue else { return }
+        if flow.step == .permissions { stopAccessibilityPolling() }
         if flow.step == .welcome { startDownload() }          // overlap download with later steps
         if flow.step == .done { finish(); return }
         flow.step = OnboardingFlow.next(flow.step)
     }
-    func back() { flow.step = OnboardingFlow.back(flow.step) }
+    func back() {
+        if flow.step == .permissions { stopAccessibilityPolling() }
+        flow.step = OnboardingFlow.back(flow.step)
+    }
 
     func finish() {
         UserDefaults.standard.set(true, forKey: Self.didOnboardKey)
@@ -49,10 +60,48 @@ final class OnboardingModel {
         flow = OnboardingFlow.State(); finished = false; downloadError = nil
     }
 
+    // MARK: permissions — mic (hard gate) + accessibility (skippable)
+
+    /// Ask for microphone access; the system shows its dialog on first call and
+    /// returns the cached answer after. Reflects the result into the flow gate.
+    func requestMic() {
+        AVCaptureDevice.requestAccess(for: .audio) { ok in
+            Task { @MainActor in self.flow.micGranted = ok }
+        }
+    }
+
+    /// Show the Accessibility-trust prompt (deep-links to System Settings), then
+    /// poll until the user flips it on — there's no AX-trust notification.
+    func promptAccessibility() {
+        _ = Accessibility.prompt()
+        startAccessibilityPolling()
+    }
+
+    /// Reflect already-granted permissions when the screen appears, so a returning
+    /// user sees "Granted" without re-prompting.
+    func refreshPermissions() {
+        flow.micGranted = AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
+        flow.accessibilityGranted = Accessibility.isTrusted
+        if !flow.accessibilityGranted { startAccessibilityPolling() }
+    }
+
+    private func startAccessibilityPolling() {
+        guard accPollTimer == nil else { return }
+        accPollTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { _ in
+            Task { @MainActor in
+                self.flow.accessibilityGranted = Accessibility.isTrusted
+                if self.flow.accessibilityGranted { self.stopAccessibilityPolling() }
+            }
+        }
+    }
+
+    func stopAccessibilityPolling() {
+        accPollTimer?.invalidate()
+        accPollTimer = nil
+    }
+
     // MARK: subsystem hooks — implemented in later phases
 
-    func requestMic() {}            // Task 2.1
-    func promptAccessibility() {}   // Task 2.1
     func startDownload() {}         // Task 3.2
     func tryStart() {}              // Task 4.1
     func tryEnd() {}                // Task 4.1

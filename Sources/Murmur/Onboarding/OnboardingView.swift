@@ -237,16 +237,6 @@ private struct DoneScreen: View {
 // a real `*Screen.swift` with the same top-level name (no duplicate-definition
 // clash inside this file). Phase 2 → Permissions/Shortcut, 3 → Download, 4 → Try it.
 
-struct PermissionsScreen: View {
-    @Bindable var model: OnboardingModel
-    var body: some View { OnboardingPlaceholder(eyebrow: "Permissions", note: "Mic + Accessibility — Phase 2.") }
-}
-
-struct ShortcutScreen: View {
-    @Bindable var model: OnboardingModel
-    var body: some View { OnboardingPlaceholder(eyebrow: "Shortcut", note: "Recorder + presets — Phase 2.") }
-}
-
 struct DownloadScreen: View {
     @Bindable var model: OnboardingModel
     var body: some View { OnboardingPlaceholder(eyebrow: "Downloading", note: "Per-repo progress — Phase 3.") }
