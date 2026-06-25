@@ -11,13 +11,15 @@ struct MurmurApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            // Wrapped so it can host `@Environment(\.openWindow)` and observe the
-            // router (a menu-bar app has no AppKit handle to open a SwiftUI window).
-            MenuBarContent(dictation: appDelegate.dictation,
-                           model: appDelegate.onboarding,
-                           router: appDelegate.router)
+            MenuPopover(dictation: appDelegate.dictation,
+                        model: appDelegate.onboarding,
+                        router: appDelegate.router)
         } label: {
-            Image(nsImage: Self.menuIcon)
+            // The opener lives on the LABEL (not the popover content): a
+            // `.window`-style MenuBarExtra doesn't instantiate its content until the
+            // menu is first opened, but the label renders at launch and stays alive —
+            // so it's the only place that can catch the first-run trigger.
+            MenuBarLabel(icon: Self.menuIcon, router: appDelegate.router)
         }
         .menuBarExtraStyle(.window)
 
@@ -46,21 +48,26 @@ struct MurmurApp: App {
     }()
 }
 
-/// The menu-bar dropdown plus the AppKit→SwiftUI window bridge: when the router's
-/// `showOnboarding` flips true (first run or "Setup tour…"), open the onboarding
-/// window and reset the flag.
-private struct MenuBarContent: View {
-    let dictation: DictationController
-    let model: OnboardingModel
+/// The menu-bar icon, doubling as the always-alive opener for the onboarding
+/// window. When the router's `showOnboarding` flips true (first run via
+/// `applicationDidFinishLaunching`, or "Setup tour…" from the popover), it opens
+/// the SwiftUI `Window` and resets the flag. `.onAppear` catches a flip that
+/// already happened before the label rendered; `.onChange` catches later flips —
+/// together they cover whichever runs first at launch.
+private struct MenuBarLabel: View {
+    let icon: NSImage
     let router: AppRouter
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
-        MenuPopover(dictation: dictation, model: model, router: router)
-            .onChange(of: router.showOnboarding) { _, show in
-                guard show else { return }
-                openWindow(id: "onboarding")
-                router.showOnboarding = false
-            }
+        Image(nsImage: icon)
+            .onAppear { openOnboardingIfRequested() }
+            .onChange(of: router.showOnboarding) { _, _ in openOnboardingIfRequested() }
+    }
+
+    private func openOnboardingIfRequested() {
+        guard router.showOnboarding else { return }
+        openWindow(id: "onboarding")
+        router.showOnboarding = false
     }
 }
