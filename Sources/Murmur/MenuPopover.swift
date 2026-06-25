@@ -1,5 +1,6 @@
 import AppKit
 import MurmurKit
+import PostHog
 import SwiftUI
 
 /// The menu-bar dropdown (design: MurMur.dc.html) shown as a `.window`-style
@@ -32,7 +33,13 @@ struct MenuPopover: View {
             ? Color(red: 36 / 255, green: 31 / 255, blue: 28 / 255)
             : Mur.cream)
         // Switching model loads the newly selected mode's models (lazy by mode).
-        .onChange(of: modelRaw) { _, _ in dictation.prepareCurrentMode() }
+        .onChange(of: modelRaw) { oldValue, newValue in
+            dictation.prepareCurrentMode()
+            PostHogSDK.shared.capture("model_mode_changed", properties: [
+                "from_mode": oldValue,
+                "to_mode": newValue,
+            ])
+        }
     }
 
     // MARK: head
@@ -109,7 +116,11 @@ struct MenuPopover: View {
 
     private var footer: some View {
         VStack(spacing: 0) {
-            footerRow("Settings…", "⌘ ,") { NSApp.activate(ignoringOtherApps: true); openSettings() }
+            footerRow("Settings…", "⌘ ,") {
+                PostHogSDK.shared.capture("settings_opened")
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            }
             // Re-run the first-run tour: reset to Welcome, then ask the App scene
             // (via the router) to open the onboarding window.
             footerRow("Setup tour…", "") { onSetupTour() }

@@ -13,6 +13,8 @@ let project = Project(
         .local(path: "MurmurKit"),
         .remote(url: "https://github.com/sindresorhus/KeyboardShortcuts",
                 requirement: .upToNextMajor(from: "2.0.0")),
+        .remote(url: "https://github.com/PostHog/posthog-ios",
+                requirement: .upToNextMajor(from: "3.0.0")),   // anonymous usage/error analytics (opt-out)
     ],
     targets: [
         .target(
@@ -35,6 +37,7 @@ let project = Project(
             dependencies: [
                 .package(product: "MurmurKit"),
                 .package(product: "KeyboardShortcuts"),
+                .package(product: "PostHog"),
             ],
             settings: .settings(base: [
                 "SWIFT_VERSION": "5.0",

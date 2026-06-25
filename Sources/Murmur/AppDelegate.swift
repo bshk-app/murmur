@@ -1,5 +1,9 @@
 import AppKit
+import PostHog
 import SwiftUI
+
+private let posthogApiKey = "phc_wgtdRTLh4Q5aNqZNZsctEr63WcN3BmmwAPK5UZNuDvFQ"
+private let posthogHost = "https://eu.i.posthog.com"
 
 /// Runs Murmur as a menu-bar agent, owns the dictation controller, and hosts the
 /// onboarding window.
@@ -18,6 +22,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var didStartMenuApp = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Analytics is optional: no API key → never initialize (e.g. a privacy/App
+        // Store build); key present but consent off → set up then opt out, which makes
+        // every `capture(…)` a no-op. Audio/transcripts are never sent regardless.
+        if !posthogApiKey.isEmpty {
+            let config = PostHogConfig(apiKey: posthogApiKey, host: posthogHost)
+            config.captureApplicationLifecycleEvents = true
+            PostHogSDK.shared.setup(config)
+            if !AnalyticsConsent.enabled { PostHogSDK.shared.optOut() }
+        }
+
         // Router: first run → onboarding ONLY, as a REGULAR app (Dock icon, ⌘-Tab,
         // normal focus — so a TCC permission dialog can't bury the window beyond
         // recovery). The live menu app (hotkey, mic prompt, model warm-up) boots —
@@ -27,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         onboarding.onReactivate = { [weak self] in self?.presentOnboarding() }
         if OnboardingModel.shouldShow {
             NSApp.setActivationPolicy(.regular)
+            PostHogSDK.shared.capture("onboarding_started")
             presentOnboarding()
         } else {
             startMenuApp()

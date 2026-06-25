@@ -3,6 +3,7 @@ import Foundation
 import KeyboardShortcuts
 import MurmurKit
 import Observation
+import PostHog
 
 /// Thin SwiftUI-facing wrapper around `MurmurKit.DictationSession`: maps the
 /// shared pipeline to an `@Observable` menu-bar state, wires the Carbon hotkey
@@ -132,11 +133,20 @@ final class DictationController {
             // on release (Variant B — paste is atomic, so no live-into-field typing).
             try session.start(mode: modelMode)
             state = .recording
+            PostHogSDK.shared.capture("dictation_started", properties: [
+                "model_mode": modelMode.rawValue,
+                "trigger_mode": TriggerMode.current.rawValue,
+                "insert_mode": insert.rawValue,
+            ])
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
             hud.begin(presentation: insert == .hudOnly, lang: "Auto",
                       interactive: toggle, onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)
+            PostHogSDK.shared.capture("dictation_failed", properties: [
+                "error": error.localizedDescription,
+                "model_mode": modelMode.rawValue,
+            ])
             hud.error("Open Privacy in Settings →")
         }
     }
@@ -156,6 +166,8 @@ final class DictationController {
     private func endRecording() {
         guard state == .recording else { return }
         state = .transcribing
+        let modelModeAtStop = ModelSetting.current.rawValue
+        let insertModeAtStop = InsertMode.current.rawValue
         // Drain off the main thread so a slow finish never freezes the UI, then
         // paste the final on the main thread (pasteboard + ⌘V).
         Task.detached(priority: .userInitiated) { [session] in
@@ -167,6 +179,13 @@ final class DictationController {
                 if InsertMode.current == .inField, !final.isEmpty {
                     self.insertFinal(final)
                 }
+                PostHogSDK.shared.capture("dictation_completed", properties: [
+                    "word_count": final.split(separator: " ").count,
+                    "character_count": final.count,
+                    "is_empty": final.isEmpty,
+                    "model_mode": modelModeAtStop,
+                    "insert_mode": insertModeAtStop,
+                ])
                 self.state = .transcribed(final)
             }
         }

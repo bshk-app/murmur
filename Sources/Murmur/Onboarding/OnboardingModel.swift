@@ -3,6 +3,7 @@ import Foundation
 import KeyboardShortcuts
 import MurmurKit
 import Observation
+import PostHog
 import SwiftUI
 
 /// App-side `@Observable` that drives the onboarding window. Wraps the pure
@@ -67,6 +68,9 @@ final class OnboardingModel {
     }
 
     func finish() {
+        PostHogSDK.shared.capture("onboarding_completed", properties: [
+            "accessibility_granted": flow.accessibilityGranted,
+        ])
         UserDefaults.standard.set(true, forKey: Self.didOnboardKey)
         finished = true
         onFinished?()                 // boot the live menu app (mic granted, models cached)
@@ -92,6 +96,7 @@ final class OnboardingModel {
         AVCaptureDevice.requestAccess(for: .audio) { ok in
             Task { @MainActor in
                 self.flow.micGranted = ok
+                if ok { PostHogSDK.shared.capture("mic_permission_granted") }
                 self.onReactivate?()   // the TCC dialog stole focus — pull the window back
             }
         }
@@ -116,7 +121,10 @@ final class OnboardingModel {
         guard accPollTimer == nil else { return }
         accPollTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { _ in
             Task { @MainActor in
-                self.flow.accessibilityGranted = Accessibility.isTrusted
+                let trusted = Accessibility.isTrusted
+                let wasGranted = self.flow.accessibilityGranted
+                self.flow.accessibilityGranted = trusted
+                if trusted && !wasGranted { PostHogSDK.shared.capture("accessibility_permission_granted") }
                 if self.flow.accessibilityGranted { self.stopAccessibilityPolling() }
             }
         }
@@ -137,6 +145,7 @@ final class OnboardingModel {
         guard !downloadStarted else { return }
         downloadStarted = true
         downloadError = nil
+        PostHogSDK.shared.capture("model_download_started")
         Task {
             do {
                 try await OnboardingDownloader.download { p in
@@ -147,9 +156,15 @@ final class OnboardingModel {
                     self.flow.accurateFraction = max(self.flow.accurateFraction, p.accurate)
                 }
                 try await self.session.load(mode: .hybrid)   // warm both (cache hit)
+                PostHogSDK.shared.capture("model_download_completed", properties: [
+                    "total_gb": OnboardingFlow.totalGB,
+                ])
             } catch {
                 self.downloadError = error.localizedDescription
                 self.downloadStarted = false                 // allow Retry
+                PostHogSDK.shared.capture("model_download_failed", properties: [
+                    "error": error.localizedDescription,
+                ])
             }
         }
     }
@@ -231,7 +246,13 @@ final class OnboardingModel {
                 guard let self else { return }
                 self.tryConfirmed = final
                 self.tryPartial = ""
+                let wasFirst = !self.flow.didTry
                 self.flow.didTry = self.flow.didTry || !final.isEmpty   // monotonic: one success is enough
+                if wasFirst && !final.isEmpty {
+                    PostHogSDK.shared.capture("try_it_completed", properties: [
+                        "word_count": final.split(separator: " ").count,
+                    ])
+                }
                 self.tryBusy = false
             }
         }
