@@ -177,7 +177,7 @@ final class DictationController {
         case .pasted, .failed:
             break
         case .copiedSecureInput:
-            hud.error("Поле защищено — нажмите ⌘V")
+            hud.error(String(localized: "Field is protected — press ⌘V"))
         }
     }
 }

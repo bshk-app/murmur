@@ -25,6 +25,8 @@ let project = Project(
                 "LSUIElement": true,                       // menu-bar agent: no Dock icon
                 "LSApplicationCategoryType": "public.app-category.productivity",
                 "CFBundleDisplayName": "Murmur",
+                "CFBundleLocalizations": ["en", "ru"],
+                "CFBundleDevelopmentRegion": "en",
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
             ]),

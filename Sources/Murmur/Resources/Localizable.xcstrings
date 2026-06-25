@@ -1,0 +1,16 @@
+{
+  "sourceLanguage" : "en",
+  "version" : "1.0",
+  "strings" : {
+    "Field is protected — press ⌘V" : {
+      "localizations" : {
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поле защищено — нажмите ⌘V"
+          }
+        }
+      }
+    }
+  }
+}
