@@ -29,7 +29,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             let config = PostHogConfig(apiKey: posthogApiKey, host: posthogHost)
             config.captureApplicationLifecycleEvents = true
             PostHogSDK.shared.setup(config)
-            if !AnalyticsConsent.enabled { PostHogSDK.shared.optOut() }
+            // Sync PostHog to our consent (opt-in: off until enabled on Welcome).
+            if AnalyticsConsent.enabled { PostHogSDK.shared.optIn() } else { PostHogSDK.shared.optOut() }
         }
 
         // Router: first run → onboarding ONLY, as a REGULAR app (Dock icon, ⌘-Tab,

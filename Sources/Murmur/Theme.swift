@@ -71,14 +71,12 @@ enum InsertMode: String, CaseIterable, Identifiable {
     }
 }
 
-/// Anonymous usage & error analytics (PostHog). Opt-out: on by default, toggled in
-/// Settings. When off, `PostHogSDK.shared.optOut()` makes every `capture(…)` a no-op
-/// — no audio or transcripts are ever sent regardless. Flip the default to `false`
-/// here to make analytics opt-IN instead.
+/// Anonymous usage & error analytics (PostHog). **Opt-in**: off until the user
+/// enables it on the onboarding Welcome step (or in Settings). While off,
+/// `PostHogSDK.shared.optOut()` makes every `capture(…)` a no-op — no audio or
+/// transcripts are ever sent regardless.
 enum AnalyticsConsent {
     static let key = "murmur.analyticsEnabled"
-    /// Defaults to `true` (opt-out) when unset.
-    static var enabled: Bool {
-        UserDefaults.standard.object(forKey: key) == nil ? true : UserDefaults.standard.bool(forKey: key)
-    }
+    /// Defaults to `false` (opt-in) when unset.
+    static var enabled: Bool { UserDefaults.standard.bool(forKey: key) }
 }

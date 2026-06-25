@@ -76,6 +76,7 @@ private struct ScreenHeader: View {
 
 private struct WelcomeScreen: View {
     @Environment(\.colorScheme) private var scheme
+    @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
 
     private var t: OnTheme { OnTheme(scheme) }
 
@@ -97,7 +98,25 @@ private struct WelcomeScreen: View {
             .padding(.top, 22)
 
             modelsNote.padding(.top, 16)
+            consentToggle.padding(.top, 12)
         }
+    }
+
+    /// Opt-in analytics consent (off by default). Surfaced up front so the choice is
+    /// made before any event fires; flipping it opts in/out of PostHog immediately.
+    private var consentToggle: some View {
+        Toggle(isOn: $analyticsEnabled) {
+            Text("Share anonymous usage & crash reports — never your audio or transcripts. Optional, change anytime in Settings.")
+                .font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.55))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .toggleStyle(.switch).tint(Mur.accent).controlSize(.small)
+        .onChange(of: analyticsEnabled) { _, on in
+            on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+        }
+        .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
+        .background(t.line(0.04), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 11, style: .continuous).strokeBorder(t.line(0.08), lineWidth: 1))
     }
 
     private func featureCard<Badge: View>(@ViewBuilder badge: () -> Badge,
@@ -168,7 +187,6 @@ private struct WelcomeScreen: View {
 private struct DoneScreen: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
-    @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = true
 
     private var t: OnTheme { OnTheme(scheme) }
 
@@ -188,31 +206,7 @@ private struct DoneScreen: View {
                          trailing: { keyChips(model.shortcutLabel) })
             }
             .padding(.top, 22)
-
-            analyticsToggle.padding(.top, 18)
         }
-    }
-
-    /// Analytics consent surfaced before finishing (mirrors the Settings toggle).
-    /// Flipping it opts the user into/out of PostHog immediately, so the very next
-    /// event (`onboarding_completed` on "Start") already honours the choice.
-    private var analyticsToggle: some View {
-        Toggle(isOn: $analyticsEnabled) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Share anonymous usage & crash reports")
-                    .font(.system(size: 14, weight: .medium)).foregroundStyle(t.ink)
-                Text("Helps fix bugs — only anonymous events, never your audio or transcripts. Change it anytime in Settings.")
-                    .font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.55))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .toggleStyle(.switch).tint(Mur.accent)
-        .onChange(of: analyticsEnabled) { _, on in
-            on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
-        }
-        .padding(.init(top: 12, leading: 15, bottom: 12, trailing: 15))
-        .background(t.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
     }
 
     /// Honest permission row: a green check when Accessibility is granted, an amber

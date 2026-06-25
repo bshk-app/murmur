@@ -6,7 +6,7 @@ import SwiftUI
 /// shortcut and where the transcript goes on release.
 struct SettingsView: View {
     @AppStorage(InsertMode.defaultsKey) private var insertModeRaw = InsertMode.inField.rawValue
-    @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = true
+    @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
 
     var body: some View {
         Form {
