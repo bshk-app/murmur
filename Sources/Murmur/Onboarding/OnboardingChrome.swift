@@ -76,9 +76,10 @@ struct OnboardingRail: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
 
-    /// Per-step narrator copy (mock `narration[]`). English literals are the
-    /// localization keys; Xcode extracts them into the String Catalog.
-    private static let narration: [LocalizedStringKey] = [
+    /// Per-step narrator copy (mock `narration[]`). These English strings are the
+    /// String-Catalog keys (already translated in `Localizable.xcstrings`); resolved
+    /// at runtime for the typewriter via `Bundle.localizedString`.
+    private static let narration: [String] = [
         "Hi, I’m MurMur! Hold a key, talk, and I type the words right where your cursor is. Ready to set me up?",
         "I need two macOS permissions to work. Tap each one — I’ll tell you exactly why.",
         "Pick the keys you’ll hold while you talk. Record your own combo, or grab a preset.",
@@ -89,9 +90,20 @@ struct OnboardingRail: View {
 
     private var t: OnTheme { OnTheme(scheme) }
 
+    @State private var floatUp = false           // gentle continuous bob
+    @State private var talk = false              // bounce pulse on each new line
+    @State private var typed = ""                // typewriter-revealed narration
+    @State private var typing = false
+    @State private var typeTask: Task<Void, Never>?
+
     var body: some View {
         VStack(spacing: 0) {
-            onboardingCat(96).padding(.bottom, 14)
+            onboardingCat(96)
+                .scaleEffect(talk ? 1.07 : 1)
+                .rotationEffect(.degrees(talk ? -3 : 0))
+                .offset(y: floatUp ? -6 : 0)
+                .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
+                .padding(.bottom, 12)
             narratorBubble
             Spacer(minLength: 0)
             Text("Setup steps")
@@ -107,10 +119,40 @@ struct OnboardingRail: View {
         .overlay(alignment: .trailing) {
             Rectangle().fill(t.line(0.08)).frame(width: 1)
         }
+        .onAppear { floatUp = true; speak() }
+        .onChange(of: model.flow.step) { _, _ in speak() }
+    }
+
+    /// Bounce the cat and type the new line out, character by character — so each
+    /// step reads as the cat actually saying it.
+    private func speak() {
+        withAnimation(.spring(response: 0.28, dampingFraction: 0.45)) { talk = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(280))
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { talk = false }
+        }
+        let key = Self.narration[model.flow.step.rawValue]
+        let full = Bundle.main.localizedString(forKey: key, value: key, table: nil)
+        typeTask?.cancel()
+        typed = ""
+        typing = true
+        typeTask = Task { @MainActor in
+            for ch in full {
+                if Task.isCancelled { return }
+                typed.append(ch)
+                try? await Task.sleep(for: .milliseconds(18))
+            }
+            typing = false
+        }
+    }
+
+    /// Trailing accent caret while the line is still typing out.
+    private var caret: Text {
+        typing ? Text(verbatim: "▏").foregroundColor(Mur.accent) : Text(verbatim: "")
     }
 
     private var narratorBubble: some View {
-        Text(Self.narration[model.flow.step.rawValue])
+        (Text(verbatim: typed) + caret)
             .font(.system(size: 13.5)).lineSpacing(4)
             .foregroundStyle(t.muted(0.96))
             .frame(maxWidth: .infinity, alignment: .leading)
