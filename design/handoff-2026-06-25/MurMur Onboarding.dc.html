@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  @keyframes murbar { 0%,100%{ transform:scaleY(.32) } 50%{ transform:scaleY(1) } }
+  @keyframes murpulse { 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.35; transform:scale(.74) } }
+  @keyframes murcaret { 0%,49%{ opacity:1 } 50%,100%{ opacity:0 } }
+  @keyframes murfloat { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-8px) } }
+  @keyframes murup { 0%,100%{ transform:translateY(0) } 50%{ transform:translateY(-7px) } }
+  body { margin:0; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",system-ui,sans-serif; }
+</style>
+</helmet>
+
+<div style="position:relative;min-height:100vh;box-sizing:border-box;display:flex;align-items:center;justify-content:center;padding:62px 32px 40px;background:radial-gradient(1100px 560px at 72% -6%, #6b5747 0%, rgba(60,44,32,0) 58%), linear-gradient(158deg,#3a2c23,#241a14);overflow:hidden">
+
+  <!-- faux macOS menu bar -->
+  <div style="position:absolute;top:0;left:0;right:0;height:26px;display:flex;align-items:center;gap:16px;padding:0 13px;background:rgba(20,15,12,.45);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);border-bottom:1px solid rgba(255,255,255,.06);z-index:5">
+    <span style="font:700 13px/1 -apple-system,system-ui;color:rgba(255,255,255,.92)">MurMur</span>
+    <span style="font:400 13px/1 -apple-system,system-ui;color:rgba(255,255,255,.6)">Setup</span>
+    <span style="flex:1"></span>
+    <div style="display:flex;align-items:center;gap:5px;background:rgba(232,137,59,.18);padding:2px 6px;border-radius:5px">
+      <img src="uploads/cat.png" alt="" style="width:14px;height:14px;object-fit:contain">
+      <div style="display:flex;align-items:flex-end;gap:1.5px;height:10px">
+        <div style="width:2px;height:10px;background:var(--mur-accent,#e8893b);border-radius:1px;transform-origin:bottom;animation:murbar .9s ease-in-out infinite"></div>
+        <div style="width:2px;height:10px;background:var(--mur-accent,#e8893b);border-radius:1px;transform-origin:bottom;animation:murbar .9s ease-in-out infinite .15s"></div>
+        <div style="width:2px;height:10px;background:var(--mur-accent,#e8893b);border-radius:1px;transform-origin:bottom;animation:murbar .9s ease-in-out infinite .3s"></div>
+      </div>
+    </div>
+    <span style="font:400 12px/1 -apple-system,system-ui;color:rgba(255,255,255,.82)">Tue 13:42</span>
+  </div>
+
+  <!-- menu-bar pointer (final step) -->
+  <sc-if value="{{ is5 }}">
+    <div style="position:absolute;top:30px;right:18px;z-index:6;display:flex;align-items:center;gap:8px;animation:murup 1.6s ease-in-out infinite">
+      <div style="background:#f7efe3;border:1px solid rgba(0,0,0,.12);border-radius:9px;padding:7px 11px;box-shadow:0 8px 22px rgba(0,0,0,.3);font:600 12px/1 -apple-system,system-ui;color:#3a2c23">I live up here</div>
+      <span style="font:700 17px/1 -apple-system,system-ui;color:#f7efe3">↑</span>
+    </div>
+  </sc-if>
+
+  <!-- ============ ONBOARDING WINDOW ============ -->
+  <div style="position:relative;width:880px;max-width:100%;height:580px;background:var(--surface,#1b1511);border-radius:14px;box-shadow:0 44px 110px rgba(0,0,0,.5), 0 0 0 1px rgba(0,0,0,.12);overflow:hidden;display:flex;flex-direction:column">
+
+    <!-- title bar -->
+    <div style="position:relative;height:40px;flex:none;display:flex;align-items:center;padding:0 15px;background:var(--titlebar,linear-gradient(#241c15,#191309));border-bottom:1px solid rgba(var(--line-rgb,250,244,236),.08)">
+      <div style="display:flex;gap:8px">
+        <div style="width:12px;height:12px;border-radius:50%;background:#ec6a5e;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#f4bf4f;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)"></div>
+        <div style="width:12px;height:12px;border-radius:50%;background:#61c554;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)"></div>
+      </div>
+      <div style="position:absolute;left:0;right:0;text-align:center;font:600 13px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.62);pointer-events:none">
+        <span style="color:var(--ink,#f5f1ec)">Mur</span><span style="color:var(--mur-accent,#e8893b)">Mur</span><span style="color:rgba(var(--muted-rgb,236,228,219),.5)"> · {{ titleLabel }}</span>
+      </div>
+    </div>
+
+    <!-- body -->
+    <div style="flex:1;display:flex;min-height:0">
+
+      <!-- LEFT: cat narrator + stepper -->
+      <div style="width:296px;flex:none;box-sizing:border-box;padding:26px 24px 22px;display:flex;flex-direction:column;background:var(--stage,radial-gradient(420px 240px at 50% -10%, rgba(232,137,59,.22), rgba(232,137,59,0) 70%), linear-gradient(168deg,#241b13 0%,#1d150f 60%,#181109 100%));border-right:1px solid rgba(var(--line-rgb,250,244,236),.08)">
+        <div style="display:flex;justify-content:center;margin-bottom:14px">
+          <img src="uploads/cat_full.png" alt="MurMur" style="width:96px;height:96px;object-fit:contain;animation:murfloat 5s ease-in-out infinite;filter:drop-shadow(0 12px 22px rgba(120,70,20,.24))">
+        </div>
+        <div style="position:relative;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:14px;padding:13px 15px;box-shadow:0 6px 20px rgba(80,50,20,.1)">
+          <div style="position:absolute;top:-7px;left:50%;margin-left:-7px;width:13px;height:13px;background:var(--card,#271e16);border-left:1px solid rgba(var(--line-rgb,250,244,236),.1);border-top:1px solid rgba(var(--line-rgb,250,244,236),.1);transform:rotate(45deg)"></div>
+          <div style="font:400 13.5px/1.55 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.96);text-wrap:pretty">{{ narration }}</div>
+        </div>
+
+        <div style="flex:1"></div>
+
+        <div style="font:700 10.5px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:rgba(var(--muted-rgb,236,228,219),.45);margin-bottom:11px">Setup steps</div>
+        <div style="display:flex;flex-direction:column;gap:3px">
+          <sc-for list="{{ stepper }}" as="st" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:11px;padding:3px 0">
+              <div style="{{ st.dotStyle }}">
+                <sc-if value="{{ st.isDone }}">✓</sc-if>
+                <sc-if value="{{ st.showNum }}">{{ st.num }}</sc-if>
+              </div>
+              <div style="{{ st.labelStyle }}">{{ st.label }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- RIGHT: content + footer -->
+      <div style="flex:1;display:flex;flex-direction:column;min-width:0;background:var(--surface,#1b1511)">
+        <div style="flex:1;overflow:auto;padding:30px 36px 26px">
+
+          <!-- STEP 0 — WELCOME -->
+          <sc-if value="{{ is0 }}" hint-placeholder-val="{{ true }}">
+            <div data-screen-label="Onboarding · Welcome">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">Welcome</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">Just talk. I’ll type it.</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:440px">A little menu-bar cat that turns your voice into text — instantly, in any app, completely on your Mac. Let’s get you set up in a minute.</p>
+
+              <div style="display:flex;gap:11px;margin-top:22px">
+                <div style="flex:1;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:13px;padding:15px 14px">
+                  <div style="display:inline-flex;align-items:center;justify-content:center;height:30px;padding:0 11px;border-radius:8px;background:rgba(var(--line-rgb,250,244,236),.05);border:1px solid rgba(var(--line-rgb,250,244,236),.1);font:600 13px/1 ui-monospace,monospace;color:var(--ink,#f5f1ec)">⌥ Space</div>
+                  <div style="margin-top:11px;font:600 13.5px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Hold the keys</div>
+                  <div style="margin-top:4px;font:400 12px/1.45 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.58)">One global shortcut, anywhere.</div>
+                </div>
+                <div style="flex:1;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:13px;padding:15px 14px">
+                  <div style="display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 11px;border-radius:8px;background:rgba(232,137,59,.1);border:1px solid rgba(232,137,59,.2)">
+                    <div style="width:7px;height:7px;border-radius:50%;background:var(--mur-accent,#e8893b);animation:murpulse 1.5s ease-in-out infinite"></div>
+                    <div style="display:flex;align-items:flex-end;gap:2px;height:13px">
+                      <div style="width:2.5px;height:13px;border-radius:1px;background:var(--mur-accent,#e8893b);transform-origin:center;animation:murbar .9s ease-in-out infinite"></div>
+                      <div style="width:2.5px;height:13px;border-radius:1px;background:var(--mur-accent,#e8893b);transform-origin:center;animation:murbar .9s ease-in-out infinite .15s"></div>
+                      <div style="width:2.5px;height:13px;border-radius:1px;background:var(--mur-accent,#e8893b);transform-origin:center;animation:murbar .9s ease-in-out infinite .3s"></div>
+                    </div>
+                  </div>
+                  <div style="margin-top:11px;font:600 13.5px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Speak naturally</div>
+                  <div style="margin-top:4px;font:400 12px/1.45 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.58)">Real-time, no spinner.</div>
+                </div>
+                <div style="flex:1;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:13px;padding:15px 14px">
+                  <div style="display:inline-flex;align-items:center;height:30px;padding:0 11px;border-radius:8px;background:rgba(var(--line-rgb,250,244,236),.05);border:1px solid rgba(var(--line-rgb,250,244,236),.1);font:400 13px/1 -apple-system,system-ui;color:var(--ink,#f5f1ec)">text appears<span style="display:inline-block;width:1.5px;height:14px;background:var(--mur-accent,#e8893b);vertical-align:-2px;margin-left:2px;animation:murcaret 1s steps(1) infinite"></span></div>
+                  <div style="margin-top:11px;font:600 13.5px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">It’s typed for you</div>
+                  <div style="margin-top:4px;font:400 12px/1.45 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.58)">Straight into the field.</div>
+                </div>
+              </div>
+
+              <div style="margin-top:16px;display:flex;align-items:flex-start;gap:11px;background:linear-gradient(120deg,rgba(232,137,59,.09),rgba(232,137,59,.03));border:1px solid rgba(232,137,59,.18);border-radius:13px;padding:14px 16px">
+                <img src="uploads/cat_full.png" alt="" style="width:30px;height:30px;object-fit:contain;flex:none;margin-top:1px">
+                <div style="font:400 13px/1.55 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.72)"><b style="color:var(--ink,#f5f1ec)">Two models, one trick.</b> A fast model types an instant draft, then an accurate one sharpens each word a blink later. To do that on-device, setup installs both models — about <b style="color:var(--ink,#f5f1ec)">3.6 GB</b>. Nothing you say ever leaves your Mac.</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 1 — PERMISSIONS -->
+          <sc-if value="{{ is1 }}">
+            <div data-screen-label="Onboarding · Permissions">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">Permissions</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">Two quick permissions</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:444px">macOS will pop up a confirmation for each. Grant both and I’m good to go — here’s what they’re for.</p>
+
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
+                <!-- microphone -->
+                <div style="display:flex;align-items:center;gap:15px;padding:16px;border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:14px;background:var(--card,#271e16)">
+                  <div style="width:48px;height:48px;flex:none;border-radius:12px;background:rgba(232,137,59,.1);display:flex;align-items:center;justify-content:center">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:2px">
+                      <div style="width:12px;height:18px;border-radius:6px;background:var(--mur-accent,#e8893b)"></div>
+                      <div style="width:2px;height:4px;background:rgba(var(--muted-rgb,236,228,219),.4)"></div>
+                      <div style="width:13px;height:2px;border-radius:2px;background:rgba(var(--muted-rgb,236,228,219),.4)"></div>
+                    </div>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font:600 15px/1.2 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Microphone</div>
+                    <div style="margin-top:3px;font:400 13px/1.5 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.6)">So I can hear you while you’re holding the shortcut.</div>
+                  </div>
+                  <sc-if value="{{ notMic }}">
+                    <div onClick="{{ grantMic }}" style="flex:none;padding:9px 17px;border-radius:9px;border:1.5px solid var(--mur-accent,#e8893b);color:var(--mur-accent,#e8893b);background:rgba(232,137,59,.06);font:600 13px/1 -apple-system,system-ui;cursor:pointer;user-select:none" style-hover="background:var(--mur-accent,#e8893b);color:#1a120c">Grant</div>
+                  </sc-if>
+                  <sc-if value="{{ mic }}">
+                    <div style="flex:none;display:flex;align-items:center;gap:6px;padding:9px 15px;border-radius:9px;background:rgba(95,179,106,.14);color:var(--ok,#74c47e);font:600 13px/1 -apple-system,system-ui"><span style="font:700 12px/1">✓</span> Granted</div>
+                  </sc-if>
+                </div>
+                <!-- accessibility -->
+                <div style="display:flex;align-items:center;gap:15px;padding:16px;border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:14px;background:var(--card,#271e16)">
+                  <div style="width:48px;height:48px;flex:none;border-radius:12px;background:rgba(232,137,59,.1);display:flex;align-items:center;justify-content:center">
+                    <div style="width:30px;height:20px;border:1.5px solid var(--mur-accent,#e8893b);border-radius:5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.5px">
+                      <div style="display:flex;gap:2.5px"><span style="width:2.5px;height:2.5px;border-radius:50%;background:rgba(var(--muted-rgb,236,228,219),.5)"></span><span style="width:2.5px;height:2.5px;border-radius:50%;background:rgba(var(--muted-rgb,236,228,219),.5)"></span><span style="width:2.5px;height:2.5px;border-radius:50%;background:rgba(var(--muted-rgb,236,228,219),.5)"></span></div>
+                      <div style="width:16px;height:2.5px;border-radius:2px;background:rgba(var(--muted-rgb,236,228,219),.5)"></div>
+                    </div>
+                  </div>
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:8px"><span style="font:600 15px/1.2 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Accessibility</span><span style="font:500 10.5px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.55);background:rgba(var(--line-rgb,250,244,236),.06);padding:3px 6px;border-radius:5px">Input · typing</span></div>
+                    <div style="margin-top:3px;font:400 13px/1.5 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.6)">So I can type the words straight into whatever field has focus.</div>
+                  </div>
+                  <sc-if value="{{ notAcc }}">
+                    <div onClick="{{ grantAcc }}" style="flex:none;padding:9px 17px;border-radius:9px;border:1.5px solid var(--mur-accent,#e8893b);color:var(--mur-accent,#e8893b);background:rgba(232,137,59,.06);font:600 13px/1 -apple-system,system-ui;cursor:pointer;user-select:none" style-hover="background:var(--mur-accent,#e8893b);color:#1a120c">Grant</div>
+                  </sc-if>
+                  <sc-if value="{{ acc }}">
+                    <div style="flex:none;display:flex;align-items:center;gap:6px;padding:9px 15px;border-radius:9px;background:rgba(95,179,106,.14);color:var(--ok,#74c47e);font:600 13px/1 -apple-system,system-ui"><span style="font:700 12px/1">✓</span> Granted</div>
+                  </sc-if>
+                </div>
+              </div>
+              <div style="margin-top:14px;font:400 12.5px/1.5 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">You can change these anytime in System Settings → Privacy &amp; Security.</div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 2 — SHORTCUT -->
+          <sc-if value="{{ is2 }}">
+            <div data-screen-label="Onboarding · Shortcut">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">Shortcut</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">Choose your push-to-talk</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:440px">Pick the keys you’ll hold down while speaking. A hold-to-talk combo like ⌥ Space feels best.</p>
+
+              <div onClick="{{ record }}" style="margin-top:20px;cursor:pointer;border-radius:15px;border:1.5px dashed rgba(var(--line-rgb,250,244,236),.24);background:var(--surface,#1b1511);padding:24px;display:flex;flex-direction:column;align-items:center;gap:11px;transition:border-color .15s, background .15s" style-hover="border-color:var(--mur-accent,#e8893b);background:var(--card,#271e16)">
+                <sc-if value="{{ notRecording }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:9px">
+                    <sc-for list="{{ hotkeyKeys }}" as="k" hint-placeholder-count="2">
+                      <span style="display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:48px;padding:0 15px;border-radius:11px;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.16);box-shadow:0 2px 0 rgba(var(--line-rgb,250,244,236),.1);font:600 20px/1 ui-monospace,monospace;color:var(--ink,#f5f1ec)">{{ k }}</span>
+                    </sc-for>
+                  </div>
+                  <div style="font:500 12.5px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.55)">Click to record a new shortcut</div>
+                </sc-if>
+                <sc-if value="{{ recording }}">
+                  <div style="display:flex;align-items:center;gap:10px;height:48px">
+                    <div style="width:10px;height:10px;border-radius:50%;background:var(--mur-accent,#e8893b);animation:murpulse 1.1s ease-in-out infinite"></div>
+                    <span style="font:600 19px/1 ui-monospace,monospace;color:var(--mur-accent,#e8893b)">Press your keys…</span>
+                  </div>
+                  <div style="font:500 12.5px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.55)">Listening for a combination · Esc to cancel</div>
+                </sc-if>
+              </div>
+
+              <div style="margin-top:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font:600 12px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">Presets</span>
+                <sc-for list="{{ presets }}" as="p" hint-placeholder-count="6">
+                  <div onClick="{{ p.set }}" style="{{ p.style }}">{{ p.label }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 3 — DOWNLOAD -->
+          <sc-if value="{{ is3 }}">
+            <div data-screen-label="Onboarding · Download">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">Downloading</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">Getting my voice ready</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:450px">This is the only big download — once both models are here, MurMur runs fully offline.</p>
+
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px">
+                <!-- fast model -->
+                <div style="border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:14px;padding:15px 16px;background:var(--card,#271e16)">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px">
+                    <span style="font:600 14.5px/1 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Fast model</span>
+                    <span style="font:400 12px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">draft · 0.6 GB</span>
+                    <span style="flex:1"></span>
+                    <sc-if value="{{ fastNotDone }}"><span style="font:600 12px/1 ui-monospace,monospace;color:var(--mur-accent,#e8893b)">{{ fastPctR }}%</span></sc-if>
+                    <sc-if value="{{ fastDone }}"><span style="display:flex;align-items:center;gap:5px;font:600 12px/1 -apple-system,system-ui;color:var(--ok,#74c47e)"><span style="font:700 11px/1">✓</span> Ready</span></sc-if>
+                  </div>
+                  <div style="height:8px;border-radius:99px;background:rgba(var(--line-rgb,250,244,236),.1);overflow:hidden"><div style="{{ fastBarStyle }}"></div></div>
+                </div>
+                <!-- accurate model -->
+                <div style="border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:14px;padding:15px 16px;background:var(--card,#271e16)">
+                  <div style="display:flex;align-items:center;gap:9px;margin-bottom:11px">
+                    <span style="font:600 14.5px/1 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Accurate model</span>
+                    <span style="font:400 12px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">refine · 3.0 GB</span>
+                    <span style="flex:1"></span>
+                    <sc-if value="{{ accNotDone }}"><span style="font:600 12px/1 ui-monospace,monospace;color:var(--mur-accent,#e8893b)">{{ accPctR }}%</span></sc-if>
+                    <sc-if value="{{ accDone }}"><span style="display:flex;align-items:center;gap:5px;font:600 12px/1 -apple-system,system-ui;color:var(--ok,#74c47e)"><span style="font:700 11px/1">✓</span> Ready</span></sc-if>
+                  </div>
+                  <div style="height:8px;border-radius:99px;background:rgba(var(--line-rgb,250,244,236),.1);overflow:hidden"><div style="{{ accBarStyle }}"></div></div>
+                </div>
+              </div>
+
+              <div style="margin-top:14px;display:flex;align-items:center;gap:9px;font:400 12.5px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.6)">
+                <span style="font-weight:600;color:var(--ink,#f5f1ec)">{{ downloadedGBText }}</span> / 3.6 GB
+                <span style="width:3px;height:3px;border-radius:50%;background:rgba(var(--muted-rgb,236,228,219),.3)"></span>
+                <span>{{ etaText }}</span>
+                <sc-if value="{{ downloadNotDone }}"><span style="width:3px;height:3px;border-radius:50%;background:rgba(var(--muted-rgb,236,228,219),.3)"></span><span>{{ speedText }}</span></sc-if>
+              </div>
+
+              <sc-if value="{{ downloadDone }}">
+                <div style="margin-top:16px;display:flex;align-items:center;gap:10px;background:rgba(95,179,106,.1);border:1px solid rgba(95,179,106,.28);border-radius:12px;padding:13px 15px">
+                  <span style="width:22px;height:22px;border-radius:50%;background:#5fb36a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 12px/1;flex:none">✓</span>
+                  <span style="font:500 13.5px/1.4 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Both models installed — I’m ready to talk.</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{ downloadNotDone }}">
+                <div style="margin-top:16px;font:400 12.5px/1.55 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5);max-width:450px">While you speak, the fast model types instantly and the accurate one sharpens each word a blink later — that’s why I keep both.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- STEP 4 — TRY IT -->
+          <sc-if value="{{ is4 }}">
+            <div data-screen-label="Onboarding · Try it">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">Try it</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">Give it a go</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:452px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">In the real app you’d hold
+                <sc-for list="{{ hotkeyKeys }}" as="k" hint-placeholder-count="2"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:6px;background:var(--card,#271e16);border:1px solid rgba(var(--line-rgb,250,244,236),.16);font:600 12px/1 ui-monospace,monospace;color:var(--ink,#f5f1ec)">{{ k }}</span></sc-for>
+                anywhere. Here, press &amp; hold the button and say something.</p>
+
+              <!-- test field -->
+              <div style="margin-top:20px;min-height:92px;border:1.5px solid var(--mur-accent,#e8893b);border-radius:13px;background:var(--card,#271e16);box-shadow:0 0 0 3px rgba(232,137,59,.1);padding:16px 18px;font:400 20px/1.5 -apple-system,system-ui;color:var(--ink,#f5f1ec);overflow-wrap:anywhere">
+                <sc-if value="{{ fieldEmpty }}" hint-placeholder-val="{{ true }}"><span style="color:rgba(var(--line-rgb,250,244,236),.4)">Hold the button below and speak…</span></sc-if>
+                <sc-for list="{{ words }}" as="w" hint-placeholder-count="0"><span style="{{ w.style }}">{{ w.text }}</span></sc-for>
+                <sc-if value="{{ caretShow }}"><span style="display:inline-block;width:2px;height:.95em;background:var(--mur-accent,#e8893b);vertical-align:-2px;margin-left:1px;animation:murcaret 1s steps(1) infinite"></span></sc-if>
+              </div>
+
+              <div style="margin-top:18px;display:flex;align-items:center;gap:16px">
+                <div onMouseDown="{{ talkStart }}" onMouseUp="{{ talkEnd }}" onMouseLeave="{{ talkEnd }}" onTouchStart="{{ talkStart }}" onTouchEnd="{{ talkEnd }}" style="display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border-radius:13px;background:var(--mur-accent,#e8893b);color:#1a120c;font:600 15px/1 -apple-system,system-ui;cursor:pointer;user-select:none;-webkit-user-select:none;box-shadow:0 8px 22px rgba(80,50,20,.22)">
+                  <sc-if value="{{ isListening }}">
+                    <div style="display:flex;align-items:flex-end;gap:2.5px;height:16px">
+                      <div style="width:2.5px;height:16px;border-radius:1px;background:#1a120c;transform-origin:center;animation:murbar .9s ease-in-out infinite"></div>
+                      <div style="width:2.5px;height:16px;border-radius:1px;background:#1a120c;transform-origin:center;animation:murbar .9s ease-in-out infinite .12s"></div>
+                      <div style="width:2.5px;height:16px;border-radius:1px;background:#1a120c;transform-origin:center;animation:murbar .9s ease-in-out infinite .28s"></div>
+                      <div style="width:2.5px;height:16px;border-radius:1px;background:#1a120c;transform-origin:center;animation:murbar .9s ease-in-out infinite .18s"></div>
+                    </div>
+                    Listening…
+                  </sc-if>
+                  <sc-if value="{{ notListening }}">
+                    <span style="width:9px;height:9px;border-radius:50%;background:#1a120c"></span>
+                    Hold to talk
+                  </sc-if>
+                </div>
+                <sc-if value="{{ statusShow }}">
+                  <div style="display:flex;align-items:center;gap:9px;font:500 13.5px/1.3 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.7)">
+                    <sc-if value="{{ isDoneTest }}"><span style="width:20px;height:20px;border-radius:50%;background:#5fb36a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 11px/1;flex:none">✓</span></sc-if>
+                    <span>{{ statusText }}</span>
+                    <sc-if value="{{ isDoneTest }}"><span onClick="{{ tryAgain }}" style="color:var(--mur-accent,#e8893b);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px">Try again</span></sc-if>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- STEP 5 — DONE -->
+          <sc-if value="{{ is5 }}">
+            <div data-screen-label="Onboarding · Done">
+              <div style="font:700 11px/1 -apple-system,system-ui;letter-spacing:.14em;text-transform:uppercase;color:var(--mur-accent,#e8893b)">All set</div>
+              <h1 style="margin:10px 0 0;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;line-height:1.08;letter-spacing:-.01em;color:var(--ink,#f5f1ec)">You’re ready to talk</h1>
+              <p style="margin:11px 0 0;font:400 14.5px/1.6 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.66);max-width:450px">MurMur is now living quietly in your menu bar. Hold your shortcut in any app and just talk — the words land right where your cursor is.</p>
+
+              <div style="display:flex;flex-direction:column;gap:9px;margin-top:22px">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:12px;background:var(--card,#271e16)">
+                  <span style="width:22px;height:22px;border-radius:50%;background:#5fb36a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 12px/1;flex:none">✓</span>
+                  <span style="font:500 14px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Two voice models installed</span>
+                  <span style="flex:1"></span>
+                  <span style="font:400 12.5px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">3.6 GB · on-device</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:12px;background:var(--card,#271e16)">
+                  <span style="width:22px;height:22px;border-radius:50%;background:#5fb36a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 12px/1;flex:none">✓</span>
+                  <span style="font:500 14px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Microphone &amp; Accessibility granted</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid rgba(var(--line-rgb,250,244,236),.1);border-radius:12px;background:var(--card,#271e16)">
+                  <span style="width:22px;height:22px;border-radius:50%;background:#5fb36a;color:#fff;display:flex;align-items:center;justify-content:center;font:700 12px/1;flex:none">✓</span>
+                  <span style="font:500 14px/1.3 -apple-system,system-ui;color:var(--ink,#f5f1ec)">Shortcut set to</span>
+                  <span style="display:flex;gap:5px">
+                    <sc-for list="{{ hotkeyKeys }}" as="k" hint-placeholder-count="2"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;border-radius:6px;background:rgba(var(--line-rgb,250,244,236),.05);border:1px solid rgba(var(--line-rgb,250,244,236),.14);font:600 12px/1 ui-monospace,monospace;color:var(--ink,#f5f1ec)">{{ k }}</span></sc-for>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+        </div>
+
+        <!-- footer nav -->
+        <sc-if value="{{ notFinished }}" hint-placeholder-val="{{ true }}">
+          <div style="flex:none;display:flex;align-items:center;gap:14px;padding:15px 30px;border-top:1px solid rgba(var(--line-rgb,250,244,236),.09);background:var(--footer,#16110c)">
+            <sc-if value="{{ showBack }}">
+              <div onClick="{{ back }}" style="padding:11px 16px;border-radius:11px;font:600 14px/1 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.7);cursor:pointer;user-select:none" style-hover="background:rgba(var(--line-rgb,250,244,236),.05);color:var(--ink,#f5f1ec)">Back</div>
+            </sc-if>
+            <span style="flex:1"></span>
+            <sc-if value="{{ blockHintShow }}"><span style="font:400 12.5px/1.3 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.5)">{{ blockHint }}</span></sc-if>
+            <div onClick="{{ next }}" style="{{ continueBtnStyle }}">{{ continueLabel }}</div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- FINISHED overlay -->
+    <sc-if value="{{ finished }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:radial-gradient(500px 300px at 50% 18%, rgba(232,137,59,.14), rgba(255,253,249,0) 70%), var(--overlay,rgba(22,17,12,.97));backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)">
+        <img src="uploads/cat_full.png" alt="" style="width:104px;height:104px;object-fit:contain;animation:murfloat 4.5s ease-in-out infinite;filter:drop-shadow(0 16px 28px rgba(120,70,20,.26))">
+        <div style="margin-top:10px;font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:30px;line-height:1.1;color:var(--ink,#f5f1ec)">MurMur is live</div>
+        <div style="margin-top:6px;font:400 14px/1.5 -apple-system,system-ui;color:rgba(var(--muted-rgb,236,228,219),.62)">Find me up in the menu bar whenever you want to talk.</div>
+        <div onClick="{{ replay }}" style="margin-top:18px;font:600 13px/1 -apple-system,system-ui;color:var(--mur-accent,#e8893b);cursor:pointer;text-decoration:underline;text-underline-offset:3px;user-select:none">Replay the setup tour</div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:920,&quot;height&quot;:680},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Dark&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;Light&quot;,&quot;Dark&quot;]},&quot;accentColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#E8893B&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#E8893B&quot;,&quot;#E0A24A&quot;,&quot;#D9714B&quot;,&quot;#C98A3C&quot;]},&quot;demoTempo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Normal&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;Calmer&quot;,&quot;Normal&quot;,&quot;Snappier&quot;]}}">
+class Component extends DCLogic {
+  state = { step:0, mic:false, acc:false, hotkey:'⌥ Space', recording:false, dlStarted:false, fastPct:0, accPct:0, phase:'idle', sf:0, rf:0, testDone:false, finished:false };
+
+  STREAM = 6; REF = 4;
+  labels = ['Welcome','Permissions','Shortcut','Download','Try it','Done'];
+  narration = [
+    "Hi, I’m MurMur! Hold a key, talk, and I type the words right where your cursor is. Ready to set me up?",
+    "I need two macOS permissions to work. Tap each one — I’ll tell you exactly why.",
+    "Pick the keys you’ll hold while you talk. Record your own combo, or grab a preset.",
+    "Hang tight — I’m downloading my voice. This is the only big download, ever.",
+    "Your turn! Press and hold the button and say something. Watch me catch up and tidy it.",
+    "All done — I’ll wait up in your menu bar until you need me. Just hold your keys and talk."
+  ];
+  testTokens = [
+    { f:'okay', x:'Okay,' }, { f:'this', x:'this' }, { f:'is', x:'is' },
+    { f:'relly', x:'really' }, { f:'cool', x:'cool —' }, { f:'it', x:'it' },
+    { f:'just', x:'just' }, { f:'tipes', x:'types' }, { f:'what', x:'what' },
+    { f:'i', x:'I' }, { f:'say', x:'say.' }
+  ];
+
+  accent() { return this.props.accentColor || '#e8893b'; }
+
+  applyTheme() {
+    const r = document.documentElement.style;
+    r.setProperty('--mur-accent', this.accent());
+    const dark = this.props.theme !== 'Light';
+    const t = dark ? {
+      ink:'#f5f1ec', inkRgb:'245,241,236', mutedRgb:'236,228,219', lineRgb:'250,244,236',
+      surface:'#1b1511', card:'#271e16', footer:'#16110c', overlay:'rgba(22,17,12,.97)', ok:'#74c47e',
+      titlebar:'linear-gradient(#241c15,#191309)',
+      stage:'radial-gradient(420px 240px at 50% -10%, rgba(232,137,59,.22), rgba(232,137,59,0) 70%), linear-gradient(168deg,#241b13 0%,#1d150f 60%,#181109 100%)'
+    } : {
+      ink:'#2a2520', inkRgb:'42,37,32', mutedRgb:'74,62,52', lineRgb:'60,40,20',
+      surface:'#fffdf9', card:'#ffffff', footer:'#fdf9f2', overlay:'rgba(255,253,249,.97)', ok:'#3f9a4a',
+      titlebar:'linear-gradient(#fcf6ec,#f6eddd)',
+      stage:'radial-gradient(420px 240px at 50% -10%, rgba(232,137,59,.16), rgba(232,137,59,0) 70%), linear-gradient(168deg,#fdf4e9 0%,#f7e7d2 52%,#efdcc3 100%)'
+    };
+    r.setProperty('--ink', t.ink);
+    r.setProperty('--ink-rgb', t.inkRgb);
+    r.setProperty('--muted-rgb', t.mutedRgb);
+    r.setProperty('--line-rgb', t.lineRgb);
+    r.setProperty('--surface', t.surface);
+    r.setProperty('--card', t.card);
+    r.setProperty('--footer', t.footer);
+    r.setProperty('--overlay', t.overlay);
+    r.setProperty('--ok', t.ok);
+    r.setProperty('--titlebar', t.titlebar);
+    r.setProperty('--stage', t.stage);
+  }
+  intervalMs() {
+    const t = this.props.demoTempo;
+    if (t === 'Calmer') return 62;
+    if (t === 'Snappier') return 30;
+    return 44;
+  }
+
+  startTick() { if (this._tick) return; this._tick = setInterval(() => this.tick(), this.intervalMs()); }
+  stopTick() { if (this._tick) { clearInterval(this._tick); this._tick = null; } }
+  tick() {
+    this.setState(s => {
+      if (s.phase === 'listening') { const cap = this.testTokens.length * this.STREAM + 2; return { sf: Math.min(cap, s.sf + 1) }; }
+      if (s.phase === 'refining') { const end = this.testTokens.length * this.REF + 10; if (s.rf >= end) return { phase:'done', testDone:true }; return { rf: s.rf + 1 }; }
+      return null;
+    }, () => { if (this.state.phase === 'done') this.stopTick(); });
+  }
+  talkStart = () => { this.setState({ phase:'listening', sf:0, rf:0 }); this.startTick(); }
+  talkEnd = () => { this.setState(s => s.phase === 'listening' ? { phase:'refining' } : null); }
+  tryAgain = () => { this.stopTick(); this.setState({ phase:'idle', sf:0, rf:0 }); }
+
+  startDownload() {
+    if (this.state.dlStarted) return;
+    this.setState({ dlStarted:true });
+    this._dl = setInterval(() => {
+      this.setState(s => {
+        const fastPct = Math.min(100, s.fastPct + 3.2);
+        const accPct = Math.min(100, s.accPct + 0.8);
+        if (fastPct >= 100 && accPct >= 100) { clearInterval(this._dl); this._dl = null; }
+        return { fastPct, accPct };
+      });
+    }, 120);
+  }
+
+  canCont(s) {
+    if (s.step === 1) return s.mic && s.acc;
+    if (s.step === 3) return s.fastPct >= 100 && s.accPct >= 100;
+    if (s.step === 4) return s.testDone;
+    return true;
+  }
+  go(n) { this.stopTick(); this.setState({ step:n, phase:'idle', sf:0, rf:0, recording:false }); }
+  next = () => {
+    const s = this.state;
+    if (!this.canCont(s)) return;
+    if (s.step === 0) this.startDownload();
+    if (s.step === 5) { this.setState({ finished:true }); return; }
+    this.go(s.step + 1);
+  }
+  back = () => { if (this.state.step > 0) this.go(this.state.step - 1); }
+  replay = () => {
+    this.stopTick();
+    if (this._dl) { clearInterval(this._dl); this._dl = null; }
+    this.setState({ step:0, mic:false, acc:false, hotkey:'⌥ Space', recording:false, dlStarted:false, fastPct:0, accPct:0, phase:'idle', sf:0, rf:0, testDone:false, finished:false });
+  }
+  grantMic = () => this.setState({ mic:true });
+  grantAcc = () => this.setState({ acc:true });
+  record = () => this.setState(s => ({ recording: !s.recording }));
+  setPreset(lbl) { this.setState({ hotkey:lbl, recording:false }); }
+
+  onKey = (e) => {
+    if (!this.state.recording) return;
+    if (e.key === 'Escape') { e.preventDefault(); this.setState({ recording:false }); return; }
+    const k = e.key;
+    if (k === 'Control' || k === 'Alt' || k === 'Shift' || k === 'Meta') { e.preventDefault(); return; }
+    e.preventDefault();
+    const mods = [];
+    if (e.ctrlKey) mods.push('⌃');
+    if (e.altKey) mods.push('⌥');
+    if (e.shiftKey) mods.push('⇧');
+    if (e.metaKey) mods.push('⌘');
+    let kl;
+    if (k === ' ') kl = 'Space';
+    else if (k.length === 1) kl = k.toUpperCase();
+    else kl = k;
+    this.setState({ hotkey: [...mods, kl].join(' '), recording:false });
+  }
+
+  componentDidMount() {
+    this.applyTheme();
+    window.addEventListener('keydown', this.onKey, true);
+  }
+  componentDidUpdate(prev) {
+    if (prev.accentColor !== this.props.accentColor || prev.theme !== this.props.theme)
+      this.applyTheme();
+  }
+  componentWillUnmount() {
+    this.stopTick();
+    if (this._dl) clearInterval(this._dl);
+    window.removeEventListener('keydown', this.onKey, true);
+  }
+
+  makeWords() {
+    const toks = this.testTokens, N = toks.length, s = this.state, accent = this.accent();
+    const shown = s.phase === 'listening' ? Math.min(N, Math.floor(s.sf / this.STREAM) + 1) : (s.phase === 'idle' ? 0 : N);
+    const refCount = s.phase === 'refining' ? Math.min(N, Math.floor(s.rf / this.REF)) : (s.phase === 'done' ? N : 0);
+    const out = [];
+    for (let i = 0; i < shown; i++) {
+      const tk = toks[i], finalized = i < refCount, changed = tk.f !== tk.x;
+      const finFrame = (i + 1) * this.REF, hot = finalized && changed && (s.rf - finFrame >= 0) && (s.rf - finFrame < 12);
+      out.push({
+        text: finalized ? tk.x : tk.f,
+        style: {
+          display:'inline', marginRight:'0.3em',
+          color: hot ? accent : (finalized ? 'var(--ink,#f5f1ec)' : 'rgba(var(--ink-rgb,245,241,236),0.34)'),
+          fontWeight: finalized ? 600 : 400,
+          transition:'color .4s ease, font-weight .4s ease'
+        }
+      });
+    }
+    return out;
+  }
+
+  steppers() {
+    const accent = this.accent(), step = this.state.step;
+    return this.labels.map((label, i) => {
+      const done = i < step, active = i === step;
+      const dotBase = { width:'24px', height:'24px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flex:'none', font:'600 12px/1 -apple-system,system-ui', transition:'all .2s' };
+      const dotStyle = done ? { ...dotBase, background:accent, color:'#1a120c', border:'1px solid ' + accent }
+        : active ? { ...dotBase, background:'var(--card,#271e16)', color:accent, border:'2px solid ' + accent }
+        : { ...dotBase, background:'transparent', color:'rgba(var(--muted-rgb,236,228,219),0.42)', border:'1.5px solid rgba(var(--line-rgb,250,244,236),0.18)' };
+      const labelStyle = active ? { font:'600 13px/1.2 -apple-system,system-ui', color:'var(--ink,#f5f1ec)' }
+        : done ? { font:'500 13px/1.2 -apple-system,system-ui', color:'rgba(var(--muted-rgb,236,228,219),0.72)' }
+        : { font:'500 13px/1.2 -apple-system,system-ui', color:'rgba(var(--muted-rgb,236,228,219),0.45)' };
+      return { num:String(i + 1), label, isDone:done, showNum:!done, dotStyle, labelStyle };
+    });
+  }
+
+  presetsList() {
+    const defs = ['⌥ Space', '⌃ ⌘', 'Fn', '⌥ `', '⌃ Space', '⌘ ⇧ D'];
+    const accent = this.accent();
+    return defs.map(lbl => {
+      const active = lbl === this.state.hotkey;
+      const style = {
+        display:'inline-flex', alignItems:'center', gap:'4px', padding:'7px 12px', borderRadius:'9px',
+        font:'600 12.5px/1 ui-monospace,monospace', cursor:'pointer', userSelect:'none', transition:'all .15s',
+        border:'1px solid ' + (active ? accent : 'rgba(var(--line-rgb,250,244,236),0.14)'),
+        background: active ? accent : 'var(--card,#271e16)',
+        color: active ? '#1a120c' : 'rgba(var(--muted-rgb,236,228,219),0.78)'
+      };
+      return { label:lbl, set:() => this.setPreset(lbl), style };
+    });
+  }
+
+  renderVals() {
+    const s = this.state, accent = this.accent();
+    const fastPct = s.fastPct, accPct = s.accPct;
+    const downloadedGB = (0.6 * fastPct + 3.0 * accPct) / 100;
+    const remaining = Math.max(0, 3.6 - downloadedGB);
+    const downloadDone = fastPct >= 100 && accPct >= 100;
+    const etaSec = Math.ceil(remaining * 1024 / 32);
+    const cc = this.canCont(s);
+    const contLabels = ['Get started', 'Continue', 'Continue', downloadDone ? 'Continue' : 'Downloading…', 'I’ve got it', 'Start using MurMur'];
+    let blockHint = '';
+    if (s.step === 1 && !cc) blockHint = 'Grant both permissions to continue';
+    else if (s.step === 4 && !cc) blockHint = 'Hold the button and speak to try it';
+    const baseBtn = { display:'inline-flex', alignItems:'center', gap:'8px', padding:'11px 22px', borderRadius:'11px', font:'600 14px/1 -apple-system,system-ui,sans-serif', userSelect:'none', border:'none', transition:'transform .15s, box-shadow .15s, opacity .15s' };
+    const continueBtnStyle = cc
+      ? { ...baseBtn, background:accent, color:'#1a120c', cursor:'pointer', boxShadow:'0 8px 22px rgba(80,50,20,0.22)' }
+      : { ...baseBtn, background:'rgba(var(--line-rgb,250,244,236),0.1)', color:'rgba(var(--muted-rgb,236,228,219),0.38)', cursor:'default' };
+    const phase = s.phase;
+    return {
+      accent,
+      is0: s.step === 0, is1: s.step === 1, is2: s.step === 2, is3: s.step === 3, is4: s.step === 4, is5: s.step === 5,
+      finished: s.finished, notFinished: !s.finished,
+      narration: this.narration[s.step],
+      titleLabel: s.finished ? 'Done' : this.labels[s.step],
+      stepper: this.steppers(),
+      mic: s.mic, acc: s.acc, notMic: !s.mic, notAcc: !s.acc,
+      grantMic: this.grantMic, grantAcc: this.grantAcc,
+      hotkeyKeys: s.hotkey.split(' ').filter(Boolean),
+      recording: s.recording, notRecording: !s.recording, record: this.record,
+      presets: this.presetsList(),
+      fastBarStyle: { height:'100%', width: fastPct + '%', background:accent, borderRadius:'inherit', transition:'width .15s linear' },
+      accBarStyle: { height:'100%', width: accPct + '%', background:accent, borderRadius:'inherit', transition:'width .15s linear' },
+      fastPctR: Math.round(fastPct), accPctR: Math.round(accPct),
+      fastDone: fastPct >= 100, accDone: accPct >= 100, fastNotDone: fastPct < 100, accNotDone: accPct < 100,
+      downloadedGBText: downloadedGB.toFixed(1),
+      etaText: downloadDone ? 'Complete' : ('about ' + etaSec + 's left'),
+      speedText: '32 MB/s',
+      downloadDone, downloadNotDone: !downloadDone,
+      words: this.makeWords(),
+      fieldEmpty: phase === 'idle', caretShow: phase !== 'idle',
+      isListening: phase === 'listening', notListening: phase !== 'listening',
+      statusShow: phase !== 'idle', isDoneTest: phase === 'done',
+      statusText: phase === 'listening' ? 'Listening…' : (phase === 'refining' ? 'Refining…' : (phase === 'done' ? 'Got it — that’s exactly what I said.' : '')),
+      talkStart: this.talkStart, talkEnd: this.talkEnd, tryAgain: this.tryAgain,
+      canCont: cc, continueLabel: contLabels[s.step], continueBtnStyle, blockHint, blockHintShow: blockHint !== '',
+      showBack: s.step > 0 && !s.finished,
+      next: this.next, back: this.back, replay: this.replay
+    };
+  }
+}
+</script>
+</body>
+</html>
