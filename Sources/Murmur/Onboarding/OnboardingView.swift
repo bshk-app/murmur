@@ -231,31 +231,3 @@ private struct DoneScreen: View {
     }
 }
 
-// MARK: - Placeholder screens (replaced by later phases)
-//
-// These are non-private so a later phase can delete the placeholder here and add
-// a real `*Screen.swift` with the same top-level name (no duplicate-definition
-// clash inside this file). Phase 3 → Download is now real (`DownloadScreen.swift`);
-// Phase 4 → Try it remains a placeholder.
-
-struct TryItScreen: View {
-    @Bindable var model: OnboardingModel
-    var body: some View { OnboardingPlaceholder(eyebrow: "Try it", note: "In-window dictation — Phase 4.") }
-}
-
-/// Minimal eyebrow + note placeholder so the wizard compiles before the real
-/// screens land. Strings still flow through the catalog.
-struct OnboardingPlaceholder: View {
-    let eyebrow: LocalizedStringKey
-    let note: LocalizedStringKey
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        let t = OnTheme(scheme)
-        VStack(alignment: .leading, spacing: 10) {
-            Text(eyebrow).font(.system(size: 11, weight: .bold)).tracking(1.4).foregroundStyle(Mur.accent)
-            Text(note).font(.system(size: 14.5)).foregroundStyle(t.muted(0.66))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-}

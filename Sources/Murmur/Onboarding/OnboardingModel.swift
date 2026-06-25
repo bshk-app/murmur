@@ -45,12 +45,14 @@ final class OnboardingModel {
     func next() {
         guard canContinue else { return }
         if flow.step == .permissions { stopAccessibilityPolling() }
+        if flow.step == .tryIt { tryEnd() }                   // stop + restore onUpdate on leave
         if flow.step == .welcome { startDownload() }          // overlap download with later steps
         if flow.step == .done { finish(); return }
         flow.step = OnboardingFlow.next(flow.step)
     }
     func back() {
         if flow.step == .permissions { stopAccessibilityPolling() }
+        if flow.step == .tryIt { tryEnd() }                   // stop + restore onUpdate on leave
         flow.step = OnboardingFlow.back(flow.step)
     }
 
@@ -139,10 +141,74 @@ final class OnboardingModel {
         startDownload()
     }
 
-    // MARK: subsystem hooks — implemented in later phases
+    // MARK: try-it — real in-window Hybrid dictation (Task 4.1)
 
-    func tryStart() {}              // Task 4.1
-    func tryEnd() {}                // Task 4.1
+    /// Live two-tier transcript rendered into the try-it field (confirmed crisp +
+    /// newest-word accent flash; partial in draft). Empty until the user holds.
+    var tryConfirmed = ""
+    var tryPartial = ""
+    var tryListening = false
+
+    /// Is the Hybrid pipeline warmed enough for the try-it button? (Should be true
+    /// post-download; the screen disables the button until it is.)
+    var tryReady: Bool { session.isReady(.hybrid) }
+
+    /// The controller's HUD `onUpdate` handler, parked while the try-it field
+    /// borrows `session.onUpdate`, and restored when the dictation ends — the
+    /// session is app-lifetime, so the main app must keep driving the HUD after.
+    private var savedOnUpdate: ((String, String) -> Void)?
+
+    /// Press: borrow the warmed session, redirect its updates into our field, and
+    /// start a Hybrid utterance. No-op if the pipeline isn't ready or already live.
+    func tryStart() {
+        guard session.isReady(.hybrid), !tryListening else { return }
+        savedOnUpdate = session.onUpdate
+        tryConfirmed = ""
+        tryPartial = ""
+        session.onUpdate = { c, p in
+            Task { @MainActor in
+                self.tryConfirmed = c
+                self.tryPartial = p
+            }
+        }
+        do {
+            try session.start(mode: .hybrid)
+            tryListening = true
+        } catch {
+            tryListening = false
+            session.onUpdate = savedOnUpdate
+            savedOnUpdate = nil
+        }
+    }
+
+    /// Release: stop off-main (drains the backlog), settle the final text, mark the
+    /// try-it gate, and restore the controller's HUD handler. Idempotent via the
+    /// `tryListening` guard, so `.onDisappear` can call it safely.
+    func tryEnd() {
+        guard tryListening else { return }
+        tryListening = false
+        // Capture `session` directly (like DictationController.endRecording) so the
+        // detached drain doesn't touch main-actor `self` off-main; restore onUpdate
+        // and settle state back on the main actor.
+        Task.detached(priority: .userInitiated) { [session] in
+            let final = session.stop()
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                self.tryConfirmed = final
+                self.tryPartial = ""
+                self.flow.didTry = !final.isEmpty
+                self.session.onUpdate = self.savedOnUpdate
+                self.savedOnUpdate = nil
+            }
+        }
+    }
+
+    /// Clear the try-it field for another attempt ("Try again"). Leaves `didTry`
+    /// set — one success is enough to keep Continue unlocked.
+    func tryReset() {
+        tryConfirmed = ""
+        tryPartial = ""
+    }
 
     /// Should onboarding be shown at launch?
     static var shouldShow: Bool {
