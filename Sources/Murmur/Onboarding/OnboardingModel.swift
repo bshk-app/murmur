@@ -158,10 +158,18 @@ final class OnboardingModel {
     /// session is app-lifetime, so the main app must keep driving the HUD after.
     private var savedOnUpdate: ((String, String) -> Void)?
 
+    /// True while a previous `tryEnd` is still draining `stop()` off-main. Blocks a
+    /// rapid re-press from starting a new utterance before teardown finishes —
+    /// otherwise it would overlap start()/stop() on the shared session AND re-save
+    /// the borrowed closure as `savedOnUpdate`, permanently losing the controller's
+    /// HUD handler (and killing the main app's HUD).
+    private var tryBusy = false
+
     /// Press: borrow the warmed session, redirect its updates into our field, and
-    /// start a Hybrid utterance. No-op if the pipeline isn't ready or already live.
+    /// start a Hybrid utterance. No-op if the pipeline isn't ready, already live,
+    /// or a previous stop is still draining.
     func tryStart() {
-        guard session.isReady(.hybrid), !tryListening else { return }
+        guard session.isReady(.hybrid), !tryListening, !tryBusy else { return }
         savedOnUpdate = session.onUpdate
         tryConfirmed = ""
         tryPartial = ""
@@ -187,18 +195,21 @@ final class OnboardingModel {
     func tryEnd() {
         guard tryListening else { return }
         tryListening = false
-        // Capture `session` directly (like DictationController.endRecording) so the
-        // detached drain doesn't touch main-actor `self` off-main; restore onUpdate
-        // and settle state back on the main actor.
+        tryBusy = true
+        // Restore the controller's HUD handler SYNCHRONOUSLY (it's just a property
+        // write) so a re-press can never observe the borrowed closure as the saved
+        // one. Only the draining `stop()` goes off-main (like endRecording); capture
+        // `session` directly so it doesn't touch main-actor `self` there.
+        session.onUpdate = savedOnUpdate
+        savedOnUpdate = nil
         Task.detached(priority: .userInitiated) { [session] in
             let final = session.stop()
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 self.tryConfirmed = final
                 self.tryPartial = ""
-                self.flow.didTry = !final.isEmpty
-                self.session.onUpdate = self.savedOnUpdate
-                self.savedOnUpdate = nil
+                self.flow.didTry = self.flow.didTry || !final.isEmpty   // monotonic: one success is enough
+                self.tryBusy = false
             }
         }
     }
