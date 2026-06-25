@@ -99,8 +99,8 @@ private struct WelcomeScreen: View {
         }
     }
 
-    private func featureCard(@ViewBuilder badge: () -> some View,
-                             title: LocalizedStringKey, caption: LocalizedStringKey) -> some View {
+    private func featureCard<Badge: View>(@ViewBuilder badge: () -> Badge,
+                                           title: LocalizedStringKey, caption: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             badge()
             Text(title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(t.ink).padding(.top, 11)
@@ -188,8 +188,8 @@ private struct DoneScreen: View {
         }
     }
 
-    private func checkRow(title: LocalizedStringKey,
-                          @ViewBuilder trailing: () -> some View) -> some View {
+    private func checkRow<Trailing: View>(title: LocalizedStringKey,
+                                           @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(spacing: 12) {
             checkBadge
             Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(t.ink)
