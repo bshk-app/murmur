@@ -24,6 +24,11 @@ final class OnboardingModel {
     /// the live menu app (mic now granted, models now cached). Set before launch.
     var onFinished: (() -> Void)?
 
+    /// Bring the onboarding window back to the front. A TCC permission dialog steals
+    /// focus and, for a menu-bar (`.accessory`) app with no Dock icon, leaves the
+    /// setup window buried behind other apps — so we re-front it after the mic prompt.
+    var onReactivate: (() -> Void)?
+
     /// Guards `startDownload` so the overlap-from-Welcome trigger and a manual
     /// Retry never spawn two concurrent downloads.
     private var downloadStarted = false
@@ -85,7 +90,10 @@ final class OnboardingModel {
     /// returns the cached answer after. Reflects the result into the flow gate.
     func requestMic() {
         AVCaptureDevice.requestAccess(for: .audio) { ok in
-            Task { @MainActor in self.flow.micGranted = ok }
+            Task { @MainActor in
+                self.flow.micGranted = ok
+                self.onReactivate?()   // the TCC dialog stole focus — pull the window back
+            }
         }
     }
 

@@ -18,25 +18,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var didStartMenuApp = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        NSApp.setActivationPolicy(.accessory)
-        // Router: first run → onboarding ONLY. The live menu app (hotkey, mic prompt,
-        // model warm-up) is bootstrapped only when onboarding finishes — so nothing
-        // prompts or loads at launch, and the app is never half-configured. A
-        // returning user goes straight to the menu app.
+        // Router: first run → onboarding ONLY, as a REGULAR app (Dock icon, ⌘-Tab,
+        // normal focus — so a TCC permission dialog can't bury the window beyond
+        // recovery). The live menu app (hotkey, mic prompt, model warm-up) boots —
+        // and the app drops to a `.accessory` menu-bar agent — only when onboarding
+        // finishes. A returning user goes straight to the menu app.
         onboarding.onFinished = { [weak self] in self?.startMenuApp() }
+        onboarding.onReactivate = { [weak self] in self?.presentOnboarding() }
         if OnboardingModel.shouldShow {
+            NSApp.setActivationPolicy(.regular)
             presentOnboarding()
         } else {
             startMenuApp()
         }
     }
 
-    /// Wire up live dictation + reveal the menu-bar icon. Idempotent — for a first
-    /// run this runs once onboarding completes (mic granted, models cached), for a
-    /// returning user it runs at launch.
+    /// Become the menu-bar agent (no Dock icon) and wire up live dictation. Idempotent
+    /// — for a first run this runs once onboarding completes (mic granted, models
+    /// cached), for a returning user it runs at launch.
     private func startMenuApp() {
         guard !didStartMenuApp else { return }
         didStartMenuApp = true
+        NSApp.setActivationPolicy(.accessory)
         dictation.bootstrap()
     }
 
