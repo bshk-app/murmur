@@ -60,6 +60,9 @@ struct PermissionsScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onAppear { model.refreshPermissions() }
+        // Stop the AX-trust poll when leaving for ANY reason — step change OR a
+        // window close (the model is app-lifetime, so nothing else invalidates it).
+        .onDisappear { model.stopAccessibilityPolling() }
     }
 
     // MARK: - Card
