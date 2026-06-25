@@ -19,6 +19,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/beshkenadze/mlx-audio-swift.git", branch: "main"),
+        .package(url: "https://github.com/huggingface/swift-huggingface.git", .upToNextMajor(from: "0.8.1")),
     ],
     targets: [
         .target(
@@ -26,6 +27,8 @@ let package = Package(
             dependencies: [
                 .product(name: "MLXAudioSTT", package: "mlx-audio-swift"),
                 .product(name: "MLXAudioVAD", package: "mlx-audio-swift"),   // Silero 32ms speech gate
+                .product(name: "MLXAudioCore", package: "mlx-audio-swift"),  // ModelUtils.resolveOrDownloadModel
+                .product(name: "HuggingFace", package: "swift-huggingface"), // Repo.ID / HubClient / HubCache
             ]
         ),
         .executableTarget(
