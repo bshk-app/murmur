@@ -105,9 +105,10 @@ private struct WelcomeScreen: View {
             badge()
             Text(title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(t.ink).padding(.top, 11)
             Text(caption).font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.58)).padding(.top, 4)
+                .lineLimit(2, reservesSpace: true)   // reserve 2 lines so all 3 cards match height
         }
         .padding(.init(top: 15, leading: 14, bottom: 15, trailing: 14))
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .topLeading)
         .background(t.card, in: RoundedRectangle(cornerRadius: 13, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 13, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
     }

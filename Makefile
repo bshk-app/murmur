@@ -21,6 +21,7 @@ build: gen
 	$(XCB)
 
 run: build
+	-killall Murmur 2>/dev/null          # quit a stale background agent so `open` launches the fresh build
 	open "$$(find $(HOME)/Library/Developer/Xcode/DerivedData/Murmur-*/Build/Products/Release -maxdepth 1 -name Murmur.app | head -1)"
 
 # murmur-cli — same MurmurKit core as the app, RELEASE. `swift build` is flaky at
