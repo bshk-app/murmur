@@ -28,8 +28,6 @@ final class OnboardingModel {
 
     init(session: DictationSession) { self.session = session }
 
-    deinit { accPollTimer?.invalidate() }
-
     // MARK: navigation
 
     var canContinue: Bool { OnboardingFlow.canContinue(flow) }
