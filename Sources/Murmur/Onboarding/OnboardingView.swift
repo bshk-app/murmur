@@ -235,12 +235,8 @@ private struct DoneScreen: View {
 //
 // These are non-private so a later phase can delete the placeholder here and add
 // a real `*Screen.swift` with the same top-level name (no duplicate-definition
-// clash inside this file). Phase 2 → Permissions/Shortcut, 3 → Download, 4 → Try it.
-
-struct DownloadScreen: View {
-    @Bindable var model: OnboardingModel
-    var body: some View { OnboardingPlaceholder(eyebrow: "Downloading", note: "Per-repo progress — Phase 3.") }
-}
+// clash inside this file). Phase 3 → Download is now real (`DownloadScreen.swift`);
+// Phase 4 → Try it remains a placeholder.
 
 struct TryItScreen: View {
     @Bindable var model: OnboardingModel
