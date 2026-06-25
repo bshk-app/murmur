@@ -84,7 +84,13 @@ final class DictationController {
     /// Lazily load (download on first run) only the models `mode` needs, surfacing
     /// a loading state. A no-op when already ready or a load is in flight.
     private func prepare(mode: DictationMode) {
-        guard !session.isReady(mode), !isPreparing else { return }
+        guard !isPreparing else { return }
+        guard !session.isReady(mode) else {
+            // Already warmed (e.g. the onboarding Download step loaded both models
+            // into the shared session before bootstrap ran) — just go idle.
+            if case .loadingModels = state { state = .idle }
+            return
+        }
         isPreparing = true
         state = .loadingModels
         Task { @MainActor in

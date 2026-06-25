@@ -15,11 +15,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     lazy var onboarding = OnboardingModel(session: dictation.dictationSession)
 
     private var onboardingWindow: NSWindow?
+    private var didStartMenuApp = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
+        // Router: first run → onboarding ONLY (it requests the mic on the Permissions
+        // screen and downloads models on the Download step). The live menu app boots
+        // only when onboarding finishes — so nothing prompts for mic or loads models
+        // at launch. A returning user goes straight to the menu app.
+        onboarding.onFinished = { [weak self] in self?.startMenuApp() }
+        if OnboardingModel.shouldShow {
+            presentOnboarding()
+        } else {
+            startMenuApp()
+        }
+    }
+
+    /// Wire up live dictation (hotkey, mic prompt, model warm-up). Idempotent — for a
+    /// first run this runs once onboarding completes (mic already granted, models
+    /// already cached), for a returning user it runs at launch.
+    private func startMenuApp() {
+        guard !didStartMenuApp else { return }
+        didStartMenuApp = true
         dictation.bootstrap()
-        if OnboardingModel.shouldShow { presentOnboarding() }
     }
 
     /// Show (or re-show) the onboarding window. AppKit-owned `NSWindow` rather than

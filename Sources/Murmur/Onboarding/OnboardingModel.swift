@@ -20,6 +20,10 @@ final class OnboardingModel {
     var finished = false
     var downloadError: String?
 
+    /// Called once the user completes onboarding — the AppDelegate uses it to boot
+    /// the live menu app (mic now granted, models now cached). Set before launch.
+    var onFinished: (() -> Void)?
+
     /// Guards `startDownload` so the overlap-from-Welcome trigger and a manual
     /// Retry never spawn two concurrent downloads.
     private var downloadStarted = false
@@ -59,6 +63,7 @@ final class OnboardingModel {
     func finish() {
         UserDefaults.standard.set(true, forKey: Self.didOnboardKey)
         finished = true
+        onFinished?()                 // boot the live menu app (mic granted, models cached)
     }
     func replay() {
         flow = OnboardingFlow.State(); finished = false; downloadError = nil
