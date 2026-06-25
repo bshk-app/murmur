@@ -10,10 +10,14 @@ struct MurmurApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
-        MenuBarExtra {
-            // The onboarding window is an AppKit `NSWindow` owned by the AppDelegate
-            // (see `presentOnboarding`) — a SwiftUI `Window` scene hides on
-            // deactivation and can't be opened reliably at launch in a menu-bar app.
+        // The menu-bar icon is inserted only once setup is complete (`menuReady`) —
+        // during first-run onboarding there's no menu app. The onboarding window
+        // itself is an AppKit `NSWindow` owned by the AppDelegate (a SwiftUI `Window`
+        // scene hides on deactivation and can't open reliably at launch here).
+        MenuBarExtra(isInserted: Binding(
+            get: { appDelegate.state.menuReady },
+            set: { appDelegate.state.menuReady = $0 }
+        )) {
             MenuPopover(dictation: appDelegate.dictation,
                         onSetupTour: { appDelegate.replayOnboarding() })
         } label: {

@@ -1,5 +1,15 @@
 import AppKit
+import Observation
 import SwiftUI
+
+/// Drives the menu-bar item's visibility. The icon — and the live dictation app
+/// behind it — only appear once setup is complete (or immediately for a returning
+/// user); during first-run onboarding there is no menu app at all.
+@MainActor
+@Observable
+final class AppState {
+    var menuReady = false
+}
 
 /// Runs Murmur as a menu-bar agent, owns the dictation controller, and hosts the
 /// onboarding window.
@@ -7,8 +17,9 @@ import SwiftUI
 /// `.accessory` keeps the process alive in the background (so the global hotkey
 /// keeps working) while staying out of the Dock and ⌘-Tab switcher.
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     let dictation = DictationController()
+    let state = AppState()
 
     /// Drives the onboarding window. Lazy so it builds after `dictation` exists,
     /// reusing the controller's already-warmed `DictationSession`.
@@ -19,10 +30,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
-        // Router: first run → onboarding ONLY (it requests the mic on the Permissions
-        // screen and downloads models on the Download step). The live menu app boots
-        // only when onboarding finishes — so nothing prompts for mic or loads models
-        // at launch. A returning user goes straight to the menu app.
+        // Router: first run → onboarding ONLY. The live menu app (hotkey, mic prompt,
+        // model warm-up) and its menu-bar icon appear only when onboarding finishes —
+        // so nothing prompts or loads at launch, and the app is never half-configured.
+        // A returning user goes straight to the menu app.
         onboarding.onFinished = { [weak self] in self?.startMenuApp() }
         if OnboardingModel.shouldShow {
             presentOnboarding()
@@ -31,19 +42,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// Wire up live dictation (hotkey, mic prompt, model warm-up). Idempotent — for a
-    /// first run this runs once onboarding completes (mic already granted, models
-    /// already cached), for a returning user it runs at launch.
+    /// Wire up live dictation + reveal the menu-bar icon. Idempotent — for a first
+    /// run this runs once onboarding completes (mic granted, models cached), for a
+    /// returning user it runs at launch.
     private func startMenuApp() {
         guard !didStartMenuApp else { return }
         didStartMenuApp = true
+        state.menuReady = true
         dictation.bootstrap()
     }
 
-    /// Show (or re-show) the onboarding window. AppKit-owned `NSWindow` rather than
-    /// a SwiftUI `Window` scene: a menu-bar (`.accessory`) app can't open a scene
-    /// window reliably at launch, and a scene window hides on deactivation. This one
-    /// persists (`isReleasedWhenClosed = false`) so "Setup tour…" can re-open it.
+    /// Show (or re-show) the onboarding window. AppKit-owned `NSWindow` rather than a
+    /// SwiftUI `Window` scene: a menu-bar (`.accessory`) app can't open a scene window
+    /// reliably at launch, and a scene window hides on deactivation. This one persists
+    /// (`isReleasedWhenClosed = false`) so "Setup tour…" can re-open it.
     func presentOnboarding() {
         let window = onboardingWindow ?? makeOnboardingWindow()
         onboardingWindow = window
@@ -62,15 +74,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         host.safeAreaRegions = []   // content runs under the transparent title bar (our drawn row IS the bar)
         let window = NSWindow(contentViewController: host)
         window.title = "MurMur Setup"
-        // Transparent, full-size-content title bar → the SwiftUI title row IS the
-        // title bar (one colour, one set of traffic lights — the real ones).
         window.styleMask = [.titled, .closable, .miniaturizable, .fullSizeContentView]
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
         window.setContentSize(NSSize(width: 880, height: 580))
         window.isReleasedWhenClosed = false
+        window.delegate = self
         window.center()
         return window
+    }
+
+    /// Closing the setup window before finishing (initial onboarding) cancels setup →
+    /// quit, so the app never lingers half-configured. A returning user's "Setup tour…"
+    /// replay (menu app already running) just closes the window.
+    func windowWillClose(_ notification: Notification) {
+        guard (notification.object as? NSWindow) === onboardingWindow else { return }
+        if !didStartMenuApp { NSApp.terminate(nil) }
     }
 }
