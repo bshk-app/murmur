@@ -18,9 +18,10 @@ final class MicCapture: @unchecked Sendable {
     var onChunk: ([Float]) -> Void = { _ in }
 
     // 480 ms per `session.step`, matching the mic-compare CLI's feedMs=480. This
-    // is the FEED size, NOT Nemotron's internal chunk (that's fastChunkMs=80,
-    // already set on the session) — feeding at 80 ms calls step 6× as often and
-    // the per-call MLX overhead pushes RTF > 1 → backlog → freeze.
+    // is the FEED size, NOT Nemotron's internal chunk (that's
+    // `TwoTierEngine.defaultFastChunkMs`, already set on the session) — feeding at
+    // a smaller size calls step proportionally more often and the per-call MLX
+    // overhead pushes RTF > 1 → backlog → freeze.
     private let chunkSize = 7680                          // 480 ms @ 16 kHz
     private let queue = DispatchQueue(label: "murmur.mic.capture")
     private let engine = AVAudioEngine()

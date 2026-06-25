@@ -29,6 +29,8 @@ struct MenuPopover: View {
         .background(scheme == .dark
             ? Color(red: 36 / 255, green: 31 / 255, blue: 28 / 255)
             : Mur.cream)
+        // Switching model loads the newly selected mode's models (lazy by mode).
+        .onChange(of: modelRaw) { _, _ in dictation.prepareCurrentMode() }
     }
 
     // MARK: head

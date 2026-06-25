@@ -25,9 +25,9 @@ final class DictationController {
     private(set) var state: State = .loadingModels
 
     private let session = DictationSession()
-    private let liveInjector = LiveAppendInjector()
     private let hud = HUDController()
     private var promptedAccessibility = false
+    private var isPreparing = false
 
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
@@ -68,17 +68,26 @@ final class DictationController {
         KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown() }
         KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
         session.requestMicrophonePermission()            // surface the mic prompt early
-        loadModels()
+        prepare(mode: ModelSetting.current)              // load only the current mode's models
     }
 
     func requestAccessibility() { Accessibility.prompt() }
 
-    private func loadModels() {
+    /// Re-load when the Model setting changes (popover) — pulls in the newly
+    /// selected mode's models so the next dictation starts instantly.
+    func prepareCurrentMode() { prepare(mode: ModelSetting.current) }
+
+    /// Lazily load (download on first run) only the models `mode` needs, surfacing
+    /// a loading state. A no-op when already ready or a load is in flight.
+    private func prepare(mode: DictationMode) {
+        guard !session.isReady(mode), !isPreparing else { return }
+        isPreparing = true
         state = .loadingModels
         Task { @MainActor in
+            defer { isPreparing = false }
             do {
-                try await session.load()
-                if state == .loadingModels { state = .idle }
+                try await session.load(mode: mode)
+                if case .loadingModels = state { state = .idle }
             } catch {
                 state = .error("model load: \(error.localizedDescription)")
             }
@@ -101,17 +110,20 @@ final class DictationController {
     }
 
     private func beginRecording() {
-        guard session.isLoaded, state != .recording, state != .transcribing else { return }
-        let mode = InsertMode.current
+        guard state != .recording, state != .transcribing else { return }
+        let modelMode = ModelSetting.current
+        // Models for this mode not loaded yet (e.g. just switched) — kick the load
+        // and skip this press; the next one records once ready.
+        guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
+        let insert = InsertMode.current
         let toggle = TriggerMode.current == .toggle
         do {
-            // Live-type confirmed words only when inserting into a field AND we can
-            // type. In HUD-only (presentation) mode nothing is injected.
-            liveInjector.begin(enabled: mode == .inField && Accessibility.isTrusted)
-            try session.start(mode: ModelSetting.current)
+            // The live two-tier view stays in the HUD; the field receives one paste
+            // on release (Variant B — paste is atomic, so no live-into-field typing).
+            try session.start(mode: modelMode)
             state = .recording
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
-            hud.begin(presentation: mode == .hudOnly, lang: "Auto",
+            hud.begin(presentation: insert == .hudOnly, lang: "Auto",
                       interactive: toggle, onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)
@@ -119,14 +131,12 @@ final class DictationController {
         }
     }
 
-    /// Runs on the mic capture queue (via `onUpdate`). Three jobs:
-    ///  1. live-type newly confirmed (Voxtral) words into the focused field —
-    ///     append-only, the volatile `partial` is never injected (model A);
-    ///  2. drive the HUD overlay (confirmed prefix + the fast Nemotron `⟨tail⟩`),
+    /// Runs on the mic capture queue (via `onUpdate`). Two jobs (nothing is typed
+    /// into the field live — the field gets one paste on release):
+    ///  1. drive the HUD overlay (confirmed prefix + the fast Nemotron `⟨tail⟩`),
     ///     hopping to the main actor since the panel is UI;
-    ///  3. echo the same view to the console, redrawn in place — handy from Xcode.
+    ///  2. echo the same view to the console, redrawn in place — handy from Xcode.
     private nonisolated func echo(_ confirmed: String, _ partial: String) {
-        liveInjector.appendConfirmed(confirmed)
         Task { @MainActor in self.hud.update(confirmed: confirmed, partial: partial) }
         let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
         let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
@@ -136,26 +146,38 @@ final class DictationController {
     private func endRecording() {
         guard state == .recording else { return }
         state = .transcribing
-        // Drain, then type the remaining confirmed tail — both off the main thread
-        // so neither a slow finish nor the CGEvent typing freezes the UI. Most of
-        // the words were already injected live during the hold; flushFinal adds
-        // whatever Voxtral committed on flush, plus a trailing space.
-        Task.detached(priority: .userInitiated) { [session, liveInjector] in
+        // Drain off the main thread so a slow finish never freezes the UI, then
+        // paste the final on the main thread (pasteboard + ⌘V).
+        Task.detached(priority: .userInitiated) { [session] in
             let final = session.stop()
-            liveInjector.flushFinal(final)
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
                 self.hud.finish(final)               // show the final (lingers in presentation), then fade
-                // Only In-field mode types into other apps — that's the only mode
-                // that needs Accessibility, so only prompt there.
-                if InsertMode.current == .inField, !final.isEmpty,
-                   !Accessibility.isTrusted, !self.promptedAccessibility {
-                    self.promptedAccessibility = true
-                    Accessibility.prompt()
+                if InsertMode.current == .inField, !final.isEmpty {
+                    self.insertFinal(final)
                 }
                 self.state = .transcribed(final)
             }
+        }
+    }
+
+    /// Paste the final transcript into the focused field (In-field mode). Posting
+    /// ⌘V needs Accessibility — if untrusted, prompt once and leave the text on the
+    /// clipboard so it's not lost. Secure input (password fields) blocks paste; we
+    /// say so in the HUD instead of dropping silently.
+    private func insertFinal(_ text: String) {
+        guard Accessibility.isTrusted else {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+            if !promptedAccessibility { promptedAccessibility = true; Accessibility.prompt() }
+            return
+        }
+        switch TextInjector.paste(text + " ") {
+        case .pasted, .failed:
+            break
+        case .copiedSecureInput:
+            hud.error("Поле защищено — нажмите ⌘V")
         }
     }
 }

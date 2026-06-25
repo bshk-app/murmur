@@ -21,11 +21,13 @@ public final class DictationSession: @unchecked Sendable {
 
     public init() {}
 
-    public var isLoaded: Bool { engine.isLoaded }
+    /// Ready to record in `mode` — its models are loaded and warmed.
+    public func isReady(_ mode: DictationMode = .hybrid) -> Bool { engine.isReady(mode) }
 
-    /// Download (first run) + load + warm up MLX. Heavy; await before `start()`.
-    public func load() async throws {
-        try await engine.load()
+    /// Download (first run) + load + warm up ONLY the models `mode` needs. Heavy;
+    /// await before `start(mode:)`. Defaults to hybrid (both lanes) for the CLI.
+    public func load(mode: DictationMode = .hybrid) async throws {
+        try await engine.prepare(mode)
     }
 
     /// Surface the microphone permission prompt early (no-op once granted).

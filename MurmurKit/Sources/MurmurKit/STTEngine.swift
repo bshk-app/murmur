@@ -2,48 +2,61 @@ import Foundation
 import MLX
 import MLXAudioVAD
 
-/// Murmur's wrapper around the fork's `TwoTierEngine`, with a Silero VAD speech
-/// gate in front. Loads the models once, then opens a fresh `TwoTierSession` +
-/// `SpeechGate` per utterance. Stepping is serialized on one queue — MLX is not
-/// concurrency-safe, and the VAD shares that queue.
+/// Murmur's wrapper around `TwoTierEngine`, with a Silero VAD speech gate in front.
+/// Loads models lazily per mode (Fast doesn't pull the 4 B Voxtral), then opens a
+/// fresh session + `SpeechGate` per utterance. Stepping is serialized on one queue
+/// — MLX is not concurrency-safe, and the VAD shares that queue.
 final class STTEngine: @unchecked Sendable {
     private let queue = DispatchQueue(label: "murmur.stt")
-    private var loader: TwoTierEngine?
+    private var engine: TwoTierEngine?
     private var session: UtteranceSession?   // two-tier, Nemotron-only or Voxtral-only per mode
     private var vad: SileroVAD?              // shared model; a fresh SpeechGate wraps it per utterance
+    private var vadLoaded = false
     private var gate: SpeechGate?
 
-    var isLoaded: Bool { queue.sync { loader != nil } }
+    /// Ready to record in `mode` — its models are loaded and warmed.
+    func isReady(_ mode: DictationMode) -> Bool {
+        queue.sync { engine?.isReady(mode) ?? false }
+    }
 
-    /// Heavy; downloads the models from Hugging Face on first run, caps Metal memory.
-    func load() async throws {
-        let engine = try await TwoTierEngine.load()
-        // The Silero gate is best-effort: if it can't load, run ungated rather
-        // than fail the whole pipeline.
-        let silero = try? await SileroVAD.fromPretrained("mlx-community/silero-vad")
-        queue.sync {
-            // Warm up the STT — the first inference JIT-compiles every Metal kernel
-            // (tens of seconds of stalls); do it here, off the first dictation.
-            let warm = engine.makeSession(language: nil)
-            _ = warm.step([Float](repeating: 0, count: 16000))
-            _ = warm.finish()
-            // Warm the VAD on one frame of silence too.
-            if let silero, let st = try? silero.initialState(sampleRate: 16000) {
-                _ = try? silero.feed(chunk: MLXArray([Float](repeating: 0, count: 512)), state: st)
+    /// Download (first run) + load + warm ONLY the models `mode` needs. Idempotent
+    /// and memoized, so switching modes loads just the missing model. Loads the
+    /// Silero gate once (best-effort: run ungated rather than fail the pipeline).
+    func prepare(_ mode: DictationMode) async throws {
+        let engine = queue.sync { () -> TwoTierEngine in
+            if let existing = self.engine { return existing }
+            let made = TwoTierEngine()                   // caps Metal memory in init
+            self.engine = made
+            return made
+        }
+        try await engine.prepare(mode)                   // async fromPretrained (memoized)
+
+        if !queue.sync(execute: { vadLoaded }) {
+            let silero = try? await SileroVAD.fromPretrained("mlx-community/silero-vad")
+            queue.sync {
+                if let silero, let st = try? silero.initialState(sampleRate: 16000) {
+                    _ = try? silero.feed(chunk: MLXArray([Float](repeating: 0, count: 512)), state: st)
+                }
+                vad = silero
+                vadLoaded = true
             }
-            vad = silero
-            loader = engine
+        }
+
+        // Warm the mode's models on our queue — the first inference JIT-compiles
+        // every Metal kernel (tens of seconds of stalls); do it here, off the first
+        // dictation. Re-warming an already-JIT'd model is cheap.
+        queue.sync {
+            if let warm = engine.makeSession(for: mode, language: nil) {
+                _ = warm.step([Float](repeating: 0, count: 16000))
+                _ = warm.finishText()
+            }
         }
     }
 
     /// Open a clean session + gate for a new utterance, per the chosen model mode.
     func begin(language: String?, mode: DictationMode) {
         queue.sync {
-            switch mode {
-            case .hybrid:   session = loader?.makeSession(language: language)
-            case .fast:     session = loader?.makeFastSession(language: language)
-            case .accurate: session = loader?.makeAccurateSession()
-            }
+            session = engine?.makeSession(for: mode, language: language)
             gate = vad.flatMap { try? SpeechGate(vad: $0) }
         }
     }

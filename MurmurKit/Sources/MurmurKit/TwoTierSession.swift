@@ -43,7 +43,8 @@ public final class TwoTierSession {
 
     /// Convenience: MLX Nemotron fast lane.
     public convenience init(nemotron: NemotronASRModel, voxtral: VoxtralRealtimeModel,
-                            language: String? = nil, fastChunkMs: Int = 80, voxtralDelayMs: Int? = 960) {
+                            language: String? = nil, fastChunkMs: Int = TwoTierEngine.defaultFastChunkMs,
+                            voxtralDelayMs: Int? = 960) {
         let f = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs)
         self.init(fastStep: { _ = f.step($0) }, fastText: { f.text }, fastFinish: { _ = f.finish() },
                   voxtral: voxtral, voxtralDelayMs: voxtralDelayMs)
