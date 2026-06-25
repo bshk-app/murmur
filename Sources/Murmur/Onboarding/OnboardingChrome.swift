@@ -46,6 +46,30 @@ func onboardingCat(_ size: CGFloat) -> some View {
         .frame(width: size, height: size)
 }
 
+/// Filled upward triangle — the speech-bubble tail (apex points at the cat).
+private struct BubbleTail: Shape {
+    func path(in r: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: r.midX, y: r.minY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.minX, y: r.maxY))
+            p.closeSubpath()
+        }
+    }
+}
+
+/// Just the two slanted edges of the tail (no base) — so its hairline meets the
+/// bubble's border instead of drawing a line across the bubble's top.
+private struct BubbleTailEdges: Shape {
+    func path(in r: CGRect) -> Path {
+        Path { p in
+            p.move(to: CGPoint(x: r.minX, y: r.maxY))
+            p.addLine(to: CGPoint(x: r.midX, y: r.minY))
+            p.addLine(to: CGPoint(x: r.maxX, y: r.maxY))
+        }
+    }
+}
+
 // MARK: - Left rail: cat + narrator bubble + stepper
 
 struct OnboardingRail: View {
@@ -93,6 +117,15 @@ struct OnboardingRail: View {
             .padding(.init(top: 13, leading: 15, bottom: 13, trailing: 15))
             .background(t.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+            // Speech-bubble tail pointing up at the cat → reads as the cat talking.
+            .overlay(alignment: .top) {
+                ZStack {
+                    BubbleTail().fill(t.card)
+                    BubbleTailEdges().stroke(t.line(0.1), lineWidth: 1)
+                }
+                .frame(width: 16, height: 8)
+                .offset(y: -6.5)
+            }
     }
 
     private var stepper: some View {
