@@ -1,4 +1,5 @@
 import MurmurKit
+import PostHog
 import SwiftUI
 
 /// The first-run onboarding window (design: MurMur Onboarding.dc.html). A 6-step
@@ -167,6 +168,7 @@ private struct WelcomeScreen: View {
 private struct DoneScreen: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
+    @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = true
 
     private var t: OnTheme { OnTheme(scheme) }
 
@@ -186,7 +188,31 @@ private struct DoneScreen: View {
                          trailing: { keyChips(model.shortcutLabel) })
             }
             .padding(.top, 22)
+
+            analyticsToggle.padding(.top, 18)
         }
+    }
+
+    /// Analytics consent surfaced before finishing (mirrors the Settings toggle).
+    /// Flipping it opts the user into/out of PostHog immediately, so the very next
+    /// event (`onboarding_completed` on "Start") already honours the choice.
+    private var analyticsToggle: some View {
+        Toggle(isOn: $analyticsEnabled) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Share anonymous usage & crash reports")
+                    .font(.system(size: 14, weight: .medium)).foregroundStyle(t.ink)
+                Text("Helps fix bugs — only anonymous events, never your audio or transcripts. Change it anytime in Settings.")
+                    .font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.55))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .toggleStyle(.switch).tint(Mur.accent)
+        .onChange(of: analyticsEnabled) { _, on in
+            on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+        }
+        .padding(.init(top: 12, leading: 15, bottom: 12, trailing: 15))
+        .background(t.card, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
     }
 
     /// Honest permission row: a green check when Accessibility is granted, an amber
