@@ -1,4 +1,5 @@
 import Foundation
+import KeyboardShortcuts
 import MurmurKit
 import Observation
 import SwiftUI
@@ -26,6 +27,11 @@ final class OnboardingModel {
 
     var canContinue: Bool { OnboardingFlow.canContinue(flow) }
     var showBack: Bool { flow.step != .welcome && !finished }
+
+    /// The current push-to-talk shortcut, for the Done screen's chips.
+    var shortcutLabel: String {
+        KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
+    }
 
     func next() {
         guard canContinue else { return }
