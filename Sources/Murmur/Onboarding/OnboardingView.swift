@@ -178,9 +178,9 @@ private struct DoneScreen: View {
 
             VStack(spacing: 9) {
                 checkRow(title: "Two voice models installed",
-                         trailing: { Text("\(String(format: "%.1f GB", OnboardingFlow.totalGB)) · on-device")
+                         trailing: { (Text(verbatim: String(format: "%.1f GB · ", OnboardingFlow.totalGB)) + Text("on-device"))
                              .font(.system(size: 12.5)).foregroundStyle(t.muted(0.5)) })
-                checkRow(title: "Microphone & Accessibility granted", trailing: { EmptyView() })
+                permissionRow
                 checkRow(title: "Shortcut set to",
                          trailing: { keyChips(model.shortcutLabel) })
             }
@@ -188,11 +188,28 @@ private struct DoneScreen: View {
         }
     }
 
+    /// Honest permission row: a green check when Accessibility is granted, an amber
+    /// "typing off" notice when it was skipped (Accessibility is optional — HUD-only
+    /// dictation still works; the user can grant it later from the menu).
+    @ViewBuilder private var permissionRow: some View {
+        if model.flow.accessibilityGranted {
+            checkRow(title: "Microphone & Accessibility granted", trailing: { EmptyView() })
+        } else {
+            row(badge: noticeBadge, title: "Typing into other apps is off — grant Accessibility later from the menu",
+                tint: amber, trailing: { EmptyView() })
+        }
+    }
+
     private func checkRow<Trailing: View>(title: LocalizedStringKey,
                                            @ViewBuilder trailing: () -> Trailing) -> some View {
+        row(badge: checkBadge, title: title, tint: t.ink, trailing: trailing)
+    }
+
+    private func row<Badge: View, Trailing: View>(badge: Badge, title: LocalizedStringKey, tint: Color,
+                                                   @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(spacing: 12) {
-            checkBadge
-            Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(t.ink)
+            badge
+            Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(tint)
             Spacer(minLength: 6)
             trailing()
         }
@@ -201,9 +218,17 @@ private struct DoneScreen: View {
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
     }
 
+    private var amber: Color { OnTheme.rgb(244, 191, 79) }
+
     private var checkBadge: some View {
         Circle().fill(OnTheme.rgb(95, 179, 106)).frame(width: 22, height: 22)
             .overlay(Text("✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
+    }
+
+    /// Amber "!" badge for the skipped-Accessibility (typing-off) notice.
+    private var noticeBadge: some View {
+        Circle().fill(amber).frame(width: 22, height: 22)
+            .overlay(Text(verbatim: "!").font(.system(size: 13, weight: .bold)).foregroundStyle(OnTheme.rgb(26, 18, 12)))
     }
 
     private func keyChips(_ label: String) -> some View {
