@@ -26,6 +26,10 @@ final class DictationController {
 
     private let session = DictationSession()
     private let hud = HUDController()
+
+    /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
+    /// reuses it instead of spinning up a second `DictationSession`.
+    var dictationSession: DictationSession { session }
     private var promptedAccessibility = false
     private var isPreparing = false
 
