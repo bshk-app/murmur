@@ -50,8 +50,9 @@ final class OnboardingModel {
         guard canContinue else { return }
         if flow.step == .permissions { stopAccessibilityPolling() }
         if flow.step == .tryIt { tryEnd() }                   // stop + restore onUpdate on leave
-        if flow.step == .welcome { startDownload() }          // overlap download with later steps
         if flow.step == .done { finish(); return }
+        // Download starts when the Download step itself appears (DownloadScreen
+        // .onAppear) — no preemptive background load during earlier steps.
         flow.step = OnboardingFlow.next(flow.step)
     }
     func back() {
@@ -122,8 +123,8 @@ final class OnboardingModel {
 
     /// Pre-download both model repos with live per-repo progress into the HF cache
     /// `*.fromPretrained` reads, then warm the Hybrid pipeline (cache hit, no
-    /// re-download). Triggered on Welcome→next so it overlaps the later steps;
-    /// re-callable as a Retry after `downloadError` clears `downloadStarted`.
+    /// re-download). Triggered by the Download step's `.onAppear` (nothing loads
+    /// before then); re-callable as Retry after `downloadError` clears `downloadStarted`.
     func startDownload() {
         guard !downloadStarted else { return }
         downloadStarted = true

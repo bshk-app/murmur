@@ -5,10 +5,10 @@ import SwiftUI
 /// (Fast / Accurate) with live progress bars bound to `flow.fastFraction` /
 /// `accurateFraction`, a derived "{downloaded} / {total} · {eta} · {speed}" line,
 /// a done banner when both reach 100 %, and an error note with Retry. The actual
-/// download runs from `OnboardingModel.startDownload` (triggered on Welcome→next,
-/// so bars are already moving when this step opens). Continue is gated by the
-/// footer (`OnboardingFlow.canContinue` → both ≥ 1). Sizes/maths come from
-/// `OnboardingFlow` — no hardcoded GB in the view.
+/// download runs from `OnboardingModel.startDownload`, triggered by this screen's
+/// `.onAppear` — nothing downloads until the user reaches this step. Continue is
+/// gated by the footer (`OnboardingFlow.canContinue` → both ≥ 1). Sizes/maths come
+/// from `OnboardingFlow` — no hardcoded GB in the view.
 struct DownloadScreen: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
@@ -63,6 +63,7 @@ struct DownloadScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .onChange(of: metrics.downloadedGB) { _, newGB in updateSpeed(newGB) }
+        .onAppear { model.startDownload() }   // download starts when this step is reached
     }
 
     // MARK: - Per-model card
