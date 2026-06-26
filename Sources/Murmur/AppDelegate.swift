@@ -3,7 +3,13 @@ import PostHog
 import Sparkle
 import SwiftUI
 
-private let posthogApiKey = "phc_wgtdRTLh4Q5aNqZNZsctEr63WcN3BmmwAPK5UZNuDvFQ"
+// PostHog project (ingestion) key — injected into Info.plist at `tuist generate` time from
+// TUIST_MURMUR_POSTHOG_KEY (see Project.swift). Empty in plain source/fork builds, so analytics
+// stays dark unless the maintainer's build supplies it. It's a write-only client key (not a
+// secret); keeping it out of source just means forks don't phone home to our project.
+private var posthogApiKey: String {
+    Bundle.main.object(forInfoDictionaryKey: "PostHogAPIKey") as? String ?? ""
+}
 private let posthogHost = "https://eu.i.posthog.com"
 
 /// Runs Murmur as a menu-bar agent, owns the dictation controller, and hosts the

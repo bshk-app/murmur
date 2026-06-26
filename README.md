@@ -1,57 +1,62 @@
 # Murmur
 
-Local push-to-talk dictation for macOS. Hold a global hotkey, speak, and your
-words are typed into the focused field of whatever app you're in — like
-[Handy](https://github.com/cjpais/handy), but **fully on-device** via MLX
-(no cloud, no API keys).
+On-device push-to-talk dictation for macOS. Hold a global hotkey, speak, and the
+transcription is typed into the focused field of whatever app you're in — like
+[Handy](https://github.com/cjpais/handy), but **fully on-device** via
+[MLX](https://github.com/ml-explore/mlx). No cloud, no account, no API keys.
 
-> Working name. Trivially renamed (directory + bundle id) while the repo is young.
+- **Push-to-talk** — hold a global hotkey (default ⌃⌥Space) to dictate, release to finish.
+- **Two-tier STT** — a fast low-latency model for live partials, a more accurate
+  model for the final text. English + Russian.
+- **On-device** — speech recognition runs entirely locally; no audio or
+  transcripts ever leave your Mac.
+- **Menu-bar agent** — a first-run wizard handles permissions, model download,
+  and a quick try-it; then it lives quietly in the menu bar.
 
-## Status
+## Requirements
 
-Menu-bar dictation: hold the hotkey → on-device two-tier STT (Nemotron + Voxtral)
-→ types into the focused field. The core lives in the **`MurmurKit`** Swift
-package, shared verbatim by the app and **`murmur-cli`**.
+- macOS 15 (Sequoia) or later
+- Apple Silicon (M1 or newer)
 
+## Install
+
+```bash
+brew tap bshk-app/homebrew-tap
+brew install --cask murmur
 ```
-make build    # build the menu-bar app (arm64; Explicit Modules off — Xcode 26 workaround)
-make run      # build + launch the menu-bar agent
-make run-cli  # run the terminal version (same MurmurKit core — handy for profiling)
+
+The app updates itself in-app via [Sparkle](https://sparkle-project.org).
+
+## Build from source
+
+Murmur is a [Tuist](https://tuist.io) project; the dictation core lives in the
+local `MurmurKit/` Swift package and the app (`Sources/Murmur`) is a thin UI over
+it.
+
+```bash
+make build     # generate the Xcode project + build Release
+make run       # build and launch the menu-bar agent
+make run-cli   # run the terminal version (same MurmurKit core)
 ```
 
-STT comes from the fork's `dev/nemo-mic` branch (Nemotron stream + Voxtral
-Realtime + `TwoTierSession`), consumed via Xcode-native SPM from its git worktree
-at `/Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session` (see `Project.swift`).
+Builds are Release — MLX-Swift in Debug is several times slower and not realtime.
 
-## Vision
+## Permissions
 
-- **Push-to-talk**: hold a global hotkey (default ⌃⌥Space), speak, release.
-- **On-device STT**: streaming transcription from the
-  [`mlx-audio-swift`](../mlx-audio-swift) stack (Voxtral Realtime / Nemotron /
-  Parakeet). EN + RU.
-- **System-wide insertion**: the final text is typed into the focused field of
-  any app via the Accessibility API.
-- **Live HUD** (planned): a small floating overlay shows partials while you hold
-  the key; the field only ever receives clean, finalized text.
+- **Microphone** — capture speech while the hotkey is held.
+- **Accessibility** — type the transcription into other apps' fields.
+- **Input Monitoring** — global push-to-talk hotkey.
 
-## Roadmap (progressive, atomic steps)
+## Privacy & analytics
 
-1. ✅ Menu-bar agent scaffold (Tuist `.app`)
-2. ✅ Global push-to-talk hotkey (⌃⌥Space, Carbon `RegisterEventHotKey` via KeyboardShortcuts — **no Accessibility**)
-3. ✅ Mic capture while held (AVAudioEngine → 16 kHz mono) — ported from `Mic.swift`
-4. ✅ Wire on-device STT — `mlx-audio-swift` @ `dev/nemo-mic` (`TwoTierEngine` → Nemotron partials + Voxtral finals; live transcript to console, final to menu)
-5. ☐ Live HUD overlay for partials (`<…>`)
-6. ◐ Text injection into the focused field — ✅ final-on-release (CGEvent Unicode); ☐ progressive append
-7. ◐ Settings — ✅ rebindable hotkey (recorder + persistence); ☐ language, model, insertion mode
-8. ☐ Code signing + notarization (Developer ID)
+Dictation is fully on-device. Anonymous usage/error analytics
+([PostHog](https://posthog.com)) are **opt-in** — off until you enable them on
+the first-run Welcome screen (or in Settings), and only anonymous events and
+errors are ever sent, never audio or transcripts.
 
-## Permissions (when bundled)
-
-- **Microphone** — `NSMicrophoneUsageDescription`
-- **Input Monitoring** — global hotkey capture
-- **Accessibility** — typing into other apps' fields
-- `LSUIElement = true` — menu-bar agent, no Dock icon
+Builds from source ship with analytics **disabled** unless `TUIST_MURMUR_POSTHOG_KEY`
+is set at build time, so forks never phone home.
 
 ## License
 
-TBD.
+[MIT](./LICENSE) © 2026 Aleksandr Beshkenadze

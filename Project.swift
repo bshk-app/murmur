@@ -1,3 +1,4 @@
+import Foundation
 import ProjectDescription
 
 // Tuist is the source of truth for the Murmur app target — it regenerates the
@@ -7,6 +8,12 @@ import ProjectDescription
 // the local `MurmurKit/` Swift package (which pulls STT from the fork's
 // `dev/nemo-mic` worktree). The same MurmurKit powers `murmur-cli`. The global
 // hotkey uses Carbon `RegisterEventHotKey` (KeyboardShortcuts) — no Accessibility.
+
+// PostHog ingestion key injected at generation time. Tuist only forwards TUIST_-prefixed env
+// vars into the manifest, so the maintainer's build sets TUIST_MURMUR_POSTHOG_KEY (local or
+// CI). Absent in a plain `tuist generate` → source/fork builds ship with analytics OFF.
+let posthogAPIKey = ProcessInfo.processInfo.environment["TUIST_MURMUR_POSTHOG_KEY"] ?? ""
+
 let project = Project(
     name: "Murmur",
     packages: [
@@ -33,6 +40,8 @@ let project = Project(
                 "CFBundleDevelopmentRegion": "en",
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
+                // Analytics key injected from MURMUR_POSTHOG_KEY (empty in source/fork builds → off).
+                "PostHogAPIKey": .string(posthogAPIKey),
                 // Sparkle in-app updates: the appcast lives in the app's own GitHub repo
                 // (canonical zamok/ci layout — one artifact source, the tap stays thin).
                 // Public key is shared across the org's Sparkle apps (Sparkle recommends one key).
