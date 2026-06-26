@@ -344,15 +344,12 @@ is published by the workflow's "Publish cask" step.
       Hardened Runtime + `Murmur.entitlements`) → notarytool ACCEPTED → spctl "accepted,
       source=Notarized Developer ID" → `codesign --deep --strict` valid. **No
       `disable-library-validation` needed** — the MLX/Cmlx dylibs pass library validation.
-- [ ] **zamokctl `--format zip` leaves the inner .app UNSTAPLED** — found in the §8.1 de-risk.
-      Notarization succeeds and the ticket IS in Apple's CloudKit (a later `xcrun stapler
-      staple` on the extracted app worked offline-cheap, no re-submission), but the zip
-      zamokctl distributes has no stapled ticket → first launch would need an online
-      Gatekeeper check. Fix in the packaging step (§8.4): staple before zipping. Cleanest =
-      in zamokctl (SSOT — it already advertises a "stapled artifact", and the CI/cask hash
-      must match the final zip, so the stapler must run inside the tool that hashes). Or use
-      `--format dmg` (staples the container directly). Do NOT post-staple+rezip in the CI
-      script — that desyncs zamokctl's manifest sha256.
+- [x] **zamokctl `--format zip` staple** — found UNSTAPLED with the **local zamokctl 1.2.3**
+      in the §8.1 de-risk (notarization succeeded, ticket in CloudKit, a manual `xcrun stapler
+      staple` then worked offline-cheap). RESOLVED upstream: per `zamok/ci/README.md`, the CI
+      runner installs **zamokctl ≥ 1.2.4**, which staples *and* verifies the ticket is actually
+      attached (fails the build otherwise). So the shipped zip is stapled — no Murmur-side fix
+      and no `--format dmg` needed. (Local de-risk just had the older 1.2.3.)
 - [ ] **Gitea `workflow_call` + `secrets: inherit`** on this instance (1.26.2). If
       unsupported → composite-action fallback (§0).
 - [ ] **`actions/checkout` in a reusable workflow checks out the caller repo** on Gitea

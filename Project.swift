@@ -33,9 +33,10 @@ let project = Project(
                 "CFBundleDevelopmentRegion": "en",
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
-                // Sparkle in-app updates: self-hosted appcast on the public tap, EdDSA-verified.
+                // Sparkle in-app updates: the appcast lives in the app's own GitHub repo
+                // (canonical zamok/ci layout — one artifact source, the tap stays thin).
                 // Public key is shared across the org's Sparkle apps (Sparkle recommends one key).
-                "SUFeedURL": "https://raw.githubusercontent.com/bshk-app/homebrew-tap/main/appcast/murmur.xml",
+                "SUFeedURL": "https://raw.githubusercontent.com/bshk-app/murmur/main/appcast.xml",
                 "SUPublicEDKey": "vCki0eiwlGncDf3ZwIZawLNFss906pi/drQi/PnUaUA=",
                 "SUEnableAutomaticChecks": true,
                 "SUScheduledCheckInterval": 86400,   // daily

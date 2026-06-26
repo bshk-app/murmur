@@ -1,0 +1,17 @@
+{
+  "token": "murmur",
+  "name": "Murmur",
+  "desc": "On-device push-to-talk dictation",
+  "homepage": "https://github.com/bshk-app/murmur",
+  "autoUpdates": true,
+  "appBundle": "Murmur.app",
+  "dependsOnMacOS": ">= :sequoia",
+  "livecheck": true,
+  "livecheckUrl": "https://raw.githubusercontent.com/bshk-app/murmur/main/appcast.xml",
+  "zapTrash": [
+    "~/Library/Application Support/Murmur",
+    "~/Library/Caches/app.bshk.murmur",
+    "~/Library/HTTPStorages/app.bshk.murmur",
+    "~/Library/Preferences/app.bshk.murmur.plist"
+  ]
+}
