@@ -1,5 +1,6 @@
 import AppKit
 import PostHog
+import Sparkle
 import SwiftUI
 
 private let posthogApiKey = "phc_wgtdRTLh4Q5aNqZNZsctEr63WcN3BmmwAPK5UZNuDvFQ"
@@ -11,12 +12,19 @@ private let posthogHost = "https://eu.i.posthog.com"
 /// `.accessory` keeps the process alive in the background (so the global hotkey
 /// keeps working) while staying out of the Dock and ⌘-Tab switcher.
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, SPUStandardUserDriverDelegate {
     let dictation = DictationController()
 
     /// Drives the onboarding window. Lazy so it builds after `dictation` exists,
     /// reusing the controller's already-warmed `DictationSession`.
     lazy var onboarding = OnboardingModel(session: dictation.dictationSession)
+
+    /// Sparkle in-app updater. Lazy because it needs `self` as the user-driver delegate;
+    /// `startingUpdater: false` defers the first scheduled check until `startUpdater()`,
+    /// which we call in `startMenuApp` — so a daily check can never collide with the
+    /// first-run onboarding window.
+    private lazy var updaterController = SPUStandardUpdaterController(
+        startingUpdater: false, updaterDelegate: nil, userDriverDelegate: self)
 
     private var onboardingWindow: NSWindow?
     private var didStartMenuApp = false
@@ -57,6 +65,37 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         didStartMenuApp = true
         NSApp.setActivationPolicy(.accessory)
         dictation.bootstrap()
+        updaterController.startUpdater()   // begin daily update checks now (post-onboarding)
+    }
+
+    /// "Check for Updates…" from the menu. As an `.accessory` agent we briefly become a
+    /// `.regular` app so Sparkle's dialog takes focus; `standardUserDriverWillFinishUpdateSession`
+    /// drops us back. No-op while a check is already in flight.
+    func checkForUpdates() {
+        guard updaterController.updater.canCheckForUpdates else { return }
+        NSApp.setActivationPolicy(.regular)
+        NSApp.activate(ignoringOtherApps: true)
+        updaterController.checkForUpdates(nil)
+    }
+
+    // MARK: SPUStandardUserDriverDelegate — focus Sparkle's UI for an accessory agent
+    // `nonisolated` to satisfy the non-isolated @objc protocol from our @MainActor class;
+    // Sparkle invokes these on the main thread, so hopping via assumeIsolated is safe.
+
+    nonisolated func standardUserDriverWillHandleShowingUpdate(
+        _ handleShowingUpdate: Bool, forUpdate update: SUAppcastItem, state: SPUUserUpdateState
+    ) {
+        // A scheduled (background) check wants to show UI — surface the app so the dialog
+        // isn't buried behind other windows.
+        MainActor.assumeIsolated {
+            NSApp.setActivationPolicy(.regular)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    nonisolated func standardUserDriverWillFinishUpdateSession() {
+        // Sparkle is done with the user → return to a background menu-bar agent.
+        MainActor.assumeIsolated { NSApp.setActivationPolicy(.accessory) }
     }
 
     /// Show (or re-show) the onboarding window. AppKit-owned `NSWindow` rather than a

@@ -10,6 +10,8 @@ struct MenuPopover: View {
     let dictation: DictationController
     /// Re-open the onboarding window (resets to Welcome + presents it).
     let onSetupTour: () -> Void
+    /// Ask Sparkle to check for app updates (AppDelegate brackets the activation policy).
+    let onCheckForUpdates: () -> Void
     @Environment(\.openSettings) private var openSettings
     @Environment(\.colorScheme) private var scheme
 
@@ -120,6 +122,10 @@ struct MenuPopover: View {
                 PostHogSDK.shared.capture("settings_opened")
                 NSApp.activate(ignoringOtherApps: true)
                 openSettings()
+            }
+            footerRow("Check for Updates…", "") {
+                PostHogSDK.shared.capture("check_for_updates")
+                onCheckForUpdates()
             }
             // Re-run the first-run tour: reset to Welcome, then ask the App scene
             // (via the router) to open the onboarding window.

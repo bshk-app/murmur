@@ -15,6 +15,8 @@ let project = Project(
                 requirement: .upToNextMajor(from: "2.0.0")),
         .remote(url: "https://github.com/PostHog/posthog-ios",
                 requirement: .upToNextMajor(from: "3.0.0")),   // anonymous usage/error analytics (opt-out)
+        .remote(url: "https://github.com/sparkle-project/Sparkle",
+                requirement: .upToNextMajor(from: "2.6.0")),   // in-app auto-update (appcast + EdDSA)
     ],
     targets: [
         .target(
@@ -31,6 +33,12 @@ let project = Project(
                 "CFBundleDevelopmentRegion": "en",
                 "NSMicrophoneUsageDescription":
                     "Murmur transcribes your speech on-device while you hold the dictation hotkey.",
+                // Sparkle in-app updates: self-hosted appcast on the public tap, EdDSA-verified.
+                // Public key is shared across the org's Sparkle apps (Sparkle recommends one key).
+                "SUFeedURL": "https://raw.githubusercontent.com/bshk-app/homebrew-tap/main/appcast/murmur.xml",
+                "SUPublicEDKey": "vCki0eiwlGncDf3ZwIZawLNFss906pi/drQi/PnUaUA=",
+                "SUEnableAutomaticChecks": true,
+                "SUScheduledCheckInterval": 86400,   // daily
             ]),
             sources: ["Sources/Murmur/**/*.swift"],
             resources: ["Sources/Murmur/Resources/**"],
@@ -38,6 +46,7 @@ let project = Project(
                 .package(product: "MurmurKit"),
                 .package(product: "KeyboardShortcuts"),
                 .package(product: "PostHog"),
+                .package(product: "Sparkle"),
             ],
             settings: .settings(base: [
                 "SWIFT_VERSION": "5.0",

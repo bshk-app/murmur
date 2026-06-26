@@ -16,7 +16,8 @@ struct MurmurApp: App {
         // finishes (AppDelegate router) even though the icon is always present.
         MenuBarExtra {
             MenuPopover(dictation: appDelegate.dictation,
-                        onSetupTour: { appDelegate.replayOnboarding() })
+                        onSetupTour: { appDelegate.replayOnboarding() },
+                        onCheckForUpdates: { appDelegate.checkForUpdates() })
         } label: {
             Image(nsImage: Self.menuIcon)
         }
