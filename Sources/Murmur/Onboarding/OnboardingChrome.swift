@@ -75,6 +75,7 @@ private struct BubbleTailEdges: Shape {
 struct OnboardingRail: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Per-step narrator copy (mock `narration[]`). These English strings are the
     /// String-Catalog keys (already translated in `Localizable.xcstrings`); resolved
@@ -103,7 +104,7 @@ struct OnboardingRail: View {
                 .scaleEffect(talk ? 1.07 : 1)
                 .rotationEffect(.degrees(talk ? -3 : 0))
                 .offset(y: floatUp ? -6 : 0)
-                .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
                 .padding(.bottom, 12)
                 .accessibilityHidden(true)   // decorative; the narrator text carries the info
             narratorBubble
@@ -128,15 +129,20 @@ struct OnboardingRail: View {
     /// Bounce the cat and type the new line out, character by character — so each
     /// step reads as the cat actually saying it.
     private func speak() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.45)) { talk = true }
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(280))
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { talk = false }
+        if !reduceMotion {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.45)) { talk = true }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(280))
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { talk = false }
+            }
         }
         let key = Self.narration[model.flow.step.rawValue]
         let full = Bundle.main.localizedString(forKey: key, value: key, table: nil)
         fullLine = full
         typeTask?.cancel()
+        if reduceMotion {
+            typed = full; typing = false; return    // no bounce, no typewriter
+        }
         typed = ""
         typing = true
         typeTask = Task { @MainActor in

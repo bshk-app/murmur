@@ -169,6 +169,7 @@ private struct LevelBars: View {
     var color: Color
     var count: Int = 4
     var barHeight: CGFloat = 14
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
 
     var body: some View {
@@ -176,8 +177,8 @@ private struct LevelBars: View {
             ForEach(0 ..< count, id: \.self) { i in
                 Capsule().fill(color)
                     .frame(width: 2.5, height: barHeight)
-                    .scaleEffect(y: up ? 1 : 0.32, anchor: .center)
-                    .animation(.easeInOut(duration: 0.45).repeatForever(autoreverses: true)
+                    .scaleEffect(y: (up || reduceMotion) ? 1 : 0.32, anchor: .center)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.45).repeatForever(autoreverses: true)
                         .delay(Double(i) * 0.12), value: up)
             }
         }
