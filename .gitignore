@@ -18,7 +18,3 @@ graph.*
 build/
 *.dSYM/
 .env
-
-# Local tooling / setup reports — never publish to the public repo
-.claude/
-posthog-setup-report.md
