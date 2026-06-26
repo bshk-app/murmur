@@ -103,6 +103,9 @@ struct DownloadScreen: View {
         .padding(16)
         .background(t.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(ready ? "Downloaded" : "\(pct) percent")
     }
 
     private func progressBar(fraction: Double, ready: Bool) -> some View {

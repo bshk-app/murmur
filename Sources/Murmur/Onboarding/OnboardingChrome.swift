@@ -95,6 +95,7 @@ struct OnboardingRail: View {
     @State private var typed = ""                // typewriter-revealed narration
     @State private var typing = false
     @State private var typeTask: Task<Void, Never>?
+    @State private var fullLine = ""             // resolved full narration line (VoiceOver label)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -134,6 +135,7 @@ struct OnboardingRail: View {
         }
         let key = Self.narration[model.flow.step.rawValue]
         let full = Bundle.main.localizedString(forKey: key, value: key, table: nil)
+        fullLine = full
         typeTask?.cancel()
         typed = ""
         typing = true
@@ -169,6 +171,8 @@ struct OnboardingRail: View {
                 .frame(width: 16, height: 8)
                 .offset(y: -6.5)
             }
+            .accessibilityLabel(Text(verbatim: fullLine))
+            .accessibilityHint("Setup narration")
     }
 
     private var stepper: some View {
@@ -187,6 +191,9 @@ struct OnboardingRail: View {
                 .padding(.vertical, 3)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Setup steps")
+        .accessibilityValue("Step \(current + 1) of \(labels.count)")
     }
 
     @ViewBuilder
