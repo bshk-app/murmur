@@ -77,7 +77,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     private func makeOnboardingWindow() -> NSWindow {
-        let host = NSHostingController(rootView: OnboardingView(model: onboarding).frame(width: 880, height: 580))
+        let host = NSHostingController(rootView: OnboardingView(model: onboarding).frame(width: 880, height: 640))
         host.safeAreaRegions = []   // content runs under the transparent title bar (our drawn row IS the bar)
         let window = NSWindow(contentViewController: host)
         window.title = "MurMur Setup"
@@ -85,7 +85,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
-        window.setContentSize(NSSize(width: 880, height: 580))
+        window.setContentSize(NSSize(width: 880, height: 640))
         window.isReleasedWhenClosed = false
         window.delegate = self
         window.center()
