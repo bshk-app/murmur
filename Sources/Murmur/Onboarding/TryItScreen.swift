@@ -127,6 +127,14 @@ struct TryItScreen: View {
         .animation(.easeOut(duration: 0.12), value: pressed)
         .gesture(holdGesture)
         .disabled(!ready)
+        .accessibilityElement(children: .ignore)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Hold to talk")
+        .accessibilityHint(ready
+            ? "Double-tap to start dictation, double-tap again to stop"
+            : "Models are still loading")
+        .accessibilityValue(model.tryListening ? "Listening" : "")
+        .accessibilityAction { if ready { model.tryToggle() } }
     }
 
     private var buttonFill: AnyShapeStyle {

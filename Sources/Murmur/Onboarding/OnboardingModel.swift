@@ -269,6 +269,11 @@ final class OnboardingModel {
         tryPartial = ""
     }
 
+    /// VoiceOver can't hold a key — double-tap toggles the utterance instead.
+    func tryToggle() {
+        if tryListening { tryEnd() } else { tryStart() }
+    }
+
     /// Should onboarding be shown at launch?
     static var shouldShow: Bool {
         !UserDefaults.standard.bool(forKey: didOnboardKey)
