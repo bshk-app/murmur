@@ -1,0 +1,29 @@
+name: release
+
+# Thin caller of the public shared action (zamok-org/ci). Builds Murmur on a GitHub-hosted
+# macOS runner, signs + notarizes + staples via zamokctl, and publishes the cask to the tap.
+# Secrets come from the bshk-app org via `secrets: inherit`.
+
+on:
+  push:
+    tags: ["murmur-v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "e.g. 0.1.0"
+        required: true
+
+jobs:
+  release:
+    uses: zamok-org/ci/.github/workflows/macos-cask-release.yml@v1
+    with:
+      scheme: Murmur
+      bundle-id: app.bshk.murmur
+      cask-metadata: Distribution/cask-murmur.json
+      entitlements: Murmur.entitlements
+      asset-repo: bshk-app/murmur            # artifacts live in the app repo's Releases
+      build-flags: "ARCHS=arm64 ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO"
+      runner: macos-15                        # newer Xcode/SDK; Murmur needs macOS 15 + MLX
+      # sparkle: false                         # appcast not wired yet — cask-only first release
+      version: ${{ github.event.inputs.version }}
+    secrets: inherit
