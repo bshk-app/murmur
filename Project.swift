@@ -43,8 +43,8 @@ let project = Project(
                 // Analytics key injected from MURMUR_POSTHOG_KEY (empty in source/fork builds → off).
                 "PostHogAPIKey": .string(posthogAPIKey),
                 // Sparkle in-app updates: the appcast lives in the app's own GitHub repo
-                // (canonical zamok/ci layout — one artifact source, the tap stays thin).
-                // Public key is shared across the org's Sparkle apps (Sparkle recommends one key).
+                // (the artifact source; the Homebrew tap stays thin).
+                // Public key is shared across our Sparkle apps (Sparkle recommends one key).
                 "SUFeedURL": "https://raw.githubusercontent.com/bshk-app/murmur/main/appcast.xml",
                 "SUPublicEDKey": "vCki0eiwlGncDf3ZwIZawLNFss906pi/drQi/PnUaUA=",
                 "SUEnableAutomaticChecks": true,

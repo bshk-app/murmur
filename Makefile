@@ -46,7 +46,7 @@ run-cli: cli
 	"$(KIT_REL)/murmur-cli"
 
 # Offline timing on a fixed file: make bench WAV=/path/to/clip.wav
-WAV ?= /Volumes/DATA/mlx-audio-swift-worktrees/nemotron-session/demo/clip22.wav
+WAV ?= /path/to/clip.wav
 bench: cli
 	"$(KIT_REL)/murmur-cli" --wav "$(WAV)"
 
