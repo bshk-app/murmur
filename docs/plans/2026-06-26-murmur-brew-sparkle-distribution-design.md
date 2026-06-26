@@ -9,6 +9,17 @@ future app reuses).
 
 ---
 
+> **Correction (2026-06-26) — division of labor.** CI is owned separately: the runner,
+> reusable workflow, and release plumbing live on the **`zamok-org` GitHub org** and are
+> set up by the maintainer, **not** in this repo. There is **no `zamok/murmur` repo** — the
+> shared action exists precisely so a product repo needn't live under that org. The product
+> repo is **`bshk-app/murmur` (GitHub)** = code + release artifacts (.zip) + `appcast.xml`;
+> **`bshk-app/homebrew-tap`** holds only `Casks/murmur.rb`. **This effort provides only the
+> app-side files** — `Murmur.entitlements`, `Distribution/cask-murmur.json`, and the in-app
+> Sparkle wiring (`SUFeedURL` → the app repo's `appcast.xml`). The Gitea-CI sections below
+> (§2, §8.4–§8.6, the `.gitea/workflows/release.yml` caller) are superseded by the
+> maintainer's GitHub setup and kept only for context.
+
 ## 0. Decisions (already made — do not re-litigate)
 
 | Decision | Choice | Why |
