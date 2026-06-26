@@ -1,0 +1,20 @@
+.DS_Store
+.build/
+/Packages
+.swiftpm/
+DerivedData/
+xcuserdata/
+*.profraw
+
+# Tuist (generated)
+*.xcodeproj
+*.xcworkspace
+Derived/
+.tuist/
+Tuist/.build/
+graph.*
+
+# Xcode build output
+build/
+*.dSYM/
+.env

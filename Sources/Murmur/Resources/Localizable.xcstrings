@@ -1,0 +1,806 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Check for Updates…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проверить обновления…"
+          }
+        }
+      }
+    },
+    "Field is protected — press ⌘V": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Поле защищено — нажмите ⌘V"
+          }
+        }
+      }
+    },
+    "Hi, I’m MurMur! Hold a key, talk, and I type the words right where your cursor is. Ready to set me up?": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Привет, я MurMur! Зажми клавишу, говори — и я печатаю слова прямо там, где курсор. Готовы меня настроить?"
+          }
+        }
+      }
+    },
+    "I need two macOS permissions to work. Tap each one — I’ll tell you exactly why.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мне нужны два разрешения macOS. Нажми на каждое — и я объясню, зачем именно."
+          }
+        }
+      }
+    },
+    "Pick the keys you’ll hold while you talk. Record your own combo, or grab a preset.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выбери клавиши, которые будешь держать во время речи. Запиши своё сочетание или возьми готовое."
+          }
+        }
+      }
+    },
+    "Hang tight — I’m downloading my voice. This is the only big download, ever.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Секундочку — я загружаю свой голос. Это единственная большая загрузка, раз и навсегда."
+          }
+        }
+      }
+    },
+    "Your turn! Press and hold the button and say something. Watch me catch up and tidy it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Твоя очередь! Зажми кнопку и скажи что-нибудь. Смотри, как я подхватываю и навожу порядок."
+          }
+        }
+      }
+    },
+    "All done — I’ll wait up in your menu bar until you need me. Just hold your keys and talk.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово — я подожду в строке меню, пока не понадоблюсь. Просто зажми клавиши и говори."
+          }
+        }
+      }
+    },
+    "Welcome": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Знакомство"
+          }
+        }
+      }
+    },
+    "Permissions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Разрешения"
+          }
+        }
+      }
+    },
+    "Shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание"
+          }
+        }
+      }
+    },
+    "Download": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка"
+          }
+        }
+      }
+    },
+    "Try it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Проба"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово"
+          }
+        }
+      }
+    },
+    "Setup steps": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Шаги настройки"
+          }
+        }
+      }
+    },
+    "Get started": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать"
+          }
+        }
+      }
+    },
+    "Continue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Продолжить"
+          }
+        }
+      }
+    },
+    "Downloading…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка…"
+          }
+        }
+      }
+    },
+    "I’ve got it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Понятно"
+          }
+        }
+      }
+    },
+    "Start using MurMur": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Начать пользоваться MurMur"
+          }
+        }
+      }
+    },
+    "Grant the microphone to continue": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дайте доступ к микрофону, чтобы продолжить"
+          }
+        }
+      }
+    },
+    "Hold the button and speak to try it": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зажмите кнопку и говорите, чтобы попробовать"
+          }
+        }
+      }
+    },
+    "Back": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Назад"
+          }
+        }
+      }
+    },
+    "MurMur is live": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "MurMur на связи"
+          }
+        }
+      }
+    },
+    "Find me up in the menu bar whenever you want to talk.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найди меня в строке меню, когда захочешь поговорить."
+          }
+        }
+      }
+    },
+    "Replay the setup tour": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пройти настройку заново"
+          }
+        }
+      }
+    },
+    "Just talk. I’ll type it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Просто говорите. Я напечатаю."
+          }
+        }
+      }
+    },
+    "A little menu-bar cat that turns your voice into text — instantly, in any app, completely on your Mac. Let’s get you set up in a minute.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Маленький кот в строке меню, который превращает голос в текст — мгновенно, в любом приложении, целиком на вашем Mac. Давайте настроим всё за минуту."
+          }
+        }
+      }
+    },
+    "Hold the keys": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зажмите клавиши"
+          }
+        }
+      }
+    },
+    "One global shortcut, anywhere.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одно глобальное сочетание, где угодно."
+          }
+        }
+      }
+    },
+    "Speak naturally": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Говорите как обычно"
+          }
+        }
+      }
+    },
+    "Real-time, no spinner.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В реальном времени, без ожидания."
+          }
+        }
+      }
+    },
+    "It’s typed for you": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Текст печатается за вас"
+          }
+        }
+      }
+    },
+    "Straight into the field.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прямо в нужное поле."
+          }
+        }
+      }
+    },
+    "A fast model types an instant draft, then an accurate one sharpens each word a blink later. To do that on-device, setup installs both models — about ": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая модель печатает мгновенный черновик, а точная уточняет каждое слово мгновением позже. Чтобы делать это на устройстве, при настройке ставятся обе модели — около "
+          }
+        }
+      }
+    },
+    ". Nothing you say ever leaves your Mac.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ". Ничего из сказанного не покидает ваш Mac."
+          }
+        }
+      }
+    },
+    "Two models, one trick. ": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Две модели, один приём. "
+          }
+        }
+      }
+    },
+    "All set": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Всё готово"
+          }
+        }
+      }
+    },
+    "You’re ready to talk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Можно начинать говорить"
+          }
+        }
+      }
+    },
+    "MurMur is now living quietly in your menu bar. Hold your shortcut in any app and just talk — the words land right where your cursor is.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Теперь MurMur тихо живёт в строке меню. Зажмите сочетание в любом приложении и просто говорите — слова появятся прямо там, где курсор."
+          }
+        }
+      }
+    },
+    "Two voice models installed": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Две голосовые модели установлены"
+          }
+        }
+      }
+    },
+    "on-device": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "на устройстве"
+          }
+        }
+      }
+    },
+    "Microphone & Accessibility granted": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Микрофон и Универсальный доступ выданы"
+          }
+        }
+      }
+    },
+    "Shortcut set to": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Сочетание задано на"
+          }
+        }
+      }
+    },
+    "Typing into other apps is off — grant Accessibility later from the menu": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Печать в другие приложения выключена — выдайте Универсальный доступ позже из меню"
+          }
+        }
+      }
+    },
+    "Two quick permissions": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Два быстрых разрешения"
+          }
+        }
+      }
+    },
+    "macOS will pop up a confirmation for each. Grant both and I’m good to go — here’s what they’re for.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS покажет подтверждение для каждого. Выдайте оба — и я готов. Вот зачем они нужны."
+          }
+        }
+      }
+    },
+    "Microphone": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Микрофон"
+          }
+        }
+      }
+    },
+    "So I can hear you while you’re holding the shortcut.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы я слышал вас, пока вы держите сочетание."
+          }
+        }
+      }
+    },
+    "Accessibility": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Универсальный доступ"
+          }
+        }
+      }
+    },
+    "Input · typing": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ввод · печать"
+          }
+        }
+      }
+    },
+    "So I can type the words straight into whatever field has focus.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы печатать слова прямо в то поле, где сейчас фокус."
+          }
+        }
+      }
+    },
+    "Grant": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выдать"
+          }
+        }
+      }
+    },
+    "Granted": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выдано"
+          }
+        }
+      }
+    },
+    "You can change these anytime in System Settings → Privacy & Security.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это можно изменить в любой момент в Системных настройках → Конфиденциальность и безопасность."
+          }
+        }
+      }
+    },
+    "Accessibility is optional — you can set up typing later from the menu.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Универсальный доступ необязателен — печать можно настроить позже из меню."
+          }
+        }
+      }
+    },
+    "Choose your push-to-talk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите клавишу для речи"
+          }
+        }
+      }
+    },
+    "Pick the keys you’ll hold down while speaking. A hold-to-talk combo like ⌃⌥Space feels best.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите клавиши, которые будете удерживать во время речи. Сочетание для удержания, например ⌃⌥Space, ощущается лучше всего."
+          }
+        }
+      }
+    },
+    "Click above to record a new shortcut": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Нажмите выше, чтобы записать новое сочетание"
+          }
+        }
+      }
+    },
+    "Presets": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовые"
+          }
+        }
+      }
+    },
+    "Getting my voice ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готовлю свой голос"
+          }
+        }
+      }
+    },
+    "Two models download once, then run entirely on your Mac. A fast one for the instant draft, an accurate one to sharpen it.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Две модели загружаются один раз, а затем работают полностью на вашем Mac. Быстрая — для мгновенного черновика, точная — чтобы его уточнить."
+          }
+        }
+      }
+    },
+    "Fast model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Быстрая модель"
+          }
+        }
+      }
+    },
+    "Instant draft as you speak": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мгновенный черновик, пока вы говорите"
+          }
+        }
+      }
+    },
+    "Accurate model": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Точная модель"
+          }
+        }
+      }
+    },
+    "Sharpens every word a blink later": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Уточняет каждое слово мгновением позже"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готова"
+          }
+        }
+      }
+    },
+    "Both models are on your Mac — you’re ready to roll.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обе модели на вашем Mac — можно начинать."
+          }
+        }
+      }
+    },
+    "The download hit a snag.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузка застопорилась."
+          }
+        }
+      }
+    },
+    "Retry": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Повторить"
+          }
+        }
+      }
+    },
+    "Give me a sentence": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Скажите мне фразу"
+          }
+        }
+      }
+    },
+    "Hold the button below and say anything. Watch the fast draft appear, then sharpen a blink later — that’s the two models working together.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зажмите кнопку ниже и скажите что угодно. Сначала появится быстрый черновик, а мгновением позже он уточнится — это две модели работают вместе."
+          }
+        }
+      }
+    },
+    "Hold the button below and speak…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зажмите кнопку ниже и говорите…"
+          }
+        }
+      }
+    },
+    "Listening…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Слушаю…"
+          }
+        }
+      }
+    },
+    "Got it — that’s exactly what I said.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записал — это ровно то, что я сказал."
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ещё раз"
+          }
+        }
+      }
+    },
+    "Ready when you are.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Я готов, когда вы будете."
+          }
+        }
+      }
+    },
+    "Hold to talk": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удерживайте для речи"
+          }
+        }
+      }
+    },
+    "Setup tour…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Настройка заново…"
+          }
+        }
+      }
+    },
+    "text appears": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "текст появляется"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
