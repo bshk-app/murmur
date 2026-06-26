@@ -173,6 +173,7 @@ private struct LevelBars: View {
                         .delay(Double(i) * 0.12), value: up)
             }
         }
+        .accessibilityHidden(true)   // decorative meter
         .onAppear { up = true }
     }
 }

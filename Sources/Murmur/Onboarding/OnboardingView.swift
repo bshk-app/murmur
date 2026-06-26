@@ -138,6 +138,7 @@ private struct WelcomeScreen: View {
             .padding(.horizontal, 11).frame(height: 30)
             .background(t.line(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+            .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     private var speakBadge: some View {
@@ -152,6 +153,7 @@ private struct WelcomeScreen: View {
         .padding(.horizontal, 11).frame(height: 30)
         .background(Mur.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Mur.accent.opacity(0.2), lineWidth: 1))
+        .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     private var typedBadge: some View {
@@ -162,6 +164,7 @@ private struct WelcomeScreen: View {
         .padding(.horizontal, 11).frame(height: 30)
         .background(t.line(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+        .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     /// "Two models, one trick … about 3.6 GB …" — size pulled from `OnboardingFlow`.
@@ -172,7 +175,7 @@ private struct WelcomeScreen: View {
             + Text(verbatim: gb).fontWeight(.bold).foregroundColor(t.ink)   // "3.6 GB" — runtime value
             + Text(". Nothing you say ever leaves your Mac.")
         return HStack(alignment: .top, spacing: 11) {
-            onboardingCat(30).padding(.top, 1)
+            onboardingCat(30).padding(.top, 1).accessibilityHidden(true)   // decorative
             body.font(.system(size: 13)).lineSpacing(3).foregroundColor(t.muted(0.72))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -244,12 +247,14 @@ private struct DoneScreen: View {
     private var checkBadge: some View {
         Circle().fill(OnTheme.rgb(95, 179, 106)).frame(width: 22, height: 22)
             .overlay(Text("✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
+            .accessibilityHidden(true)   // decorative; the row title carries the meaning
     }
 
     /// Amber "!" badge for the skipped-Accessibility (typing-off) notice.
     private var noticeBadge: some View {
         Circle().fill(amber).frame(width: 22, height: 22)
             .overlay(Text(verbatim: "!").font(.system(size: 13, weight: .bold)).foregroundStyle(OnTheme.rgb(26, 18, 12)))
+            .accessibilityHidden(true)   // decorative; the row title carries the meaning
     }
 
     private func keyChips(_ label: String) -> some View {

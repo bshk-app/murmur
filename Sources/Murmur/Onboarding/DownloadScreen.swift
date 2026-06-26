@@ -118,7 +118,7 @@ struct DownloadScreen: View {
 
     private var readyPill: some View {
         HStack(spacing: 6) {
-            Text(verbatim: "✓").font(.system(size: 12, weight: .bold))
+            Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).accessibilityHidden(true)
             Text("Ready").font(.system(size: 13, weight: .semibold))
         }
         .foregroundStyle(t.ok)
@@ -182,6 +182,7 @@ struct DownloadScreen: View {
         HStack(spacing: 11) {
             Circle().fill(t.ok).frame(width: 22, height: 22)
                 .overlay(Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
+                .accessibilityHidden(true)   // decorative; the banner text carries the meaning
             Text("Both models are on your Mac — you’re ready to roll.")
                 .font(.system(size: 13.5, weight: .medium)).foregroundStyle(t.ink)
             Spacer(minLength: 0)

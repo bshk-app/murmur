@@ -51,6 +51,7 @@ struct MenuPopover: View {
             HStack(spacing: 10) {
                 Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
                     .frame(width: 26, height: 26)
+                    .accessibilityHidden(true)   // decorative; "MurMur" label carries the name
                 Text("MurMur").font(.system(size: 15, weight: .semibold)).foregroundStyle(primary)
                 Spacer()
                 Toggle("", isOn: $enabled).toggleStyle(.switch).tint(Mur.accent).labelsHidden()
@@ -209,6 +210,7 @@ private struct MeterBars: View {
             }
         }
         .frame(height: 18)
+        .accessibilityHidden(true)   // decorative meter
         .onAppear { up = true }
     }
 }

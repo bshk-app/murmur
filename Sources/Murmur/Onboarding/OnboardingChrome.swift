@@ -104,6 +104,7 @@ struct OnboardingRail: View {
                 .offset(y: floatUp ? -6 : 0)
                 .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
                 .padding(.bottom, 12)
+                .accessibilityHidden(true)   // decorative; the narrator text carries the info
             narratorBubble
             Spacer(minLength: 0)
             Text("Setup steps")
@@ -320,6 +321,7 @@ struct FinishedOverlay: View {
     var body: some View {
         VStack(spacing: 6) {
             onboardingCat(104)
+                .accessibilityHidden(true)   // decorative
             Text("MurMur is live")
                 .font(.system(size: 30, weight: .semibold, design: .serif))
                 .foregroundStyle(t.ink).padding(.top, 10)

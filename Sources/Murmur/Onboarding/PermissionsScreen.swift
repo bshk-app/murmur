@@ -118,7 +118,7 @@ struct PermissionsScreen: View {
 
     private var grantedPill: some View {
         HStack(spacing: 6) {
-            Text(verbatim: "✓").font(.system(size: 12, weight: .bold))
+            Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).accessibilityHidden(true)
             Text("Granted").font(.system(size: 13, weight: .semibold))
         }
         .foregroundStyle(t.ok)
@@ -134,6 +134,7 @@ struct PermissionsScreen: View {
             Rectangle().fill(t.muted(0.4)).frame(width: 2, height: 4)
             RoundedRectangle(cornerRadius: 2, style: .continuous).fill(t.muted(0.4)).frame(width: 13, height: 2)
         }
+        .accessibilityHidden(true)   // decorative glyph; the card title carries the name
     }
 
     private var accessibilityIcon: some View {
@@ -150,5 +151,6 @@ struct PermissionsScreen: View {
                     RoundedRectangle(cornerRadius: 2, style: .continuous).fill(t.muted(0.5)).frame(width: 16, height: 2.5)
                 }
             }
+            .accessibilityHidden(true)   // decorative glyph; the card title carries the name
     }
 }
