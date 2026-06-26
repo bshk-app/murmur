@@ -2,7 +2,8 @@ name: release
 
 # Thin caller of the public shared action (zamok-org/ci). Builds Murmur on a GitHub-hosted
 # macOS runner, signs + notarizes + staples via zamokctl, and publishes the cask to the tap.
-# Secrets come from the bshk-app org via `secrets: inherit`.
+# The action lives in a DIFFERENT org (zamok-org), so `secrets: inherit` does NOT forward the
+# bshk-app org secrets — they must be mapped explicitly below.
 
 on:
   push:
@@ -24,6 +25,11 @@ jobs:
       asset-repo: bshk-app/murmur            # artifacts live in the app repo's Releases
       build-flags: "ARCHS=arm64 ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO"
       runner: macos-15                        # newer Xcode/SDK; Murmur needs macOS 15 + MLX
-      # sparkle: false                         # appcast not wired yet — cask-only first release
       version: ${{ github.event.inputs.version }}
-    secrets: inherit
+    secrets:
+      DEVELOPER_ID_P12:          ${{ secrets.DEVELOPER_ID_P12 }}
+      DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+      NOTARY_KEY_P8:             ${{ secrets.NOTARY_KEY_P8 }}
+      NOTARY_KEY_ID:             ${{ secrets.NOTARY_KEY_ID }}
+      NOTARY_ISSUER:             ${{ secrets.NOTARY_ISSUER }}
+      TAP_GITHUB_TOKEN:          ${{ secrets.TAP_GITHUB_TOKEN }}
