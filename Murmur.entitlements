@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- Microphone access under Hardened Runtime (required for notarization). -->
+  <key>com.apple.security.device.audio-input</key><true/>
+  <!-- NOT sandboxed: Murmur types into other apps (CGEvent) + uses Accessibility /
+       Input Monitoring, which App Sandbox would block. Hardened Runtime + Developer ID
+       + notarization is the security boundary instead.
+
+       If notarization or first launch fails on *library validation* (MLX-Swift dylibs /
+       the Cmlx metallib bundle), add — and ONLY then:
+         <key>com.apple.security.cs.disable-library-validation</key><true/>
+       Do not add it speculatively. -->
+</dict>
+</plist>
