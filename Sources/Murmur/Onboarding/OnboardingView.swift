@@ -1,5 +1,4 @@
 import MurmurKit
-import PostHog
 import SwiftUI
 
 /// The first-run onboarding window (design: MurMur Onboarding.dc.html). A 6-step
@@ -112,7 +111,7 @@ private struct WelcomeScreen: View {
         }
         .toggleStyle(.switch).tint(Mur.accent).controlSize(.small)
         .onChange(of: analyticsEnabled) { _, on in
-            on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+            AnalyticsConsent.set(on)
         }
         .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
         .background(t.line(0.04), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
