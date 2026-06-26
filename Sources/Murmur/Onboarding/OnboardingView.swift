@@ -59,13 +59,13 @@ private struct ScreenHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(eyebrow)
-                .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                .tracking(1.4).murFont(11, weight: .bold)
                 .foregroundStyle(Mur.accent)
             Text(title)
-                .font(.system(size: 32, weight: .semibold, design: .serif))
+                .murFont(32, weight: .semibold, design: .serif)
                 .foregroundStyle(t.ink).padding(.top, 10)
             Text(lede)
-                .font(.system(size: 14.5)).lineSpacing(4)
+                .murFont(14.5).lineSpacing(4)
                 .foregroundStyle(t.muted(0.66))
                 .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
         }
@@ -107,7 +107,7 @@ private struct WelcomeScreen: View {
     private var consentToggle: some View {
         Toggle(isOn: $analyticsEnabled) {
             Text("Share anonymous usage & crash reports — never your audio or transcripts. Optional, change anytime in Settings.")
-                .font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.55))
+                .murFont(12).lineSpacing(2).foregroundStyle(t.muted(0.55))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .toggleStyle(.switch).tint(Mur.accent).controlSize(.small)
@@ -123,8 +123,8 @@ private struct WelcomeScreen: View {
                                            title: LocalizedStringKey, caption: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             badge()
-            Text(title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(t.ink).padding(.top, 11)
-            Text(caption).font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.58)).padding(.top, 4)
+            Text(title).murFont(13.5, weight: .semibold).foregroundStyle(t.ink).padding(.top, 11)
+            Text(caption).murFont(12).lineSpacing(2).foregroundStyle(t.muted(0.58)).padding(.top, 4)
                 .lineLimit(2, reservesSpace: true)   // reserve 2 lines so all 3 cards match height
         }
         .padding(.init(top: 15, leading: 14, bottom: 15, trailing: 14))
@@ -233,7 +233,7 @@ private struct DoneScreen: View {
                                                    @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(spacing: 12) {
             badge
-            Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(tint)
+            Text(title).murFont(14, weight: .medium).foregroundStyle(tint)
             Spacer(minLength: 6)
             trailing()
         }

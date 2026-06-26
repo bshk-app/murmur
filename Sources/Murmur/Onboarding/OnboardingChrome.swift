@@ -110,7 +110,7 @@ struct OnboardingRail: View {
             narratorBubble
             Spacer(minLength: 0)
             Text("Setup steps")
-                .font(.system(size: 10.5, weight: .bold)).tracking(1.4)
+                .tracking(1.4).murFont(10.5, weight: .bold)
                 .foregroundStyle(t.muted(0.45))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 11)
@@ -162,7 +162,7 @@ struct OnboardingRail: View {
 
     private var narratorBubble: some View {
         (Text(verbatim: typed) + caret)
-            .font(.system(size: 13.5)).lineSpacing(4)
+            .murFont(13.5).lineSpacing(4)
             .foregroundStyle(t.muted(0.96))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.init(top: 13, leading: 15, bottom: 13, trailing: 15))
@@ -190,7 +190,7 @@ struct OnboardingRail: View {
                 HStack(spacing: 11) {
                     stepDot(index: i, done: done, active: active)
                     Text(labels[i])
-                        .font(.system(size: 13, weight: active ? .semibold : .medium))
+                        .murFont(13, weight: active ? .semibold : .medium)
                         .foregroundStyle(active ? t.ink : (done ? t.muted(0.72) : t.muted(0.45)))
                     Spacer(minLength: 0)
                 }
@@ -292,14 +292,14 @@ struct OnboardingFooter: View {
         HStack(spacing: 14) {
             if model.showBack {
                 Button { model.back() } label: {
-                    Text("Back").font(.system(size: 14, weight: .semibold)).foregroundStyle(t.muted(0.7))
+                    Text("Back").murFont(14, weight: .semibold).foregroundStyle(t.muted(0.7))
                         .padding(.horizontal, 16).padding(.vertical, 11).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
             Spacer(minLength: 0)
             if let hint = blockHint {
-                Text(hint).font(.system(size: 12.5)).foregroundStyle(t.muted(0.5))
+                Text(hint).murFont(12.5).foregroundStyle(t.muted(0.5))
             }
             continueButton
         }
@@ -311,7 +311,7 @@ struct OnboardingFooter: View {
     private var continueButton: some View {
         Button { model.next() } label: {
             Text(continueLabel)
-                .font(.system(size: 14, weight: .semibold))
+                .murFont(14, weight: .semibold)
                 .foregroundStyle(model.canContinue ? OnTheme.rgb(26, 18, 12) : t.muted(0.38))
                 .padding(.horizontal, 22).padding(.vertical, 11)
                 .background(model.canContinue ? AnyShapeStyle(Mur.accent) : AnyShapeStyle(t.line(0.1)),

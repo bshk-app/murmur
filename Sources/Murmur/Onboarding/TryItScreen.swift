@@ -22,13 +22,13 @@ struct TryItScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Try it")
-                    .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                    .tracking(1.4).murFont(11, weight: .bold)
                     .foregroundStyle(Mur.accent)
                 Text("Give me a sentence")
-                    .font(.system(size: 32, weight: .semibold, design: .serif))
+                    .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
                 Text("Hold the button below and say anything. Watch the fast draft appear, then sharpen a blink later — that’s the two models working together.")
-                    .font(.system(size: 14.5)).lineSpacing(4)
+                    .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
             }
@@ -104,7 +104,7 @@ struct TryItScreen: View {
     }
 
     private func label(_ key: LocalizedStringKey, color: Color) -> some View {
-        Text(key).font(.system(size: 13, weight: .medium)).foregroundStyle(color)
+        Text(key).murFont(13, weight: .medium).foregroundStyle(color)
     }
 
     // MARK: - Hold-to-talk button
