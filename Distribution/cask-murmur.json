@@ -5,7 +5,7 @@
   "homepage": "https://github.com/bshk-app/murmur",
   "autoUpdates": true,
   "appBundle": "Murmur.app",
-  "dependsOnMacOS": ">= :sequoia",
+  "dependsOnMacOS": true,
   "livecheck": true,
   "livecheckUrl": "https://raw.githubusercontent.com/bshk-app/murmur/main/appcast.xml",
   "zapTrash": [
