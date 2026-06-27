@@ -1,0 +1,91 @@
+name: appcast
+
+# When the release pipeline PUBLISHES a GitHub release, (re)generate the signed Sparkle
+# appcast over the new .zip and commit it to main — so the in-app updater's SUFeedURL
+# (…/main/appcast.xml) resolves and shows "What's new" from the conventional-commit log.
+#
+# Decoupled from release.yml on purpose: Murmur is the first Sparkle app. Once this is
+# proven, the same logic can move into zamok-org/ci's `sparkle: true` step for reuse.
+#
+# Security: all event-derived input (the release tag) flows through `env:` and is used
+# quoted in run scripts — never interpolated as ${{ }} inside a shell command.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to (re)build the appcast for, e.g. murmur-0.1.0"
+        required: true
+
+permissions:
+  contents: write   # commit appcast.xml back to main
+
+jobs:
+  appcast:
+    runs-on: macos-15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.release.tag_name || github.event.inputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0   # git-cliff needs full history + tags
+
+      - name: Install Sparkle tools + git-cliff
+        run: |
+          brew install --cask sparkle
+          brew install git-cliff
+
+      - name: Release notes from conventional commits (HTML for Sparkle)
+        run: |
+          set -euo pipefail
+          # Notes for the latest tag → markdown → minimal HTML (Sparkle reads HTML).
+          git-cliff --latest --strip header -o "$RUNNER_TEMP/notes.md" || : > "$RUNNER_TEMP/notes.md"
+          if [ -s "$RUNNER_TEMP/notes.md" ]; then
+            { echo "<h2>What's new</h2>"; npx -y marked "$RUNNER_TEMP/notes.md"; } > "$RUNNER_TEMP/notes.html"
+          fi
+
+      - name: Build + sign appcast, commit to main
+        env:
+          SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          SPK="$(echo "$(brew --prefix)/Caskroom/sparkle"/*/bin)"
+          WORK="$RUNNER_TEMP/appcast"; mkdir -p "$WORK"
+
+          # The just-published app zip (the enclosure target). $TAG is env-injected (safe).
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.zip' --dir "$WORK"
+
+          # Keep prior items: seed the working dir with the live feed. generate_appcast
+          # preserves existing <item>s even without their old zips present (verified), so
+          # this is all that's needed for the version history to accumulate.
+          cp appcast.xml "$WORK/appcast.xml" 2>/dev/null || true
+
+          # Attach release notes to this item (Sparkle reads <zip-basename>.html next to the zip).
+          if [ -s "$RUNNER_TEMP/notes.html" ]; then
+            ZIP="$(basename "$(ls "$WORK"/*.zip | head -1)" .zip)"
+            cp "$RUNNER_TEMP/notes.html" "$WORK/$ZIP.html"
+          fi
+
+          # Sign with the EdDSA key from the secret. Write it to a private temp file
+          # (chmod 600, trap-removed) rather than stdin — portable across Sparkle versions
+          # and never left on disk. The key MUST be generate_keys' export of the same pair
+          # as the app's SUPublicEDKey, or Sparkle silently rejects every update.
+          KEYFILE="$(mktemp)"; chmod 600 "$KEYFILE"
+          trap 'rm -f "$KEYFILE"' EXIT
+          printf '%s' "$SPARKLE_ED_PRIVATE_KEY" > "$KEYFILE"
+          "$SPK"/generate_appcast \
+            --ed-key-file "$KEYFILE" \
+            --download-url-prefix "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/" \
+            --embed-release-notes \
+            --maximum-versions 10 \
+            "$WORK"
+
+          cp "$WORK/appcast.xml" appcast.xml
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add appcast.xml
+          git diff --cached --quiet || git commit -m "release: update Sparkle appcast for $TAG"
+          git push

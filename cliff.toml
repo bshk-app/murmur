@@ -1,0 +1,36 @@
+# git-cliff — conventional-commit changelog / release notes.
+# Used by the appcast workflow to build the Sparkle "What's new" + GitHub release body.
+[changelog]
+header = ""
+# Per-version body: a heading + grouped commits. Rendered to HTML for Sparkle.
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | upper_first }}
+{% for commit in commits %}
+- {{ commit.message | upper_first }}{% endfor %}
+{% endfor %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+# Map commit prefixes → changelog sections; drop noise from user-facing notes.
+commit_parsers = [
+  { message = "^feat", group = "Added" },
+  { message = "^fix", group = "Fixed" },
+  { message = "^a11y", group = "Accessibility" },
+  { message = "^perf", group = "Performance" },
+  { message = "^docs", skip = true },
+  { message = "^chore", skip = true },
+  { message = "^ci", skip = true },
+  { message = "^build", skip = true },
+  { message = "^test", skip = true },
+  { message = "^refactor", group = "Changed" },
+  { message = "^release", skip = true },
+]
+# Only commits under the release tag pattern.
+tag_pattern = "murmur-v[0-9]*"
+filter_commits = true
+sort_commits = "newest"
