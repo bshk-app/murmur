@@ -1,3 +1,6 @@
+<img width="1280" height="640" alt="murmur-og" src="https://github.com/user-attachments/assets/cf9ea362-4b7a-4b98-9264-8ee2f141f1e3" />
+
+
 # Murmur
 
 > **Just talk. Murmur types it.**
