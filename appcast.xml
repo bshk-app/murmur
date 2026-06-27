@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Murmur</title>
+        <item>
+            <title>0.1.0</title>
+            <pubDate>Sat, 27 Jun 2026 14:07:30 +0300</pubDate>
+            <sparkle:version>0.1.0</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-0.1.0/Murmur-0.1.0.zip" length="19465130" type="application/octet-stream" sparkle:edSignature="L34440Gp2yCZWDERUE2ucu++va7IHTUd6L0majWWRtdEI007gJthySSx2l4HWlJXNI+XdtCY3Fcqpt6NjqM1Bg=="/>
+        </item>
+    </channel>
+</rss>
