@@ -10,6 +10,13 @@
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
             <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-0.1.0/Murmur-0.1.0.zip" length="19465130" type="application/octet-stream" sparkle:edSignature="L34440Gp2yCZWDERUE2ucu++va7IHTUd6L0majWWRtdEI007gJthySSx2l4HWlJXNI+XdtCY3Fcqpt6NjqM1Bg=="/>
+            <description><![CDATA[<h2>What's new</h2>
+<h3>Fixed</h3>
+<ul>
+<li>DependsOnMacOS must be bool (zamokctl cask schema)</li>
+</ul>
+
+]]></description>
         </item>
     </channel>
 </rss>
