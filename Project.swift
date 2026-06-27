@@ -14,12 +14,13 @@ import ProjectDescription
 // CI). Absent in a plain `tuist generate` → source/fork builds ship with analytics OFF.
 let posthogAPIKey = ProcessInfo.processInfo.environment["TUIST_MURMUR_POSTHOG_KEY"] ?? ""
 
-// App version comes from the release tag: CI exports APP_VERSION (`murmur-vX.Y.Z` → X.Y.Z)
-// before `tuist generate`; a plain local build falls back. CFBundleVersion (build number)
-// uses a monotonic APP_BUILD when CI sets one (e.g. the run number), else the version.
+// App version comes from the release tag. Tuist ONLY forwards TUIST_-prefixed env vars into
+// the manifest, so CI must export TUIST_APP_VERSION (`murmur-vX.Y.Z` → X.Y.Z) before
+// `tuist generate` — a bare APP_VERSION is silently filtered out and the build falls back.
+// TUIST_APP_BUILD (e.g. the run number) gives a monotonic CFBundleVersion; else the version.
 // Without these, Tuist's default Info.plist ships the placeholder 1.0.
-let appVersion = ProcessInfo.processInfo.environment["APP_VERSION"] ?? "0.1.0"
-let appBuild = ProcessInfo.processInfo.environment["APP_BUILD"] ?? appVersion
+let appVersion = ProcessInfo.processInfo.environment["TUIST_APP_VERSION"] ?? "0.1.0"
+let appBuild = ProcessInfo.processInfo.environment["TUIST_APP_BUILD"] ?? appVersion
 
 let project = Project(
     name: "Murmur",
