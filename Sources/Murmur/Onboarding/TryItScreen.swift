@@ -22,13 +22,13 @@ struct TryItScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Try it")
-                    .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                    .tracking(1.4).murFont(11, weight: .bold)
                     .foregroundStyle(Mur.accent)
                 Text("Give me a sentence")
-                    .font(.system(size: 32, weight: .semibold, design: .serif))
+                    .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
                 Text("Hold the button below and say anything. Watch the fast draft appear, then sharpen a blink later — that’s the two models working together.")
-                    .font(.system(size: 14.5)).lineSpacing(4)
+                    .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
             }
@@ -104,7 +104,7 @@ struct TryItScreen: View {
     }
 
     private func label(_ key: LocalizedStringKey, color: Color) -> some View {
-        Text(key).font(.system(size: 13, weight: .medium)).foregroundStyle(color)
+        Text(key).murFont(13, weight: .medium).foregroundStyle(color)
     }
 
     // MARK: - Hold-to-talk button
@@ -127,6 +127,14 @@ struct TryItScreen: View {
         .animation(.easeOut(duration: 0.12), value: pressed)
         .gesture(holdGesture)
         .disabled(!ready)
+        .accessibilityElement(children: .ignore)
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel("Hold to talk")
+        .accessibilityHint(ready
+            ? "Double-tap to start dictation, double-tap again to stop"
+            : "Models are still loading")
+        .accessibilityValue(model.tryListening ? "Listening" : "")
+        .accessibilityAction { if ready { model.tryToggle() } }
     }
 
     private var buttonFill: AnyShapeStyle {
@@ -161,6 +169,7 @@ private struct LevelBars: View {
     var color: Color
     var count: Int = 4
     var barHeight: CGFloat = 14
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
 
     var body: some View {
@@ -168,11 +177,12 @@ private struct LevelBars: View {
             ForEach(0 ..< count, id: \.self) { i in
                 Capsule().fill(color)
                     .frame(width: 2.5, height: barHeight)
-                    .scaleEffect(y: up ? 1 : 0.32, anchor: .center)
-                    .animation(.easeInOut(duration: 0.45).repeatForever(autoreverses: true)
+                    .scaleEffect(y: (up || reduceMotion) ? 1 : 0.32, anchor: .center)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.45).repeatForever(autoreverses: true)
                         .delay(Double(i) * 0.12), value: up)
             }
         }
+        .accessibilityHidden(true)   // decorative meter
         .onAppear { up = true }
     }
 }

@@ -1,5 +1,4 @@
 import KeyboardShortcuts
-import PostHog
 import SwiftUI
 
 /// Murmur's preferences window (a SwiftUI `Settings` scene): the push-to-talk
@@ -33,7 +32,7 @@ struct SettingsView: View {
             Section {
                 Toggle("Share anonymous usage & crash reports", isOn: $analyticsEnabled)
                     .onChange(of: analyticsEnabled) { _, on in
-                        on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+                        AnalyticsConsent.set(on)
                     }
             } header: {
                 Text("Privacy")

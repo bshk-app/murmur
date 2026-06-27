@@ -30,13 +30,13 @@ struct ShortcutScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Shortcut")
-                    .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                    .tracking(1.4).murFont(11, weight: .bold)
                     .foregroundStyle(Mur.accent)
                 Text("Choose your push-to-talk")
-                    .font(.system(size: 32, weight: .semibold, design: .serif))
+                    .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
                 Text("Pick the keys you’ll hold down while speaking. A hold-to-talk combo like ⌃⌥Space feels best.")
-                    .font(.system(size: 14.5)).lineSpacing(4)
+                    .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 440, alignment: .leading).padding(.top, 11)
             }
@@ -56,7 +56,7 @@ struct ShortcutScreen: View {
                 current = newValue
             }
             Text("Click above to record a new shortcut")
-                .font(.system(size: 12.5)).foregroundStyle(t.muted(0.55))
+                .murFont(12.5).foregroundStyle(t.muted(0.55))
         }
         .frame(maxWidth: .infinity)
         .padding(24)

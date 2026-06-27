@@ -32,13 +32,13 @@ final class OnboardingModel {
 
     /// Guards `startDownload` so the overlap-from-Welcome trigger and a manual
     /// Retry never spawn two concurrent downloads.
-    private var downloadStarted = false
+    @ObservationIgnored private var downloadStarted = false
 
     private let session: DictationSession
 
     /// Polls AX trust while the Permissions step is open — there's no
     /// notification for Accessibility-trust changes, so we have to ask.
-    private var accPollTimer: Timer?
+    @ObservationIgnored private var accPollTimer: Timer?
 
     init(session: DictationSession) { self.session = session }
 
@@ -198,14 +198,14 @@ final class OnboardingModel {
     /// The controller's HUD `onUpdate` handler, parked while the try-it field
     /// borrows `session.onUpdate`, and restored when the dictation ends — the
     /// session is app-lifetime, so the main app must keep driving the HUD after.
-    private var savedOnUpdate: ((String, String) -> Void)?
+    @ObservationIgnored private var savedOnUpdate: ((String, String) -> Void)?
 
     /// True while a previous `tryEnd` is still draining `stop()` off-main. Blocks a
     /// rapid re-press from starting a new utterance before teardown finishes —
     /// otherwise it would overlap start()/stop() on the shared session AND re-save
     /// the borrowed closure as `savedOnUpdate`, permanently losing the controller's
     /// HUD handler (and killing the main app's HUD).
-    private var tryBusy = false
+    @ObservationIgnored private var tryBusy = false
 
     /// Press: borrow the warmed session, redirect its updates into our field, and
     /// start a Hybrid utterance. No-op if the pipeline isn't ready, already live,
@@ -267,6 +267,11 @@ final class OnboardingModel {
     func tryReset() {
         tryConfirmed = ""
         tryPartial = ""
+    }
+
+    /// VoiceOver can't hold a key — double-tap toggles the utterance instead.
+    func tryToggle() {
+        if tryListening { tryEnd() } else { tryStart() }
     }
 
     /// Should onboarding be shown at launch?

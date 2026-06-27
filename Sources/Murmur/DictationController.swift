@@ -31,8 +31,8 @@ final class DictationController {
     /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
     /// reuses it instead of spinning up a second `DictationSession`.
     var dictationSession: DictationSession { session }
-    private var promptedAccessibility = false
-    private var isPreparing = false
+    @ObservationIgnored private var promptedAccessibility = false
+    @ObservationIgnored private var isPreparing = false
 
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
@@ -158,9 +158,11 @@ final class DictationController {
     ///  2. echo the same view to the console, redrawn in place — handy from Xcode.
     private nonisolated func echo(_ confirmed: String, _ partial: String) {
         Task { @MainActor in self.hud.update(confirmed: confirmed, partial: partial) }
+        #if DEBUG
         let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
         let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
         FileHandle.standardError.write(Data("\r\u{1B}[2K\(tail)".utf8))
+        #endif
     }
 
     private func endRecording() {
