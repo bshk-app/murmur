@@ -3,6 +3,22 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.1.1</title>
+            <pubDate>Sat, 27 Jun 2026 13:15:23 +0000</pubDate>
+            <sparkle:version>0.1.1</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h2>What's new</h2>
+<h3>Fixed</h3>
+<ul>
+<li>Version env must be TUIST_-prefixed (Tuist filters bare vars)</li>
+</ul>
+
+]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-0.1.1/Murmur-0.1.1.zip" length="19465198" type="application/octet-stream" sparkle:edSignature="tf57C6KCNM1o7z1eJMRSkidUnNXsSbnndMC/uA/x9FZaVxMYPDu8VVNJFWpr1UBpc+t61NKFSSTsyZWoVyXZBA=="/>
+        </item>
+        <item>
             <title>0.1.0</title>
             <pubDate>Sat, 27 Jun 2026 14:07:30 +0300</pubDate>
             <sparkle:version>0.1.0</sparkle:version>
