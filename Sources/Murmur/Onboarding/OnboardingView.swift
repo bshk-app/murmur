@@ -1,5 +1,4 @@
 import MurmurKit
-import PostHog
 import SwiftUI
 
 /// The first-run onboarding window (design: MurMur Onboarding.dc.html). A 6-step
@@ -59,13 +58,13 @@ private struct ScreenHeader: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(eyebrow)
-                .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                .tracking(1.4).murFont(11, weight: .bold)
                 .foregroundStyle(Mur.accent)
             Text(title)
-                .font(.system(size: 32, weight: .semibold, design: .serif))
+                .murFont(32, weight: .semibold, design: .serif)
                 .foregroundStyle(t.ink).padding(.top, 10)
             Text(lede)
-                .font(.system(size: 14.5)).lineSpacing(4)
+                .murFont(14.5).lineSpacing(4)
                 .foregroundStyle(t.muted(0.66))
                 .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
         }
@@ -107,12 +106,12 @@ private struct WelcomeScreen: View {
     private var consentToggle: some View {
         Toggle(isOn: $analyticsEnabled) {
             Text("Share anonymous usage & crash reports — never your audio or transcripts. Optional, change anytime in Settings.")
-                .font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.55))
+                .murFont(12).lineSpacing(2).foregroundStyle(t.muted(0.55))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .toggleStyle(.switch).tint(Mur.accent).controlSize(.small)
         .onChange(of: analyticsEnabled) { _, on in
-            on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+            AnalyticsConsent.set(on)
         }
         .padding(.init(top: 10, leading: 14, bottom: 10, trailing: 14))
         .background(t.line(0.04), in: RoundedRectangle(cornerRadius: 11, style: .continuous))
@@ -123,8 +122,8 @@ private struct WelcomeScreen: View {
                                            title: LocalizedStringKey, caption: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             badge()
-            Text(title).font(.system(size: 13.5, weight: .semibold)).foregroundStyle(t.ink).padding(.top, 11)
-            Text(caption).font(.system(size: 12)).lineSpacing(2).foregroundStyle(t.muted(0.58)).padding(.top, 4)
+            Text(title).murFont(13.5, weight: .semibold).foregroundStyle(t.ink).padding(.top, 11)
+            Text(caption).murFont(12).lineSpacing(2).foregroundStyle(t.muted(0.58)).padding(.top, 4)
                 .lineLimit(2, reservesSpace: true)   // reserve 2 lines so all 3 cards match height
         }
         .padding(.init(top: 15, leading: 14, bottom: 15, trailing: 14))
@@ -138,6 +137,7 @@ private struct WelcomeScreen: View {
             .padding(.horizontal, 11).frame(height: 30)
             .background(t.line(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
             .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+            .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     private var speakBadge: some View {
@@ -152,6 +152,7 @@ private struct WelcomeScreen: View {
         .padding(.horizontal, 11).frame(height: 30)
         .background(Mur.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(Mur.accent.opacity(0.2), lineWidth: 1))
+        .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     private var typedBadge: some View {
@@ -162,6 +163,7 @@ private struct WelcomeScreen: View {
         .padding(.horizontal, 11).frame(height: 30)
         .background(t.line(0.05), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+        .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
     /// "Two models, one trick … about 3.6 GB …" — size pulled from `OnboardingFlow`.
@@ -172,7 +174,7 @@ private struct WelcomeScreen: View {
             + Text(verbatim: gb).fontWeight(.bold).foregroundColor(t.ink)   // "3.6 GB" — runtime value
             + Text(". Nothing you say ever leaves your Mac.")
         return HStack(alignment: .top, spacing: 11) {
-            onboardingCat(30).padding(.top, 1)
+            onboardingCat(30).padding(.top, 1).accessibilityHidden(true)   // decorative
             body.font(.system(size: 13)).lineSpacing(3).foregroundColor(t.muted(0.72))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -230,7 +232,7 @@ private struct DoneScreen: View {
                                                    @ViewBuilder trailing: () -> Trailing) -> some View {
         HStack(spacing: 12) {
             badge
-            Text(title).font(.system(size: 14, weight: .medium)).foregroundStyle(tint)
+            Text(title).murFont(14, weight: .medium).foregroundStyle(tint)
             Spacer(minLength: 6)
             trailing()
         }
@@ -244,12 +246,14 @@ private struct DoneScreen: View {
     private var checkBadge: some View {
         Circle().fill(OnTheme.rgb(95, 179, 106)).frame(width: 22, height: 22)
             .overlay(Text("✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
+            .accessibilityHidden(true)   // decorative; the row title carries the meaning
     }
 
     /// Amber "!" badge for the skipped-Accessibility (typing-off) notice.
     private var noticeBadge: some View {
         Circle().fill(amber).frame(width: 22, height: 22)
             .overlay(Text(verbatim: "!").font(.system(size: 13, weight: .bold)).foregroundStyle(OnTheme.rgb(26, 18, 12)))
+            .accessibilityHidden(true)   // decorative; the row title carries the meaning
     }
 
     private func keyChips(_ label: String) -> some View {

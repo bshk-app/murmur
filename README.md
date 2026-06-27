@@ -1,22 +1,15 @@
 # Murmur
 
-On-device push-to-talk dictation for macOS. Hold a global hotkey, speak, and the
-transcription is typed into the focused field of whatever app you're in — like
-[Handy](https://github.com/cjpais/handy), but **fully on-device** via
-[MLX](https://github.com/ml-explore/mlx). No cloud, no account, no API keys.
+> **Just talk. Murmur types it.**
 
-- **Push-to-talk** — hold a global hotkey (default ⌃⌥Space) to dictate, release to finish.
-- **Two-tier STT** — a fast low-latency model for live partials, a more accurate
-  model for the final text. English + Russian.
-- **On-device** — speech recognition runs entirely locally; no audio or
-  transcripts ever leave your Mac.
-- **Menu-bar agent** — a first-run wizard handles permissions, model download,
-  and a quick try-it; then it lives quietly in the menu bar.
+A tiny menu-bar cat that turns your voice into text — instantly, on the fly, in
+any app and ~30 languages. Everything runs right on your Mac: no accounts, no
+cloud, nothing recorded.
 
-## Requirements
+**[⬇ Download for Mac](https://github.com/bshk-app/murmur/releases/latest)** · Free &
+open source · powered by [MLX](https://github.com/ml-explore/mlx)
 
-- macOS 15 (Sequoia) or later
-- Apple Silicon (M1 or newer)
+---
 
 ## Install
 
@@ -25,37 +18,74 @@ brew tap bshk-app/homebrew-tap
 brew install --cask murmur
 ```
 
-The app updates itself in-app via [Sparkle](https://sparkle-project.org).
+…or grab the latest `.app` from [Releases](https://github.com/bshk-app/murmur/releases/latest).
+Murmur keeps itself up to date in-app via [Sparkle](https://sparkle-project.org).
+On first launch a one-time setup downloads the two on-device models (~3.6 GB).
 
-## Build from source
+## Three keys, no friction
 
-Murmur is a [Tuist](https://tuist.io) project; the dictation core lives in the
-local `MurmurKit/` Swift package and the app (`Sources/Murmur`) is a thin UI over
-it.
+1. **Hold the shortcut.** One global hotkey (default ⌃⌥Space), anywhere in macOS — the
+   menu-bar cat wakes up and starts listening.
+2. **Just speak.** Talk naturally. Murmur catches every word in real time — no
+   "processing" spinner, no waiting.
+3. **It's typed for you.** Words land straight in whatever field has focus — Slack,
+   Notes, your terminal, a code comment.
 
-```bash
-make build     # generate the Xcode project + build Release
-make run       # build and launch the menu-bar agent
-make run-cli   # run the terminal version (same MurmurKit core)
-```
+### Fast first, then perfect
 
-Builds are Release — MLX-Swift in Debug is several times slower and not realtime.
+The dual-model trick: a lightweight model types an instant draft so you never wait,
+and a split second later an accurate model catches up and quietly sharpens each word —
+fixing names, punctuation, and homophones in place. You watch it tidy itself up.
+
+### Speaks your language
+
+Auto-detects what you're speaking — around 30 languages, from global majors to most of
+Europe — and even handles code-switching between two in one breath.
+
+## Private by design
+
+Your voice never leaves your Mac. Both models run locally, so dictation works on a
+plane, in a tunnel, or fully offline.
+
+- **100% offline** — no audio upload, nothing stored, no accounts.
+- **Optional diagnostics** — anonymous usage/error analytics
+  ([PostHog](https://posthog.com)) are **opt-in**: off until you enable them on the
+  Welcome screen (or in Settings), and only anonymous events are ever sent — never
+  your audio or transcripts. Builds from source ship with analytics off entirely.
+
+## Requirements
+
+- **macOS 15 (Sequoia)** or later
+- **Apple Silicon** (M1 or newer) — speech runs on MLX / Metal
 
 ## Permissions
 
-- **Microphone** — capture speech while the hotkey is held.
-- **Accessibility** — type the transcription into other apps' fields.
-- **Input Monitoring** — global push-to-talk hotkey.
+- **Microphone** — to hear you while you hold the shortcut.
+- **Accessibility** — to type the text into other apps. Optional: without it,
+  dictation still shows live in a HUD.
 
-## Privacy & analytics
+## Build from source
 
-Dictation is fully on-device. Anonymous usage/error analytics
-([PostHog](https://posthog.com)) are **opt-in** — off until you enable them on
-the first-run Welcome screen (or in Settings), and only anonymous events and
-errors are ever sent, never audio or transcripts.
+Murmur is a [Tuist](https://tuist.io) project; the dictation core lives in `MurmurKit/`
+and the app (`Sources/Murmur`) is a thin UI over it.
 
-Builds from source ship with analytics **disabled** unless `TUIST_MURMUR_POSTHOG_KEY`
-is set at build time, so forks never phone home.
+```bash
+make build   # generate the Xcode project + build Release
+make run     # build and launch the menu-bar agent
+```
+
+Builds are Release — MLX-Swift in Debug is several times slower and not realtime.
+Analytics stay off in source builds unless `TUIST_MURMUR_POSTHOG_KEY` is set at build time.
+
+## Built on
+
+On-device speech via **[mlx-audio-swift](https://github.com/beshkenadze/mlx-audio-swift)**
+(`MurmurKit` → MLXAudioSTT / VAD / Core) on **[MLX](https://github.com/ml-explore/mlx-swift)**;
+models from the Hugging Face Hub via
+**[swift-huggingface](https://github.com/huggingface/swift-huggingface)**; the global
+hotkey via **[KeyboardShortcuts](https://github.com/sindresorhus/KeyboardShortcuts)**;
+in-app updates via **[Sparkle](https://github.com/sparkle-project/Sparkle)**; optional
+diagnostics via **[PostHog](https://github.com/PostHog/posthog-ios)**.
 
 ## License
 

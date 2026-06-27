@@ -14,6 +14,13 @@ import ProjectDescription
 // CI). Absent in a plain `tuist generate` → source/fork builds ship with analytics OFF.
 let posthogAPIKey = ProcessInfo.processInfo.environment["TUIST_MURMUR_POSTHOG_KEY"] ?? ""
 
+// App version comes from the release tag: CI exports APP_VERSION (`murmur-vX.Y.Z` → X.Y.Z)
+// before `tuist generate`; a plain local build falls back. CFBundleVersion (build number)
+// uses a monotonic APP_BUILD when CI sets one (e.g. the run number), else the version.
+// Without these, Tuist's default Info.plist ships the placeholder 1.0.
+let appVersion = ProcessInfo.processInfo.environment["APP_VERSION"] ?? "0.1.0"
+let appBuild = ProcessInfo.processInfo.environment["APP_BUILD"] ?? appVersion
+
 let project = Project(
     name: "Murmur",
     packages: [
@@ -33,6 +40,8 @@ let project = Project(
             bundleId: "app.bshk.murmur",
             deploymentTargets: .macOS("15.0"),   // MLXAudioSTT (dev/nemo-mic) requires macOS 15
             infoPlist: .extendingDefault(with: [
+                "CFBundleShortVersionString": .string(appVersion),   // X.Y.Z from the release tag
+                "CFBundleVersion": .string(appBuild),                // monotonic build (APP_BUILD) or version
                 "LSUIElement": true,                       // menu-bar agent: no Dock icon
                 "LSApplicationCategoryType": "public.app-category.productivity",
                 "CFBundleDisplayName": "Murmur",

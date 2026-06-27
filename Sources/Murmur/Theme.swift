@@ -1,4 +1,5 @@
 import MurmurKit
+import PostHog
 import SwiftUI
 
 /// MurMur design tokens (from the Claude Design handoff: MurMur.dc.html).
@@ -79,4 +80,9 @@ enum AnalyticsConsent {
     static let key = "murmur.analyticsEnabled"
     /// Defaults to `false` (opt-in) when unset.
     static var enabled: Bool { UserDefaults.standard.bool(forKey: key) }
+    /// SSOT for applying consent: persists + flips PostHog. Call from any toggle.
+    @MainActor static func set(_ on: Bool) {
+        UserDefaults.standard.set(on, forKey: key)
+        on ? PostHogSDK.shared.optIn() : PostHogSDK.shared.optOut()
+    }
 }

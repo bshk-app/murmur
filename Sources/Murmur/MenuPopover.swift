@@ -51,6 +51,7 @@ struct MenuPopover: View {
             HStack(spacing: 10) {
                 Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
                     .frame(width: 26, height: 26)
+                    .accessibilityHidden(true)   // decorative; "MurMur" label carries the name
                 Text("MurMur").font(.system(size: 15, weight: .semibold)).foregroundStyle(primary)
                 Spacer()
                 Toggle("", isOn: $enabled).toggleStyle(.switch).tint(Mur.accent).labelsHidden()
@@ -194,6 +195,7 @@ private struct MurSegment: View {
 private struct MeterBars: View {
     var active: Bool
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var up = false
 
     var body: some View {
@@ -203,12 +205,13 @@ private struct MeterBars: View {
                 Capsule()
                     .fill(lit ? Mur.accent : (scheme == .dark ? Color.white.opacity(0.16) : Mur.ink.opacity(0.18)))
                     .frame(width: 3, height: 18)
-                    .scaleEffect(y: up && lit ? 1 : 0.4, anchor: .center)
-                    .animation(.easeInOut(duration: 0.45).repeatForever(autoreverses: true)
+                    .scaleEffect(y: (up || reduceMotion) && lit ? 1 : 0.4, anchor: .center)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.45).repeatForever(autoreverses: true)
                         .delay(Double(i) * 0.07), value: up)
             }
         }
         .frame(height: 18)
+        .accessibilityHidden(true)   // decorative meter
         .onAppear { up = true }
     }
 }

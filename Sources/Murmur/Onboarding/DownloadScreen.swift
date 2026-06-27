@@ -30,13 +30,13 @@ struct DownloadScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Download")
-                    .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                    .tracking(1.4).murFont(11, weight: .bold)
                     .foregroundStyle(Mur.accent)
                 Text("Getting my voice ready")
-                    .font(.system(size: 32, weight: .semibold, design: .serif))
+                    .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
                 Text("Two models download once, then run entirely on your Mac. A fast one for the instant draft, an accurate one to sharpen it.")
-                    .font(.system(size: 14.5)).lineSpacing(4)
+                    .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
             }
@@ -78,14 +78,14 @@ struct DownloadScreen: View {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        Text(title).font(.system(size: 15, weight: .semibold)).foregroundStyle(t.ink)
+                        Text(title).murFont(15, weight: .semibold).foregroundStyle(t.ink)
                         Text(verbatim: String(format: "%.1f GB", sizeGB))
                             .font(.system(size: 10.5, weight: .medium))
                             .foregroundStyle(t.muted(0.55))
                             .padding(.horizontal, 6).padding(.vertical, 3)
                             .background(t.line(0.06), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                     }
-                    Text(subtitle).font(.system(size: 13)).foregroundStyle(t.muted(0.6))
+                    Text(subtitle).murFont(13).foregroundStyle(t.muted(0.6))
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -103,6 +103,9 @@ struct DownloadScreen: View {
         .padding(16)
         .background(t.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(ready ? "Downloaded" : "\(pct) percent")
     }
 
     private func progressBar(fraction: Double, ready: Bool) -> some View {
@@ -118,7 +121,7 @@ struct DownloadScreen: View {
 
     private var readyPill: some View {
         HStack(spacing: 6) {
-            Text(verbatim: "✓").font(.system(size: 12, weight: .bold))
+            Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).accessibilityHidden(true)
             Text("Ready").font(.system(size: 13, weight: .semibold))
         }
         .foregroundStyle(t.ok)
@@ -182,8 +185,9 @@ struct DownloadScreen: View {
         HStack(spacing: 11) {
             Circle().fill(t.ok).frame(width: 22, height: 22)
                 .overlay(Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
+                .accessibilityHidden(true)   // decorative; the banner text carries the meaning
             Text("Both models are on your Mac — you’re ready to roll.")
-                .font(.system(size: 13.5, weight: .medium)).foregroundStyle(t.ink)
+                .murFont(13.5, weight: .medium).foregroundStyle(t.ink)
             Spacer(minLength: 0)
         }
         .padding(.init(top: 13, leading: 15, bottom: 13, trailing: 15))
@@ -195,9 +199,9 @@ struct DownloadScreen: View {
         HStack(alignment: .top, spacing: 11) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("The download hit a snag.")
-                    .font(.system(size: 13.5, weight: .semibold)).foregroundStyle(Mur.error)
+                    .murFont(13.5, weight: .semibold).foregroundStyle(Mur.error)
                 Text(verbatim: message)
-                    .font(.system(size: 12.5)).lineSpacing(2).foregroundStyle(t.muted(0.6))
+                    .murFont(12.5).lineSpacing(2).foregroundStyle(t.muted(0.6))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 

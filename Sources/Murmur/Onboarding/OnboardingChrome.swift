@@ -75,6 +75,7 @@ private struct BubbleTailEdges: Shape {
 struct OnboardingRail: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// Per-step narrator copy (mock `narration[]`). These English strings are the
     /// String-Catalog keys (already translated in `Localizable.xcstrings`); resolved
@@ -95,6 +96,7 @@ struct OnboardingRail: View {
     @State private var typed = ""                // typewriter-revealed narration
     @State private var typing = false
     @State private var typeTask: Task<Void, Never>?
+    @State private var fullLine = ""             // resolved full narration line (VoiceOver label)
 
     var body: some View {
         VStack(spacing: 0) {
@@ -102,12 +104,13 @@ struct OnboardingRail: View {
                 .scaleEffect(talk ? 1.07 : 1)
                 .rotationEffect(.degrees(talk ? -3 : 0))
                 .offset(y: floatUp ? -6 : 0)
-                .animation(.easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
+                .animation(reduceMotion ? nil : .easeInOut(duration: 2.4).repeatForever(autoreverses: true), value: floatUp)
                 .padding(.bottom, 12)
+                .accessibilityHidden(true)   // decorative; the narrator text carries the info
             narratorBubble
             Spacer(minLength: 0)
             Text("Setup steps")
-                .font(.system(size: 10.5, weight: .bold)).tracking(1.4)
+                .tracking(1.4).murFont(10.5, weight: .bold)
                 .foregroundStyle(t.muted(0.45))
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.bottom, 11)
@@ -126,14 +129,20 @@ struct OnboardingRail: View {
     /// Bounce the cat and type the new line out, character by character — so each
     /// step reads as the cat actually saying it.
     private func speak() {
-        withAnimation(.spring(response: 0.28, dampingFraction: 0.45)) { talk = true }
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(280))
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { talk = false }
+        if !reduceMotion {
+            withAnimation(.spring(response: 0.28, dampingFraction: 0.45)) { talk = true }
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(280))
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) { talk = false }
+            }
         }
         let key = Self.narration[model.flow.step.rawValue]
         let full = Bundle.main.localizedString(forKey: key, value: key, table: nil)
+        fullLine = full
         typeTask?.cancel()
+        if reduceMotion {
+            typed = full; typing = false; return    // no bounce, no typewriter
+        }
         typed = ""
         typing = true
         typeTask = Task { @MainActor in
@@ -153,7 +162,7 @@ struct OnboardingRail: View {
 
     private var narratorBubble: some View {
         (Text(verbatim: typed) + caret)
-            .font(.system(size: 13.5)).lineSpacing(4)
+            .murFont(13.5).lineSpacing(4)
             .foregroundStyle(t.muted(0.96))
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.init(top: 13, leading: 15, bottom: 13, trailing: 15))
@@ -168,6 +177,8 @@ struct OnboardingRail: View {
                 .frame(width: 16, height: 8)
                 .offset(y: -6.5)
             }
+            .accessibilityLabel(Text(verbatim: fullLine))
+            .accessibilityHint("Setup narration")
     }
 
     private var stepper: some View {
@@ -179,13 +190,16 @@ struct OnboardingRail: View {
                 HStack(spacing: 11) {
                     stepDot(index: i, done: done, active: active)
                     Text(labels[i])
-                        .font(.system(size: 13, weight: active ? .semibold : .medium))
+                        .murFont(13, weight: active ? .semibold : .medium)
                         .foregroundStyle(active ? t.ink : (done ? t.muted(0.72) : t.muted(0.45)))
                     Spacer(minLength: 0)
                 }
                 .padding(.vertical, 3)
             }
         }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Setup steps")
+        .accessibilityValue("Step \(current + 1) of \(labels.count)")
     }
 
     @ViewBuilder
@@ -278,14 +292,14 @@ struct OnboardingFooter: View {
         HStack(spacing: 14) {
             if model.showBack {
                 Button { model.back() } label: {
-                    Text("Back").font(.system(size: 14, weight: .semibold)).foregroundStyle(t.muted(0.7))
+                    Text("Back").murFont(14, weight: .semibold).foregroundStyle(t.muted(0.7))
                         .padding(.horizontal, 16).padding(.vertical, 11).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
             }
             Spacer(minLength: 0)
             if let hint = blockHint {
-                Text(hint).font(.system(size: 12.5)).foregroundStyle(t.muted(0.5))
+                Text(hint).murFont(12.5).foregroundStyle(t.muted(0.5))
             }
             continueButton
         }
@@ -297,7 +311,7 @@ struct OnboardingFooter: View {
     private var continueButton: some View {
         Button { model.next() } label: {
             Text(continueLabel)
-                .font(.system(size: 14, weight: .semibold))
+                .murFont(14, weight: .semibold)
                 .foregroundStyle(model.canContinue ? OnTheme.rgb(26, 18, 12) : t.muted(0.38))
                 .padding(.horizontal, 22).padding(.vertical, 11)
                 .background(model.canContinue ? AnyShapeStyle(Mur.accent) : AnyShapeStyle(t.line(0.1)),
@@ -320,6 +334,7 @@ struct FinishedOverlay: View {
     var body: some View {
         VStack(spacing: 6) {
             onboardingCat(104)
+                .accessibilityHidden(true)   // decorative
             Text("MurMur is live")
                 .font(.system(size: 30, weight: .semibold, design: .serif))
                 .foregroundStyle(t.ink).padding(.top, 10)

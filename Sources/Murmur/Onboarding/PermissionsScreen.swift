@@ -16,13 +16,13 @@ struct PermissionsScreen: View {
         VStack(alignment: .leading, spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("Permissions")
-                    .font(.system(size: 11, weight: .bold)).tracking(1.4)
+                    .tracking(1.4).murFont(11, weight: .bold)
                     .foregroundStyle(Mur.accent)
                 Text("Two quick permissions")
-                    .font(.system(size: 32, weight: .semibold, design: .serif))
+                    .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
                 Text("macOS will pop up a confirmation for each. Grant both and I’m good to go — here’s what they’re for.")
-                    .font(.system(size: 14.5)).lineSpacing(4)
+                    .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
             }
@@ -47,13 +47,13 @@ struct PermissionsScreen: View {
             .padding(.top, 22)
 
             Text("You can change these anytime in System Settings → Privacy & Security.")
-                .font(.system(size: 12.5)).lineSpacing(3)
+                .murFont(12.5).lineSpacing(3)
                 .foregroundStyle(t.muted(0.5))
                 .padding(.top, 14)
 
             if !model.flow.accessibilityGranted {
                 Text("Accessibility is optional — you can set up typing later from the menu.")
-                    .font(.system(size: 12.5)).lineSpacing(3)
+                    .murFont(12.5).lineSpacing(3)
                     .foregroundStyle(t.muted(0.42))
                     .padding(.top, 6)
             }
@@ -83,7 +83,7 @@ struct PermissionsScreen: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 8) {
-                    Text(title).font(.system(size: 15, weight: .semibold)).foregroundStyle(t.ink)
+                    Text(title).murFont(15, weight: .semibold).foregroundStyle(t.ink)
                     if let badge {
                         Text(badge)
                             .font(.system(size: 10.5, weight: .medium))
@@ -92,7 +92,7 @@ struct PermissionsScreen: View {
                             .background(t.line(0.06), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                     }
                 }
-                Text(why).font(.system(size: 13)).lineSpacing(2).foregroundStyle(t.muted(0.6))
+                Text(why).murFont(13).lineSpacing(2).foregroundStyle(t.muted(0.6))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -118,7 +118,7 @@ struct PermissionsScreen: View {
 
     private var grantedPill: some View {
         HStack(spacing: 6) {
-            Text(verbatim: "✓").font(.system(size: 12, weight: .bold))
+            Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).accessibilityHidden(true)
             Text("Granted").font(.system(size: 13, weight: .semibold))
         }
         .foregroundStyle(t.ok)
@@ -134,6 +134,7 @@ struct PermissionsScreen: View {
             Rectangle().fill(t.muted(0.4)).frame(width: 2, height: 4)
             RoundedRectangle(cornerRadius: 2, style: .continuous).fill(t.muted(0.4)).frame(width: 13, height: 2)
         }
+        .accessibilityHidden(true)   // decorative glyph; the card title carries the name
     }
 
     private var accessibilityIcon: some View {
@@ -150,5 +151,6 @@ struct PermissionsScreen: View {
                     RoundedRectangle(cornerRadius: 2, style: .continuous).fill(t.muted(0.5)).frame(width: 16, height: 2.5)
                 }
             }
+            .accessibilityHidden(true)   // decorative glyph; the card title carries the name
     }
 }
