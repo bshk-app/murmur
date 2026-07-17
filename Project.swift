@@ -76,6 +76,18 @@ let project = Project(
                 "DEVELOPMENT_TEAM": "Q8H6GWJ658",
                 "CODE_SIGN_IDENTITY": "Apple Development",
             ])
-        )
+        ),
+        .target(
+            name: "MurmurTests",
+            destinations: .macOS,
+            product: .unitTests,
+            bundleId: "app.bshk.murmur.tests",
+            deploymentTargets: .macOS("15.0"),
+            sources: ["Tests/MurmurTests/**/*.swift"],
+            dependencies: [.target(name: "Murmur")],
+            settings: .settings(base: [
+                "SWIFT_VERSION": "5.0",
+            ])
+        ),
     ]
 )

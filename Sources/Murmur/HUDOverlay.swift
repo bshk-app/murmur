@@ -10,7 +10,7 @@ import SwiftUI
 
 @Observable
 final class HUDModel {
-    enum Phase { case listening, transcribing, error }
+    enum Phase: Equatable { case listening, transcribing, error }
     var phase: Phase = .listening
     var confirmed = ""
     var partial = ""
@@ -210,12 +210,81 @@ private extension View {
 // MARK: - Panel controller
 
 @MainActor
+protocol HUDHideScheduling {
+    func schedule(after delay: TimeInterval, action: @escaping @MainActor () -> Void) -> HUDCancellation
+}
+
+final class HUDCancellation {
+    private let action: () -> Void
+    private(set) var isCancelled = false
+
+    init(_ action: @escaping () -> Void) {
+        self.action = action
+    }
+
+    func cancel() {
+        guard !isCancelled else { return }
+        isCancelled = true
+        action()
+    }
+}
+
+@MainActor
+final class DispatchHUDHideScheduler: HUDHideScheduling {
+    func schedule(after delay: TimeInterval, action: @escaping @MainActor () -> Void) -> HUDCancellation {
+        let work = DispatchWorkItem {
+            MainActor.assumeIsolated { action() }
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        return HUDCancellation { work.cancel() }
+    }
+}
+
+@MainActor
+protocol HUDAnimating {
+    func show(_ panel: NSPanel)
+    func hide(_ panel: NSPanel, completion: @escaping @MainActor () -> Void)
+}
+
+@MainActor
+final class AppKitHUDAnimator: HUDAnimating {
+    func show(_ panel: NSPanel) {
+        panel.alphaValue = 0
+        panel.orderFrontRegardless()
+        NSAnimationContext.runAnimationGroup {
+            $0.duration = 0.18
+            panel.animator().alphaValue = 1
+        }
+    }
+
+    func hide(_ panel: NSPanel, completion: @escaping @MainActor () -> Void) {
+        NSAnimationContext.runAnimationGroup({
+            $0.duration = 0.25
+            panel.animator().alphaValue = 0
+        }, completionHandler: {
+            MainActor.assumeIsolated { completion() }
+        })
+    }
+}
+
+@MainActor
 final class HUDController {
-    private let model = HUDModel()
-    private var panel: NSPanel?
-    private var hideWork: DispatchWorkItem?
-    private var presentationID = 0
+    private(set) var model = HUDModel()
+    private(set) var panel: NSPanel?
+    private(set) var presentationID = 0
+    private var hideWork: HUDCancellation?
+    private let scheduler: any HUDHideScheduling
+    private let animator: any HUDAnimating
     private let size = NSSize(width: 940, height: 260)
+
+    convenience init() {
+        self.init(scheduler: DispatchHUDHideScheduler(), animator: AppKitHUDAnimator())
+    }
+
+    init(scheduler: any HUDHideScheduling, animator: any HUDAnimating) {
+        self.scheduler = scheduler
+        self.animator = animator
+    }
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
@@ -232,9 +301,7 @@ final class HUDController {
         model.onStop = onStop
         panel.ignoresMouseEvents = !interactive
         position(panel)
-        panel.alphaValue = 0
-        panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+        animator.show(panel)
     }
 
     /// Live two-tier update.
@@ -255,9 +322,7 @@ final class HUDController {
         if !text.isEmpty { model.errorText = text }
         model.recording = false
         position(panel)
-        panel.alphaValue = 0
-        panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+        animator.show(panel)
         scheduleHide(after: 3.2)
     }
 
@@ -273,28 +338,27 @@ final class HUDController {
     }
 
     private func scheduleHide(after delay: TimeInterval) {
+        hideWork?.cancel()
         let presentationID = presentationID
-        let work = DispatchWorkItem { [weak self] in self?.fadeOut(presentationID: presentationID) }
-        hideWork = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+        hideWork = scheduler.schedule(after: delay) { [weak self] in
+            self?.fadeOut(presentationID: presentationID)
+        }
     }
 
     private func fadeOut(presentationID: Int) {
         guard presentationID == self.presentationID, let panel else { return }
-        NSAnimationContext.runAnimationGroup({ $0.duration = 0.25; panel.animator().alphaValue = 0 },
-                                             completionHandler: { [weak self, weak panel] in
-            MainActor.assumeIsolated {
-                guard let self, let panel,
-                      presentationID == self.presentationID, panel === self.panel else { return }
-                panel.orderOut(nil)
+        hideWork = nil
+        animator.hide(panel) { [weak self, weak panel] in
+            guard let self, let panel,
+                  presentationID == self.presentationID, panel === self.panel else { return }
+            panel.orderOut(nil)
 
-                // `orderOut` only hides the panel. Keeping its NSHostingView attached leaves
-                // SwiftUI's repeat-forever bars and TimelineView rendering off-screen forever.
-                // Release the view tree so those display updates stop while Murmur is idle.
-                panel.contentView = nil
-                self.panel = nil
-            }
-        })
+            // `orderOut` only hides the panel. Keeping its NSHostingView attached leaves
+            // SwiftUI's repeat-forever bars and TimelineView rendering off-screen forever.
+            // Release the view tree so those display updates stop while Murmur is idle.
+            panel.contentView = nil
+            self.panel = nil
+        }
     }
 
     private func ensurePanel() -> NSPanel {
@@ -305,9 +369,9 @@ final class HUDController {
         panel.isOpaque = false
         panel.backgroundColor = .clear
         panel.hasShadow = false
+        panel.isFloatingPanel = true
         panel.level = .statusBar
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
-        panel.isFloatingPanel = true
         panel.becomesKeyOnlyIfNeeded = true
         panel.hidesOnDeactivate = false
         panel.ignoresMouseEvents = true
