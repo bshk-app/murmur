@@ -214,12 +214,14 @@ final class HUDController {
     private let model = HUDModel()
     private var panel: NSPanel?
     private var hideWork: DispatchWorkItem?
+    private var presentationID = 0
     private let size = NSSize(width: 940, height: 260)
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
     func begin(presentation: Bool, lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
+        presentationID += 1
         let panel = ensurePanel()
         model.presentation = presentation
         model.lang = lang
@@ -246,6 +248,8 @@ final class HUDController {
 
     /// Surface a mic/permission error in the HUD.
     func error(_ text: String) {
+        hideWork?.cancel(); hideWork = nil
+        presentationID += 1
         let panel = ensurePanel()
         model.phase = .error
         if !text.isEmpty { model.errorText = text }
@@ -269,15 +273,28 @@ final class HUDController {
     }
 
     private func scheduleHide(after delay: TimeInterval) {
-        let work = DispatchWorkItem { [weak self] in self?.fadeOut() }
+        let presentationID = presentationID
+        let work = DispatchWorkItem { [weak self] in self?.fadeOut(presentationID: presentationID) }
         hideWork = work
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
-    private func fadeOut() {
-        guard let panel else { return }
+    private func fadeOut(presentationID: Int) {
+        guard presentationID == self.presentationID, let panel else { return }
         NSAnimationContext.runAnimationGroup({ $0.duration = 0.25; panel.animator().alphaValue = 0 },
-                                             completionHandler: { panel.orderOut(nil) })
+                                             completionHandler: { [weak self, weak panel] in
+            MainActor.assumeIsolated {
+                guard let self, let panel,
+                      presentationID == self.presentationID, panel === self.panel else { return }
+                panel.orderOut(nil)
+
+                // `orderOut` only hides the panel. Keeping its NSHostingView attached leaves
+                // SwiftUI's repeat-forever bars and TimelineView rendering off-screen forever.
+                // Release the view tree so those display updates stop while Murmur is idle.
+                panel.contentView = nil
+                self.panel = nil
+            }
+        })
     }
 
     private func ensurePanel() -> NSPanel {
