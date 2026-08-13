@@ -90,6 +90,13 @@ struct MenuPopover: View {
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),
                                  (DictationMode.accurate.rawValue, "Accurate")])
+            if ModelSetting.isOverAskingForThisChip {
+                Text("Hybrid needs a Pro chip or better — on this Mac it can't keep up with speech, so text will lag behind.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(Mur.accent)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
+            }
             label("Hotkey").padding(.top, 11)
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),

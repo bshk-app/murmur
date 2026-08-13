@@ -53,8 +53,20 @@ enum DictationEnabled {
 /// Which model(s) transcribe — persisted; read by DictationController at begin.
 enum ModelSetting {
     static let key = "murmur.model"
+
+    /// Falls back to what this chip can actually run rather than to Hybrid.
+    /// Measured: Hybrid is RTF 0.83 on an M1 Max and 8–10 on a base M1, so the
+    /// old blanket default handed base-chip users a mode that cannot keep up and
+    /// left them guessing why dictation lagged. An explicit choice still wins.
     static var current: DictationMode {
-        DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .hybrid
+        DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "")
+            ?? ChipTier.current.recommendedMode
+    }
+
+    /// True when the user picked a mode this machine is not built for — the UI
+    /// says so instead of letting it look like the app is just slow.
+    static var isOverAskingForThisChip: Bool {
+        current == .hybrid && ChipTier.current.recommendedMode != .hybrid
     }
 }
 
