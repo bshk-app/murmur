@@ -5,9 +5,18 @@ import MurmurKit
 // murmur-cli — the same dictation core (MurmurKit) as the menu-bar app.
 //   murmur-cli                  → live mic: speak, press Enter, print transcript
 //   murmur-cli --wav <file>     → offline benchmark on a fixed file (timing/RTF)
+//   murmur-cli --wav <file> --mode fast|hybrid|accurate
+//                               → benchmark one lane, to see which one costs what
 
 let args = CommandLine.arguments
 let session = DictationSession()
+
+/// Which lane(s) to benchmark. Defaults to hybrid — what the app actually runs.
+let benchMode: DictationMode = {
+    guard let i = args.firstIndex(of: "--mode"), i + 1 < args.count,
+          let m = DictationMode(rawValue: args[i + 1]) else { return .hybrid }
+    return m
+}()
 
 /// Read any audio file and resample to 16 kHz mono Float.
 func readWav16kMono(_ path: String) throws -> [Float] {
@@ -37,10 +46,11 @@ if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     let path = args[wavIdx + 1]
     let samples = try readWav16kMono(path)
     FileHandle.standardError.write(Data("loading models (warming up MLX)…\n".utf8))
-    try await session.load()
+    try await session.load(mode: benchMode)
     FileHandle.standardError.write(Data(
-        String(format: "transcribing %.1fs of audio (480 ms chunks)…\n", Double(samples.count) / 16000.0).utf8))
-    let r = session.transcribeOffline(samples)
+        String(format: "transcribing %.1fs of audio (480 ms chunks, mode: %@)…\n",
+               Double(samples.count) / 16000.0, benchMode.rawValue).utf8))
+    let r = session.transcribeOffline(samples, mode: benchMode)
     print(String(format: """
 
         === murmur-cli --wav %@ ===
