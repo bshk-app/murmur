@@ -27,6 +27,24 @@ enum Mur {
     }
 }
 
+/// What the app is doing right now.
+///
+/// Captions is not a variant of dictation. A speaker cannot hold a key through a
+/// forty-minute talk, and nothing they say should be typed into whichever window
+/// happens to be focused — so the trigger and the output both differ, and one
+/// enum value each is cheaper than threading two exceptions everywhere.
+enum AppMode: String, CaseIterable, Identifiable {
+    case dictation
+    case captions
+
+    var id: String { rawValue }
+
+    static let defaultsKey = "murmur.appMode"
+    static var current: AppMode {
+        AppMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .dictation
+    }
+}
+
 /// How the push-to-talk hotkey behaves.
 enum TriggerMode: String, CaseIterable, Identifiable {
     case hold      // record while held, stop on release (push-to-talk)

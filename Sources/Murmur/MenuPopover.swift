@@ -16,6 +16,7 @@ struct MenuPopover: View {
     @Environment(\.colorScheme) private var scheme
 
     @AppStorage(DictationEnabled.key) private var enabled = true
+    @AppStorage(AppMode.defaultsKey) private var appModeRaw = AppMode.dictation.rawValue
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
 
@@ -85,7 +86,18 @@ struct MenuPopover: View {
 
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            label("Model")
+            label("Mode")
+            MurSegment(selection: $appModeRaw,
+                       options: [(AppMode.dictation.rawValue, "Dictation"),
+                                 (AppMode.captions.rawValue, "Captions")])
+            if appModeRaw == AppMode.captions.rawValue {
+                Text("Tap the shortcut to start, tap again to stop. Nothing is typed into other apps.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
+            }
+            label("Model").padding(.top, 11)
             MurSegment(selection: $modelRaw,
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),

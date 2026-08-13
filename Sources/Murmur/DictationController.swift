@@ -121,15 +121,22 @@ final class DictationController {
     /// master enable.
     private func hotkeyDown(submit: Bool) {
         guard DictationEnabled.value else { return }
-        switch TriggerMode.current {
-        case .hold:   beginRecording(submit: submit)
-        case .toggle: if state == .recording { endRecording() } else { beginRecording(submit: submit) }
+        if Self.togglesOnPress {
+            if state == .recording { endRecording() } else { beginRecording(submit: submit) }
+        } else {
+            beginRecording(submit: submit)
         }
+    }
+
+    /// Captions is always tap-on / tap-off, whatever the hotkey setting says —
+    /// holding a key through a talk is not a thing anyone can do.
+    private static var togglesOnPress: Bool {
+        AppMode.current == .captions || TriggerMode.current == .toggle
     }
 
     /// Hotkey release only ends dictation in hold mode (toggle ignores release).
     private func hotkeyUp() {
-        if TriggerMode.current == .hold { endRecording() }
+        if !Self.togglesOnPress { endRecording() }
     }
 
     private func beginRecording(submit: Bool) {
@@ -138,7 +145,7 @@ final class DictationController {
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
         guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
-        let toggle = TriggerMode.current == .toggle
+        let toggle = Self.togglesOnPress
         submitOnFinish = submit
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
@@ -189,8 +196,12 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                self.hud.finish(final)               // show the final, then fade
-                if !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
+                // Captions holds the last line long enough to finish reading it,
+                // and never types into whatever window is focused — the HUD is the
+                // output there, not a progress indicator.
+                let captions = AppMode.current == .captions
+                self.hud.finish(final, linger: captions ? 4.0 : 1.0)
+                if !captions, !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,

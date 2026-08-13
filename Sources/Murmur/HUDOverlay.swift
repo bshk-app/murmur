@@ -300,8 +300,8 @@ final class HUDController {
         scheduleHide(after: 3.2)
     }
 
-    /// Show the final text, then fade.
-    func finish(_ finalText: String) {
+    /// Show the final text, then fade after `linger`.
+    func finish(_ finalText: String, linger: TimeInterval = 1.0) {
         guard panel != nil else { return }
         model.recording = false
         model.showStop = false
@@ -309,7 +309,7 @@ final class HUDController {
             show(confirmed: finalText, partial: "")
             model.phase = .transcribing
         }
-        scheduleHide(after: 1.0)
+        scheduleHide(after: linger)
     }
 
     private func scheduleHide(after delay: TimeInterval) {
