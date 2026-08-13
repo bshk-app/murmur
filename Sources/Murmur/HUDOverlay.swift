@@ -1,4 +1,5 @@
 import AppKit
+import MurmurKit
 import Observation
 import SwiftUI
 
@@ -19,9 +20,20 @@ final class HUDModel {
     var partial = ""
     var lang = "Auto"
     var errorText = "Open Privacy in Settings →"
+    var truncated = false         // older words were dropped — the view leads with an ellipsis
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
     var onStop: () -> Void = {}
+}
+
+/// How much text the pill can hold, derived from its own geometry: a 460pt column
+/// at 21pt fits ~36 characters per line, and 230pt of usable panel height at 31pt
+/// per line fits 5. The character budget targets one line LESS, which is what keeps
+/// `maxLines` an emergency guard instead of a routine truncation. Recompute both
+/// together if the font, the column width or the panel size changes.
+enum HUDCapacity {
+    static let maxChars = 145
+    static let maxLines = 5
 }
 
 // MARK: - Building blocks
@@ -120,6 +132,9 @@ private struct HUDView: View {
                 (transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
                     .font(.system(size: 21))
                     .lineSpacing(6)
+                    // Hard layout guard behind the character clamp: whatever slips past
+                    // the estimate, the text still cannot outgrow the panel.
+                    .lineLimit(HUDCapacity.maxLines)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -134,7 +149,9 @@ private struct HUDView: View {
         let crisp = Mur.crisp(scheme), draft = Mur.draft(scheme)
         let conf = Self.words(model.confirmed)
         let part = Self.words(model.partial)
-        var t = Text("")
+        // The marker is styling, not content: kept out of `model.confirmed` so it
+        // can't be counted as a word and steal the newest-word accent below.
+        var t = model.truncated ? Text("… ").foregroundColor(draft) : Text("")
         for (i, w) in conf.enumerated() {
             // Approximated "refine flash": the newest confirmed word glows accent.
             let hot = i == conf.count - 1
@@ -224,7 +241,7 @@ final class HUDController {
         let panel = ensurePanel()
         model.lang = lang
         model.phase = .listening
-        model.confirmed = ""; model.partial = ""
+        show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         model.recording = true
         model.showStop = interactive
         model.onStop = onStop
@@ -237,11 +254,20 @@ final class HUDController {
 
     /// Live two-tier update.
     func update(confirmed: String, partial: String) {
-        model.confirmed = confirmed
-        model.partial = partial
+        show(confirmed: confirmed, partial: partial)
         if model.phase != .error {
-            model.phase = (confirmed.isEmpty && partial.isEmpty) ? .listening : .transcribing
+            model.phase = (model.confirmed.isEmpty && model.partial.isEmpty) ? .listening : .transcribing
         }
+    }
+
+    /// The single door into the model's text — both entry points clamp through here,
+    /// so what reaches the view is already known to fit the panel.
+    private func show(confirmed: String, partial: String) {
+        let fitted = HUDTranscript.clamped(confirmed: confirmed, partial: partial,
+                                           maxChars: HUDCapacity.maxChars)
+        model.confirmed = fitted.confirmed
+        model.partial = fitted.partial
+        model.truncated = fitted.truncated
     }
 
     /// Surface a mic/permission error in the HUD.
@@ -263,7 +289,8 @@ final class HUDController {
         model.recording = false
         model.showStop = false
         if !finalText.isEmpty {
-            model.confirmed = finalText; model.partial = ""; model.phase = .transcribing
+            show(confirmed: finalText, partial: "")
+            model.phase = .transcribing
         }
         scheduleHide(after: 1.0)
     }
