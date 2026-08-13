@@ -16,7 +16,6 @@ struct MenuPopover: View {
     @Environment(\.colorScheme) private var scheme
 
     @AppStorage(DictationEnabled.key) private var enabled = true
-    @AppStorage(InsertMode.defaultsKey) private var insertRaw = InsertMode.inField.rawValue
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
 
@@ -91,15 +90,11 @@ struct MenuPopover: View {
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),
                                  (DictationMode.accurate.rawValue, "Accurate")])
-            label("Insert").padding(.top, 11)
-            MurSegment(selection: $insertRaw,
-                       options: [(InsertMode.inField.rawValue, "In field"),
-                                 (InsertMode.hudOnly.rawValue, "HUD only")])
             label("Hotkey").padding(.top, 11)
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
                                  (TriggerMode.toggle.rawValue, "Toggle")])
-            if dictation.needsAccessibilityToType, insertRaw == InsertMode.inField.rawValue {
+            if dictation.needsAccessibilityToType {
                 Button { dictation.requestAccessibility() } label: {
                     Text("Grant Accessibility to type…")
                         .font(.system(size: 11.5)).foregroundStyle(Mur.accent)

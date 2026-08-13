@@ -58,20 +58,6 @@ enum ModelSetting {
     }
 }
 
-/// Where the transcript goes when you release the hotkey.
-enum InsertMode: String, CaseIterable, Identifiable {
-    case inField   // type into the focused field of any app (needs Accessibility)
-    case hudOnly   // presentation/subtitles: show in the HUD only, never inject
-
-    var id: String { rawValue }
-    var label: String { self == .inField ? "In field" : "HUD only" }
-
-    static let defaultsKey = "murmur.insertMode"
-    static var current: InsertMode {
-        InsertMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .inField
-    }
-}
-
 /// Anonymous usage & error analytics (PostHog). **Opt-in**: off until the user
 /// enables it on the onboarding Welcome step (or in Settings). While off,
 /// `PostHogSDK.shared.optOut()` makes every `capture(…)` a no-op — no audio or

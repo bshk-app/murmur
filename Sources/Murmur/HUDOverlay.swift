@@ -5,8 +5,11 @@ import SwiftUI
 /// Floating dictation HUD (design: MurMur.dc.html). A non-activating, click-through
 /// borderless NSPanel (we type into another app's field at the same time) hosting a
 /// SwiftUI glass pill that adapts to light/dark. Three states — listening,
-/// transcribing (two-tier coloured text), error — plus a larger "presentation"
-/// subtitle variant for HUD-only mode.
+/// transcribing (two-tier coloured text), error.
+///
+/// Room-scale subtitles are deliberately NOT a variant of this panel: they need
+/// geometry derived from the target screen, an opaque backdrop and a session that
+/// outlives one utterance. See the conference-captions design.
 
 @Observable
 final class HUDModel {
@@ -16,7 +19,6 @@ final class HUDModel {
     var partial = ""
     var lang = "Auto"
     var errorText = "Open Privacy in Settings →"
-    var presentation = false      // HUD-only / subtitles
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
     var onStop: () -> Void = {}
@@ -111,22 +113,21 @@ private struct HUDView: View {
 
     // Two-tier coloured transcript + blinking accent caret.
     private var transcribePill: some View {
-        let big = model.presentation
-        return VStack(alignment: .leading, spacing: big ? 12 : 9) {
+        VStack(alignment: .leading, spacing: 9) {
             header
             TimelineView(.periodic(from: .now, by: 0.5)) { ctx in
                 let on = Int(ctx.date.timeIntervalSinceReferenceDate / 0.5) % 2 == 0
                 (transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
-                    .font(.system(size: big ? 30 : 21))
-                    .lineSpacing(big ? 8 : 6)
+                    .font(.system(size: 21))
+                    .lineSpacing(6)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, big ? 24 : 16)
-        .padding(.vertical, big ? 18 : 13)
-        .frame(maxWidth: big ? 820 : 460, alignment: .leading)
-        .murPill(scheme, radius: big ? 18 : 16, border: borderColor)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 13)
+        .frame(maxWidth: 460, alignment: .leading)
+        .murPill(scheme, radius: 16, border: borderColor)
     }
 
     private var transcript: Text {
@@ -218,10 +219,9 @@ final class HUDController {
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
-    func begin(presentation: Bool, lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
+    func begin(lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
-        model.presentation = presentation
         model.lang = lang
         model.phase = .listening
         model.confirmed = ""; model.partial = ""
@@ -257,7 +257,7 @@ final class HUDController {
         scheduleHide(after: 3.2)
     }
 
-    /// Show the final text, then fade — lingering longer in presentation mode.
+    /// Show the final text, then fade.
     func finish(_ finalText: String) {
         guard panel != nil else { return }
         model.recording = false
@@ -265,7 +265,7 @@ final class HUDController {
         if !finalText.isEmpty {
             model.confirmed = finalText; model.partial = ""; model.phase = .transcribing
         }
-        scheduleHide(after: model.presentation ? 4.0 : 1.0)
+        scheduleHide(after: 1.0)
     }
 
     private func scheduleHide(after delay: TimeInterval) {

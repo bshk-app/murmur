@@ -25,6 +25,10 @@ final class DictationController {
 
     private(set) var state: State = .loadingModels
 
+    /// Pinned since the Insert-mode setting was removed. Kept in the events rather
+    /// than dropped so historical PostHog series stay continuous.
+    private static let insertModeAnalyticsValue = "inField"
+
     private let session = DictationSession()
     private let hud = HUDController()
 
@@ -126,7 +130,6 @@ final class DictationController {
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
         guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
-        let insert = InsertMode.current
         let toggle = TriggerMode.current == .toggle
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
@@ -136,11 +139,11 @@ final class DictationController {
             PostHogSDK.shared.capture("dictation_started", properties: [
                 "model_mode": modelMode.rawValue,
                 "trigger_mode": TriggerMode.current.rawValue,
-                "insert_mode": insert.rawValue,
+                "insert_mode": Self.insertModeAnalyticsValue,
             ])
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
-            hud.begin(presentation: insert == .hudOnly, lang: "Auto",
-                      interactive: toggle, onStop: { [weak self] in self?.endRecording() })
+            hud.begin(lang: "Auto", interactive: toggle,
+                      onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)
             PostHogSDK.shared.capture("dictation_failed", properties: [
@@ -169,7 +172,6 @@ final class DictationController {
         guard state == .recording else { return }
         state = .transcribing
         let modelModeAtStop = ModelSetting.current.rawValue
-        let insertModeAtStop = InsertMode.current.rawValue
         // Drain off the main thread so a slow finish never freezes the UI, then
         // paste the final on the main thread (pasteboard + ⌘V).
         Task.detached(priority: .userInitiated) { [session] in
@@ -177,16 +179,14 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                self.hud.finish(final)               // show the final (lingers in presentation), then fade
-                if InsertMode.current == .inField, !final.isEmpty {
-                    self.insertFinal(final)
-                }
+                self.hud.finish(final)               // show the final, then fade
+                if !final.isEmpty { self.insertFinal(final) }
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,
                     "is_empty": final.isEmpty,
                     "model_mode": modelModeAtStop,
-                    "insert_mode": insertModeAtStop,
+                    "insert_mode": Self.insertModeAnalyticsValue,
                 ])
                 self.state = .transcribed(final)
             }
