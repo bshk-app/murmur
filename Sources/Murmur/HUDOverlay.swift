@@ -330,9 +330,18 @@ final class HUDController {
     }
 
     private func position(_ panel: NSPanel) {
-        guard let screen = NSScreen.main else { return }
+        guard let screen = Self.targetScreen() else { return }
         let v = screen.visibleFrame
         panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,
                               width: size.width, height: size.height), display: true)
+    }
+
+    /// `NSScreen.main` is the screen holding the key window — but this app never has
+    /// one (the panel is `.nonactivatingPanel` and we stay an `.accessory` agent), so
+    /// on a multi-display setup it is not deterministic. The cursor is where the user
+    /// is working, and it costs no Accessibility round-trip to ask.
+    private static func targetScreen() -> NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(mouse) } ?? .main ?? NSScreen.screens.first
     }
 }
