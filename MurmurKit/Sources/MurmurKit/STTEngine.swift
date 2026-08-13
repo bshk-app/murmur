@@ -54,9 +54,11 @@ final class STTEngine: @unchecked Sendable {
     }
 
     /// Open a clean session + gate for a new utterance, per the chosen model mode.
-    func begin(language: String?, mode: DictationMode) {
+    /// `valve` nil turns off the overload guard — only the offline benchmark wants
+    /// that, so it measures raw throughput instead of the guard doing its job.
+    func begin(language: String?, mode: DictationMode, valve: OverloadValve? = OverloadValve()) {
         queue.sync {
-            session = engine?.makeSession(for: mode, language: language)
+            session = engine?.makeSession(for: mode, language: language, valve: valve)
             gate = vad.flatMap { try? SpeechGate(vad: $0) }
         }
     }

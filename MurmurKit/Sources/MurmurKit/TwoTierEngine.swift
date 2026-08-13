@@ -74,9 +74,10 @@ public final class TwoTierEngine {
     /// The session for `mode`, or nil if its models aren't loaded yet (call
     /// `prepare(mode)` first). Single dispatch point — STTEngine uses it for both
     /// the warm-up pass and live dictation.
-    func makeSession(for mode: DictationMode, language: String? = nil) -> UtteranceSession? {
+    func makeSession(for mode: DictationMode, language: String? = nil,
+                     valve: OverloadValve? = OverloadValve()) -> UtteranceSession? {
         switch mode {
-        case .hybrid:   return makeHybridSession(language: language)
+        case .hybrid:   return makeHybridSession(language: language, valve: valve)
         case .fast:     return makeFastSession(language: language)
         case .accurate: return makeAccurateSession()
         }
@@ -86,12 +87,14 @@ public final class TwoTierEngine {
     func makeHybridSession(
         language: String? = nil,
         fastChunkMs: Int = defaultFastChunkMs,
-        voxtralDelayMs: Int = 960
+        voxtralDelayMs: Int = 960,
+        valve: OverloadValve? = OverloadValve()
     ) -> TwoTierSession? {
         guard let nemotron, let voxtral else { return nil }
         return TwoTierSession(
             nemotron: nemotron, voxtral: voxtral,
-            language: language, fastChunkMs: fastChunkMs, voxtralDelayMs: voxtralDelayMs
+            language: language, fastChunkMs: fastChunkMs, voxtralDelayMs: voxtralDelayMs,
+            valve: valve
         )
     }
 

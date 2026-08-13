@@ -60,7 +60,7 @@ public final class DictationSession: @unchecked Sendable {
     /// 480 ms chunks the mic path uses and timing the STT compute. For
     /// benchmarking against the CLI on a fixed file (no mic involved).
     public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680, mode: DictationMode = .hybrid) -> OfflineResult {
-        engine.begin(language: nil, mode: mode)
+        engine.begin(language: nil, mode: mode, valve: nil)   // measure the hardware, not the guard
         let wall0 = ProcessInfo.processInfo.systemUptime
         var compute = 0.0
         var i = 0

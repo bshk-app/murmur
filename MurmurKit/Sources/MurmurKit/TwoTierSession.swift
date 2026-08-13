@@ -28,26 +28,44 @@ public final class TwoTierSession {
     private let fastFinish: () -> Void
     private let accurate: VoxtralRealtimeStreamSession  // accurate finals, lags
 
+    // Overload guard. The fast lane consumes every chunk regardless, so when the
+    // pipeline falls behind we can *finish* the accurate lane rather than starve
+    // it: its stream ends cleanly at the hand-off and the fast lane, which has
+    // full context, carries the rest. Skipping chunks instead would tear a hole
+    // in Voxtral's context and lose words from the transcript that gets pasted.
+    private var valve: OverloadValve?
+    private var accurateClosed = false
+
+    /// True once the accurate lane was dropped mid-utterance. Callers should say
+    /// so rather than let quality change silently.
+    public private(set) var didShedAccurateLane = false
+
     /// Designated init: caller supplies the fast lane (MLX or ANE Nemotron) as closures.
     /// `voxtralDelayMs` trades latency for accuracy on the accurate lane — and because
     /// the fast lane hides that latency, a larger delay (e.g. 960 ms) buys near-offline
     /// finals "for free". nil = the model's default (480 ms).
+    /// `valve` nil disables the overload guard — offline benchmarking wants raw
+    /// throughput, because a run that sheds mid-clip no longer measures what the
+    /// hardware can do.
     public init(fastStep: @escaping ([Float]) -> Void, fastText: @escaping () -> String,
                 fastFinish: @escaping () -> Void, voxtral: VoxtralRealtimeModel,
-                voxtralDelayMs: Int? = 960) {   // 960ms = accuracy sweet spot; partials hide it
+                voxtralDelayMs: Int? = 960,     // 960ms = accuracy sweet spot; partials hide it
+                valve: OverloadValve? = OverloadValve()) {
         self.fastStep = fastStep
         self.fastText = fastText
         self.fastFinish = fastFinish
         self.accurate = voxtral.makeStreamSession(transcriptionDelayMs: voxtralDelayMs)
+        self.valve = valve
     }
 
     /// Convenience: MLX Nemotron fast lane.
     public convenience init(nemotron: NemotronASRModel, voxtral: VoxtralRealtimeModel,
                             language: String? = nil, fastChunkMs: Int = TwoTierEngine.defaultFastChunkMs,
-                            voxtralDelayMs: Int? = 960) {
+                            voxtralDelayMs: Int? = 960,
+                            valve: OverloadValve? = OverloadValve()) {
         let f = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs)
         self.init(fastStep: { _ = f.step($0) }, fastText: { f.text }, fastFinish: { _ = f.finish() },
-                  voxtral: voxtral, voxtralDelayMs: voxtralDelayMs)
+                  voxtral: voxtral, voxtralDelayMs: voxtralDelayMs, valve: valve)
     }
 
     /// Accurate (Voxtral) text covered so far — not revised once Voxtral commits it.
@@ -69,8 +87,21 @@ public final class TwoTierSession {
 
     @discardableResult
     public func step(_ samples: [Float]) -> (confirmed: String, partial: String) {
-        fastStep(samples)
-        _ = accurate.step(samples)
+        let audioSeconds = Double(samples.count) / 16000.0
+        let t0 = ProcessInfo.processInfo.systemUptime
+
+        fastStep(samples)                       // always — it must keep full context
+        if !accurateClosed {
+            if valve?.isShedding == true {
+                _ = accurate.finish()           // end the stream cleanly; its text freezes here
+                accurateClosed = true
+                didShedAccurateLane = true
+            } else {
+                _ = accurate.step(samples)
+            }
+        }
+        valve?.record(compute: ProcessInfo.processInfo.systemUptime - t0, audio: audioSeconds)
+
         let (c, p) = (confirmed, partial)
         if debug { steps += 1; if steps % 12 == 0 {
             FileHandle.standardError.write(Data("[2TIER] conf=\(Self.words(c).count)w  partial=⟨\(p)⟩\n".utf8))
@@ -83,8 +114,13 @@ public final class TwoTierSession {
     @discardableResult
     public func finish() -> (confirmed: String, partial: String) {
         fastFinish()
-        _ = accurate.finish()
-        return (accurate.text, "")
+        if !accurateClosed { _ = accurate.finish(); accurateClosed = true }
+        // After a shed, everything spoken past the hand-off exists ONLY in the fast
+        // lane. Returning `accurate.text` alone would drop the tail — the guard
+        // against waiting would cost words, which is what it exists to prevent.
+        // Untouched when nothing was shed, so the normal path keeps Voxtral's
+        // authority and the approximate word-count merge stays out of the final.
+        return (didShedAccurateLane ? text : accurate.text, "")
     }
 
     private static func words(_ s: String) -> [String] {
