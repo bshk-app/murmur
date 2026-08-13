@@ -10,10 +10,11 @@ struct SettingsView: View {
         Form {
             Section {
                 KeyboardShortcuts.Recorder("Push-to-talk:", name: .dictate)
+                KeyboardShortcuts.Recorder("Dictate and send:", name: .dictateAndSend)
             } header: {
                 Text("Shortcut")
             } footer: {
-                Text("Hold the shortcut to dictate; release to finish.")
+                Text("Hold a shortcut to dictate; release to finish. “Dictate and send” also presses Return, which sends the message in most chats. Leave it empty if you mostly dictate into editors, where Return would just break the line.")
             }
 
             Section {

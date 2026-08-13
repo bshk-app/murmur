@@ -21,6 +21,7 @@ final class HUDModel {
     var lang = "Auto"
     var errorText = "Open Privacy in Settings →"
     var truncated = false         // older words were dropped — the view leads with an ellipsis
+    var submits = false           // this utterance ends with Return
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
     var onStop: () -> Void = {}
@@ -101,6 +102,7 @@ private struct HUDView: View {
             catIcon(18)
             LevelBars(color: Mur.accent, count: 4, barHeight: 13)
             Spacer(minLength: 8)
+            if model.submits { submitBadge }
             Text(model.lang.uppercased())
                 .font(.system(size: 10, weight: .medium)).tracking(0.4)
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.4) : Mur.ink.opacity(0.5))
@@ -172,6 +174,7 @@ private struct HUDView: View {
             Text("Listening…").font(.system(size: 15))
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.92) : Mur.ink)
             LevelBars(color: Mur.accent, count: 5, barHeight: 16)
+            if model.submits { submitBadge }
             if model.showStop { stopButton } else { hotkeyBadge }
         }
         .padding(.horizontal, 17).padding(.vertical, 11)
@@ -194,6 +197,18 @@ private struct HUDView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 11)
         .murPill(scheme, radius: 14, border: Mur.error.opacity(0.4))
+    }
+
+    /// Marks an utterance that will press Return when it lands. Two shortcuts only
+    /// work if you can see which one you're holding, and this is the one moment the
+    /// mistake is still catchable — before the message is sent.
+    private var submitBadge: some View {
+        Text("⏎").font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Mur.accent)
+            .padding(.horizontal, 6).padding(.vertical, 3)
+            .background(Mur.accent.opacity(0.14),
+                        in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .accessibilityLabel(Text("Will press Return when finished"))
     }
 
     private var hotkeyBadge: some View {
@@ -236,10 +251,12 @@ final class HUDController {
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
-    func begin(lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
+    func begin(lang: String, interactive: Bool = false, submits: Bool = false,
+               onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
         model.lang = lang
+        model.submits = submits
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         model.recording = true

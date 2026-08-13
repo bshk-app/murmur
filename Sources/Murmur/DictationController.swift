@@ -38,6 +38,12 @@ final class DictationController {
     @ObservationIgnored private var promptedAccessibility = false
     @ObservationIgnored private var isPreparing = false
 
+    /// Whether this utterance ends with a Return. Latched when recording begins and
+    /// left alone until it ends: in hold mode there is no separate stop gesture to
+    /// carry the intent, so letting the *stopping* key decide would make the two
+    /// trigger modes behave differently for the same pair of shortcuts.
+    @ObservationIgnored private var submitOnFinish = false
+
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
     }
@@ -74,8 +80,10 @@ final class DictationController {
 
     func bootstrap() {
         session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
-        KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown() }
+        KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown(submit: false) }
         KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
+        KeyboardShortcuts.onKeyDown(for: .dictateAndSend) { [weak self] in self?.hotkeyDown(submit: true) }
+        KeyboardShortcuts.onKeyUp(for: .dictateAndSend) { [weak self] in self?.hotkeyUp() }
         session.requestMicrophonePermission()            // surface the mic prompt early
         prepare(mode: ModelSetting.current)              // load only the current mode's models
     }
@@ -111,11 +119,11 @@ final class DictationController {
 
     /// Hotkey press: hold-mode starts; toggle-mode flips start/stop. Gated by the
     /// master enable.
-    private func hotkeyDown() {
+    private func hotkeyDown(submit: Bool) {
         guard DictationEnabled.value else { return }
         switch TriggerMode.current {
-        case .hold:   beginRecording()
-        case .toggle: if state == .recording { endRecording() } else { beginRecording() }
+        case .hold:   beginRecording(submit: submit)
+        case .toggle: if state == .recording { endRecording() } else { beginRecording(submit: submit) }
         }
     }
 
@@ -124,13 +132,14 @@ final class DictationController {
         if TriggerMode.current == .hold { endRecording() }
     }
 
-    private func beginRecording() {
+    private func beginRecording(submit: Bool) {
         guard state != .recording, state != .transcribing else { return }
         let modelMode = ModelSetting.current
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
         guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
         let toggle = TriggerMode.current == .toggle
+        submitOnFinish = submit
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
             // on release (Variant B — paste is atomic, so no live-into-field typing).
@@ -142,7 +151,7 @@ final class DictationController {
                 "insert_mode": Self.insertModeAnalyticsValue,
             ])
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
-            hud.begin(lang: "Auto", interactive: toggle,
+            hud.begin(lang: "Auto", interactive: toggle, submits: submit,
                       onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)
@@ -172,6 +181,7 @@ final class DictationController {
         guard state == .recording else { return }
         state = .transcribing
         let modelModeAtStop = ModelSetting.current.rawValue
+        let submitAtStop = submitOnFinish
         // Drain off the main thread so a slow finish never freezes the UI, then
         // paste the final on the main thread (pasteboard + ⌘V).
         Task.detached(priority: .userInitiated) { [session] in
@@ -180,31 +190,37 @@ final class DictationController {
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
                 self.hud.finish(final)               // show the final, then fade
-                if !final.isEmpty { self.insertFinal(final) }
+                if !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,
                     "is_empty": final.isEmpty,
                     "model_mode": modelModeAtStop,
                     "insert_mode": Self.insertModeAnalyticsValue,
+                    "submit_on_finish": submitAtStop,
                 ])
                 self.state = .transcribed(final)
             }
         }
     }
 
-    /// Paste the final transcript into the focused field (In-field mode). Posting
-    /// ⌘V needs Accessibility — if untrusted, prompt once and leave the text on the
-    /// clipboard so it's not lost. Secure input (password fields) blocks paste; we
-    /// say so in the HUD instead of dropping silently.
-    private func insertFinal(_ text: String) {
+    /// Paste the final transcript into the focused field. Posting ⌘V needs
+    /// Accessibility — if untrusted, prompt once and leave the text on the clipboard
+    /// so it's not lost. Secure input (password fields) blocks paste; we say so in
+    /// the HUD instead of dropping silently.
+    ///
+    /// Neither of those two paths can submit: Return is posted only on the branch of
+    /// `TextInjector.paste` that actually pressed ⌘V. Sending an empty message
+    /// because the text never landed is the worst thing this feature could do, so
+    /// that invariant is structural rather than a condition someone must remember.
+    private func insertFinal(_ text: String, submit: Bool) {
         guard Accessibility.isTrusted else {
             NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(text, forType: .string)
+            NSPasteboard.general.setString(TextInjector.payload(text, submit: submit), forType: .string)
             if !promptedAccessibility { promptedAccessibility = true; Accessibility.prompt() }
             return
         }
-        switch TextInjector.paste(text + " ") {
+        switch TextInjector.paste(text, submit: submit) {
         case .pasted, .failed:
             break
         case .copiedSecureInput:
