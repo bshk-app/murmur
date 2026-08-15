@@ -18,6 +18,18 @@ let benchMode: DictationMode = {
     return m
 }()
 
+/// Timed passes per run, after loading the models once.
+///
+/// A single pass is not a measurement: the same binary on the same clip has
+/// produced RTF from 4.4 to 10.4 on one machine. Repeats share the model load,
+/// so three passes cost far less than three invocations, and we report the
+/// MINIMUM — the pass least contaminated by whatever else the machine was doing.
+let benchRepeats: Int = {
+    guard let i = args.firstIndex(of: "--repeat"), i + 1 < args.count,
+          let n = Int(args[i + 1]), n > 0 else { return 1 }
+    return n
+}()
+
 /// Read any audio file and resample to 16 kHz mono Float.
 func readWav16kMono(_ path: String) throws -> [Float] {
     let file = try AVAudioFile(forReading: URL(fileURLWithPath: path))
@@ -50,16 +62,22 @@ if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     FileHandle.standardError.write(Data(
         String(format: "transcribing %.1fs of audio (480 ms chunks, mode: %@)…\n",
                Double(samples.count) / 16000.0, benchMode.rawValue).utf8))
-    let r = session.transcribeOffline(samples, mode: benchMode)
+    var results: [OfflineResult] = []
+    for pass in 1 ... benchRepeats {
+        results.append(session.transcribeOffline(samples, mode: benchMode))
+        FileHandle.standardError.write(Data(
+            String(format: "  pass %d/%d: RTF %.3f\n", pass, benchRepeats, results[pass - 1].rtf).utf8))
+    }
+    let best = results.min { $0.rtf < $1.rtf }!
     print(String(format: """
 
-        === murmur-cli --wav %@ ===
+        === murmur-cli --wav %@ (mode %@, %d pass(es)) ===
         audio    %.2f s
-        compute  %.2f s   (sum of step+finish)
-        wall     %.2f s
-        RTF      %.3f     (<1 = faster than realtime)
-        """, (path as NSString).lastPathComponent, r.audioSeconds, r.computeSeconds, r.wallSeconds, r.rtf))
-    print("\ntext: \(r.text)")
+        compute  %.2f s   (sum of step+finish, best pass)
+        RTF_MIN  %.3f     (<1 = faster than realtime)
+        """, (path as NSString).lastPathComponent, benchMode.rawValue, benchRepeats,
+             best.audioSeconds, best.computeSeconds, best.rtf))
+    print("\ntext: \(best.text)")
 } else {
     // ---- Live mic ----
     // Live two-tier view, redrawn in place: confirmed (Voxtral) prefix + the fast
