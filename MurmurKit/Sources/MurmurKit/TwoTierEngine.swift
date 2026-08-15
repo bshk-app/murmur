@@ -16,22 +16,40 @@ public final class TwoTierEngine {
     public static let defaultVoxtralRepo = "mlx-community/Voxtral-Mini-4B-Realtime-2602-4bit"
 
     /// Fast-lane (Nemotron) chunk in ms — SSOT for both the hybrid fast lane and
-    /// the fast-only mode. 160 ms (`[56,1]`, 1-chunk lookahead) beats 80 ms on
-    /// BOTH RTF (−40 %) and WER (10.6 % vs 14.9 %) in the interleaved bench; the
-    /// only cost is +80 ms partial latency, hidden under Voxtral's 960 ms delay.
-    public static let defaultFastChunkMs = 160
+    /// the fast-only mode. The cost is partial latency, which the accurate lane's
+    /// 960 ms delay hides; that head start is the ceiling on this value, because a
+    /// fast lane that arrives no sooner than the accurate one has no purpose.
+    ///
+    /// **Measure this, do not reason about it.** Hybrid RTF on a base M1, min of
+    /// three warm passes: 160 → 2.41, 240 → 3.06, **320 → 2.29**, 480 → 4.59,
+    /// 640 → 3.57. No arithmetic fits — a doubling rule was tested at 640 and
+    /// refuted. The likely cause is Metal kernel specialisation per tensor shape,
+    /// so neighbouring values can differ by 2×. 320 is an empirical point.
+    ///
+    /// Earlier bench, kept for history: 160 beat 80 on both RTF (−40 %) and WER
+    /// (10.6 % vs 14.9 %) with `[56,1]`, 1-chunk lookahead.
+    public static let defaultFastChunkMs = 320
 
     private let nemotronRepo: String
     private let voxtralRepo: String
     private var nemotron: NemotronASRModel?
     private var voxtral: VoxtralRealtimeModel?
 
+    /// MLX's cache ceiling, scaled to the machine.
+    ///
+    /// It used to be a flat 18 GB, which is above physical memory on every base
+    /// Apple Silicon Mac — a cap above RAM is not a cap, it is permission to grow
+    /// into swap.
+    public static var defaultMemoryLimitBytes: Int {
+        Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.6)
+    }
+
     /// Caps Metal memory up front (an unbounded MLX run can OOM-reboot the Mac);
     /// models load lazily via `prepare`.
     public init(
         nemotronRepo: String = defaultNemotronRepo,
         voxtralRepo: String = defaultVoxtralRepo,
-        memoryLimitBytes: Int = 18 * 1024 * 1024 * 1024
+        memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes
     ) {
         GPU.set(memoryLimit: memoryLimitBytes, relaxed: false)
         self.nemotronRepo = nemotronRepo
