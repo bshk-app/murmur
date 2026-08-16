@@ -29,6 +29,17 @@ public enum ParakeetProbe {
 
     public static let defaultRepo = "mlx-community/parakeet-tdt-0.6b-v3"
 
+    /// Load once, transcribe many. A benchmark host feeds a whole dataset through
+    /// one process, so the model has to outlive a single call — otherwise every
+    /// sample's measurement includes loading it.
+    public static func makeTranscriber(
+        repo: String = defaultRepo,
+        ane: Bool
+    ) async throws -> ([Float]) -> String {
+        let model = try await ParakeetModel.fromPretrained(repo, aneEncoder: ane ? .on : .off)
+        return { samples in model.generate(audio: MLXArray(samples)).text }
+    }
+
     /// Transcribe 16 kHz mono samples once, timed. The first pass is discarded:
     /// it JIT-compiles Metal kernels and, with `ane`, compiles the CoreML model,
     /// which would otherwise be measured as if it were per-utterance cost.

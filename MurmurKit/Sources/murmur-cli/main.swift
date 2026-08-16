@@ -96,12 +96,53 @@ func emitRunJSON(engine: String, identity: String, path: String, text: String,
     }
 }
 
-if let pIdx = args.firstIndex(of: "--parakeet"), pIdx + 1 < args.count {
+/// Repo override, tolerating `--repo` with nothing after it instead of trapping.
+let repoOverride: String? = {
+    guard let i = args.firstIndex(of: "--repo"), i + 1 < args.count else { return nil }
+    return args[i + 1]
+}()
+
+if args.contains("--serve") {
+    // ---- Worker mode: one path per line in, one JSON object per line out ----
+    //
+    // A benchmark host calls the transcriber once per sample and times the call.
+    // Loading the model per sample would put ~10 s of load into every ~30 s
+    // Voxtral measurement, so it loads once here and samples arrive over a pipe.
+    //
+    // Take a private handle on the real stdout BEFORE anything can print to it,
+    // then point fd 1 at stderr: the model layer writes "Using cached model at: …"
+    // to stdout, and a client parsing one object per line would choke on prose.
+    // Redirecting is better than a sentinel prefix — it holds for any library
+    // that decides to print, not just the ones we know about today.
+    let realOut = dup(1)
+    dup2(2, 1)
+    let out = FileHandle(fileDescriptor: realOut, closeOnDealloc: false)
+
+    let transcribe: (String) throws -> String
+    if args.contains("--parakeet") {
+        let ane = args.contains("--ane")
+        let repo = repoOverride ?? ParakeetProbe.defaultRepo
+        FileHandle.standardError.write(Data("loading \(repo) (ane: \(ane))…\n".utf8))
+        let run = try await ParakeetProbe.makeTranscriber(repo: repo, ane: ane)
+        transcribe = { run(try readWav16kMono($0)) }
+    } else {
+        FileHandle.standardError.write(Data("loading models for mode \(benchMode.rawValue)…\n".utf8))
+        try await session.load(mode: benchMode)
+        transcribe = { session.transcribeOffline(try readWav16kMono($0), mode: benchMode).text }
+    }
+
+    FileHandle.standardError.write(Data("READY\n".utf8))
+    BatchServeLoop.run(
+        readLine: { Swift.readLine(strippingNewline: true) },
+        transcribe: transcribe,
+        write: { out.write(Data(($0 + "\n").utf8)) }
+    )
+} else if let pIdx = args.firstIndex(of: "--parakeet"), pIdx + 1 < args.count {
     // ---- Parakeet comparison probe: is a 0.6B TDT lane on the ANE enough? ----
     let path = args[pIdx + 1]
     let samples = try readWav16kMono(path)
     let ane = args.contains("--ane")
-    let repo = args.firstIndex(of: "--repo").map { args[$0 + 1] } ?? ParakeetProbe.defaultRepo
+    let repo = repoOverride ?? ParakeetProbe.defaultRepo
     FileHandle.standardError.write(Data("loading \(repo) (ane: \(ane))…\n".utf8))
     let r = try await ParakeetProbe.transcribe(samples, repo: repo, ane: ane, passes: benchRepeats)
     if emitJSON {
