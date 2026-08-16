@@ -40,7 +40,12 @@ public final class DictationSession: @unchecked Sendable {
         engine.begin(language: nil, mode: mode)
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }
-            let (confirmed, partial) = self.engine.step(chunk)
+            // Two updates per chunk: the fast draft the moment it exists, then the
+            // refined view once the accurate lane has caught up. Publishing only
+            // once, at the end, made the instant lane as slow as the slow one.
+            let (confirmed, partial) = self.engine.step(chunk) { early, earlyPartial in
+                self.onUpdate?(early, earlyPartial)
+            }
             self.onUpdate?(confirmed, partial)
         }
         try mic.start()

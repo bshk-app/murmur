@@ -86,11 +86,21 @@ public final class TwoTierSession {
     private var steps = 0
 
     @discardableResult
-    public func step(_ samples: [Float]) -> (confirmed: String, partial: String) {
+    public func step(_ samples: [Float],
+                     onEarly: ((String, String) -> Void)? = nil) -> (confirmed: String, partial: String) {
         let audioSeconds = Double(samples.count) / 16000.0
         let t0 = ProcessInfo.processInfo.systemUptime
 
         fastStep(samples)                       // always — it must keep full context
+
+        // Publish the fast view NOW. The whole point of a fast lane is an instant
+        // draft, and it used to be withheld until the slow lane had finished the
+        // same chunk — Nemotron's ~67 ms answer waiting on Voxtral's ~310 ms (and
+        // over a second on a base M1). The confirmed prefix is one chunk stale
+        // here, which is what "the accurate lane lags" already means; the
+        // count-based junction heals it on the next chunk.
+        onEarly?(confirmed, partial)
+
         if !accurateClosed {
             if valve?.isShedding == true {
                 _ = accurate.finish()           // end the stream cleanly; its text freezes here

@@ -10,9 +10,17 @@ public enum DictationMode: String, Sendable, CaseIterable {
 
 /// The common surface STTEngine drives per utterance, regardless of mode.
 protocol UtteranceSession {
-    func step(_ samples: [Float]) -> (confirmed: String, partial: String)
+    /// `onEarly` fires as soon as a lane has text that need not wait for the rest
+    /// of the chunk's work. Only the two-tier lane has anything to hurry: its fast
+    /// model finishes in tens of milliseconds and would otherwise sit on the
+    /// result until the slow model has chewed the same chunk.
+    func step(_ samples: [Float], onEarly: ((String, String) -> Void)?) -> (confirmed: String, partial: String)
     var currentText: (confirmed: String, partial: String) { get }
     func finishText() -> String
+}
+
+extension UtteranceSession {
+    func step(_ samples: [Float]) -> (confirmed: String, partial: String) { step(samples, onEarly: nil) }
 }
 
 /// Two-tier (hybrid) lane: `step` already returns the confirmed/provisional split.
@@ -28,7 +36,9 @@ final class NemotronOnlySession: UtteranceSession {
     init(_ model: NemotronASRModel, language: String?, chunkMs: Int) {
         s = model.makeStreamSession(language: language, chunkMs: chunkMs)
     }
-    func step(_ samples: [Float]) -> (confirmed: String, partial: String) { _ = s.step(samples); return (s.text, "") }
+    func step(_ samples: [Float], onEarly: ((String, String) -> Void)? = nil) -> (confirmed: String, partial: String) {
+        _ = s.step(samples); return (s.text, "")   // single lane: nothing arrives early
+    }
     var currentText: (confirmed: String, partial: String) { (s.text, "") }
     func finishText() -> String { _ = s.finish(); return s.text }
 }
@@ -39,7 +49,9 @@ final class VoxtralOnlySession: UtteranceSession {
     init(_ model: VoxtralRealtimeModel, delayMs: Int?) {
         s = model.makeStreamSession(transcriptionDelayMs: delayMs)
     }
-    func step(_ samples: [Float]) -> (confirmed: String, partial: String) { _ = s.step(samples); return (s.text, "") }
+    func step(_ samples: [Float], onEarly: ((String, String) -> Void)? = nil) -> (confirmed: String, partial: String) {
+        _ = s.step(samples); return (s.text, "")   // single lane: nothing arrives early
+    }
     var currentText: (confirmed: String, partial: String) { (s.text, "") }
     func finishText() -> String { _ = s.finish(); return s.text }
 }

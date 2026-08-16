@@ -66,14 +66,18 @@ final class STTEngine: @unchecked Sendable {
     /// Feed one 16 kHz mono chunk — but only if the gate says it's speech. On a
     /// gated (silent) chunk, return the current text without advancing the STT,
     /// so silence neither costs compute nor produces hallucinated finals.
+    /// `onEarly` is handed straight to the session so the fast lane can publish
+    /// without waiting for the slow one. It runs on this serial queue, so keep it
+    /// to a hop onto another actor — anything that blocks here stalls the mic.
     @discardableResult
-    func step(_ samples: [Float]) -> (confirmed: String, partial: String) {
+    func step(_ samples: [Float], onEarly: ((String, String) -> Void)? = nil)
+        -> (confirmed: String, partial: String) {
         queue.sync {
             guard let session else { return ("", "") }
             if let gate, !gate.shouldFeed(samples) {
                 return session.currentText
             }
-            return session.step(samples)
+            return session.step(samples, onEarly: onEarly)
         }
     }
 
