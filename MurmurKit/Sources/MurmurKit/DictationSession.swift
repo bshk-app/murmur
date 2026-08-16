@@ -64,6 +64,26 @@ public final class DictationSession: @unchecked Sendable {
     /// Offline transcription of pre-loaded 16 kHz mono samples, feeding the same
     /// 480 ms chunks the mic path uses and timing the STT compute. For
     /// benchmarking against the CLI on a fixed file (no mic involved).
+    /// Drive an utterance from externally paced chunks instead of the microphone.
+    ///
+    /// A benchmark producer delivers audio at 1x real time and timestamps the
+    /// partials itself, so it needs to hand over chunks directly. Same engine,
+    /// same VAD gate, same session lifecycle as `start()`/`stop()` — only the
+    /// source of the samples differs.
+    public func beginPaced(mode: DictationMode = .hybrid) {
+        engine.begin(language: nil, mode: mode)
+    }
+
+    /// One paced chunk in, the current live view out (confirmed + provisional).
+    public func stepPaced(_ samples: [Float]) -> String {
+        let (confirmed, partial) = engine.step(samples)
+        return partial.isEmpty ? confirmed : confirmed + " " + partial
+    }
+
+    /// End the utterance and return the final transcript. `beginPaced` starts the
+    /// next one.
+    public func finishPaced() -> String { engine.finish() }
+
     public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680, mode: DictationMode = .hybrid) -> OfflineResult {
         engine.begin(language: nil, mode: mode, valve: nil)   // measure the hardware, not the guard
         let wall0 = ProcessInfo.processInfo.systemUptime

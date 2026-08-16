@@ -32,11 +32,13 @@ from __future__ import annotations
 
 import atexit
 import json
+import re
 import subprocess
 import threading
 from dataclasses import dataclass
 from pathlib import Path
 
+import numpy as np
 from omni_bench.core.adapter import Capabilities, Transcript, TranscriptionError
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -45,6 +47,10 @@ DEFAULT_CLI = REPO_ROOT / "MurmurKit" / ".build" / "release" / "murmur-cli"
 NEMOTRON = "mlx-community/nemotron-3.5-asr-streaming-0.6b-8bit"
 VOXTRAL = "mlx-community/Voxtral-Mini-4B-Realtime-2602-4bit"
 PARAKEET = "mlx-community/parakeet-tdt-0.6b-v3"
+# Same base model with the encoder quantized to int8 (~244 MB). Pure MLX, so it
+# needs no CoreML package — which also puts it out of reach of the ANE path's
+# cache bug (ai-audio-swift#26).
+PARAKEET_INT8 = "beshkenadze/parakeet-tdt-0.6b-v3-mlx-encoder-int8"
 
 # The fast lane's chunk, mirrored from TwoTierEngine.defaultFastChunkMs. It sits
 # on a documented latency ladder, so it is not a free knob — but it does shape
@@ -70,6 +76,9 @@ ENGINES: dict[str, Engine] = {
         ["--mode", "hybrid"], f"{NEMOTRON}+{VOXTRAL}", "8bit+4bit", "mlx", True
     ),
     "parakeet-mlx": Engine(["--parakeet"], PARAKEET, None, "mlx", False),
+    "parakeet-int8": Engine(
+        ["--parakeet", "--repo", PARAKEET_INT8], PARAKEET_INT8, "int8-encoder", "mlx", False
+    ),
     # `backend.id` is a semanticId (`^[a-z0-9][a-z0-9._-]*$`), so the two compute
     # units are joined with a hyphen — a `+` is rejected by the schema. The model
     # side has no such rule, which is why hybrid's base_model_id can keep one.
@@ -91,7 +100,7 @@ def _dependency_revision() -> str:
 class MurmurTranscriber:
     """Batch transcriber backed by one long-lived ``murmur-cli --serve`` worker."""
 
-    def __init__(self, engine: str, cli: Path = DEFAULT_CLI) -> None:
+    def __init__(self, engine: str, cli: Path = DEFAULT_CLI, stream: bool = False) -> None:
         if engine not in ENGINES:
             raise ValueError(f"unknown engine {engine!r}; have {sorted(ENGINES)}")
         if not cli.is_file():
@@ -100,17 +109,19 @@ class MurmurTranscriber:
                 "run: swift build -c release --product murmur-cli"
             )
         self.engine = engine
+        self.stream = stream
         self._recent_stderr: list[str] = []
         self._ready = threading.Event()
         self._saw_ready = False
 
+        # Binary pipes both ways: the streaming seam frames raw float32 PCM on
+        # stdin, and replies are JSON lines that decode the same either way.
         self._proc = subprocess.Popen(
-            [str(cli), "--serve", *ENGINES[engine].args],
+            [str(cli), "--serve-stream" if stream else "--serve", *ENGINES[engine].args],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1,
+            bufsize=0,
         )
         atexit.register(self.close)
 
@@ -131,12 +142,22 @@ class MurmurTranscriber:
 
     def _drain_stderr(self) -> None:
         assert self._proc.stderr is not None
-        for line in self._proc.stderr:
-            self._recent_stderr.append(line.rstrip("\n"))
-            del self._recent_stderr[:-40]
-            if line.strip() == "READY":
-                self._saw_ready = True
-                self._ready.set()
+        for raw in self._proc.stderr:
+            # Download progress is redrawn with \r and never terminated, so a
+            # newline-delimited read hands back the whole progress bar with READY
+            # stuck on the end ("…/755215305 filesREADY"). Split on both, or the
+            # marker is only ever recognised when nothing had to be downloaded —
+            # which is exactly backwards, since a download is when it takes long.
+            text = raw.decode("utf-8", errors="replace")
+            for line in re.split(r"[\r\n]", text):
+                line = line.strip()
+                if not line:
+                    continue
+                self._recent_stderr.append(line)
+                del self._recent_stderr[:-40]
+                if line == "READY":
+                    self._saw_ready = True
+                    self._ready.set()
         self._ready.set()  # the worker died; unblock the waiter to report it
 
     def _stderr_tail(self) -> str:
@@ -156,9 +177,35 @@ class MurmurTranscriber:
                 f"{self.engine}: worker exited with {self._proc.returncode}\n"
                 + self._stderr_tail()
             )
+        return Transcript(text=self._exchange(f"{audio.path}\n".encode())["text"])
+
+    def transcribe_stream(self, stream, *, language: str, task: dict, emit) -> Transcript:
+        """Consume producer-paced chunks, emit partials, return the final text.
+
+        Every chunk is answered, including one that produced no new text — the
+        producer is blocked on the reply, and going quiet would stall the paced
+        feed and be scored as failing to drain the stream. Only non-empty
+        partials are emitted, since the producer ignores empty ones anyway and
+        the first non-empty one is what it timestamps.
+        """
+        for chunk in stream:
+            payload = np.asarray(chunk.samples, dtype=np.float32).tobytes()
+            reply = self._exchange(b"C %d\n" % len(payload) + payload)
+            partial = reply.get("partial") or ""
+            if partial.strip():
+                emit(partial)
+        return Transcript(text=self._exchange(b"F\n")["text"])
+
+    def _exchange(self, request: bytes) -> dict:
+        """One request, one reply. Any failure is this sample's, not the run's."""
+        if self._proc.poll() is not None:
+            raise TranscriptionError(
+                f"{self.engine}: worker exited with {self._proc.returncode}\n"
+                + self._stderr_tail()
+            )
         assert self._proc.stdin is not None and self._proc.stdout is not None
         try:
-            self._proc.stdin.write(f"{audio.path}\n")
+            self._proc.stdin.write(request)
             self._proc.stdin.flush()
             line = self._proc.stdout.readline()
         except (BrokenPipeError, ValueError) as exc:
@@ -172,17 +219,19 @@ class MurmurTranscriber:
             reply = json.loads(line)
         except json.JSONDecodeError as exc:
             raise TranscriptionError(f"{self.engine}: unparseable reply {line!r}") from exc
-
         if "error" in reply:
             raise TranscriptionError(f"{self.engine}: {reply['error']}")
-        return Transcript(text=reply["text"])
+        return reply
 
     def capabilities(self) -> Capabilities:
-        # Batch only. The worker consumes a whole file per call; the chunking the
-        # --mode lanes do internally is the engine's business, not producer-paced
-        # delivery, and calling it streaming would claim streaming-integrity
-        # evidence this path cannot produce.
-        return Capabilities(supports_timestamps=False, supports_streaming=False, max_concurrency=1)
+        # A worker is started for exactly one seam, so it declares exactly one.
+        # Advertising both would let a run profile pick the seam at runtime, and
+        # a delivery selector is not streaming-integrity evidence.
+        return Capabilities(
+            supports_timestamps=False,
+            supports_streaming=self.stream,
+            max_concurrency=1,
+        )
 
     def close(self) -> None:
         if self._proc.poll() is not None:
@@ -195,7 +244,7 @@ class MurmurTranscriber:
             self._proc.kill()
 
 
-def _make(engine: str):
+def _make(engine: str, stream: bool = False):
     spec = ENGINES[engine]
     version = _dependency_revision()
     if spec.uses_fast_lane:
@@ -206,7 +255,7 @@ def _make(engine: str):
         "quantization": spec.quantization,
     }
     backend = {"id": spec.placement, "version": version}
-    return MurmurTranscriber(engine), model, backend
+    return MurmurTranscriber(engine, stream=stream), model, backend
 
 
 # One factory per comparable configuration. The engine name is then visible in
@@ -226,6 +275,38 @@ def hybrid():
 
 def parakeet_mlx():
     return _make("parakeet-mlx")
+
+
+def parakeet_int8():
+    return _make("parakeet-int8")
+
+
+# Streaming counterparts. Separate factories rather than one adapter that serves
+# both seams: the worker is launched for one of them, and which seam produced a
+# number has to be visible in the command that produced it — batch WER and
+# streaming WER are not interchangeable.
+def fast_stream():
+    return _make("fast", stream=True)
+
+
+def accurate_stream():
+    return _make("accurate", stream=True)
+
+
+def hybrid_stream():
+    return _make("hybrid", stream=True)
+
+
+def parakeet_mlx_stream():
+    return _make("parakeet-mlx", stream=True)
+
+
+def parakeet_int8_stream():
+    return _make("parakeet-int8", stream=True)
+
+
+def parakeet_ane_stream():
+    return _make("parakeet-ane", stream=True)
 
 
 def parakeet_ane():

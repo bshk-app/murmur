@@ -102,7 +102,81 @@ let repoOverride: String? = {
     return args[i + 1]
 }()
 
-if args.contains("--serve") {
+/// Read one newline-terminated header from stdin; nil at EOF.
+func readHeaderLine(_ fh: FileHandle) -> String? {
+    var bytes: [UInt8] = []
+    while true {
+        let d = fh.readData(ofLength: 1)
+        if d.isEmpty { return bytes.isEmpty ? nil : String(decoding: bytes, as: UTF8.self) }
+        if d[0] == 0x0A { return String(decoding: bytes, as: UTF8.self) }
+        bytes.append(d[0])
+    }
+}
+
+/// Read exactly `n` bytes, or nil if the stream ends first. A short read is not
+/// an error from a pipe — it just means the writer hasn't caught up yet.
+func readExactly(_ n: Int, from fh: FileHandle) -> Data? {
+    var out = Data()
+    while out.count < n {
+        let d = fh.readData(ofLength: n - out.count)
+        if d.isEmpty { return nil }
+        out.append(d)
+    }
+    return out
+}
+
+if args.contains("--serve-stream") {
+    // ---- Producer-paced streaming worker ----
+    //
+    // The benchmark producer feeds audio at 1x real time and timestamps the first
+    // partial itself, so the host cannot self-report latency. Framing on stdin:
+    //
+    //     "C <byteCount>\n" + byteCount bytes of float32 LE  -> {"partial": "..."}
+    //     "F\n"                                              -> {"text": "..."}
+    //
+    // One reply per request, always — see StreamServeLoop.
+    let realOut = dup(1)
+    dup2(2, 1)
+    let out = FileHandle(fileDescriptor: realOut, closeOnDealloc: false)
+    let input = FileHandle.standardInput
+
+    let step: ([Float]) -> String
+    let finish: () -> String
+    if args.contains("--parakeet") {
+        let ane = args.contains("--ane")
+        let repo = repoOverride ?? ParakeetProbe.defaultRepo
+        FileHandle.standardError.write(Data("loading \(repo) (ane: \(ane))…\n".utf8))
+        let streamer = try await ParakeetProbe.makeStreamer(repo: repo, ane: ane)
+        step = { streamer.step($0) }
+        finish = { streamer.finish() }
+    } else {
+        FileHandle.standardError.write(Data("loading models for mode \(benchMode.rawValue)…\n".utf8))
+        try await session.load(mode: benchMode)
+        var started = false
+        step = {
+            if !started { session.beginPaced(mode: benchMode); started = true }
+            return session.stepPaced($0)
+        }
+        finish = {
+            defer { started = false }              // the next chunk is a new utterance
+            return started ? session.finishPaced() : ""
+        }
+    }
+
+    FileHandle.standardError.write(Data("\nREADY\n".utf8))
+    StreamServeLoop.run(
+        next: {
+            guard let header = readHeaderLine(input) else { return nil }
+            if header == "F" { return .finish }
+            guard header.hasPrefix("C "), let n = Int(header.dropFirst(2)),
+                  let data = readExactly(n, from: input) else { return nil }
+            return .chunk(data.withUnsafeBytes { Array($0.bindMemory(to: Float.self)) })
+        },
+        step: step,
+        finish: finish,
+        write: { out.write(Data(($0 + "\n").utf8)) }
+    )
+} else if args.contains("--serve") {
     // ---- Worker mode: one path per line in, one JSON object per line out ----
     //
     // A benchmark host calls the transcriber once per sample and times the call.
@@ -131,7 +205,7 @@ if args.contains("--serve") {
         transcribe = { session.transcribeOffline(try readWav16kMono($0), mode: benchMode).text }
     }
 
-    FileHandle.standardError.write(Data("READY\n".utf8))
+    FileHandle.standardError.write(Data("\nREADY\n".utf8))
     BatchServeLoop.run(
         readLine: { Swift.readLine(strippingNewline: true) },
         transcribe: transcribe,

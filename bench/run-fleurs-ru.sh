@@ -24,7 +24,13 @@ BENCH_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLI="$BENCH_DIR/../MurmurKit/.build/release/murmur-cli"
 OMNI="$OB/python/.venv/bin/omni-bench"
 BUNDLE="$OB/fixtures/consumer-bundle"
-PROFILE='{"delivery":"batch","chunk_ms":null,"warmup_samples":0,"concurrency":1,"family_parameters":{}}'
+# 480 ms is what MicCapture delivers in the app and what transcribeOffline slices,
+# so a streaming run is paced the way the product is fed rather than at some
+# benchmark-only rate. It is the producer's chunk, not the engine's: each lane
+# still buffers internally to whatever it wants.
+STREAM_CHUNK_MS=480
+BATCH_PROFILE='{"delivery":"batch","chunk_ms":null,"warmup_samples":0,"concurrency":1,"family_parameters":{}}'
+STREAM_PROFILE="{\"delivery\":\"streaming\",\"chunk_ms\":$STREAM_CHUNK_MS,\"warmup_samples\":0,\"concurrency\":1,\"family_parameters\":{}}"
 
 [ -x "$OMNI" ]  || { echo "omni-bench not installed at $OMNI"; exit 1; }
 [ -x "$CLI" ]   || { echo "murmur-cli not built: swift build -c release --product murmur-cli"; exit 1; }
@@ -39,15 +45,20 @@ fi
 export PYTHONPATH="$BENCH_DIR"
 for engine in "${ENGINES[@]}"; do
     label="${engine//_/-}"
-    echo "=== $label ==="
-    # Batch profile: the producer hands over a whole prepared file. The chunking
-    # the --mode lanes do internally is the engine's business; declaring it as
-    # streaming would claim producer-paced delivery this path does not implement.
+    # A `_stream` factory drives the producer-paced seam; everything else takes a
+    # whole prepared file. The seam has to be picked here rather than at runtime:
+    # batch WER and streaming WER are different measurements and must never land
+    # in the same result file.
+    case "$engine" in
+        *_stream) profile=audio_transcription.streaming_single.v1; run_profile="$STREAM_PROFILE" ;;
+        *)        profile=audio_transcription.batch_single.v1;      run_profile="$BATCH_PROFILE"  ;;
+    esac
+    echo "=== $label ($profile) ==="
     if ! "$OMNI" run \
             --adapter "murmur_bench.adapter:$engine" \
             --manifest "$MANIFEST" \
-            --measurement-profile audio_transcription.batch_single.v1 \
-            --run-profile "$PROFILE" \
+            --measurement-profile "$profile" \
+            --run-profile "$run_profile" \
             --implementation swift \
             --registry-bundle "$BUNDLE" \
             --out "$WORK/runs/$label.jsonl" 2>&1 | grep -v "^Using cached" ; then
