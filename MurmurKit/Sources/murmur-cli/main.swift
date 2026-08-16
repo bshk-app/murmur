@@ -53,7 +53,26 @@ func readWav16kMono(_ path: String) throws -> [Float] {
     return Array(UnsafeBufferPointer(start: ch[0], count: Int(outBuf.frameLength)))
 }
 
-if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
+if let pIdx = args.firstIndex(of: "--parakeet"), pIdx + 1 < args.count {
+    // ---- Parakeet comparison probe: is a 0.6B TDT lane on the ANE enough? ----
+    let path = args[pIdx + 1]
+    let samples = try readWav16kMono(path)
+    let ane = args.contains("--ane")
+    let repo = args.firstIndex(of: "--repo").map { args[$0 + 1] } ?? ParakeetProbe.defaultRepo
+    FileHandle.standardError.write(Data("loading \(repo) (ane: \(ane))…\n".utf8))
+    let r = try await ParakeetProbe.transcribe(samples, repo: repo, ane: ane, passes: benchRepeats)
+    print(String(format: """
+
+        === parakeet %@ (encoder: %@, %d pass(es)) ===
+        audio    %.2f s
+        compute  %.2f s
+        wall     %.2f s
+        audio_processed %.2f s
+        RTF_MIN  %.3f     (<1 = faster than realtime)
+        """, (path as NSString).lastPathComponent, ane ? "ANE" : "MLX", r.passes,
+             r.audioSeconds, r.computeSeconds, r.wallSeconds, r.audioProcessedSeconds, r.rtf))
+    print("\ntext: \(r.text)")
+} else if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     // ---- Offline benchmark on a fixed file ----
     let path = args[wavIdx + 1]
     let samples = try readWav16kMono(path)
