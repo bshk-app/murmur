@@ -53,6 +53,31 @@ accurate lane's text verbatim unless the overload valve shed mid-utterance, so
 on offline files it produces the same transcript — and the same WER — as
 `accurate`. Ask for it by name when valve behaviour is the thing under test.
 
+## Result: asr.fleurs.ru.quick.v1
+
+64 samples, 12.4 min of audio, 1204 reference words. M1 Max, macOS 26.2,
+mlx-audio-swift `6768a6d`. 64/64 scored for every engine, no sample errors.
+
+| engine | WER_norm | CER | word errors |
+|---|---|---|---|
+| `parakeet_mlx` | 10.88 % | 5.60 % | ~131 |
+| `accurate` (Voxtral 4B) | 11.05 % | 5.73 % | ~133 |
+| `parakeet_ane` | 11.46 % | 6.30 % | ~138 |
+| `fast` (Nemotron 0.6B) | 18.27 % | 9.07 % | ~220 |
+
+**The top three tie.** They sit within 7 word errors of each other out of 1204,
+under one standard deviation even before accounting for the fact that ASR errors
+cluster per utterance rather than falling independently. Read this as "Parakeet
+0.6B matches Voxtral 4B on this task", not as a ranking among them.
+
+That is the decision: `autoresearch/load-compare.sh` measures Voxtral at RTF 2.09
+and 7.28 J per second of audio against Parakeet-ANE's 0.0153 and 0.07 — roughly
+137x the time and 104x the energy for quality this run cannot distinguish.
+
+`fast` is the one real gap: 220 errors against 131. The two-tier design assumed
+exactly that, so it holds — but it is an argument for replacing the accurate
+lane, not for keeping two.
+
 ## Identity
 
 `model` and `backend` are closed objects in the 0.6 schema
