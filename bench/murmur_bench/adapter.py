@@ -70,8 +70,11 @@ ENGINES: dict[str, Engine] = {
         ["--mode", "hybrid"], f"{NEMOTRON}+{VOXTRAL}", "8bit+4bit", "mlx", True
     ),
     "parakeet-mlx": Engine(["--parakeet"], PARAKEET, None, "mlx", False),
+    # `backend.id` is a semanticId (`^[a-z0-9][a-z0-9._-]*$`), so the two compute
+    # units are joined with a hyphen — a `+` is rejected by the schema. The model
+    # side has no such rule, which is why hybrid's base_model_id can keep one.
     "parakeet-ane": Engine(
-        ["--parakeet", "--ane"], PARAKEET, None, "mlx+coreml-ane", False
+        ["--parakeet", "--ane"], PARAKEET, None, "mlx-coreml-ane", False
     ),
 }
 
