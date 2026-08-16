@@ -33,8 +33,10 @@ CLI="$HOME/Murmur/MurmurKit/.build/release/murmur-cli"
 OUT="/tmp/murmur-load.$$"
 SETTLE=6
 WINDOW=20
-LEAD_IN=8          # skip model load/compile before sampling
-MARGIN=10          # keep the run alive past the end of the window
+LEAD_IN=12         # skip model load/compile before sampling — Voxtral's 4 B
+                   # weights take several seconds even warm from page cache,
+                   # and sampling that reads as low load rather than as loading
+MARGIN=15          # keep the run alive past the end of the window
 
 [ "$(id -u)" = "0" ] || { echo "run with sudo — powermetrics needs root"; exit 1; }
 [ -x "$CLI" ] || { echo "murmur-cli not built at $CLI"; exit 1; }
