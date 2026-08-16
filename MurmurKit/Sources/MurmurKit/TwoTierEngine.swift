@@ -20,11 +20,12 @@ public final class TwoTierEngine {
     /// 960 ms delay hides; that head start is the ceiling on this value, because a
     /// fast lane that arrives no sooner than the accurate one has no purpose.
     ///
-    /// **Measure this, do not reason about it.** Hybrid RTF on a base M1, min of
-    /// three warm passes: 160 → 2.41, 240 → 3.06, **320 → 2.29**, 480 → 4.59,
-    /// 640 → 3.57. No arithmetic fits — a doubling rule was tested at 640 and
-    /// refuted. The likely cause is Metal kernel specialisation per tensor shape,
-    /// so neighbouring values can differ by 2×. 320 is an empirical point.
+    /// **Only the tabulated steps work.** `makeStreamSession` documents a latency
+    /// ladder — 80→[56,0], 160→[56,1], 320→[56,3], 560→[56,6], 1120→[56,13] — and
+    /// values off it fall apart. Hybrid RTF on a base M1, min of three warm passes:
+    /// 160 → 2.41, **320 → 2.29**, 560 → 2.29 on the ladder; 240 → 3.06,
+    /// 480 → 4.59, 640 → 3.57 off it. 320 and 560 tie on speed, so 320 wins on the
+    /// latency it costs. Pick a rung, never a round number.
     ///
     /// Earlier bench, kept for history: 160 beat 80 on both RTF (−40 %) and WER
     /// (10.6 % vs 14.9 %) with `[56,1]`, 1-chunk lookahead.
