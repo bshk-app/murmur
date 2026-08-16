@@ -58,12 +58,34 @@ on offline files it produces the same transcript — and the same WER — as
 64 samples, 12.4 min of audio, 1204 reference words. M1 Max, macOS 26.2,
 mlx-audio-swift `6768a6d`. 64/64 scored for every engine, no sample errors.
 
-| engine | WER_norm | CER | word errors |
+| engine | seam | WER_norm | CER |
 |---|---|---|---|
-| `parakeet_mlx` | 10.88 % | 5.60 % | ~131 |
-| `accurate` (Voxtral 4B) | 11.05 % | 5.73 % | ~133 |
-| `parakeet_ane` | 11.46 % | 6.30 % | ~138 |
-| `fast` (Nemotron 0.6B) | 18.27 % | 9.07 % | ~220 |
+| `parakeet_int8` | batch | **10.88 %** | 5.51 % |
+| `parakeet_mlx` | batch | 10.88 % | 5.60 % |
+| `accurate` (Voxtral 4B) | batch | 11.05 % | 5.73 % |
+| `parakeet_ane` | batch | 11.46 % | 6.30 % |
+| `parakeet_int8_stream` | streaming | 14.29 % | 8.42 % |
+| `parakeet_mlx_stream` | streaming | 14.70 % | 8.62 % |
+| `fast` (Nemotron 0.6B) | batch | 18.27 % | 9.07 % |
+| `fast_stream` | streaming | 18.27 % | 9.07 % |
+
+Streaming runs are paced at 480 ms; all three held real time (`audio_rtfx_wall`
+0.986–0.994) and drained every chunk (`chunk_completion_rate` 1.0).
+
+**int8 quantization is free.** Same WER as the full-precision MLX encoder and a
+slightly better CER, on a smaller model. It is the Parakeet build to use.
+
+**The rolling window costs 3.4 points.** 10.88 % batch against 14.29 % streaming
+is the price of re-decoding a 9.5 s window every second instead of carrying
+state. Nemotron pays nothing — `fast` and `fast_stream` are identical to the
+digit, because it is natively cache-aware, which also serves as a check that the
+two seams feed the engine the same audio.
+
+**Latency does not separate them.** First partial p50 is ~2.0 s for every engine.
+The distributions differ, though: Parakeet answers only on even chunks (53 of 64
+on chunk 4, then 6, then 8) because its window updates once a second, while
+Nemotron is spread from chunk 3 to chunk 9. Parakeet is the more predictable of
+the two, and no slower to first text.
 
 **The top three tie.** They sit within 7 word errors of each other out of 1204,
 under one standard deviation even before accounting for the fact that ASR errors
@@ -74,9 +96,31 @@ That is the decision: `autoresearch/load-compare.sh` measures Voxtral at RTF 2.0
 and 7.28 J per second of audio against Parakeet-ANE's 0.0153 and 0.07 — roughly
 137x the time and 104x the energy for quality this run cannot distinguish.
 
-`fast` is the one real gap: 220 errors against 131. The two-tier design assumed
+`fast` is the one real gap: 18.27 % against 10.88 %. The two-tier design assumed
 exactly that, so it holds — but it is an argument for replacing the accurate
 lane, not for keeping two.
+
+### What this suggests: one model, two passes
+
+Two lanes exist because the accurate lane could not keep up, so a weaker model
+had to cover the wait. Nothing has to cover a wait that is gone.
+
+| | live text | final text |
+|---|---|---|
+| today | Nemotron, 18.27 % | Voxtral, 11.05 % |
+| one model | Parakeet int8 streaming, 14.29 % | Parakeet int8 batch, **10.88 %** |
+
+The second pass is affordable precisely because the model is fast: re-decoding a
+whole 10 s utterance at RTF 0.015 costs ~0.15 s, and measured finalization is
+already 0.12 s. So the same model gives better partials *and* a better final,
+from one set of weights, at a fraction of the energy — and the streaming
+penalty stops mattering, because the rolling window never has to produce the
+final text.
+
+This is a conclusion from measurements, not a change that has been made. What is
+still unmeasured: Parakeet streaming under the ANE encoder (its `fixedFrames`
+limit constrains the window), and behaviour on long dictation rather than
+FLEURS' ~12 s clips.
 
 ## Identity
 
