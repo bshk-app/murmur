@@ -99,6 +99,7 @@ class MurmurTranscriber:
         self.engine = engine
         self._recent_stderr: list[str] = []
         self._ready = threading.Event()
+        self._saw_ready = False
 
         self._proc = subprocess.Popen(
             [str(cli), "--serve", *ENGINES[engine].args],
@@ -115,10 +116,14 @@ class MurmurTranscriber:
         # It has to be drained or the pipe fills and the worker blocks mid-run.
         threading.Thread(target=self._drain_stderr, daemon=True).start()
 
-        if not self._ready.wait(timeout=900):
+        # The event also fires when the worker dies, so READY has to be checked
+        # separately: a worker that crashed while loading would otherwise sail
+        # past here and turn one startup failure into 64 per-sample errors.
+        if not self._ready.wait(timeout=900) or not self._saw_ready:
             self.close()
             raise RuntimeError(
-                f"{engine}: worker never reported READY.\n" + self._stderr_tail()
+                f"{engine}: worker never reported READY "
+                f"(exit {self._proc.poll()}).\n" + self._stderr_tail()
             )
 
     def _drain_stderr(self) -> None:
@@ -127,6 +132,7 @@ class MurmurTranscriber:
             self._recent_stderr.append(line.rstrip("\n"))
             del self._recent_stderr[:-40]
             if line.strip() == "READY":
+                self._saw_ready = True
                 self._ready.set()
         self._ready.set()  # the worker died; unblock the waiter to report it
 
