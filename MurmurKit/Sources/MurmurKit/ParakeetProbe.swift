@@ -58,7 +58,17 @@ public enum ParakeetProbe {
 
         /// Live text after this chunk, or "" when the window has nothing new yet.
         public func step(_ samples: [Float]) -> String {
-            if session == nil { session = try? model.makeStreamSession(configuration: configuration) }
+            if session == nil {
+                do { session = try model.makeStreamSession(configuration: configuration) }
+                catch {
+                    // Empty text is indistinguishable from "the window has nothing
+                    // yet", so a session that cannot be built would score as a
+                    // perfect miss on every sample with nothing to explain it.
+                    FileHandle.standardError.write(
+                        Data("stream session failed: \(error)\n".utf8))
+                    return ""
+                }
+            }
             return session?.step(samples)?.text ?? ""
         }
 
@@ -76,6 +86,11 @@ public enum ParakeetProbe {
         configuration: ParakeetStreamingConfiguration = .init()
     ) async throws -> Streamer {
         let model = try await ParakeetModel.fromPretrained(repo, aneEncoder: ane ? .on : .off)
+        // Validate the configuration once, here. The CoreML encoder is fixed-shape
+        // (ANE rejects dynamic dimensions), so `makeStreamSession` refuses a window
+        // longer than `fixedFrames`; discovering that per utterance would mean a
+        // worker that starts fine and then returns nothing, for every sample.
+        _ = try model.makeStreamSession(configuration: configuration)
         return Streamer(model: model, configuration: configuration)
     }
 
