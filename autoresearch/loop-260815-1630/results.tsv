@@ -1,0 +1,14 @@
+# metric_direction: lower_is_better
+# metric: hybrid RTF on alex-mac (Apple M1, 16GB), min of 3 warm passes, 9.7s clip
+# guard: transcript word-overlap vs baseline >= 0.90 AND 0 unit-test errors
+# scope: MurmurKit/Sources/MurmurKit/*.swift (pipeline params; models out of scope)
+iteration	timestamp	commit	metric	delta	guard	guard-metric	status	description
+0	2026-08-15T16:40:24	f3c6048	2.417	0.0	pass	overlap=1.000	baseline	initial state, min of 3 warm passes
+1	2026-08-15T16:44:28	2e0c382	2.406	-0.011	pass	overlap=1.000	keep	MLX memory cap scaled to physical RAM (delta within 0.4% noise; kept as independently correct)
+2	2026-08-15T21:15:38	b3d3024	2.412	+0.006	pass	overlap=1.000	discard	Voxtral delay 960->1440ms: no gain (+0.25%, within noise). Accurate-lane cost scales with audio processed, not with decode-call count
+3	2026-08-15T21:19:42	efc4230	2.403	-0.003	pass	overlap=1.000	discard	MLX relaxed buffer cache: +0.12% (noise). Reverted on safety, not metric — the hard cap guards against an OOM reboot
+4	2026-08-15T21:23:19	a2e1c6c	2.282	-0.124	pass	overlap=1.000	keep	Nemotron chunk 160->320ms: -5.2%, first result outside noise. Fewer, larger MLX calls on the fast lane
+5	2026-08-15T21:29:44	d452d9a	4.594	+2.312	pass	overlap=1.000	discard	Nemotron chunk 480ms: +101%, twice as slow. Curve is non-monotonic — 480 likely misaligns with the model geometry recorded as [56,1]
+6	2026-08-15T21:33:56	24d5b93	2.314	+0.032	pass	overlap=1.000	keep	Re-confirm 320ms: 2.282 then 2.314, spread 1.4%. Win is real; noise band is wider than the baseline suggested
+7	2026-08-15T21:39:59	e6849ee	3.059	+0.745	pass	overlap=1.000	discard	Nemotron chunk 240ms: +32%, worse than both 160 and 320. Curve has preferred values, not a direction
+8	2026-08-15T21:47:11	1cb7958	3.570	+1.256	pass	overlap=1.000	discard	Nemotron chunk 640ms: +54%. Doubling hypothesis REFUTED — 640 should have been fast and is not. Curve is shape-dependent (likely Metal kernel specialisation), not arithmetic

@@ -1,0 +1,55 @@
+{
+  "version": "2.1.0",
+  "source": "loop",
+  "timestamp": "2026-08-15T21:40:00",
+  "status": "COMPLETE",
+  "results_tsv": "autoresearch/loop-260815-1630/results.tsv",
+  "config": {
+    "goal": "maximum pipeline performance",
+    "scope": "MurmurKit/Sources/MurmurKit/*.swift (pipeline parameters; models out of scope)",
+    "metric": "hybrid RTF on alex-mac (Apple M1, 16GB), min of 3 warm passes, 9.7s clip",
+    "direction": "lower_is_better",
+    "verify": "autoresearch/loop-260815-1630/measure.sh",
+    "guard": "transcript word-overlap vs baseline >= 0.90 AND zero unit-test errors",
+    "iterations_configured": 15,
+    "iterations_run": 8,
+    "stopped_because": "parametric levers exhausted; the remaining cost is encoder-bound and outside scope"
+  },
+  "findings": [
+    {
+      "kind": "improvement",
+      "summary": "Nemotron fast-lane chunk 160 -> 320 ms is 5.2% faster overall, reproduced twice (2.282, 2.314), transcript unchanged.",
+      "shipped": true
+    },
+    {
+      "kind": "constraint",
+      "summary": "The fast-lane chunk curve is not derivable: 160 -> 2.41, 240 -> 3.06, 320 -> 2.29, 480 -> 4.59, 640 -> 3.57. A doubling hypothesis was tested and refuted. Likely Metal kernel specialisation per tensor shape. Measure, never reason, when changing it.",
+      "shipped": false
+    },
+    {
+      "kind": "constraint",
+      "summary": "Scheduling parameters (buffering window, cache mode, memory ceiling, call order) are flat because the bottleneck is the audio encoder forward pass, whose cost scales with the amount of audio, not with how it is scheduled. Recorded independently in Gitea issue #1.",
+      "shipped": false
+    },
+    {
+      "kind": "judgement",
+      "summary": "MLX relaxed memory cap improved the metric and passed both guards, and was reverted anyway: the hard cap guards against an OOM reboot, which no transcript check or unit test can observe. Metric-only optimisation would have shipped it for 0.12%.",
+      "shipped": false
+    },
+    {
+      "kind": "blind-spot",
+      "summary": "The guard cannot see partial latency, which the fast-lane chunk pays for. Optimising on the metric alone drifts toward the largest passing chunk and destroys the point of the two-lane design. 320 ms was chosen against that ceiling, not against the metric.",
+      "shipped": false
+    },
+    {
+      "kind": "open-question",
+      "summary": "Gitea issue #1 records the accurate lane at RTF ~0.32 on 2026-06-23; measured 0.647 on an M1 Max on 2026-08-13. If that is a regression it is worth more than this entire loop. Three pipeline commits landed between those dates, one of which (the Silero gate) adds per-chunk work.",
+      "shipped": false
+    },
+    {
+      "kind": "methodology",
+      "summary": "Single-pass RTF is not a measurement: the same binary on the same clip ranged 4.4-10.4 before min-of-3-warm-passes was introduced. Earlier claims of 'hybrid RTF 8-10 on a base M1' were measuring shader-cache warm-up; the steady state is 2.4.",
+      "shipped": true
+    }
+  ]
+}
