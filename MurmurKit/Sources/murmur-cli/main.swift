@@ -260,6 +260,71 @@ if args.contains("--serve-stream") {
              r.audioSeconds, r.computeSeconds, r.wallSeconds, r.audioProcessedSeconds, r.rtf))
     print("\ntext: \(r.text)")
     }
+} else if args.contains("--captions"), let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
+    // ---- Captions on a fixed file: phrase segmentation and correction latency ----
+    let path = args[wavIdx + 1]
+    let samples = try readWav16kMono(path)
+    let captions = CaptionSession()
+    FileHandle.standardError.write(Data("loading models + Silero (warming up MLX)…\n".utf8))
+    try await captions.load()
+    // The safety cap is the rarest path in production — natural speech pauses long
+    // before 60 s — so `--cap-s` shortens it to exercise that seam many times.
+    let capSeconds: Double = {
+        guard let i = args.firstIndex(of: "--cap-s"), i + 1 < args.count,
+              let s = Double(args[i + 1]), s > 0 else { return CaptionSession.defaultMaxEpochSeconds }
+        return s
+    }()
+    FileHandle.standardError.write(Data(String(
+        format: "captioning %.1fs of audio (\(benchChunkSamples / 16) ms chunks, language: %@, cap %.0fs)…\n",
+        Double(samples.count) / 16000.0, benchLanguage, capSeconds).utf8))
+    // Report each phrase as it is corrected: that is the event the overlay shows.
+    // The gap from the previous phrase is printed rather than guessed at from the
+    // phrase length — 0.000 means the seam was cut mid-speech (the cap), and any
+    // negative value would mean two passes were handed the same audio.
+    //
+    // Tracked by segment id, NOT by list length: the overlay keeps only the last
+    // `confirmedHistory` phrases, so on a long talk the count plateaus and a
+    // length-based guard silently stops reporting — hiding exactly the later part
+    // of the run an analysis needs.
+    var lastID: UInt64 = 0
+    var printed = 0
+    var lastEnd: Double?
+    var reporting = true
+    captions.onSnapshot = { snapshot in
+        guard reporting else { return }
+        for segment in snapshot.confirmed where segment.id > lastID && segment.state == .confirmed {
+            let start = Double(segment.startSample) / 16_000.0
+            let end = Double(segment.endSample ?? segment.startSample) / 16_000.0
+            let gap = lastEnd.map { String(format: "%+.3f", start - $0) } ?? "  —   "
+            print(String(format: "[%7.3f–%7.3f] gap %@ %@", start, end, gap, segment.text))
+            lastID = segment.id
+            lastEnd = end
+            printed += 1
+        }
+    }
+    // RTF on a shared machine swings by 2x, so take the best of N passes like the
+    // dictation bench does. Only the first pass reports phrases.
+    var results: [CaptionOfflineResult] = []
+    for pass in 1 ... benchRepeats {
+        results.append(captions.captionOffline(samples, chunkSamples: benchChunkSamples,
+                                               language: benchLanguage, maxEpochSeconds: capSeconds))
+        reporting = false
+        FileHandle.standardError.write(Data(
+            String(format: "  pass %d/%d: RTF %.3f\n", pass, benchRepeats, results[pass - 1].rtf).utf8))
+    }
+    let r = results.min { $0.rtf < $1.rtf }!
+    print(String(format: """
+
+        === murmur-cli --captions %@ ===
+        audio    %.2f s
+        compute  %.2f s
+        RTF      %.3f     (<1 = faster than realtime)
+        phrases  %d          (overlay retains the last %d)
+        """, (path as NSString).lastPathComponent,
+             r.audioSeconds, r.computeSeconds, r.rtf, printed, r.snapshot.confirmed.count))
+    // The whole talk, not the overlay's window: `text` is what the retained
+    // segments say, so a long run needs the phrases as they were reported.
+    print("\nretained tail: \(r.text)")
 } else if let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     // ---- Offline benchmark on a fixed file ----
     let path = args[wavIdx + 1]

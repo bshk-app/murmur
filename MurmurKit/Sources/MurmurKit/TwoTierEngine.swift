@@ -26,6 +26,7 @@ public final class TwoTierEngine {
     private let parakeetRepo: String
     private var nemotron: NemotronASRModel?
     private var parakeet: ParakeetModel?
+    private var vad: SpeechBoundaryDetector?
 
     public static var defaultMemoryLimitBytes: Int {
         Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.6)
@@ -47,6 +48,18 @@ public final class TwoTierEngine {
         case .accurate: _ = try await loadParakeet()
         case .hybrid:   _ = try await loadNemotron(); _ = try await loadParakeet()
         }
+    }
+
+    /// Captions need both models plus the boundary detector. Same weights as
+    /// `.hybrid` — a caption session must never load a second copy.
+    public func prepareCaptions() async throws {
+        _ = try await loadNemotron()
+        _ = try await loadParakeet()
+        if vad == nil { vad = try await SpeechBoundaryDetector.load() }
+    }
+
+    public var captionsReady: Bool {
+        nemotron != nil && parakeet != nil && vad != nil
     }
 
     public func isReady(_ mode: DictationMode) -> Bool {
@@ -137,6 +150,34 @@ public final class TwoTierEngine {
             liveText: { "" },
             liveFinish: {},
             batch: { Self.parakeetBatch(parakeet, $0) }
+        )
+    }
+
+    /// Captions: one continuous Nemotron epoch per phrase, corrected by a
+    /// Parakeet batch of that phrase's audio, with Silero marking the seams.
+    ///
+    /// The detector's streaming state is per talk, so it is cleared here rather
+    /// than carried into the next session from whatever the last one heard.
+    ///
+    /// The live stream is rebuilt on `begin` — a real pause is the only place an
+    /// epoch restarts, and a fresh session is how Nemotron's cost is kept flat
+    /// over an hour-long talk.
+    func makeCaptionEngine(language: String? = nil,
+                           fastChunkMs: Int = defaultFastChunkMs,
+                           maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds) -> CaptionEngine? {
+        guard let nemotron, let parakeet, let vad else { return nil }
+        vad.reset()
+        var live: NemotronASRStreamSession?
+        return CaptionEngine(
+            live: CaptionEngine.LiveLane(
+                begin: { live = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs) },
+                step: { if let live { _ = live.step($0) } },
+                text: { live?.text ?? "" },
+                finish: { if let live { _ = live.finish() }; live = nil }
+            ),
+            isSpeech: { vad.isSpeech($0) },
+            batch: { _, samples in Self.parakeetBatch(parakeet, samples) },
+            maxEpochSeconds: maxEpochSeconds
         )
     }
 

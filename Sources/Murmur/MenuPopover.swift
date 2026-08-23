@@ -43,6 +43,15 @@ struct MenuPopover: View {
                 "to_mode": newValue,
             ])
         }
+        // Captions needs the boundary detector on top of the dictation models, so
+        // switching mode warms whatever the new one is missing.
+        .onChange(of: appModeRaw) { oldValue, newValue in
+            dictation.prepareCurrentMode()
+            PostHogSDK.shared.capture("app_mode_changed", properties: [
+                "from_mode": oldValue,
+                "to_mode": newValue,
+            ])
+        }
     }
 
     // MARK: head
@@ -101,6 +110,9 @@ struct MenuPopover: View {
             MurSegment(selection: $appModeRaw,
                        options: [(AppMode.dictation.rawValue, "Dictation"),
                                  (AppMode.captions.rawValue, "Captions")])
+                // Switching pipelines under a live session is not a state worth
+                // supporting — the running one owns the mic until it stops.
+                .disabled(dictation.isActive)
             if appModeRaw == AppMode.captions.rawValue {
                 Text("Tap the shortcut to start, tap again to stop. Nothing is typed into other apps.")
                     .font(.system(size: 11.5))

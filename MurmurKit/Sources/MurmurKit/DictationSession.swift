@@ -14,7 +14,8 @@ import Foundation
 public final class DictationSession: @unchecked Sendable {
     public static let liveChunkSamples = 1536 // 96 ms @ 16 kHz
     public static let recordUtterancesKey = "murmur.recordUtterances"
-    private let engine = STTEngine()
+    /// Shared with every other pipeline built from the same `SpeechModels`.
+    let engine: STTEngine
     private var mic = MicCapture()
     private var recordsUtterance = false
     private var recordedSamples: [Float] = []
@@ -24,7 +25,13 @@ public final class DictationSession: @unchecked Sendable {
     /// capture queue — hop to your UI thread as needed.
     public var onUpdate: ((_ confirmed: String, _ partial: String) -> Void)?
 
-    public init() {}
+    /// Builds its own model stack. An app running more than one pipeline should
+    /// pass a shared `SpeechModels` instead, or it loads the weights twice.
+    public convenience init() { self.init(models: SpeechModels()) }
+
+    public init(models: SpeechModels) {
+        self.engine = models.engine
+    }
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     public func isReady(_ mode: DictationMode = .hybrid) -> Bool { engine.isReady(mode) }
