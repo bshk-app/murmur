@@ -40,60 +40,6 @@ public enum ParakeetProbe {
         return { samples in model.generate(audio: MLXArray(samples)).text }
     }
 
-    /// A paced streaming lane: feed chunks, read partials, finish an utterance.
-    ///
-    /// Unlike Nemotron's cache-aware streaming this is a rolling window — the
-    /// library re-decodes up to `windowDuration` of audio every `updateInterval`,
-    /// so partial cadence and cost are set by that ratio rather than by the chunk
-    /// size the caller happens to use.
-    public final class Streamer {
-        private let model: ParakeetModel
-        private var session: ParakeetStreamSession?
-        private let configuration: ParakeetStreamingConfiguration
-
-        init(model: ParakeetModel, configuration: ParakeetStreamingConfiguration) {
-            self.model = model
-            self.configuration = configuration
-        }
-
-        /// Live text after this chunk, or "" when the window has nothing new yet.
-        public func step(_ samples: [Float]) -> String {
-            if session == nil {
-                do { session = try model.makeStreamSession(configuration: configuration) }
-                catch {
-                    // Empty text is indistinguishable from "the window has nothing
-                    // yet", so a session that cannot be built would score as a
-                    // perfect miss on every sample with nothing to explain it.
-                    FileHandle.standardError.write(
-                        Data("stream session failed: \(error)\n".utf8))
-                    return ""
-                }
-            }
-            return session?.step(samples)?.text ?? ""
-        }
-
-        /// Final transcript; the next `step` starts a fresh utterance.
-        public func finish() -> String {
-            defer { session = nil }
-            return session?.finish().text ?? ""
-        }
-    }
-
-    /// Load once, stream many utterances.
-    public static func makeStreamer(
-        repo: String = defaultRepo,
-        ane: Bool,
-        configuration: ParakeetStreamingConfiguration = .init()
-    ) async throws -> Streamer {
-        let model = try await ParakeetModel.fromPretrained(repo, aneEncoder: ane ? .on : .off)
-        // Validate the configuration once, here. The CoreML encoder is fixed-shape
-        // (ANE rejects dynamic dimensions), so `makeStreamSession` refuses a window
-        // longer than `fixedFrames`; discovering that per utterance would mean a
-        // worker that starts fine and then returns nothing, for every sample.
-        _ = try model.makeStreamSession(configuration: configuration)
-        return Streamer(model: model, configuration: configuration)
-    }
-
     /// Transcribe 16 kHz mono samples once, timed. The first pass is discarded:
     /// it JIT-compiles Metal kernels and, with `ane`, compiles the CoreML model,
     /// which would otherwise be measured as if it were per-utterance cost.

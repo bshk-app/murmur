@@ -24,6 +24,7 @@ final class HUDModel {
     var submits = false           // this utterance ends with Return
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
+    var shortcutLabel = ""
     var onStop: () -> Void = {}
 }
 
@@ -212,11 +213,12 @@ private struct HUDView: View {
     }
 
     private var hotkeyBadge: some View {
-        Text("⌥ Space").font(.system(size: 11, design: .monospaced))
+        Text("Release \(model.shortcutLabel)").font(.system(size: 11, design: .monospaced))
             .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(scheme == .dark ? Color.white.opacity(0.09) : Mur.ink.opacity(0.07),
                         in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .accessibilityLabel(Text("Release \(model.shortcutLabel) to finish"))
     }
 
     private var borderColor: Color {
@@ -252,11 +254,12 @@ final class HUDController {
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
     func begin(lang: String, interactive: Bool = false, submits: Bool = false,
-               onStop: @escaping () -> Void = {}) {
+               shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
         model.lang = lang
         model.submits = submits
+        model.shortcutLabel = shortcutLabel
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         model.recording = true

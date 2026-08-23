@@ -41,8 +41,8 @@ final class OnboardingFlowTests: XCTestCase {
 
     func test_download_math() {
         let m = OnboardingFlow.downloadMetrics(fast: 1.0, accurate: 0.5)
-        XCTAssertEqual(m.downloadedGB, 0.6 * 1.0 + 3.0 * 0.5, accuracy: 0.001)   // 2.1
-        XCTAssertEqual(m.totalGB, 3.6, accuracy: 0.001)
+        XCTAssertEqual(m.downloadedGB, 0.8 * 1.0 + 2.6 * 0.5, accuracy: 0.001)
+        XCTAssertEqual(m.totalGB, 3.4, accuracy: 0.001)
         XCTAssertFalse(m.done)
         let done = OnboardingFlow.downloadMetrics(fast: 1, accurate: 1)
         XCTAssertTrue(done.done)

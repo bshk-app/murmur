@@ -1,22 +1,23 @@
 import Foundation
-import MLX
-import MLXAudioVAD
 
-/// Murmur's wrapper around `TwoTierEngine`, with a Silero VAD speech gate in front.
-/// Loads models lazily per mode (Fast doesn't pull the 4 B Voxtral), then opens a
-/// fresh session + `SpeechGate` per utterance. Stepping is serialized on one queue
-/// — MLX is not concurrency-safe, and the VAD shares that queue.
+/// Murmur's wrapper around `TwoTierEngine`. Loads models lazily per mode, then
+/// opens a fresh session per utterance. MLX work is serialized on one queue.
 final class STTEngine: @unchecked Sendable {
     private let queue = DispatchQueue(label: "murmur.stt")
     private var engine: TwoTierEngine?
-    private var session: UtteranceSession?   // two-tier, Nemotron-only or Voxtral-only per mode
-    private var vad: SileroVAD?              // shared model; a fresh SpeechGate wraps it per utterance
-    private var vadLoaded = false
-    private var gate: SpeechGate?
+    private var session: UtteranceSession?
+    private let languageCodesLock = NSLock()
+    private var languageCodes = ["auto"]
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     func isReady(_ mode: DictationMode) -> Bool {
         queue.sync { engine?.isReady(mode) ?? false }
+    }
+
+    var supportedLanguageCodes: [String] {
+        languageCodesLock.lock()
+        defer { languageCodesLock.unlock() }
+        return languageCodes
     }
 
     /// Download (first run) + load + warm ONLY the models `mode` needs. Idempotent
@@ -30,17 +31,11 @@ final class STTEngine: @unchecked Sendable {
             return made
         }
         try await engine.prepare(mode)                   // async fromPretrained (memoized)
+        let codes = engine.supportedLanguageCodes
+        languageCodesLock.lock()
+        languageCodes = codes
+        languageCodesLock.unlock()
 
-        if !queue.sync(execute: { vadLoaded }) {
-            let silero = try? await SileroVAD.fromPretrained("mlx-community/silero-vad")
-            queue.sync {
-                if let silero, let st = try? silero.initialState(sampleRate: 16000) {
-                    _ = try? silero.feed(chunk: MLXArray([Float](repeating: 0, count: 512)), state: st)
-                }
-                vad = silero
-                vadLoaded = true
-            }
-        }
 
         // Warm the mode's models on our queue — the first inference JIT-compiles
         // every Metal kernel (tens of seconds of stalls); do it here, off the first
@@ -53,40 +48,32 @@ final class STTEngine: @unchecked Sendable {
         }
     }
 
-    /// Open a clean session + gate for a new utterance, per the chosen model mode.
-    /// `valve` nil turns off the overload guard — only the offline benchmark wants
-    /// that, so it measures raw throughput instead of the guard doing its job.
-    func begin(language: String?, mode: DictationMode, valve: OverloadValve? = OverloadValve()) {
+    /// Open a clean session for a new utterance.
+    func begin(language: String?, mode: DictationMode) {
         queue.sync {
-            session = engine?.makeSession(for: mode, language: language, valve: valve)
-            gate = vad.flatMap { try? SpeechGate(vad: $0) }
+            session = engine?.makeSession(for: mode, language: language)
         }
     }
 
-    /// Feed one 16 kHz mono chunk — but only if the gate says it's speech. On a
-    /// gated (silent) chunk, return the current text without advancing the STT,
-    /// so silence neither costs compute nor produces hallucinated finals.
-    /// `onEarly` is handed straight to the session so the fast lane can publish
-    /// without waiting for the slow one. It runs on this serial queue, so keep it
-    /// to a hop onto another actor — anything that blocks here stalls the mic.
+    /// Stop the live draft. Capture leftover is still appended for the batch final.
+    func releaseLive() {
+        queue.sync { session?.releaseLive() }
+    }
+
+    /// Feed one 16 kHz mono chunk. The live model sees every sample so its
+    /// streaming state stays continuous.
     @discardableResult
-    func step(_ samples: [Float], onEarly: ((String, String) -> Void)? = nil)
-        -> (confirmed: String, partial: String) {
+    func step(_ samples: [Float]) -> (confirmed: String, partial: String) {
         queue.sync {
-            guard let session else { return ("", "") }
-            if let gate, !gate.shouldFeed(samples) {
-                return session.currentText
-            }
-            return session.step(samples, onEarly: onEarly)
+            session?.step(samples) ?? ("", "")
         }
     }
 
-    /// Flush and end the utterance; returns the final transcript (Voxtral text).
+    /// Flush and end the utterance; returns the batch-final transcript.
     func finish() -> String {
         queue.sync {
             let text = session?.finishText() ?? ""
             session = nil
-            gate = nil
             return text
         }
     }

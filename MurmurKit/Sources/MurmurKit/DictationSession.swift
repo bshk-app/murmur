@@ -1,8 +1,8 @@
 import Foundation
 
 /// The UI-agnostic dictation pipeline shared by the menu-bar app and the CLI:
-/// load the two-tier models (with warm-up), capture the mic in 480 ms chunks,
-/// stream `(confirmed, partial)` updates, and flush a final transcript on stop.
+/// load and warm the models, capture the mic in 96 ms chunks, stream the live
+/// draft, and run the batch final on stop.
 ///
 /// No SwiftUI, no hotkey library, no text injection — callers wire those. The
 /// only difference between the app and the CLI is who drives `start()`/`stop()`
@@ -12,8 +12,13 @@ import Foundation
 /// is meant to be called off the main thread; `start()`/`stop()` never overlap
 /// (the caller's state machine guarantees it).
 public final class DictationSession: @unchecked Sendable {
+    public static let liveChunkSamples = 1536 // 96 ms @ 16 kHz
+    public static let recordUtterancesKey = "murmur.recordUtterances"
     private let engine = STTEngine()
     private var mic = MicCapture()
+    private var recordsUtterance = false
+    private var recordedSamples: [Float] = []
+    public private(set) var lastRecordingURL: URL?
 
     /// Live update per fed chunk: `(confirmed, provisional)`. Called on the mic
     /// capture queue — hop to your UI thread as needed.
@@ -23,6 +28,8 @@ public final class DictationSession: @unchecked Sendable {
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     public func isReady(_ mode: DictationMode = .hybrid) -> Bool { engine.isReady(mode) }
+
+    public var supportedLanguageCodes: [String] { engine.supportedLanguageCodes }
 
     /// Download (first run) + load + warm up ONLY the models `mode` needs. Heavy;
     /// await before `start(mode:)`. Defaults to hybrid (both lanes) for the CLI.
@@ -35,43 +42,58 @@ public final class DictationSession: @unchecked Sendable {
         MicCapture.requestPermission(completion)
     }
 
-    /// Begin a fresh utterance and start capturing, with the chosen model mode.
-    public func start(mode: DictationMode = .hybrid) throws {
-        engine.begin(language: nil, mode: mode)
+    /// Begin a fresh utterance and start capturing. Nemotron needs a language
+    /// prompt; callers pass the persisted choice, with model auto as the fallback.
+    public func start(mode: DictationMode = .hybrid, language: String? = "auto") throws {
+        recordsUtterance = UserDefaults.standard.bool(forKey: Self.recordUtterancesKey)
+        recordedSamples.removeAll(keepingCapacity: recordsUtterance)
+        lastRecordingURL = nil
+        engine.begin(language: language, mode: mode)
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }
-            // Two updates per chunk: the fast draft the moment it exists, then the
-            // refined view once the accurate lane has caught up. Publishing only
-            // once, at the end, made the instant lane as slow as the slow one.
-            let (confirmed, partial) = self.engine.step(chunk) { early, earlyPartial in
-                self.onUpdate?(early, earlyPartial)
-            }
+            if self.recordsUtterance { self.recordedSamples.append(contentsOf: chunk) }
+            let (confirmed, partial) = self.engine.step(chunk)
             self.onUpdate?(confirmed, partial)
         }
         try mic.start()
     }
 
-    /// Stop capture, flush, and return the final transcript. Blocks while the
-    /// backlog drains — call off the main thread.
+    /// Stop capture, run the batch final, and return that transcript.
+    /// Releases the live lane first so leftover capture chunks are not decoded.
     @discardableResult
     public func stop() -> String {
+        engine.releaseLive()
         _ = mic.stop()
+        saveDiagnosticRecording()
         let final = engine.finish()
-        mic = MicCapture()                               // fresh engine for the next gesture
+        mic = MicCapture()
         return final
     }
 
-    /// Offline transcription of pre-loaded 16 kHz mono samples, feeding the same
-    /// 480 ms chunks the mic path uses and timing the STT compute. For
-    /// benchmarking against the CLI on a fixed file (no mic involved).
+    private func saveDiagnosticRecording() {
+        guard recordsUtterance, !recordedSamples.isEmpty else { return }
+        let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Murmur", isDirectory: true)
+        let stamp = Int(Date().timeIntervalSince1970 * 1_000)
+        let url = directory.appendingPathComponent("utterance-\(stamp).wav")
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            try DiagnosticWAV.write(samples: recordedSamples, to: url)
+            lastRecordingURL = url
+            FileHandle.standardError.write(Data("Recorded diagnostic audio: \(url.path)\n".utf8))
+        } catch {
+            FileHandle.standardError.write(Data("Diagnostic audio failed: \(error)\n".utf8))
+        }
+        recordedSamples.removeAll(keepingCapacity: false)
+    }
+
     /// Drive an utterance from externally paced chunks instead of the microphone.
     ///
     /// A benchmark producer delivers audio at 1x real time and timestamps the
-    /// partials itself, so it needs to hand over chunks directly. Same engine,
-    /// same VAD gate, same session lifecycle as `start()`/`stop()` — only the
-    /// source of the samples differs.
-    public func beginPaced(mode: DictationMode = .hybrid) {
-        engine.begin(language: nil, mode: mode)
+    /// partials itself, so it needs to hand over chunks directly. Same engine and
+    /// session lifecycle as `start()`/`stop()` — only the source differs.
+    public func beginPaced(mode: DictationMode = .hybrid, language: String? = "auto") {
+        engine.begin(language: language, mode: mode)
     }
 
     /// One paced chunk in, the current live view out (confirmed + provisional).
@@ -84,8 +106,16 @@ public final class DictationSession: @unchecked Sendable {
     /// next one.
     public func finishPaced() -> String { engine.finish() }
 
-    public func transcribeOffline(_ samples: [Float], chunkSamples: Int = 7680, mode: DictationMode = .hybrid) -> OfflineResult {
-        engine.begin(language: nil, mode: mode, valve: nil)   // measure the hardware, not the guard
+    /// Offline transcription of pre-loaded 16 kHz mono samples, fed in the same
+    /// chunks and with the same language prompt as the live path, with the STT
+    /// compute timed — for benchmarking on a fixed file, no mic involved.
+    public func transcribeOffline(
+        _ samples: [Float],
+        chunkSamples: Int = DictationSession.liveChunkSamples,
+        mode: DictationMode = .hybrid,
+        language: String? = "auto"
+    ) -> OfflineResult {
+        engine.begin(language: language, mode: mode)
         let wall0 = ProcessInfo.processInfo.systemUptime
         var compute = 0.0
         var i = 0

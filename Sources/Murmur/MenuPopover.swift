@@ -19,6 +19,7 @@ struct MenuPopover: View {
     @AppStorage(AppMode.defaultsKey) private var appModeRaw = AppMode.dictation.rawValue
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
+    @AppStorage(SpeechLanguage.defaultsKey) private var languageRaw = SpeechLanguage.systemDefault
 
     var body: some View {
         VStack(spacing: 0) {
@@ -84,6 +85,16 @@ struct MenuPopover: View {
 
     // MARK: segmented settings
 
+    private var languageCodes: [String] {
+        let codes = Set(dictation.supportedLanguageCodes + [SpeechLanguage.automatic, languageRaw])
+        return codes.sorted {
+            if $0 == SpeechLanguage.automatic { return true }
+            if $1 == SpeechLanguage.automatic { return false }
+            return SpeechLanguage.displayName(for: $0)
+                .localizedCaseInsensitiveCompare(SpeechLanguage.displayName(for: $1)) == .orderedAscending
+        }
+    }
+
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
             label("Mode")
@@ -102,13 +113,15 @@ struct MenuPopover: View {
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),
                                  (DictationMode.accurate.rawValue, "Accurate")])
-            if ModelSetting.isOverAskingForThisChip {
-                Text("Hybrid needs a Pro chip or better — on this Mac it can't keep up with speech, so text will lag behind.")
-                    .font(.system(size: 11.5))
-                    .foregroundStyle(Mur.accent)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.top, 7)
+            label("Language").padding(.top, 11)
+            Picker("Language", selection: $languageRaw) {
+                ForEach(languageCodes, id: \.self) { code in
+                    Text(SpeechLanguage.displayName(for: code)).tag(code)
+                }
             }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
             label("Hotkey").padding(.top, 11)
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),

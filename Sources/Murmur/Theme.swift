@@ -59,6 +59,35 @@ enum TriggerMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// Language prompt for Nemotron's live draft. Parakeet final is multilingual.
+enum SpeechLanguage {
+    static let defaultsKey = "murmur.language"
+    static let automatic = "auto"
+    static let russian = "ru"
+    static let english = "en"
+
+    static var systemDefault: String {
+        switch Locale.current.language.languageCode?.identifier {
+        case "ru": return russian
+        case "en": return english
+        default: return automatic
+        }
+    }
+
+    static var current: String {
+        UserDefaults.standard.string(forKey: defaultsKey) ?? systemDefault
+    }
+
+    static func badge(for code: String) -> String {
+        code == automatic ? "Auto" : code.uppercased()
+    }
+
+    static func displayName(for code: String) -> String {
+        guard code != automatic else { return "Automatic" }
+        return Locale.current.localizedString(forIdentifier: code) ?? code
+    }
+}
+
 /// Master on/off — when off, the hotkey is ignored.
 enum DictationEnabled {
     static let key = "murmur.enabled"
@@ -72,19 +101,10 @@ enum DictationEnabled {
 enum ModelSetting {
     static let key = "murmur.model"
 
-    /// Falls back to what this chip can actually run rather than to Hybrid.
-    /// Measured: Hybrid is RTF 0.83 on an M1 Max and 8–10 on a base M1, so the
-    /// old blanket default handed base-chip users a mode that cannot keep up and
-    /// left them guessing why dictation lagged. An explicit choice still wins.
+    /// Falls back to Hybrid: Nemotron + Parakeet keep realtime on base chips.
+    /// An explicit choice still wins.
     static var current: DictationMode {
-        DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "")
-            ?? ChipTier.current.recommendedMode
-    }
-
-    /// True when the user picked a mode this machine is not built for — the UI
-    /// says so instead of letting it look like the app is just slow.
-    static var isOverAskingForThisChip: Bool {
-        current == .hybrid && ChipTier.current.recommendedMode != .hybrid
+        DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .hybrid
     }
 }
 

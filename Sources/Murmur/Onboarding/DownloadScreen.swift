@@ -35,7 +35,7 @@ struct DownloadScreen: View {
                 Text("Getting my voice ready")
                     .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
-                Text("Two models download once, then run entirely on your Mac. A fast one for the instant draft, an accurate one to sharpen it.")
+                Text("Two models download once, then run entirely on your Mac. A fast one for the instant draft, an accurate one for the final text.")
                     .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
@@ -47,7 +47,7 @@ struct DownloadScreen: View {
                           sizeGB: OnboardingFlow.fastGB,
                           fraction: model.flow.fastFraction)
                 modelCard(title: "Accurate model",
-                          subtitle: "Sharpens every word a blink later",
+                          subtitle: "Rewrites the utterance when you release",
                           sizeGB: OnboardingFlow.accurateGB,
                           fraction: model.flow.accurateFraction)
             }

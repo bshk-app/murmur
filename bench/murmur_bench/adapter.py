@@ -45,17 +45,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CLI = REPO_ROOT / "MurmurKit" / ".build" / "release" / "murmur-cli"
 
 NEMOTRON = "mlx-community/nemotron-3.5-asr-streaming-0.6b-8bit"
-VOXTRAL = "mlx-community/Voxtral-Mini-4B-Realtime-2602-4bit"
 PARAKEET = "mlx-community/parakeet-tdt-0.6b-v3"
 # Same base model with the encoder quantized to int8 (~244 MB). Pure MLX, so it
 # needs no CoreML package — which also puts it out of reach of the ANE path's
 # cache bug (ai-audio-swift#26).
 PARAKEET_INT8 = "beshkenadze/parakeet-tdt-0.6b-v3-mlx-encoder-int8"
 
-# The fast lane's chunk, mirrored from TwoTierEngine.defaultFastChunkMs. It sits
-# on a documented latency ladder, so it is not a free knob — but it does shape
-# the run, which is why it lands in the backend version string.
-FAST_CHUNK_MS = 320
+# The Nemotron live chunk mirrored from TwoTierEngine.defaultFastChunkMs.
+FAST_CHUNK_MS = 160
 
 
 @dataclass(frozen=True)
@@ -70,10 +67,13 @@ class Engine:
 
 
 ENGINES: dict[str, Engine] = {
-    "fast": Engine(["--mode", "fast"], NEMOTRON, "8bit", "mlx", True),
-    "accurate": Engine(["--mode", "accurate"], VOXTRAL, "4bit", "mlx", False),
+    "fast": Engine(
+        ["--mode", "fast", "--language", "ru"], NEMOTRON, "8bit", "mlx", True
+    ),
+    "accurate": Engine(["--mode", "accurate"], PARAKEET, None, "mlx", False),
     "hybrid": Engine(
-        ["--mode", "hybrid"], f"{NEMOTRON}+{VOXTRAL}", "8bit+4bit", "mlx", True
+        ["--mode", "hybrid", "--language", "ru"],
+        f"{NEMOTRON}+{PARAKEET}", "8bit+bf16", "mlx", True,
     ),
     "parakeet-mlx": Engine(["--parakeet"], PARAKEET, None, "mlx", False),
     "parakeet-int8": Engine(

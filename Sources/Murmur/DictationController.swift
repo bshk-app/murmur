@@ -48,6 +48,16 @@ final class DictationController {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
     }
 
+    var supportedLanguageCodes: [String] { dictationSession.supportedLanguageCodes }
+
+    /// The binding actually held for this utterance, so the HUD names the key the
+    /// user is on rather than a guess. An unbound send-shortcut falls back to the
+    /// plain one — `shortcutLabel` already carries the last-resort default.
+    private func activeShortcutLabel(submit: Bool) -> String {
+        guard submit else { return shortcutLabel }
+        return KeyboardShortcuts.getShortcut(for: .dictateAndSend)?.description ?? shortcutLabel
+    }
+
     /// Typing into other apps needs Accessibility (the hotkey itself does not).
     var needsAccessibilityToType: Bool { !Accessibility.isTrusted }
 
@@ -145,20 +155,23 @@ final class DictationController {
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
         guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
+        let language = SpeechLanguage.current
         let toggle = Self.togglesOnPress
         submitOnFinish = submit
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
             // on release (Variant B — paste is atomic, so no live-into-field typing).
-            try session.start(mode: modelMode)
+            try session.start(mode: modelMode, language: language)
             state = .recording
             PostHogSDK.shared.capture("dictation_started", properties: [
                 "model_mode": modelMode.rawValue,
                 "trigger_mode": TriggerMode.current.rawValue,
                 "insert_mode": Self.insertModeAnalyticsValue,
+                "language": language,
             ])
             // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
-            hud.begin(lang: "Auto", interactive: toggle, submits: submit,
+            hud.begin(lang: SpeechLanguage.badge(for: language), interactive: toggle, submits: submit,
+                      shortcutLabel: activeShortcutLabel(submit: submit),
                       onStop: { [weak self] in self?.endRecording() })
         } catch {
             state = .error(error.localizedDescription)

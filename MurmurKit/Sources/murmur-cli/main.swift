@@ -18,6 +18,22 @@ let benchMode: DictationMode = {
     return m
 }()
 
+/// Language prompt for Nemotron. `auto` is the model default; pass `--language ru`
+/// to reproduce Murmur's Russian live lane.
+let benchLanguage: String = {
+    guard let i = args.firstIndex(of: "--language"), i + 1 < args.count else { return "auto" }
+    return args[i + 1]
+}()
+
+/// Producer chunk. Defaults to the GUI's 96 ms; `--feed-ms` is benchmark-only.
+let benchChunkSamples: Int = {
+    guard let i = args.firstIndex(of: "--feed-ms"), i + 1 < args.count,
+          let milliseconds = Int(args[i + 1]), milliseconds > 0 else {
+        return DictationSession.liveChunkSamples
+    }
+    return milliseconds * 16
+}()
+
 /// Machine-readable output, for a benchmark host adapter to parse.
 ///
 /// The human format is for reading; anything that scores results needs fields,
@@ -146,7 +162,7 @@ if args.contains("--serve-stream") {
         let ane = args.contains("--ane")
         let repo = repoOverride ?? ParakeetProbe.defaultRepo
         FileHandle.standardError.write(Data("loading \(repo) (ane: \(ane))…\n".utf8))
-        let streamer = try await ParakeetProbe.makeStreamer(repo: repo, ane: ane)
+        let streamer = try await ParakeetStreamer.make(repo: repo, ane: ane)
         step = { streamer.step($0) }
         finish = { streamer.finish() }
     } else {
@@ -154,7 +170,7 @@ if args.contains("--serve-stream") {
         try await session.load(mode: benchMode)
         var started = false
         step = {
-            if !started { session.beginPaced(mode: benchMode); started = true }
+            if !started { session.beginPaced(mode: benchMode, language: benchLanguage); started = true }
             return session.stepPaced($0)
         }
         finish = {
@@ -202,7 +218,11 @@ if args.contains("--serve-stream") {
     } else {
         FileHandle.standardError.write(Data("loading models for mode \(benchMode.rawValue)…\n".utf8))
         try await session.load(mode: benchMode)
-        transcribe = { session.transcribeOffline(try readWav16kMono($0), mode: benchMode).text }
+        transcribe = {
+            session.transcribeOffline(
+                try readWav16kMono($0), mode: benchMode, language: benchLanguage
+            ).text
+        }
     }
 
     FileHandle.standardError.write(Data("\nREADY\n".utf8))
@@ -246,22 +266,27 @@ if args.contains("--serve-stream") {
     let samples = try readWav16kMono(path)
     FileHandle.standardError.write(Data("loading models (warming up MLX)…\n".utf8))
     try await session.load(mode: benchMode)
-    FileHandle.standardError.write(Data(
-        String(format: "transcribing %.1fs of audio (480 ms chunks, mode: %@)…\n",
-               Double(samples.count) / 16000.0, benchMode.rawValue).utf8))
+    FileHandle.standardError.write(Data(String(
+        format: "transcribing %.1fs of audio (\(benchChunkSamples / 16) ms chunks, mode: %@, language: %@)…\n",
+        Double(samples.count) / 16000.0, benchMode.rawValue, benchLanguage).utf8))
     var results: [OfflineResult] = []
     for pass in 1 ... benchRepeats {
-        results.append(session.transcribeOffline(samples, mode: benchMode))
+        results.append(session.transcribeOffline(
+            samples, chunkSamples: benchChunkSamples, mode: benchMode, language: benchLanguage
+        ))
         FileHandle.standardError.write(Data(
             String(format: "  pass %d/%d: RTF %.3f\n", pass, benchRepeats, results[pass - 1].rtf).utf8))
     }
     let best = results.min { $0.rtf < $1.rtf }!
     if emitJSON {
-        // Each lane carries only its own knobs: the fast chunk means nothing to a
-        // Voxtral-only run, and the Voxtral delay means nothing to a Nemotron one.
+        // Each lane carries only its own knobs.
         var parts = ["engine=\(benchMode.rawValue)"]
-        if benchMode != .accurate { parts.append("chunk_ms=\(TwoTierEngine.defaultFastChunkMs)") }
-        if benchMode != .fast { parts.append("voxtral_delay_ms=960") }
+        if benchMode != .accurate {
+            parts.append("chunk_ms=\(TwoTierEngine.defaultFastChunkMs)")
+            parts.append("language=\(benchLanguage)")
+            parts.append("feed_ms=\(benchChunkSamples / 16)")
+        }
+        if benchMode != .fast { parts.append("parakeet_chunk_s=\(Int(TwoTierEngine.finalChunkDuration))") }
         emitRunJSON(engine: benchMode.rawValue, identity: parts.joined(separator: ";"),
                     path: path, text: best.text,
                     audio: best.audioSeconds, compute: best.computeSeconds,
@@ -279,9 +304,8 @@ if args.contains("--serve-stream") {
     }
 } else {
     // ---- Live mic ----
-    // Live two-tier view, redrawn in place: confirmed (Voxtral) prefix + the fast
-    // Nemotron tail in ⟨⟩, which arrives ~960 ms ahead of the finals. Showing the
-    // last ~100 chars keeps it to one terminal line (no flood).
+    // Nemotron draft is redrawn in place; Parakeet supplies the final on stop.
+    // Showing the last ~100 chars keeps it to one terminal line (no flood).
     session.onUpdate = { confirmed, partial in
         let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
         let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
@@ -289,8 +313,8 @@ if args.contains("--serve-stream") {
     }
 
     FileHandle.standardError.write(Data("loading models (warming up MLX)…\n".utf8))
-    try await session.load()
-    try session.start()
+    try await session.load(mode: benchMode)
+    try session.start(mode: benchMode, language: benchLanguage)
     FileHandle.standardError.write(Data("\nREADY: speak now — press Enter to stop.\n".utf8))
     _ = readLine()
     let final = session.stop()
