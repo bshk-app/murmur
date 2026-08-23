@@ -20,6 +20,8 @@ struct MenuPopover: View {
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
     @AppStorage(SpeechLanguage.defaultsKey) private var languageRaw = SpeechLanguage.systemDefault
+    @AppStorage(MicrophoneSetting.defaultsKey)
+    private var microphoneUID = MicrophoneSetting.systemDefaultUID
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,6 +44,19 @@ struct MenuPopover: View {
                 "from_mode": oldValue,
                 "to_mode": newValue,
             ])
+        }
+        // Captions needs the boundary detector on top of the dictation models, so
+        // switching mode warms whatever the new one is missing.
+        .onChange(of: appModeRaw) { oldValue, newValue in
+            dictation.prepareCurrentMode()
+            PostHogSDK.shared.capture("app_mode_changed", properties: [
+                "from_mode": oldValue,
+                "to_mode": newValue,
+            ])
+        }
+        .onAppear {
+            let validUID = dictation.refreshMicrophones(preferredUID: microphoneUID)
+            if validUID != microphoneUID { microphoneUID = validUID }
         }
     }
 
@@ -97,10 +112,24 @@ struct MenuPopover: View {
 
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            label("Mode")
+            label("Microphone")
+            Picker("Microphone", selection: $microphoneUID) {
+                Text("System Default").tag(MicrophoneSetting.systemDefaultUID)
+                ForEach(dictation.microphones) { device in
+                    Text(device.name).tag(device.uid)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .disabled(dictation.isActive)
+            label("Mode").padding(.top, 11)
             MurSegment(selection: $appModeRaw,
                        options: [(AppMode.dictation.rawValue, "Dictation"),
                                  (AppMode.captions.rawValue, "Captions")])
+                // Switching pipelines under a live session is not a state worth
+                // supporting — the running one owns the mic until it stops.
+                .disabled(dictation.isActive)
             if appModeRaw == AppMode.captions.rawValue {
                 Text("Tap the shortcut to start, tap again to stop. Nothing is typed into other apps.")
                     .font(.system(size: 11.5))

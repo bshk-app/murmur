@@ -14,7 +14,8 @@ import Foundation
 public final class DictationSession: @unchecked Sendable {
     public static let liveChunkSamples = 1536 // 96 ms @ 16 kHz
     public static let recordUtterancesKey = "murmur.recordUtterances"
-    private let engine = STTEngine()
+    /// Shared with every other pipeline built from the same `SpeechModels`.
+    let engine: STTEngine
     private var mic = MicCapture()
     private var recordsUtterance = false
     private var recordedSamples: [Float] = []
@@ -24,7 +25,9 @@ public final class DictationSession: @unchecked Sendable {
     /// capture queue — hop to your UI thread as needed.
     public var onUpdate: ((_ confirmed: String, _ partial: String) -> Void)?
 
-    public init() {}
+    public init(models: SpeechModels) {
+        self.engine = models.engine
+    }
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     public func isReady(_ mode: DictationMode = .hybrid) -> Bool { engine.isReady(mode) }
@@ -42,12 +45,15 @@ public final class DictationSession: @unchecked Sendable {
         MicCapture.requestPermission(completion)
     }
 
-    /// Begin a fresh utterance and start capturing. Nemotron needs a language
-    /// prompt; callers pass the persisted choice, with model auto as the fallback.
-    public func start(mode: DictationMode = .hybrid, language: String? = "auto") throws {
+    public func start(
+        mode: DictationMode = .hybrid,
+        language: String? = "auto",
+        microphoneUID: String? = nil
+    ) throws {
         recordsUtterance = UserDefaults.standard.bool(forKey: Self.recordUtterancesKey)
         recordedSamples.removeAll(keepingCapacity: recordsUtterance)
         lastRecordingURL = nil
+        mic = MicCapture(inputDeviceUID: microphoneUID)
         engine.begin(language: language, mode: mode)
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }

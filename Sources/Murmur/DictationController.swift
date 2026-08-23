@@ -29,20 +29,49 @@ final class DictationController {
     /// than dropped so historical PostHog series stay continuous.
     private static let insertModeAnalyticsValue = "inField"
 
-    private let session = DictationSession()
+    private let session: DictationSession
+    private let captionSession: CaptionSession
     private let hud = HUDController()
+
+    /// Both pipelines share one model stack — switching between Dictation and
+    /// Captions in the popover must not load a second ~3.4 GB copy of the weights,
+    /// nor set a second Metal memory cap.
+    init() {
+        let models = SpeechModels()
+        self.session = DictationSession(models: models)
+        self.captionSession = CaptionSession(models: models)
+    }
 
     /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
     /// reuses it instead of spinning up a second `DictationSession`.
     var dictationSession: DictationSession { session }
+
     @ObservationIgnored private var promptedAccessibility = false
     @ObservationIgnored private var isPreparing = false
+
+    /// Which pipeline owns the live session, and whether its stop comes from a
+    /// second tap rather than the key release. Both latched at start so a mode
+    /// change mid-session cannot strand a running mic.
+    @ObservationIgnored private var captionsRunning = false
+    @ObservationIgnored private var latchedToggle = false
 
     /// Whether this utterance ends with a Return. Latched when recording begins and
     /// left alone until it ends: in hold mode there is no separate stop gesture to
     /// carry the intent, so letting the *stopping* key decide would make the two
     /// trigger modes behave differently for the same pair of shortcuts.
     @ObservationIgnored private var submitOnFinish = false
+
+    private(set) var microphones: [MicrophoneDevice] = []
+
+    /// Refresh when the popover opens. Core Audio device IDs are transient, so the
+    /// UI stores UIDs and rebuilds the current catalog each time it is shown.
+    /// Returns the selection the Picker should display; a missing device visibly
+    /// falls back to System Default.
+    @discardableResult
+    func refreshMicrophones(preferredUID: String) -> String {
+        microphones = AudioInputDevices.available()
+        return AudioInputDevices.sanitizedUID(preferredUID, devices: microphones)
+    }
 
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
@@ -90,19 +119,27 @@ final class DictationController {
 
     func bootstrap() {
         session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
+        captionSession.onSnapshot = { [weak self] snapshot in self?.echoCaptions(snapshot) }
         KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown(submit: false) }
         KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
         KeyboardShortcuts.onKeyDown(for: .dictateAndSend) { [weak self] in self?.hotkeyDown(submit: true) }
         KeyboardShortcuts.onKeyUp(for: .dictateAndSend) { [weak self] in self?.hotkeyUp() }
         session.requestMicrophonePermission()            // surface the mic prompt early
-        prepare(mode: ModelSetting.current)              // load only the current mode's models
+        prepareCurrentMode()                             // load only what this mode needs
     }
 
     func requestAccessibility() { Accessibility.prompt() }
 
-    /// Re-load when the Model setting changes (popover) — pulls in the newly
-    /// selected mode's models so the next dictation starts instantly.
-    func prepareCurrentMode() { prepare(mode: ModelSetting.current) }
+    /// Re-load when the Model or App-mode setting changes (popover) — pulls in the
+    /// newly selected mode's models so the next press starts instantly.
+    ///
+    /// Never while a session is live: preparation moves `state` to `.loadingModels`,
+    /// which would strand the running mic (stop only fires from `.recording`).
+    func prepareCurrentMode() {
+        guard !isActive else { return }
+        if AppMode.current == .captions { return prepareCaptions() }
+        prepare(mode: ModelSetting.current)
+    }
 
     /// Lazily load (download on first run) only the models `mode` needs, surfacing
     /// a loading state. A no-op when already ready or a load is in flight.
@@ -145,12 +182,16 @@ final class DictationController {
     }
 
     /// Hotkey release only ends dictation in hold mode (toggle ignores release).
+    /// While a session runs, the decision latched at its start wins — the setting
+    /// may have changed under it.
     private func hotkeyUp() {
-        if !Self.togglesOnPress { endRecording() }
+        let toggles = isActive ? latchedToggle : Self.togglesOnPress
+        if !toggles { endRecording() }
     }
 
     private func beginRecording(submit: Bool) {
         guard state != .recording, state != .transcribing else { return }
+        if AppMode.current == .captions { return beginCaptions() }
         let modelMode = ModelSetting.current
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
@@ -161,7 +202,13 @@ final class DictationController {
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
             // on release (Variant B — paste is atomic, so no live-into-field typing).
-            try session.start(mode: modelMode, language: language)
+            try session.start(
+                mode: modelMode,
+                language: language,
+                microphoneUID: MicrophoneSetting.currentUID
+            )
+            captionsRunning = false
+            latchedToggle = toggle
             state = .recording
             PostHogSDK.shared.capture("dictation_started", properties: [
                 "model_mode": modelMode.rawValue,
@@ -183,6 +230,51 @@ final class DictationController {
         }
     }
 
+    /// Captions run for a whole talk: one live epoch per phrase, each corrected by
+    /// the batch model while the speaker carries on, and nothing is ever typed.
+    private func beginCaptions() {
+        guard captionSession.isReady() else { return prepareCaptions() }
+        let language = SpeechLanguage.current
+        submitOnFinish = false
+        do {
+            try captionSession.start(
+                language: language,
+                microphoneUID: MicrophoneSetting.currentUID
+            )
+            captionsRunning = true
+            latchedToggle = true    // captions is always tap-on / tap-off
+            state = .recording
+            PostHogSDK.shared.capture("captions_started", properties: ["language": language])
+            hud.begin(lang: SpeechLanguage.badge(for: language), interactive: true, submits: false,
+                      shortcutLabel: activeShortcutLabel(submit: false),
+                      onStop: { [weak self] in self?.endRecording() })
+        } catch {
+            state = .error(error.localizedDescription)
+            hud.error("Open Privacy in Settings →")
+        }
+    }
+
+    /// Captions need the boundary detector on top of the dictation models, so its
+    /// readiness is loaded separately — but off the same weights.
+    private func prepareCaptions() {
+        guard !isPreparing else { return }
+        guard !captionSession.isReady() else {
+            if case .loadingModels = state { state = .idle }
+            return
+        }
+        isPreparing = true
+        state = .loadingModels
+        Task { @MainActor in
+            defer { isPreparing = false }
+            do {
+                try await captionSession.load()
+                if case .loadingModels = state { state = .idle }
+            } catch {
+                state = .error("model load: \(error.localizedDescription)")
+            }
+        }
+    }
+
     /// Runs on the mic capture queue (via `onUpdate`). Two jobs (nothing is typed
     /// into the field live — the field gets one paste on release):
     ///  1. drive the HUD overlay (confirmed prefix + the fast Nemotron `⟨tail⟩`),
@@ -197,9 +289,18 @@ final class DictationController {
         #endif
     }
 
+    /// Same job as `echo`, from the caption pipeline's rolling snapshot: the
+    /// confirmed phrases read as one paragraph, with the live draft as the tail.
+    /// The HUD clamps to its own capacity, keeping the most recent words.
+    private nonisolated func echoCaptions(_ snapshot: CaptionSnapshot) {
+        let confirmed = snapshot.confirmed.map(\.text).joined(separator: " ")
+        echo(confirmed, snapshot.provisional)
+    }
+
     private func endRecording() {
         guard state == .recording else { return }
         state = .transcribing
+        if captionsRunning { return endCaptions() }
         let modelModeAtStop = ModelSetting.current.rawValue
         let submitAtStop = submitOnFinish
         // Drain off the main thread so a slow finish never freezes the UI, then
@@ -209,12 +310,8 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                // Captions holds the last line long enough to finish reading it,
-                // and never types into whatever window is focused — the HUD is the
-                // output there, not a progress indicator.
-                let captions = AppMode.current == .captions
-                self.hud.finish(final, linger: captions ? 4.0 : 1.0)
-                if !captions, !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
+                self.hud.finish(final, linger: 1.0)
+                if !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,
@@ -224,6 +321,25 @@ final class DictationController {
                     "submit_on_finish": submitAtStop,
                 ])
                 self.state = .transcribed(final)
+            }
+        }
+    }
+
+    /// Stop captions: close the open phrase, hold the last line on screen long
+    /// enough to finish reading it, and type nothing anywhere.
+    private func endCaptions() {
+        Task.detached(priority: .userInitiated) { [captionSession] in
+            let snapshot = captionSession.stop()
+            await MainActor.run { [weak self] in
+                guard let self else { return }
+                FileHandle.standardError.write(Data("\n".utf8))
+                let text = (snapshot?.confirmed.map(\.text) ?? []).joined(separator: " ")
+                self.hud.finish(text, linger: 4.0)
+                PostHogSDK.shared.capture("captions_completed", properties: [
+                    "phrase_count": snapshot?.confirmed.count ?? 0,
+                    "character_count": text.count,
+                ])
+                self.state = .transcribed(text)
             }
         }
     }
