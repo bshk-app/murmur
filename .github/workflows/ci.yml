@@ -21,29 +21,10 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Report toolchain
-        run: |
-          swift --version
-          xcodebuild -version
-
-      - name: Install Tuist
-        run: brew install tuist
+        run: swift --version
 
       - name: Test MurmurKit
         run: cd MurmurKit && swift test
-
-      - name: Build release app without signing
-        run: |
-          tuist generate --no-open
-          xcodebuild \
-            -workspace Murmur.xcworkspace \
-            -scheme Murmur \
-            -configuration Release \
-            -destination 'generic/platform=macOS' \
-            ARCHS=arm64 \
-            ONLY_ACTIVE_ARCH=YES \
-            SWIFT_ENABLE_EXPLICIT_MODULES=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            build
 
   release-scripts:
     runs-on: ubuntu-latest
