@@ -102,6 +102,14 @@ jobs:
           security import "$RUNNER_TEMP/cert.p12" -k "$keychain" \
             -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
           rm -f "$RUNNER_TEMP/cert.p12"
+          # The exported .p12 carries only the leaf. Locally the intermediate
+          # already sits in the System keychain, but a fresh runner has to be
+          # given it or codesign cannot build the chain.
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/DeveloperIDCA.cer" \
+            https://www.apple.com/certificateauthority/DeveloperIDCA.cer
+          security import "$RUNNER_TEMP/DeveloperIDCA.cer" -k "$keychain" \
+            -T /usr/bin/codesign
+          rm -f "$RUNNER_TEMP/DeveloperIDCA.cer"
           security set-key-partition-list -S apple-tool:,apple:,codesign: \
             -s -k "$password" "$keychain" >/dev/null
           existing=()
