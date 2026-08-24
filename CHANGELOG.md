@@ -11,6 +11,15 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.2.1](https://github.com/bshk-app/murmur/compare/murmur-v0.2.0...murmur-v0.2.1) (2026-08-24)
+
+### Changed
+
+- Nothing you can see: this build carries the same code as 0.2.0. The release
+  pipeline now pins the speech engine to the exact revision it was tested
+  against and restores the app's dependency lock, so every future build is
+  reproducible from its tag.
+
 ## [0.2.0](https://github.com/bshk-app/murmur/compare/murmur-0.1.1...murmur-v0.2.0) (2026-08-24)
 
 ### Added
