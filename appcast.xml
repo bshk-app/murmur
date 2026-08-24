@@ -3,6 +3,31 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.2.0</title>
+            <pubDate>Mon, 24 Aug 2026 19:39:05 +0000</pubDate>
+            <sparkle:version>1019</sparkle:version>
+            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h3>Added</h3>
+<ul>
+<li>Live captions now sharpen themselves phrase by phrase while you keep talking,<br>
+instead of jumping at the end of a sentence.</li>
+<li>A "Dictate and send" shortcut types your words and presses Return for you.</li>
+<li>Choose your microphone in the menu instead of following the system default.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>The dictation overlay stays on the display you are working on, and no longer<br>
+slides out of view during long dictations.</li>
+<li>A recording keeps the microphone and the start/stop gesture it began with,<br>
+even if you change Settings while it runs.</li>
+<li>Text appears as soon as the fast model has it, and no longer takes seconds to<br>
+land after you stop speaking.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-v0.2.0/Murmur-0.2.0.dmg" length="19519461" type="application/octet-stream" sparkle:edSignature="GmtvJDd/YeEzdA3xLYH36WU0r43IrAG4cDe6GXw4iAtq98ud+qItWRA0EUaoU+Zg1gWknT1IOkxDPb4hFbOFBg=="/>
+        </item>
+        <item>
             <title>0.1.1</title>
             <pubDate>Sat, 27 Jun 2026 13:15:23 +0000</pubDate>
             <sparkle:version>0.1.1</sparkle:version>
