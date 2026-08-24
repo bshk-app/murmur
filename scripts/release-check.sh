@@ -100,6 +100,18 @@ fi
 if is_github_repository_url 'https://evilgithub.com/bshk-app/murmur.git' 'bshk-app/murmur'; then
     die "lookalike hosts must not receive the public Sparkle feed"
 fi
+
+# A signed, notarized artifact must not be built from whatever a branch happened
+# to point at, and a branch dependency also rewrites Package.resolved on every
+# fresh resolve - which used to fail the release after notarization.
+if grep -q 'branch:' "$ROOT/MurmurKit/Package.swift"; then
+    die "MurmurKit must pin dependencies by revision or version, never by branch"
+fi
+grep -q 'require_clean_pushed_tree' "$ROOT/scripts/release.sh" \
+    || die "release.sh must gate tree cleanliness before it builds anything"
+if grep -q 'require_clean_pushed_tree' "$ROOT/scripts/publish-github-release.sh"; then
+    die "publishing runs after the build; it must not re-check the working tree"
+fi
 grep -q 'get-url --push' "$ROOT/scripts/publish-appcast.sh" \
     || die "appcast publishing must validate the GitHub push URL, not only fetch"
 grep -q 'stable appcast requires tag' "$ROOT/scripts/publish-appcast.sh" \

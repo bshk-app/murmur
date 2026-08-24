@@ -169,8 +169,12 @@ require_zamokctl() {
 
 # Nothing ships from a tree a reviewer cannot fetch from the remote.
 require_clean_pushed_tree() {
-    [[ -z "$(git -C "$ROOT" status --porcelain)" ]] \
-        || die "working tree is dirty; commit the release inputs first"
+    local dirty
+    dirty="$(git -C "$ROOT" status --porcelain)"
+    if [[ -n "$dirty" ]]; then
+        note "$dirty"
+        die "working tree is dirty; commit the release inputs first"
+    fi
     local upstream
     if upstream="$(git -C "$ROOT" rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null)"; then
         [[ "$(git -C "$ROOT" rev-parse HEAD)" == "$(git -C "$ROOT" rev-parse "$upstream")" ]] \
