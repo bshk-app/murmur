@@ -1,15 +1,12 @@
 // swift-tools-version: 6.0
 import PackageDescription
 
-// Shared core for the Murmur menu-bar app and the murmur-cli tool: mic capture,
-// the two-tier STT composition, the Silero speech gate, text injection, and the
-// dictation orchestrator.
+// Shared core for the Murmur menu-bar app and murmur-cli: mic capture,
+// Nemotron live transcription, Parakeet batch final, Silero speech boundaries,
+// text injection, and the dictation orchestrator.
 //
-// STT + VAD come from the fork `beshkenadze/mlx-audio-swift` as a normal external
-// dependency over HTTPS, pinned to `main` (which already carries the merged
-// Nemotron/Voxtral streaming sessions + Silero VAD, all public, no dev-only
-// tooling). The two-tier composition itself lives here in MurmurKit, not the
-// library — it's application policy (which models, how to merge, memory budget).
+// STT and VAD come from `beshkenadze/mlx-audio-swift` over HTTPS, pinned to
+// `main`. The two-pass composition is application policy and lives in MurmurKit.
 let package = Package(
     name: "MurmurKit",
     platforms: [.macOS(.v15)],
@@ -26,8 +23,8 @@ let package = Package(
             name: "MurmurKit",
             dependencies: [
                 .product(name: "MLXAudioSTT", package: "mlx-audio-swift"),
-                .product(name: "MLXAudioVAD", package: "mlx-audio-swift"),   // Silero 32ms speech gate
                 .product(name: "MLXAudioCore", package: "mlx-audio-swift"),  // ModelUtils.resolveOrDownloadModel
+                .product(name: "MLXAudioVAD", package: "mlx-audio-swift"),   // Silero speech boundaries
                 .product(name: "HuggingFace", package: "swift-huggingface"), // Repo.ID / HubClient / HubCache
             ]
         ),

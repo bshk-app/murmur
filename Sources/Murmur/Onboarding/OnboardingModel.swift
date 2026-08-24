@@ -222,7 +222,10 @@ final class OnboardingModel {
             }
         }
         do {
-            try session.start(mode: .hybrid)
+            try session.start(
+                mode: .hybrid,
+                microphoneUID: MicrophoneSetting.currentUID
+            )
             tryListening = true
         } catch {
             tryListening = false

@@ -2,78 +2,130 @@ import Foundation
 import MLX
 import MLXAudioSTT
 
-/// Murmur's two-tier composition policy. Caps Metal memory and loads the fast
-/// (Nemotron) and/or accurate (Voxtral) models **lazily, per mode**: `prepare(.fast)`
-/// never drags in the 4 B Voxtral, `prepare(.accurate)` never loads Nemotron, and
-/// switching modes loads only the missing model. It then vends a fresh session per
-/// utterance (a session accumulates text, so each dictation needs a clean one).
+/// Murmur's dictation composition. Caps Metal memory and loads the live
+/// (Nemotron) and/or final (Parakeet) models **lazily, per mode**:
+/// `prepare(.fast)` never pulls Parakeet, `prepare(.accurate)` never loads
+/// Nemotron. A session accumulates audio, so each dictation needs a clean one.
 ///
-/// This is **application** policy — which two models, how to merge them, the memory
-/// budget — not a library primitive, so it lives in MurmurKit, built on the
-/// library's public streaming primitives (`fromPretrained` / `makeStreamSession`).
+/// Hybrid is one live stream plus one batch final — not two streaming models
+/// on the same serial queue. Voxtral is not loaded.
 public final class TwoTierEngine {
     public static let defaultNemotronRepo = "mlx-community/nemotron-3.5-asr-streaming-0.6b-8bit"
-    public static let defaultVoxtralRepo = "mlx-community/Voxtral-Mini-4B-Realtime-2602-4bit"
+    public static let defaultParakeetRepo = "mlx-community/parakeet-tdt-0.6b-v3"
 
-    /// Fast-lane (Nemotron) chunk in ms — SSOT for both the hybrid fast lane and
-    /// the fast-only mode. 160 ms (`[56,1]`, 1-chunk lookahead) beats 80 ms on
-    /// BOTH RTF (−40 %) and WER (10.6 % vs 14.9 %) in the interleaved bench; the
-    /// only cost is +80 ms partial latency, hidden under Voxtral's 960 ms delay.
+    /// Nemotron live-chunk. 160 ms is a documented ladder rung (`[56,1]`) — 80 ms
+    /// has no lookahead and a worse live WER; 320 ms only existed to cheapen a
+    /// Voxtral hybrid that is gone.
     public static let defaultFastChunkMs = 160
 
-    private let nemotronRepo: String
-    private let voxtralRepo: String
-    private var nemotron: NemotronASRModel?
-    private var voxtral: VoxtralRealtimeModel?
+    /// Batch-final window. 120 s bounds long-dictation attention cost while
+    /// keeping enough context to avoid the tail loss measured with 30 s windows.
+    public static let finalChunkDuration: Float = 120
 
-    /// Caps Metal memory up front (an unbounded MLX run can OOM-reboot the Mac);
-    /// models load lazily via `prepare`.
+    private let nemotronRepo: String
+    private let parakeetRepo: String
+    private let nemotronModel = AsyncMemo<NemotronASRModel>()
+    private let parakeetModel = AsyncMemo<ParakeetModel>()
+    private let vadModel = AsyncMemo<SpeechBoundaryDetector>()
+
+    public static var defaultMemoryLimitBytes: Int {
+        Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.6)
+    }
+
     public init(
         nemotronRepo: String = defaultNemotronRepo,
-        voxtralRepo: String = defaultVoxtralRepo,
-        memoryLimitBytes: Int = 18 * 1024 * 1024 * 1024
+        parakeetRepo: String = defaultParakeetRepo,
+        memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes
     ) {
         GPU.set(memoryLimit: memoryLimitBytes, relaxed: false)
         self.nemotronRepo = nemotronRepo
-        self.voxtralRepo = voxtralRepo
+        self.parakeetRepo = parakeetRepo
     }
 
-    /// Download (first run) + load ONLY the models `mode` needs. Memoized — a model
-    /// already loaded is reused, so a mode switch loads just what's missing.
     public func prepare(_ mode: DictationMode) async throws {
         switch mode {
         case .fast:     _ = try await loadNemotron()
-        case .accurate: _ = try await loadVoxtral()
-        case .hybrid:   _ = try await loadNemotron(); _ = try await loadVoxtral()
+        case .accurate: _ = try await loadParakeet()
+        case .hybrid:   _ = try await loadNemotron(); _ = try await loadParakeet()
         }
     }
 
-    /// Whether the models `mode` needs are loaded (so a session can be made).
+    /// Captions need both models plus the boundary detector. Same weights as
+    /// `.hybrid` — sessions built from one `SpeechModels` load one copy.
+    public func prepareCaptions() async throws {
+        _ = try await loadNemotron()
+        _ = try await loadParakeet()
+        _ = try await loadVAD()
+    }
+
+    public var captionsReady: Bool {
+        nemotronModel.cached != nil && parakeetModel.cached != nil && vadModel.cached != nil
+    }
+
     public func isReady(_ mode: DictationMode) -> Bool {
         switch mode {
-        case .fast:     return nemotron != nil
-        case .accurate: return voxtral != nil
-        case .hybrid:   return nemotron != nil && voxtral != nil
+        case .fast:     return nemotronModel.cached != nil
+        case .accurate: return parakeetModel.cached != nil
+        case .hybrid:   return nemotronModel.cached != nil && parakeetModel.cached != nil
         }
+    }
+
+    var supportedLanguageCodes: [String] {
+        guard let nemotron = nemotronModel.cached else { return ["auto"] }
+        return Self.canonicalLanguageCodes(nemotron.promptDictionary)
+    }
+
+    /// One code per prompt id: the dictionary lists several spellings of the same
+    /// language ("en", "en-US"), and the picker shows one of each.
+    static func canonicalLanguageCodes(_ prompts: [String: Int]) -> [String] {
+        let aliasesByPrompt = Dictionary(grouping: prompts, by: { $0.value })
+        let codes = aliasesByPrompt.values.compactMap { aliases in
+            aliases.min { isPreferredSpelling($0.key, $1.key) }?.key
+        }
+        return codes.sorted {
+            if $0 == "auto" { return true }
+            if $1 == "auto" { return false }
+            return $0.localizedCaseInsensitiveCompare($1) == .orderedAscending
+        }
+    }
+
+    /// "auto" first, then bare codes ("ru"), then region-qualified ones ("en-GB"),
+    /// alphabetical within a rank — the spelling a menu should show.
+    private static func isPreferredSpelling(_ lhs: String, _ rhs: String) -> Bool {
+        func rank(_ code: String) -> Int {
+            if code == "auto" { return 0 }
+            if code.count == 2 { return 1 }
+            if code.contains("-") { return 2 }
+            return 3
+        }
+        let (lhsRank, rhsRank) = (rank(lhs), rank(rhs))
+        return lhsRank == rhsRank ? lhs < rhs : lhsRank < rhsRank
     }
 
     private func loadNemotron() async throws -> NemotronASRModel {
-        if let nemotron { return nemotron }
-        let m = try await NemotronASRModel.fromPretrained(nemotronRepo)
-        nemotron = m
-        return m
+        let repo = nemotronRepo
+        return try await nemotronModel.get {
+            try await NemotronASRModel.fromPretrained(repo)
+        }
     }
 
-    private func loadVoxtral() async throws -> VoxtralRealtimeModel {
-        if let voxtral { return voxtral }
-        let m = try await VoxtralRealtimeModel.fromPretrained(voxtralRepo)
-        voxtral = m
-        return m
+    private func loadParakeet() async throws -> ParakeetModel {
+        let repo = parakeetRepo
+        return try await parakeetModel.get {
+            try await ParakeetModel.fromPretrained(repo)
+        }
     }
 
-    /// The session for `mode`, or nil if its models aren't loaded yet (call
-    /// `prepare(mode)` first). Single dispatch point — STTEngine uses it for both
-    /// the warm-up pass and live dictation.
+    private func loadVAD() async throws -> SpeechBoundaryDetector {
+        try await vadModel.get {
+            let detector = try await SpeechBoundaryDetector.load()
+            // Silero's first forward JIT-compiles MLX kernels. Pay that cost while
+            // the UI says Loading, then clear its state before live speech.
+            detector.warmUp()
+            return detector
+        }
+    }
+
     func makeSession(for mode: DictationMode, language: String? = nil) -> UtteranceSession? {
         switch mode {
         case .hybrid:   return makeHybridSession(language: language)
@@ -82,28 +134,68 @@ public final class TwoTierEngine {
         }
     }
 
-    /// Hybrid: `confirmed` = Voxtral finals, `partial` = Nemotron tail beyond them.
-    func makeHybridSession(
-        language: String? = nil,
-        fastChunkMs: Int = defaultFastChunkMs,
-        voxtralDelayMs: Int = 960
-    ) -> TwoTierSession? {
-        guard let nemotron, let voxtral else { return nil }
-        return TwoTierSession(
-            nemotron: nemotron, voxtral: voxtral,
-            language: language, fastChunkMs: fastChunkMs, voxtralDelayMs: voxtralDelayMs
+    /// Live Nemotron draft; pasted text is a Parakeet batch of the whole utterance.
+    func makeHybridSession(language: String? = nil,
+                           fastChunkMs: Int = defaultFastChunkMs) -> TwoPassSession? {
+        guard let nemotron = nemotronModel.cached,
+              let parakeet = parakeetModel.cached else { return nil }
+        let live = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs)
+        return TwoPassSession(
+            liveStep: { _ = live.step($0) },
+            liveText: { live.text },
+            liveFinish: { _ = live.finish() },
+            batch: { Self.parakeetBatch(parakeet, $0) }
         )
     }
 
-    /// Fast lane only (Nemotron).
     func makeFastSession(language: String? = nil, chunkMs: Int = defaultFastChunkMs) -> UtteranceSession? {
-        guard let nemotron else { return nil }
+        guard let nemotron = nemotronModel.cached else { return nil }
         return NemotronOnlySession(nemotron, language: language, chunkMs: chunkMs)
     }
 
-    /// Accurate lane only (Voxtral native streaming).
-    func makeAccurateSession(voxtralDelayMs: Int = 960) -> UtteranceSession? {
-        guard let voxtral else { return nil }
-        return VoxtralOnlySession(voxtral, delayMs: voxtralDelayMs)
+    /// No live draft — the buffer is decoded once at release.
+    func makeAccurateSession() -> TwoPassSession? {
+        guard let parakeet = parakeetModel.cached else { return nil }
+        return TwoPassSession(
+            liveStep: { _ in },
+            liveText: { "" },
+            liveFinish: {},
+            batch: { Self.parakeetBatch(parakeet, $0) }
+        )
+    }
+
+    /// Captions: bounded Nemotron epochs corrected by Parakeet batches, with
+    /// Silero marking natural seams and a safety cap bounding unbroken speech.
+    ///
+    /// The detector's streaming state is per talk, so it is cleared here rather
+    /// than carried into the next session from whatever the last one heard.
+    /// `CaptionEngine` rebuilds this live stream after both a pause and a cap:
+    /// Nemotron retains all epoch PCM, so keeping one session across caps would
+    /// make per-step work grow through a long monologue.
+    func makeCaptionEngine(language: String? = nil,
+                           fastChunkMs: Int = defaultFastChunkMs,
+                           maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds) -> CaptionEngine? {
+        guard let nemotron = nemotronModel.cached,
+              let parakeet = parakeetModel.cached,
+              let vad = vadModel.cached else { return nil }
+        vad.reset()
+        var live: NemotronASRStreamSession?
+        return CaptionEngine(
+            live: CaptionEngine.LiveLane(
+                begin: { live = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs) },
+                step: { if let live { _ = live.step($0) } },
+                text: { live?.text ?? "" },
+                finish: { if let live { _ = live.finish() }; live = nil }
+            ),
+            isSpeech: { vad.isSpeech($0) },
+            batch: { _, samples in Self.parakeetBatch(parakeet, samples) },
+            maxEpochSeconds: maxEpochSeconds
+        )
+    }
+
+    static func parakeetBatch(_ model: ParakeetModel, _ samples: [Float]) -> String {
+        guard !samples.isEmpty else { return "" }
+        let params = STTGenerateParameters(language: nil, chunkDuration: finalChunkDuration)
+        return model.generate(audio: MLXArray(samples), generationParameters: params).text
     }
 }

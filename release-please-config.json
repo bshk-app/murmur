@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "version-file": "VERSION",
+  "include-v-in-tag": true,
+  "include-component-in-tag": true,
+  "draft": true,
+  "force-tag-creation": true,
+  "packages": {
+    ".": {
+      "package-name": "murmur"
+    }
+  },
+  "changelog-sections": [
+    { "type": "feat", "section": "Added" },
+    { "type": "fix", "section": "Fixed" },
+    { "type": "a11y", "section": "Accessibility" },
+    { "type": "perf", "section": "Changed" },
+    { "type": "refactor", "section": "Changed" },
+    { "type": "revert", "section": "Removed" },
+    { "type": "docs", "hidden": true },
+    { "type": "chore", "hidden": true },
+    { "type": "ci", "hidden": true },
+    { "type": "build", "hidden": true },
+    { "type": "test", "hidden": true },
+    { "type": "style", "hidden": true },
+    { "type": "release", "hidden": true }
+  ]
+}

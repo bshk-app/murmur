@@ -1,8 +1,23 @@
 # Murmur — build helpers.
 #
-# Builds are RELEASE: MLX-Swift in Debug is ~4-5x slower (RTF 2.6 vs 0.59 on the
-# same clip) because every MLXArray call goes through unoptimised Swift wrappers
-# → not realtime. Xcode 26 also breaks explicitly-built modules for some SPM deps
+# Builds are RELEASE: MLX-Swift in Debug sends every MLXArray call through
+# unoptimised Swift wrappers and lands well over realtime.
+#
+# RTF baselines, so nobody hunts a phantom regression:
+#   2026-06-23  0.587  hybrid, "clip22" — measured BEFORE TwoTierEngine, the
+#                      Silero gate and the 160 ms fast chunk existed. Different
+#                      pipeline, different clip. Historical only; do NOT diff
+#                      against it.
+#   2026-08-13  M1 Max, 15.5 s of dense synthesised Russian speech, `--mode`:
+#                      fast 0.139 · accurate 0.647 · hybrid 0.829
+#                      First run after a cold Metal shader cache: 1.219.
+#                      Dense speech is close to worst case — the Silero gate
+#                      skips silent chunks, so real dictation with pauses is
+#                      cheaper.
+# Hybrid is additive: MLX is not concurrency-safe, so both lanes run on the one
+# serial STT queue and their costs sum. Voxtral is ~78 % of it.
+#
+# Xcode 26 also breaks explicitly-built modules for some SPM deps
 # (swift-algorithms → RealModule), so builds disable them; arm64-only keeps the
 # heavy MLX build short.
 

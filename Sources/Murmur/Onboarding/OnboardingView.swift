@@ -166,12 +166,12 @@ private struct WelcomeScreen: View {
         .accessibilityHidden(true)   // illustrative chip; the card title/caption carry meaning
     }
 
-    /// "Two models, one trick … about 3.6 GB …" — size pulled from `OnboardingFlow`.
+    /// Size pulled from `OnboardingFlow`.
     private var modelsNote: some View {
         let gb = String(format: "%.1f GB", OnboardingFlow.totalGB)
         let body = Text("Two models, one trick. ").fontWeight(.bold).foregroundColor(t.ink)
-            + Text("A fast model types an instant draft, then an accurate one sharpens each word a blink later. To do that on-device, setup installs both models — about ")
-            + Text(verbatim: gb).fontWeight(.bold).foregroundColor(t.ink)   // "3.6 GB" — runtime value
+            + Text("A fast model types an instant draft while you speak. When you release, an accurate model rewrites the whole utterance. Setup installs both — about ")
+            + Text(verbatim: gb).fontWeight(.bold).foregroundColor(t.ink)
             + Text(". Nothing you say ever leaves your Mac.")
         return HStack(alignment: .top, spacing: 11) {
             onboardingCat(30).padding(.top, 1).accessibilityHidden(true)   // decorative
