@@ -164,15 +164,15 @@ final class DictationController {
         }
     }
 
-    /// Hotkey press: hold-mode starts; toggle-mode flips start/stop. Gated by the
-    /// master enable.
+    /// Hotkey press: a running session keeps the trigger it started with even if
+    /// Settings change underneath it.
     private func hotkeyDown(submit: Bool) {
-        guard DictationEnabled.value else { return }
-        if Self.togglesOnPress {
-            if state == .recording { endRecording() } else { beginRecording(submit: submit) }
-        } else {
-            beginRecording(submit: submit)
-        }
+        RecordingTriggerPolicy.route(
+            .keyDown,
+            state: recordingTriggerState,
+            begin: { beginRecording(submit: submit) },
+            end: endRecording
+        )
     }
 
     /// Captions is always tap-on / tap-off, whatever the hotkey setting says —
@@ -181,12 +181,23 @@ final class DictationController {
         AppMode.current == .captions || TriggerMode.current == .toggle
     }
 
+    private var recordingTriggerState: RecordingTriggerState {
+        RecordingTriggerState(
+            isRecording: state == .recording,
+            isActive: isActive,
+            latchedToggle: latchedToggle,
+            isEnabled: DictationEnabled.value
+        )
+    }
+
     /// Hotkey release only ends dictation in hold mode (toggle ignores release).
-    /// While a session runs, the decision latched at its start wins — the setting
-    /// may have changed under it.
     private func hotkeyUp() {
-        let toggles = isActive ? latchedToggle : Self.togglesOnPress
-        if !toggles { endRecording() }
+        RecordingTriggerPolicy.route(
+            .keyUp,
+            state: recordingTriggerState,
+            begin: {},
+            end: endRecording
+        )
     }
 
     private func beginRecording(submit: Bool) {

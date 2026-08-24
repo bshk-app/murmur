@@ -155,6 +155,7 @@ struct MenuPopover: View {
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
                                  (TriggerMode.toggle.rawValue, "Toggle")])
+                .disabled(dictation.isActive)
             if dictation.needsAccessibilityToType {
                 Button { dictation.requestAccessibility() } label: {
                     Text("Grant Accessibility to type…")
