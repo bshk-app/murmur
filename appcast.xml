@@ -3,6 +3,22 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.2.1</title>
+            <pubDate>Mon, 24 Aug 2026 20:28:24 +0000</pubDate>
+            <sparkle:version>1021</sparkle:version>
+            <sparkle:shortVersionString>0.2.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h3>Changed</h3>
+<ul>
+<li>Nothing you can see: this build carries the same code as 0.2.0. The release<br>
+pipeline now pins the speech engine to the exact revision it was tested<br>
+against and restores the app's dependency lock, so every future build is<br>
+reproducible from its tag.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-v0.2.1/Murmur-0.2.1.dmg" length="19520442" type="application/octet-stream" sparkle:edSignature="+uHL2eAjkh6gZwHqNU+X+igpwDVVAqxDdO7eSfELD5GcizYXAWI6iVLhgU2nnoNEmjv6LZDgdx9y3fOt32EFBA=="/>
+        </item>
+        <item>
             <title>0.2.0</title>
             <pubDate>Mon, 24 Aug 2026 19:39:05 +0000</pubDate>
             <sparkle:version>1019</sparkle:version>
