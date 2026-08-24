@@ -36,7 +36,9 @@ gh auth status --hostname github.com >/dev/null 2>&1 \
 gh api "repos/${REPOSITORY}/commits/${HEAD_SHA}" --silent >/dev/null \
     || die "$HEAD_SHA is not present in $REPOSITORY"
 
-require_clean_pushed_tree
+# No working-tree check here: by this point the build has run and generated
+# files exist. release.sh gates cleanliness before anything is compiled, and
+# provenance is enforced below by the tag/HEAD match and the manifest hashes.
 
 tag="$(release_tag "$SHORT_VERSION" "$CHANNEL")"
 if [[ "$CHANNEL" == "stable" ]]; then
