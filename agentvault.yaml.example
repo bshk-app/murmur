@@ -1,0 +1,27 @@
+# Copy to agentvault.yaml (gitignored) and replace ITEM_ID with the 1Password
+# items holding Murmur's release credentials. AgentVault uses av://1p, never op://.
+#
+# Backend note, measured against avd v0.3.2: av://keychain/<service>/<account>
+# resolves only when <service> has no slashes, and percent-encoding is not
+# decoded. Sparkle's own item uses service "https://sparkle-project.org", so it
+# cannot be addressed that way. Keep the Sparkle key in 1Password, or mirror it
+# into a slash-free item (see the commented ref below).
+profiles:
+  release:
+    SPARKLE_PRIVATE_ED_KEY:
+      ref: av://1p/Private/ITEM_ID/Sparkle private key
+      # ref: av://keychain/murmur-sparkle-key/murmur
+      tier: dangerous
+    TAP_GITHUB_TOKEN:
+      ref: av://1p/Private/ITEM_ID/GitHub tap token
+      tier: dangerous
+  notarize:
+    NOTARY_APPLE_ID:
+      ref: av://1p/Private/ITEM_ID/username
+      tier: normal
+    NOTARY_PASSWORD:
+      ref: av://1p/Private/ITEM_ID/xcode notarize
+      tier: dangerous
+    NOTARY_TEAM_ID:
+      ref: av://1p/Private/ITEM_ID/Team ID
+      tier: normal

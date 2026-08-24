@@ -15,7 +15,7 @@ public actor OnboardingDownloader {
     }
 
     public static let fastRepo = TwoTierEngine.defaultNemotronRepo
-    public static let accurateRepo = TwoTierEngine.defaultVoxtralRepo
+    public static let accurateRepo = TwoTierEngine.defaultParakeetRepo
 
     /// Running per-repo state, mutated only on this actor and snapshotted out to
     /// the main-actor callback — no captured-`var` data race.

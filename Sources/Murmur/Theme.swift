@@ -27,6 +27,24 @@ enum Mur {
     }
 }
 
+/// What the app is doing right now.
+///
+/// Captions is not a variant of dictation. A speaker cannot hold a key through a
+/// forty-minute talk, and nothing they say should be typed into whichever window
+/// happens to be focused — so the trigger and the output both differ, and one
+/// enum value each is cheaper than threading two exceptions everywhere.
+enum AppMode: String, CaseIterable, Identifiable {
+    case dictation
+    case captions
+
+    var id: String { rawValue }
+
+    static let defaultsKey = "murmur.appMode"
+    static var current: AppMode {
+        AppMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .dictation
+    }
+}
+
 /// How the push-to-talk hotkey behaves.
 enum TriggerMode: String, CaseIterable, Identifiable {
     case hold      // record while held, stop on release (push-to-talk)
@@ -38,6 +56,35 @@ enum TriggerMode: String, CaseIterable, Identifiable {
     static let defaultsKey = "murmur.triggerMode"
     static var current: TriggerMode {
         TriggerMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .hold
+    }
+}
+
+/// Language prompt for Nemotron's live draft. Parakeet final is multilingual.
+enum SpeechLanguage {
+    static let defaultsKey = "murmur.language"
+    static let automatic = "auto"
+    static let russian = "ru"
+    static let english = "en"
+
+    static var systemDefault: String {
+        switch Locale.current.language.languageCode?.identifier {
+        case "ru": return russian
+        case "en": return english
+        default: return automatic
+        }
+    }
+
+    static var current: String {
+        UserDefaults.standard.string(forKey: defaultsKey) ?? systemDefault
+    }
+
+    static func badge(for code: String) -> String {
+        code == automatic ? "Auto" : code.uppercased()
+    }
+
+    static func displayName(for code: String) -> String {
+        guard code != automatic else { return "Automatic" }
+        return Locale.current.localizedString(forIdentifier: code) ?? code
     }
 }
 
@@ -53,22 +100,11 @@ enum DictationEnabled {
 /// Which model(s) transcribe — persisted; read by DictationController at begin.
 enum ModelSetting {
     static let key = "murmur.model"
+
+    /// Falls back to Hybrid: Nemotron + Parakeet keep realtime on base chips.
+    /// An explicit choice still wins.
     static var current: DictationMode {
         DictationMode(rawValue: UserDefaults.standard.string(forKey: key) ?? "") ?? .hybrid
-    }
-}
-
-/// Where the transcript goes when you release the hotkey.
-enum InsertMode: String, CaseIterable, Identifiable {
-    case inField   // type into the focused field of any app (needs Accessibility)
-    case hudOnly   // presentation/subtitles: show in the HUD only, never inject
-
-    var id: String { rawValue }
-    var label: String { self == .inField ? "In field" : "HUD only" }
-
-    static let defaultsKey = "murmur.insertMode"
-    static var current: InsertMode {
-        InsertMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .inField
     }
 }
 

@@ -8,10 +8,10 @@ public enum OnboardingFlow {
         case welcome, permissions, shortcut, download, tryIt, done
     }
 
-    /// Known on-disk sizes (GB) of the two quantized models — for the progress UI.
-    public static let fastGB = 0.6
-    public static let accurateGB = 3.0
-    public static var totalGB: Double { fastGB + accurateGB }   // 3.6
+    /// Rounded on-disk sizes (GB) of the two model repositories.
+    public static let fastGB = 0.8
+    public static let accurateGB = 2.6
+    public static var totalGB: Double { fastGB + accurateGB }
 
     public struct State: Sendable {
         public var step: Step = .welcome

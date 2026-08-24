@@ -1,0 +1,77 @@
+version: "3"
+
+# Murmur build and release entry points. Secrets are resolved only inside child
+# processes through AgentVault; real values never belong in this file or .env.
+
+vars:
+  APP_PATH: "{{.ROOT_DIR}}/build/Murmur.app"
+  OUT_DIR: "{{.ROOT_DIR}}/out"
+  SHORT_VERSION:
+    sh: tr -d '[:space:]' < VERSION
+  BUILD_NUMBER:
+    sh: ./scripts/build-number.sh
+
+tasks:
+  default:
+    desc: List available tasks
+    silent: true
+    cmds:
+      - task --list
+
+  version:
+    desc: Print the version and monotonic Sparkle build number
+    silent: true
+    cmds:
+      - |
+        printf 'marketing version  %s   (VERSION)\n' '{{.SHORT_VERSION}}'
+        printf 'build number       %s   (BUILD_NUMBER_BASE + commit count)\n' '{{.BUILD_NUMBER}}'
+
+  test:
+    desc: Run MurmurKit tests
+    cmds:
+      - cd MurmurKit && swift test
+
+  build:app:
+    desc: Stage an unsigned release app into build/
+    cmds:
+      - |
+        APP_VERSION='{{.SHORT_VERSION}}' BUILD_NUMBER='{{.BUILD_NUMBER}}' \
+          ./scripts/stage-murmur-app.sh '{{.APP_PATH}}'
+
+  signing:notary-profile:
+    desc: Store and verify the Murmur notary profile through AgentVault
+    cmds:
+      - av env --profile notarize -- ./scripts/configure-notary-profile.sh
+
+  release:notes:
+    desc: Print the CHANGELOG section this release would ship
+    silent: true
+    cmds:
+      - ./scripts/extract-release-notes.sh '{{.SHORT_VERSION}}' CHANGELOG.md
+
+  release:check:
+    desc: Parse and statically validate the release pipeline without credentials
+    cmds:
+      - ./scripts/release-check.sh
+
+  release:
+    desc: >-
+      ONE-COMMAND RELEASE — unsigned build, then Zamok codesign → notarize →
+      staple → DMG → GitHub Release → signed legacy Sparkle feed → cask.
+      Pass PUBLISH=0 for a draft without feed/cask publication.
+    cmds:
+      - av env --profile release -- ./scripts/release.sh
+    env:
+      PUBLISH: '{{if hasKey . "PUBLISH"}}{{.PUBLISH}}{{else}}1{{end}}'
+
+  release:repair:
+    desc: Repair appcast and cask from an already-published immutable release
+    requires:
+      vars: [TAG]
+    cmds:
+      - av env --profile release -- ./scripts/repair-release-publishing.sh '{{.TAG}}'
+
+  clean:release:
+    desc: Remove release build and output
+    cmds:
+      - rm -rf build out
