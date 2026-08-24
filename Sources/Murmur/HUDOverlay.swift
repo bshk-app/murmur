@@ -14,7 +14,7 @@ import SwiftUI
 
 @Observable
 final class HUDModel {
-    enum Phase { case listening, transcribing, error }
+    enum Phase { case listening, transcribing, finished, error }
     var phase: Phase = .listening
     var confirmed = ""
     var partial = ""
@@ -73,11 +73,6 @@ private struct PulseDot: View {
     }
 }
 
-private func catIcon(_ size: CGFloat) -> some View {
-    Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
-        .frame(width: size, height: size)
-}
-
 // MARK: - HUD view
 
 private struct HUDView: View {
@@ -87,9 +82,10 @@ private struct HUDView: View {
     var body: some View {
         Group {
             switch model.phase {
-            case .error:        errorPill
-            case .listening:    listeningPill
-            case .transcribing: transcribePill
+            case .error:        mascotBubble(.error) { errorPill }
+            case .listening:    mascotBubble(.listening) { listeningPill }
+            case .transcribing: mascotBubble(.transcribing) { transcribePill }
+            case .finished:     mascotBubble(.success) { transcribePill }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -97,10 +93,9 @@ private struct HUDView: View {
         .padding(.horizontal, 40)
     }
 
-    // Header: cat + animated bars + language badge.
+    // Header: animated bars + language badge; the mascot overlaps the pill edge.
     private var header: some View {
         HStack(spacing: 10) {
-            catIcon(18)
             LevelBars(color: Mur.accent, count: 4, barHeight: 13)
             Spacer(minLength: 8)
             if model.submits { submitBadge }
@@ -184,11 +179,6 @@ private struct HUDView: View {
 
     private var errorPill: some View {
         HStack(spacing: 12) {
-            catIcon(22).overlay(alignment: .bottomTrailing) {
-                Circle().fill(Mur.error).frame(width: 12, height: 12)
-                    .overlay(Text("!").font(.system(size: 9, weight: .bold)).foregroundStyle(.white))
-                    .offset(x: 4, y: 2)
-            }
             VStack(alignment: .leading, spacing: 2) {
                 Text("No microphone access").font(.system(size: 13, weight: .medium))
                     .foregroundStyle(scheme == .dark ? Color.white.opacity(0.95) : Mur.ink)
@@ -198,6 +188,35 @@ private struct HUDView: View {
         }
         .padding(.horizontal, 16).padding(.vertical, 11)
         .murPill(scheme, radius: 14, border: Mur.error.opacity(0.4))
+    }
+
+    private func mascotBubble<Content: View>(
+        _ mood: DictatorMascotMood,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ZStack(alignment: .leading) {
+            content()
+            mascotBadge(mood).offset(x: -25)
+        }
+        .padding(.leading, 25)
+    }
+
+    private func mascotBadge(_ mood: DictatorMascotMood) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        return DictatorMascot(mood: mood, size: 42)
+            .padding(4)
+            .background(Mur.glass(scheme), in: shape)
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(shape.strokeBorder(mood == .error ? Mur.error.opacity(0.4) : borderColor,
+                                        lineWidth: 1))
+            .shadow(color: .black.opacity(scheme == .dark ? 0.38 : 0.16), radius: 10, y: 6)
+            .overlay(alignment: .bottomTrailing) {
+                if mood == .error {
+                    Circle().fill(Mur.error).frame(width: 12, height: 12)
+                        .overlay(Text("!").font(.system(size: 9, weight: .bold)).foregroundStyle(.white))
+                        .offset(x: 3, y: 2)
+                }
+            }
     }
 
     /// Marks an utterance that will press Return when it lands. Two shortcuts only
@@ -275,7 +294,7 @@ final class HUDController {
     /// Live two-tier update.
     func update(confirmed: String, partial: String) {
         show(confirmed: confirmed, partial: partial)
-        if model.phase != .error {
+        if model.phase != .error, model.recording {
             model.phase = (model.confirmed.isEmpty && model.partial.isEmpty) ? .listening : .transcribing
         }
     }
@@ -310,7 +329,7 @@ final class HUDController {
         model.showStop = false
         if !finalText.isEmpty {
             show(confirmed: finalText, partial: "")
-            model.phase = .transcribing
+            model.phase = .finished
         }
         scheduleHide(after: linger)
     }

@@ -4,7 +4,7 @@ import PostHog
 import SwiftUI
 
 /// The menu-bar dropdown (design: MurMur.dc.html) shown as a `.window`-style
-/// MenuBarExtra: cat + master toggle, live status + hotkey, a mic meter, the
+/// MenuBarExtra: mascot + master toggle, live status + hotkey, a mic meter, the
 /// Model / Insert / Hotkey segmented controls, and a Settings/Quit footer.
 struct MenuPopover: View {
     let dictation: DictationController
@@ -59,9 +59,7 @@ struct MenuPopover: View {
     private var head: some View {
         VStack(spacing: 9) {
             HStack(spacing: 10) {
-                Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
-                    .frame(width: 26, height: 26)
-                    .accessibilityHidden(true)   // decorative; "MurMur" label carries the name
+                DictatorMascot(mood: dictation.mascotMood, size: 30)
                 Text("MurMur").font(.system(size: 15, weight: .semibold)).foregroundStyle(primary)
                 Spacer()
                 Toggle("", isOn: $enabled).toggleStyle(.switch).tint(Mur.accent).labelsHidden()

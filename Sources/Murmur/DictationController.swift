@@ -104,6 +104,15 @@ final class DictationController {
         state == .recording || state == .transcribing
     }
 
+    var mascotMood: DictatorMascotMood {
+        switch state {
+        case .recording: return .listening
+        case .transcribing: return .transcribing
+        case .error: return .error
+        case .loadingModels, .idle, .transcribed: return .idle
+        }
+    }
+
     func bootstrap() {
         session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
         captionSession.onSnapshot = { [weak self] snapshot in self?.echoCaptions(snapshot) }

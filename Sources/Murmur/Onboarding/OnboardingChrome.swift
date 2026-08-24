@@ -40,10 +40,9 @@ struct OnTheme {
     }
 }
 
-/// Round "cat" image asset (reuses `cat_fill` — the only cat asset bundled).
+/// Shared mascot artwork; the rail adds its own narrator bounce on top.
 func onboardingCat(_ size: CGFloat) -> some View {
-    Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
-        .frame(width: size, height: size)
+    DictatorMascot(mood: .idle, size: size)
 }
 
 /// Filled upward triangle — the speech-bubble tail (apex points at the cat).
