@@ -11,6 +11,14 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.2.1](https://github.com/bshk-app/murmur/compare/murmur-v0.2.0...murmur-v0.2.1) (2026-08-24)
+
+
+### Fixed
+
+* **build:** restore the app's dependency lock ([de20cf2](https://github.com/bshk-app/murmur/commit/de20cf2a1908c5b92ccfa10b1c379f9a89b3d039))
+* **release:** pin the STT dependency and stop failing after notarization ([b4cc878](https://github.com/bshk-app/murmur/commit/b4cc878bba08421d22e24336a1caba9972fa4f6b))
+
 ## [0.2.0](https://github.com/bshk-app/murmur/compare/murmur-0.1.1...murmur-v0.2.0) (2026-08-24)
 
 ### Added
