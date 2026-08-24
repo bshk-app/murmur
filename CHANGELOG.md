@@ -13,11 +13,12 @@ read in an update panel before merging it.
 
 ## [0.2.1](https://github.com/bshk-app/murmur/compare/murmur-v0.2.0...murmur-v0.2.1) (2026-08-24)
 
+### Changed
 
-### Fixed
-
-* **build:** restore the app's dependency lock ([de20cf2](https://github.com/bshk-app/murmur/commit/de20cf2a1908c5b92ccfa10b1c379f9a89b3d039))
-* **release:** pin the STT dependency and stop failing after notarization ([b4cc878](https://github.com/bshk-app/murmur/commit/b4cc878bba08421d22e24336a1caba9972fa4f6b))
+- Nothing you can see: this build carries the same code as 0.2.0. The release
+  pipeline now pins the speech engine to the exact revision it was tested
+  against and restores the app's dependency lock, so every future build is
+  reproducible from its tag.
 
 ## [0.2.0](https://github.com/bshk-app/murmur/compare/murmur-0.1.1...murmur-v0.2.0) (2026-08-24)
 
