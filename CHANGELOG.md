@@ -11,6 +11,24 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.2.0](https://github.com/bshk-app/murmur/compare/murmur-0.1.1...murmur-v0.2.0) (2026-08-24)
+
+### Added
+
+- Live captions now sharpen themselves phrase by phrase while you keep talking,
+  instead of jumping at the end of a sentence.
+- A "Dictate and send" shortcut types your words and presses Return for you.
+- Choose your microphone in the menu instead of following the system default.
+
+### Fixed
+
+- The dictation overlay stays on the display you are working on, and no longer
+  slides out of view during long dictations.
+- A recording keeps the microphone and the start/stop gesture it began with,
+  even if you change Settings while it runs.
+- Text appears as soon as the fast model has it, and no longer takes seconds to
+  land after you stop speaking.
+
 ## [Unreleased]
 
 ## [0.1.1] - 2026-06-27
