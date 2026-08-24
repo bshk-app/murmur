@@ -77,6 +77,26 @@ make run     # build and launch the menu-bar agent
 Builds are Release — MLX-Swift in Debug is several times slower and not realtime.
 Analytics stay off in source builds unless `TUIST_MURMUR_POSTHOG_KEY` is set at build time.
 
+## Release
+
+release-please maintains a PR that bumps `VERSION` and drafts the matching
+`CHANGELOG.md` section from conventional commits. Rewrite that section for the
+Sparkle update panel, then merge: it creates `murmur-vX.Y.Z` plus a draft release.
+CI builds, signs, notarizes and staples the DMG, uploads it into the draft, then
+publishes the release before updating the signed appcast and Homebrew cask.
+
+```bash
+task release:check              # no credentials; scripts/workflows/config
+task signing:notary-profile     # once per release Mac, through AgentVault
+task release PUBLISH=0          # local draft; feed and cask stay untouched
+task release                    # local publish when no release PR is desired
+task release:repair TAG=murmur-vX.Y.Z  # repair feed/cask after publish
+```
+
+`CHANGELOG.md` is the release-notes source of truth for both Sparkle and GitHub.
+The feed remains at `main/appcast.xml` so installed 0.1.x builds can discover
+the migration release.
+
 ## Built on
 
 On-device speech via **[mlx-audio-swift](https://github.com/beshkenadze/mlx-audio-swift)**
