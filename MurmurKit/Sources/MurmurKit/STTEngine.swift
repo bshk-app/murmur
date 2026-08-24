@@ -1,50 +1,60 @@
 import Foundation
-import MLX
-import MLXAudioVAD
 
-/// Murmur's wrapper around `TwoTierEngine`, with a Silero VAD speech gate in front.
-/// Loads models lazily per mode (Fast doesn't pull the 4 B Voxtral), then opens a
-/// fresh session + `SpeechGate` per utterance. Stepping is serialized on one queue
-/// — MLX is not concurrency-safe, and the VAD shares that queue.
+/// Murmur's wrapper around `TwoTierEngine`. Loads models lazily per mode, then
+/// opens a fresh session per utterance. MLX work is serialized on one queue.
 final class STTEngine: @unchecked Sendable {
     private let queue = DispatchQueue(label: "murmur.stt")
     private var engine: TwoTierEngine?
-    private var session: UtteranceSession?   // two-tier, Nemotron-only or Voxtral-only per mode
-    private var vad: SileroVAD?              // shared model; a fresh SpeechGate wraps it per utterance
-    private var vadLoaded = false
-    private var gate: SpeechGate?
+    private var session: UtteranceSession?
+    private var captions: CaptionEngine?
+    private let languageCodesLock = NSLock()
+    private var languageCodes = ["auto"]
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     func isReady(_ mode: DictationMode) -> Bool {
         queue.sync { engine?.isReady(mode) ?? false }
     }
 
+    var supportedLanguageCodes: [String] {
+        languageCodesLock.lock()
+        defer { languageCodesLock.unlock() }
+        return languageCodes
+    }
+
     /// Download (first run) + load + warm ONLY the models `mode` needs. Idempotent
-    /// and memoized, so switching modes loads just the missing model. Loads the
-    /// Silero gate once (best-effort: run ungated rather than fail the pipeline).
+    /// and memoized, so switching modes loads just the missing model.
     func prepare(_ mode: DictationMode) async throws {
+        try await load(warming: mode) { try await $0.prepare(mode) }
+    }
+
+    /// Load both models plus the Silero boundary detector. The same weights
+    /// `.hybrid` uses, so switching between dictation and captions loads nothing
+    /// new — provided both pipelines were built from one `SpeechModels`.
+    func prepareCaptions() async throws {
+        try await load(warming: .hybrid) { try await $0.prepareCaptions() }
+    }
+
+    /// Shared shape of both loads: reuse or build the engine, run the caller's
+    /// async fetch, publish the language list, then warm.
+    ///
+    /// Warming matters more than it looks: the first inference JIT-compiles every
+    /// Metal kernel, tens of seconds of stalls, and doing it here keeps that off
+    /// the user's first utterance. Re-warming an already-JIT'd model is cheap.
+    private func load(
+        warming mode: DictationMode,
+        _ fetch: (TwoTierEngine) async throws -> Void
+    ) async throws {
         let engine = queue.sync { () -> TwoTierEngine in
             if let existing = self.engine { return existing }
             let made = TwoTierEngine()                   // caps Metal memory in init
             self.engine = made
             return made
         }
-        try await engine.prepare(mode)                   // async fromPretrained (memoized)
-
-        if !queue.sync(execute: { vadLoaded }) {
-            let silero = try? await SileroVAD.fromPretrained("mlx-community/silero-vad")
-            queue.sync {
-                if let silero, let st = try? silero.initialState(sampleRate: 16000) {
-                    _ = try? silero.feed(chunk: MLXArray([Float](repeating: 0, count: 512)), state: st)
-                }
-                vad = silero
-                vadLoaded = true
-            }
-        }
-
-        // Warm the mode's models on our queue — the first inference JIT-compiles
-        // every Metal kernel (tens of seconds of stalls); do it here, off the first
-        // dictation. Re-warming an already-JIT'd model is cheap.
+        try await fetch(engine)                          // async fromPretrained (memoized)
+        let codes = engine.supportedLanguageCodes
+        languageCodesLock.lock()
+        languageCodes = codes
+        languageCodesLock.unlock()
         queue.sync {
             if let warm = engine.makeSession(for: mode, language: nil) {
                 _ = warm.step([Float](repeating: 0, count: 16000))
@@ -53,35 +63,68 @@ final class STTEngine: @unchecked Sendable {
         }
     }
 
-    /// Open a clean session + gate for a new utterance, per the chosen model mode.
+    /// Open a clean session for a new utterance.
     func begin(language: String?, mode: DictationMode) {
         queue.sync {
             session = engine?.makeSession(for: mode, language: language)
-            gate = vad.flatMap { try? SpeechGate(vad: $0) }
         }
     }
 
-    /// Feed one 16 kHz mono chunk — but only if the gate says it's speech. On a
-    /// gated (silent) chunk, return the current text without advancing the STT,
-    /// so silence neither costs compute nor produces hallucinated finals.
+    /// Stop the live draft. Capture leftover is still appended for the batch final.
+    func releaseLive() {
+        queue.sync { session?.releaseLive() }
+    }
+
+    /// Feed one 16 kHz mono chunk. The live model sees every sample so its
+    /// streaming state stays continuous.
     @discardableResult
     func step(_ samples: [Float]) -> (confirmed: String, partial: String) {
         queue.sync {
-            guard let session else { return ("", "") }
-            if let gate, !gate.shouldFeed(samples) {
-                return session.currentText
-            }
-            return session.step(samples)
+            session?.step(samples) ?? ("", "")
         }
     }
 
-    /// Flush and end the utterance; returns the final transcript (Voxtral text).
+    /// Flush and end the utterance; returns the batch-final transcript.
     func finish() -> String {
         queue.sync {
             let text = session?.finishText() ?? ""
             session = nil
-            gate = nil
             return text
+        }
+    }
+
+    // MARK: captions
+
+    func captionsReady() -> Bool {
+        queue.sync { engine?.captionsReady ?? false }
+    }
+
+    /// Open a caption session. Unlike dictation this one outlives many phrases —
+    /// it ends when the user stops captions, not at the next pause.
+    func beginCaptions(language: String?,
+                       maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds) {
+        queue.sync {
+            captions = engine?.makeCaptionEngine(language: language, maxEpochSeconds: maxEpochSeconds)
+        }
+    }
+
+    /// Feed one chunk and return the overlay's view of the talk so far.
+    func stepCaptions(_ samples: [Float]) -> CaptionSnapshot? {
+        queue.sync {
+            guard let captions else { return nil }
+            captions.step(samples)
+            return captions.snapshot()
+        }
+    }
+
+    /// Close the open phrase and end the session.
+    func finishCaptions() -> CaptionSnapshot? {
+        queue.sync {
+            guard let captions else { return nil }
+            captions.finish()
+            let snapshot = captions.snapshot()
+            self.captions = nil
+            return snapshot
         }
     }
 }

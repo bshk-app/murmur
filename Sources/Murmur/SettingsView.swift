@@ -4,29 +4,17 @@ import SwiftUI
 /// Murmur's preferences window (a SwiftUI `Settings` scene): the push-to-talk
 /// shortcut and where the transcript goes on release.
 struct SettingsView: View {
-    @AppStorage(InsertMode.defaultsKey) private var insertModeRaw = InsertMode.inField.rawValue
     @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
 
     var body: some View {
         Form {
             Section {
                 KeyboardShortcuts.Recorder("Push-to-talk:", name: .dictate)
+                KeyboardShortcuts.Recorder("Dictate and send:", name: .dictateAndSend)
             } header: {
                 Text("Shortcut")
             } footer: {
-                Text("Hold the shortcut to dictate; release to finish.")
-            }
-
-            Section {
-                Picker("On release", selection: $insertModeRaw) {
-                    Text("Type into the focused field").tag(InsertMode.inField.rawValue)
-                    Text("Show in the HUD only").tag(InsertMode.hudOnly.rawValue)
-                }
-                .pickerStyle(.inline)
-            } header: {
-                Text("Insert")
-            } footer: {
-                Text("“HUD only” never types into other apps — it shows live subtitles in the HUD, handy for presentations and demos.")
+                Text("Hold a shortcut to dictate; release to finish. “Dictate and send” also presses Return, which sends the message in most chats. Leave it empty if you mostly dictate into editors, where Return would just break the line.")
             }
 
             Section {

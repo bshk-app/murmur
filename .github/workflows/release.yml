@@ -1,35 +1,136 @@
-name: release
-
-# Thin caller of the public shared action (zamok-org/ci). Builds Murmur on a GitHub-hosted
-# macOS runner, signs + notarizes + staples via zamokctl, and publishes the cask to the tap.
-# The action lives in a DIFFERENT org (zamok-org), so `secrets: inherit` does NOT forward the
-# bshk-app org secrets — they must be mapped explicitly below.
+# Build, sign, notarize and publish one already-tagged draft release.
+# The pipeline itself is scripts/release.sh — the same script a human runs.
+#
+# release-please creates the tag and draft, then calls this workflow. The asset
+# is uploaded before the draft is published, which keeps immutable releases
+# retry-safe and prevents users seeing an assetless release. workflow_dispatch
+# is the recovery path if the chained build fails after release-please succeeds.
+# There is deliberately no release:published trigger: a local `task release`
+# uses maintainer credentials and would otherwise start a concurrent CI release.
+name: Release
 
 on:
-  push:
-    tags: ["murmur-v*"]
   workflow_dispatch:
     inputs:
-      version:
-        description: "e.g. 0.1.0"
+      tag:
+        description: Tag of an existing draft or published release
         required: true
+        type: string
+      prerelease:
+        description: Ship to the beta channel
+        required: false
+        default: false
+        type: boolean
+      repair:
+        description: Repair appcast/cask for an already-published release
+        required: false
+        default: false
+        type: boolean
+  workflow_call:
+    inputs:
+      tag:
+        description: Tag of an existing draft release
+        required: true
+        type: string
+      prerelease:
+        description: Ship to the beta channel
+        required: false
+        default: false
+        type: boolean
+      repair:
+        description: Repair appcast/cask for an already-published release
+        required: false
+        default: false
+        type: boolean
+concurrency:
+  group: release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
 
 jobs:
   release:
-    uses: zamok-org/ci/.github/workflows/macos-cask-release.yml@v1
-    with:
-      scheme: Murmur
-      bundle-id: app.bshk.murmur
-      cask-metadata: Distribution/cask-murmur.json
-      entitlements: Murmur.entitlements
-      asset-repo: bshk-app/murmur            # artifacts live in the app repo's Releases
-      build-flags: "ARCHS=arm64 ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO"
-      runner: macos-15                        # newer Xcode/SDK; Murmur needs macOS 15 + MLX
-      version: ${{ github.event.inputs.version }}
-    secrets:
-      DEVELOPER_ID_P12:          ${{ secrets.DEVELOPER_ID_P12 }}
-      DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
-      NOTARY_KEY_P8:             ${{ secrets.NOTARY_KEY_P8 }}
-      NOTARY_KEY_ID:             ${{ secrets.NOTARY_KEY_ID }}
-      NOTARY_ISSUER:             ${{ secrets.NOTARY_ISSUER }}
-      TAP_GITHUB_TOKEN:          ${{ secrets.TAP_GITHUB_TOKEN }}
+    runs-on: macos-26
+    timeout-minutes: 120
+    env:
+      TAG: ${{ inputs.tag }}
+      RELEASE_CHANNEL: ${{ inputs.prerelease && 'beta' || 'stable' }}
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_DEVELOPER_ID_APPLICATION: "Developer ID Application: Aleksandr Beshkenadze (Q8H6GWJ658)"
+      GITHUB_RELEASE_REPOSITORY: ${{ github.repository }}
+      APPCAST_GIT_REMOTE: origin
+      SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY || secrets.SPARKLE_ED_PRIVATE_KEY }}
+      SPARKLE_PUBLIC_ED_KEY: ${{ vars.SPARKLE_PUBLIC_ED_KEY || 'vCki0eiwlGncDf3ZwIZawLNFss906pi/drQi/PnUaUA=' }}
+      TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+      RELEASE_SIGNING_IDENTITY_SHA1: ${{ secrets.RELEASE_SIGNING_IDENTITY_SHA1 }}
+      NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+      NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER }}
+      TUIST_MURMUR_POSTHOG_KEY: ${{ secrets.MURMUR_POSTHOG_KEY }}
+    steps:
+      # Full history is load-bearing: build-number.sh counts commits.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+          fetch-depth: 0
+
+      - name: Check the tag matches VERSION
+        run: |
+          # shellcheck source=scripts/lib.sh
+          source ./scripts/lib.sh
+          expected="$(release_tag "$(read_version)" "$RELEASE_CHANNEL")"
+          [[ "$TAG" == "$expected" ]] \
+            || { echo "tag $TAG does not match $expected from VERSION"; exit 1; }
+
+      - name: Install release tooling
+        run: |
+          brew install bshk-app/tap/zamokctl tuist
+          brew install --cask sparkle
+
+      - name: Import the Developer ID
+        if: ${{ !inputs.repair }}
+        env:
+          DEVELOPER_ID_P12: ${{ secrets.DEVELOPER_ID_P12 }}
+          DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/release.keychain-db"
+          password="$(uuidgen)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 7200 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$keychain" \
+            -P "$DEVELOPER_ID_P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$RUNNER_TEMP/cert.p12"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: \
+            -s -k "$password" "$keychain" >/dev/null
+          existing=()
+          while IFS= read -r entry; do existing+=("${entry//\"/}"); done \
+            < <(security list-keychains -d user)
+          security list-keychains -d user -s "$keychain" "${existing[@]}"
+          security find-identity -v -p codesigning "$keychain"
+
+      - name: Write the notary key
+        if: ${{ !inputs.repair }}
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_KEY_P8 }}
+        run: |
+          printf '%s' "$NOTARY_KEY_P8" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          chmod 600 "$RUNNER_TEMP/notary.p8"
+          echo "NOTARY_KEY_PATH=$RUNNER_TEMP/notary.p8" >> "$GITHUB_ENV"
+
+      - name: Release
+        if: ${{ !inputs.repair }}
+        env:
+          PUBLISH: "1"
+        run: ./scripts/release.sh
+
+      - name: Repair publishing after an immutable release
+        if: ${{ inputs.repair }}
+        run: ./scripts/repair-release-publishing.sh "$TAG"
+
+      - name: Remove ephemeral credentials
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP/notary.p8"
+          security delete-keychain "$RUNNER_TEMP/release.keychain-db" 2>/dev/null || true

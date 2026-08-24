@@ -28,7 +28,7 @@ struct MurmurApp: App {
         }
     }
 
-    /// The menu-bar glyph: `cat_fill` (Media.xcassets) rendered as a **template**
+    /// The compact dictator mascot glyph (`cat_fill` in Media.xcassets) rendered as a **template**
     /// — monochrome, auto-tinted for light/dark menu bars — sized to the menu bar.
     /// Falls back to an SF Symbol if the asset is somehow missing.
     private static let menuIcon: NSImage = {
@@ -40,4 +40,3 @@ struct MurmurApp: App {
         return image
     }()
 }
-

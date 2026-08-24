@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dictator_face.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

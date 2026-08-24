@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "dictator_moustache_left.png",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

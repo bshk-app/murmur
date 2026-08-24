@@ -1,25 +1,41 @@
 import AppKit
+import MurmurKit
 import Observation
 import SwiftUI
 
 /// Floating dictation HUD (design: MurMur.dc.html). A non-activating, click-through
 /// borderless NSPanel (we type into another app's field at the same time) hosting a
 /// SwiftUI glass pill that adapts to light/dark. Three states — listening,
-/// transcribing (two-tier coloured text), error — plus a larger "presentation"
-/// subtitle variant for HUD-only mode.
+/// transcribing (two-tier coloured text), error.
+///
+/// Room-scale subtitles are deliberately NOT a variant of this panel: they need
+/// geometry derived from the target screen, an opaque backdrop and a session that
+/// outlives one utterance. See the conference-captions design.
 
 @Observable
 final class HUDModel {
-    enum Phase { case listening, transcribing, error }
+    enum Phase { case listening, transcribing, finished, error }
     var phase: Phase = .listening
     var confirmed = ""
     var partial = ""
     var lang = "Auto"
     var errorText = "Open Privacy in Settings →"
-    var presentation = false      // HUD-only / subtitles
+    var truncated = false         // older words were dropped — the view leads with an ellipsis
+    var submits = false           // this utterance ends with Return
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
+    var shortcutLabel = ""
     var onStop: () -> Void = {}
+}
+
+/// How much text the pill can hold, derived from its own geometry: a 460pt column
+/// at 21pt fits ~36 characters per line, and 230pt of usable panel height at 31pt
+/// per line fits 5. The character budget targets one line LESS, which is what keeps
+/// `maxLines` an emergency guard instead of a routine truncation. Recompute both
+/// together if the font, the column width or the panel size changes.
+enum HUDCapacity {
+    static let maxChars = 145
+    static let maxLines = 5
 }
 
 // MARK: - Building blocks
@@ -57,11 +73,6 @@ private struct PulseDot: View {
     }
 }
 
-private func catIcon(_ size: CGFloat) -> some View {
-    Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
-        .frame(width: size, height: size)
-}
-
 // MARK: - HUD view
 
 private struct HUDView: View {
@@ -71,9 +82,10 @@ private struct HUDView: View {
     var body: some View {
         Group {
             switch model.phase {
-            case .error:        errorPill
-            case .listening:    listeningPill
-            case .transcribing: transcribePill
+            case .error:        mascotBubble(.error) { errorPill }
+            case .listening:    mascotBubble(.listening) { listeningPill }
+            case .transcribing: mascotBubble(.transcribing) { transcribePill }
+            case .finished:     mascotBubble(.success) { transcribePill }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
@@ -81,12 +93,12 @@ private struct HUDView: View {
         .padding(.horizontal, 40)
     }
 
-    // Header: cat + animated bars + language badge.
+    // Header: animated bars + language badge; the mascot overlaps the pill edge.
     private var header: some View {
         HStack(spacing: 10) {
-            catIcon(18)
             LevelBars(color: Mur.accent, count: 4, barHeight: 13)
             Spacer(minLength: 8)
+            if model.submits { submitBadge }
             Text(model.lang.uppercased())
                 .font(.system(size: 10, weight: .medium)).tracking(0.4)
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.4) : Mur.ink.opacity(0.5))
@@ -111,29 +123,33 @@ private struct HUDView: View {
 
     // Two-tier coloured transcript + blinking accent caret.
     private var transcribePill: some View {
-        let big = model.presentation
-        return VStack(alignment: .leading, spacing: big ? 12 : 9) {
+        VStack(alignment: .leading, spacing: 9) {
             header
             TimelineView(.periodic(from: .now, by: 0.5)) { ctx in
                 let on = Int(ctx.date.timeIntervalSinceReferenceDate / 0.5) % 2 == 0
                 (transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
-                    .font(.system(size: big ? 30 : 21))
-                    .lineSpacing(big ? 8 : 6)
+                    .font(.system(size: 21))
+                    .lineSpacing(6)
+                    // Hard layout guard behind the character clamp: whatever slips past
+                    // the estimate, the text still cannot outgrow the panel.
+                    .lineLimit(HUDCapacity.maxLines)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .padding(.horizontal, big ? 24 : 16)
-        .padding(.vertical, big ? 18 : 13)
-        .frame(maxWidth: big ? 820 : 460, alignment: .leading)
-        .murPill(scheme, radius: big ? 18 : 16, border: borderColor)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 13)
+        .frame(maxWidth: 460, alignment: .leading)
+        .murPill(scheme, radius: 16, border: borderColor)
     }
 
     private var transcript: Text {
         let crisp = Mur.crisp(scheme), draft = Mur.draft(scheme)
         let conf = Self.words(model.confirmed)
         let part = Self.words(model.partial)
-        var t = Text("")
+        // The marker is styling, not content: kept out of `model.confirmed` so it
+        // can't be counted as a word and steal the newest-word accent below.
+        var t = model.truncated ? Text("… ").foregroundColor(draft) : Text("")
         for (i, w) in conf.enumerated() {
             // Approximated "refine flash": the newest confirmed word glows accent.
             let hot = i == conf.count - 1
@@ -154,6 +170,7 @@ private struct HUDView: View {
             Text("Listening…").font(.system(size: 15))
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.92) : Mur.ink)
             LevelBars(color: Mur.accent, count: 5, barHeight: 16)
+            if model.submits { submitBadge }
             if model.showStop { stopButton } else { hotkeyBadge }
         }
         .padding(.horizontal, 17).padding(.vertical, 11)
@@ -162,11 +179,6 @@ private struct HUDView: View {
 
     private var errorPill: some View {
         HStack(spacing: 12) {
-            catIcon(22).overlay(alignment: .bottomTrailing) {
-                Circle().fill(Mur.error).frame(width: 12, height: 12)
-                    .overlay(Text("!").font(.system(size: 9, weight: .bold)).foregroundStyle(.white))
-                    .offset(x: 4, y: 2)
-            }
             VStack(alignment: .leading, spacing: 2) {
                 Text("No microphone access").font(.system(size: 13, weight: .medium))
                     .foregroundStyle(scheme == .dark ? Color.white.opacity(0.95) : Mur.ink)
@@ -178,12 +190,55 @@ private struct HUDView: View {
         .murPill(scheme, radius: 14, border: Mur.error.opacity(0.4))
     }
 
+    private func mascotBubble<Content: View>(
+        _ mood: DictatorMascotMood,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
+            content()
+            mascotBadge(mood).offset(x: -38, y: -38)
+        }
+        .padding(.leading, 38)
+        .padding(.top, 38)
+    }
+
+    private func mascotBadge(_ mood: DictatorMascotMood) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 15, style: .continuous)
+        return DictatorMascot(mood: mood, size: 42)
+            .padding(4)
+            .background(Mur.glass(scheme), in: shape)
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(shape.strokeBorder(mood == .error ? Mur.error.opacity(0.4) : borderColor,
+                                        lineWidth: 1))
+            .shadow(color: .black.opacity(scheme == .dark ? 0.38 : 0.16), radius: 10, y: 6)
+            .overlay(alignment: .bottomTrailing) {
+                if mood == .error {
+                    Circle().fill(Mur.error).frame(width: 12, height: 12)
+                        .overlay(Text("!").font(.system(size: 9, weight: .bold)).foregroundStyle(.white))
+                        .offset(x: 3, y: 2)
+                }
+            }
+    }
+
+    /// Marks an utterance that will press Return when it lands. Two shortcuts only
+    /// work if you can see which one you're holding, and this is the one moment the
+    /// mistake is still catchable — before the message is sent.
+    private var submitBadge: some View {
+        Text("⏎").font(.system(size: 11, weight: .medium))
+            .foregroundStyle(Mur.accent)
+            .padding(.horizontal, 6).padding(.vertical, 3)
+            .background(Mur.accent.opacity(0.14),
+                        in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .accessibilityLabel(Text("Will press Return when finished"))
+    }
+
     private var hotkeyBadge: some View {
-        Text("⌥ Space").font(.system(size: 11, design: .monospaced))
+        Text("Release \(model.shortcutLabel)").font(.system(size: 11, design: .monospaced))
             .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(scheme == .dark ? Color.white.opacity(0.09) : Mur.ink.opacity(0.07),
                         in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .accessibilityLabel(Text("Release \(model.shortcutLabel) to finish"))
     }
 
     private var borderColor: Color {
@@ -218,13 +273,15 @@ final class HUDController {
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
-    func begin(presentation: Bool, lang: String, interactive: Bool = false, onStop: @escaping () -> Void = {}) {
+    func begin(lang: String, interactive: Bool = false, submits: Bool = false,
+               shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
-        model.presentation = presentation
         model.lang = lang
+        model.submits = submits
+        model.shortcutLabel = shortcutLabel
         model.phase = .listening
-        model.confirmed = ""; model.partial = ""
+        show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         model.recording = true
         model.showStop = interactive
         model.onStop = onStop
@@ -237,11 +294,20 @@ final class HUDController {
 
     /// Live two-tier update.
     func update(confirmed: String, partial: String) {
-        model.confirmed = confirmed
-        model.partial = partial
-        if model.phase != .error {
-            model.phase = (confirmed.isEmpty && partial.isEmpty) ? .listening : .transcribing
+        show(confirmed: confirmed, partial: partial)
+        if model.phase != .error, model.recording {
+            model.phase = (model.confirmed.isEmpty && model.partial.isEmpty) ? .listening : .transcribing
         }
+    }
+
+    /// The single door into the model's text — both entry points clamp through here,
+    /// so what reaches the view is already known to fit the panel.
+    private func show(confirmed: String, partial: String) {
+        let fitted = HUDTranscript.clamped(confirmed: confirmed, partial: partial,
+                                           maxChars: HUDCapacity.maxChars)
+        model.confirmed = fitted.confirmed
+        model.partial = fitted.partial
+        model.truncated = fitted.truncated
     }
 
     /// Surface a mic/permission error in the HUD.
@@ -257,15 +323,16 @@ final class HUDController {
         scheduleHide(after: 3.2)
     }
 
-    /// Show the final text, then fade — lingering longer in presentation mode.
-    func finish(_ finalText: String) {
+    /// Show the final text, then fade after `linger`.
+    func finish(_ finalText: String, linger: TimeInterval = 1.0) {
         guard panel != nil else { return }
         model.recording = false
         model.showStop = false
         if !finalText.isEmpty {
-            model.confirmed = finalText; model.partial = ""; model.phase = .transcribing
+            show(confirmed: finalText, partial: "")
+            model.phase = .finished
         }
-        scheduleHide(after: model.presentation ? 4.0 : 1.0)
+        scheduleHide(after: linger)
     }
 
     private func scheduleHide(after delay: TimeInterval) {
@@ -303,9 +370,18 @@ final class HUDController {
     }
 
     private func position(_ panel: NSPanel) {
-        guard let screen = NSScreen.main else { return }
+        guard let screen = Self.targetScreen() else { return }
         let v = screen.visibleFrame
         panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,
                               width: size.width, height: size.height), display: true)
+    }
+
+    /// `NSScreen.main` is the screen holding the key window — but this app never has
+    /// one (the panel is `.nonactivatingPanel` and we stay an `.accessory` agent), so
+    /// on a multi-display setup it is not deterministic. The cursor is where the user
+    /// is working, and it costs no Accessibility round-trip to ask.
+    private static func targetScreen() -> NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return NSScreen.screens.first { $0.frame.contains(mouse) } ?? .main ?? NSScreen.screens.first
     }
 }

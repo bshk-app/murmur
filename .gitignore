@@ -18,3 +18,5 @@ graph.*
 build/
 *.dSYM/
 .env
+agentvault.yaml
+/out/

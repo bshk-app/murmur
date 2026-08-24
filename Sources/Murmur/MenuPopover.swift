@@ -4,7 +4,7 @@ import PostHog
 import SwiftUI
 
 /// The menu-bar dropdown (design: MurMur.dc.html) shown as a `.window`-style
-/// MenuBarExtra: cat + master toggle, live status + hotkey, a mic meter, the
+/// MenuBarExtra: mascot + master toggle, live status + hotkey, a mic meter, the
 /// Model / Insert / Hotkey segmented controls, and a Settings/Quit footer.
 struct MenuPopover: View {
     let dictation: DictationController
@@ -16,9 +16,12 @@ struct MenuPopover: View {
     @Environment(\.colorScheme) private var scheme
 
     @AppStorage(DictationEnabled.key) private var enabled = true
-    @AppStorage(InsertMode.defaultsKey) private var insertRaw = InsertMode.inField.rawValue
+    @AppStorage(AppMode.defaultsKey) private var appModeRaw = AppMode.dictation.rawValue
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
+    @AppStorage(SpeechLanguage.defaultsKey) private var languageRaw = SpeechLanguage.systemDefault
+    @AppStorage(MicrophoneSetting.defaultsKey)
+    private var microphoneUID = MicrophoneSetting.systemDefaultUID
 
     var body: some View {
         VStack(spacing: 0) {
@@ -42,6 +45,19 @@ struct MenuPopover: View {
                 "to_mode": newValue,
             ])
         }
+        // Captions needs the boundary detector on top of the dictation models, so
+        // switching mode warms whatever the new one is missing.
+        .onChange(of: appModeRaw) { oldValue, newValue in
+            dictation.prepareCurrentMode()
+            PostHogSDK.shared.capture("app_mode_changed", properties: [
+                "from_mode": oldValue,
+                "to_mode": newValue,
+            ])
+        }
+        .onAppear {
+            let validUID = dictation.refreshMicrophones(preferredUID: microphoneUID)
+            if validUID != microphoneUID { microphoneUID = validUID }
+        }
     }
 
     // MARK: head
@@ -49,9 +65,7 @@ struct MenuPopover: View {
     private var head: some View {
         VStack(spacing: 9) {
             HStack(spacing: 10) {
-                Image("cat_fill").renderingMode(.original).resizable().scaledToFit()
-                    .frame(width: 26, height: 26)
-                    .accessibilityHidden(true)   // decorative; "MurMur" label carries the name
+                DictatorMascot(mood: dictation.mascotMood, size: 30)
                 Text("MurMur").font(.system(size: 15, weight: .semibold)).foregroundStyle(primary)
                 Spacer()
                 Toggle("", isOn: $enabled).toggleStyle(.switch).tint(Mur.accent).labelsHidden()
@@ -84,22 +98,63 @@ struct MenuPopover: View {
 
     // MARK: segmented settings
 
+    private var languageCodes: [String] {
+        let codes = Set(dictation.supportedLanguageCodes + [SpeechLanguage.automatic, languageRaw])
+        return codes.sorted {
+            if $0 == SpeechLanguage.automatic { return true }
+            if $1 == SpeechLanguage.automatic { return false }
+            return SpeechLanguage.displayName(for: $0)
+                .localizedCaseInsensitiveCompare(SpeechLanguage.displayName(for: $1)) == .orderedAscending
+        }
+    }
+
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            label("Model")
+            label("Microphone")
+            Picker("Microphone", selection: $microphoneUID) {
+                Text("System Default").tag(MicrophoneSetting.systemDefaultUID)
+                ForEach(dictation.microphones) { device in
+                    Text(device.name).tag(device.uid)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .disabled(dictation.isActive)
+            label("Mode").padding(.top, 11)
+            MurSegment(selection: $appModeRaw,
+                       options: [(AppMode.dictation.rawValue, "Dictation"),
+                                 (AppMode.captions.rawValue, "Captions")])
+                // Switching pipelines under a live session is not a state worth
+                // supporting — the running one owns the mic until it stops.
+                .disabled(dictation.isActive)
+            if appModeRaw == AppMode.captions.rawValue {
+                Text("Tap the shortcut to start, tap again to stop. Nothing is typed into other apps.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
+            }
+            label("Model").padding(.top, 11)
             MurSegment(selection: $modelRaw,
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),
                                  (DictationMode.accurate.rawValue, "Accurate")])
-            label("Insert").padding(.top, 11)
-            MurSegment(selection: $insertRaw,
-                       options: [(InsertMode.inField.rawValue, "In field"),
-                                 (InsertMode.hudOnly.rawValue, "HUD only")])
+            label("Language").padding(.top, 11)
+            Picker("Language", selection: $languageRaw) {
+                ForEach(languageCodes, id: \.self) { code in
+                    Text(SpeechLanguage.displayName(for: code)).tag(code)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
             label("Hotkey").padding(.top, 11)
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
                                  (TriggerMode.toggle.rawValue, "Toggle")])
-            if dictation.needsAccessibilityToType, insertRaw == InsertMode.inField.rawValue {
+                .disabled(dictation.isActive)
+            if dictation.needsAccessibilityToType {
                 Button { dictation.requestAccessibility() } label: {
                     Text("Grant Accessibility to type…")
                         .font(.system(size: 11.5)).foregroundStyle(Mur.accent)
