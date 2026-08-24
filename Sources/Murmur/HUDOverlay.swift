@@ -194,11 +194,12 @@ private struct HUDView: View {
         _ mood: DictatorMascotMood,
         @ViewBuilder content: () -> Content
     ) -> some View {
-        ZStack(alignment: .leading) {
+        ZStack(alignment: .topLeading) {
             content()
-            mascotBadge(mood).offset(x: -25)
+            mascotBadge(mood).offset(x: -38, y: -38)
         }
-        .padding(.leading, 25)
+        .padding(.leading, 38)
+        .padding(.top, 38)
     }
 
     private func mascotBadge(_ mood: DictatorMascotMood) -> some View {
