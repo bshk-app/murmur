@@ -38,6 +38,26 @@ final class SpeechBoundaryDetector {
         }
     }
 
+    /// Compile the first forward while the app is loading, then clear the state so
+    /// live speech starts from the same state as a never-warmed detector.
+    func warmUp() {
+        Self.performWarmUp(
+            frameSamples: Self.frameSamples,
+            feed: { _ = isSpeech($0) },
+            reset: reset
+        )
+    }
+
+    /// Pure sequencing seam: one correctly sized silent frame, then reset.
+    static func performWarmUp(
+        frameSamples: Int,
+        feed: ([Float]) -> Void,
+        reset: () -> Void
+    ) {
+        feed([Float](repeating: 0, count: frameSamples))
+        reset()
+    }
+
     /// Forget the conversation so far — used when a caption session ends.
     func reset() { state = nil }
 }

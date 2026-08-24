@@ -8,8 +8,8 @@ import Foundation
 /// between the app working and the machine swapping. An app that offers both
 /// modes therefore builds one of these and hands it to both sessions.
 ///
-/// A process driving a single pipeline — `murmur-cli` — can ignore this type and
-/// use the sessions' convenience initialisers, which each make their own stack.
+/// A process driving a single pipeline — `murmur-cli` — builds one of these too:
+/// ownership of the weights is always explicit, never implied by a session.
 public final class SpeechModels: @unchecked Sendable {
     /// Internal on purpose: the loading, warm-up and queue discipline are
     /// MurmurKit's business, and callers only need to pass this object around.

@@ -20,6 +20,8 @@ struct MenuPopover: View {
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
     @AppStorage(SpeechLanguage.defaultsKey) private var languageRaw = SpeechLanguage.systemDefault
+    @AppStorage(MicrophoneSetting.defaultsKey)
+    private var microphoneUID = MicrophoneSetting.systemDefaultUID
 
     var body: some View {
         VStack(spacing: 0) {
@@ -51,6 +53,10 @@ struct MenuPopover: View {
                 "from_mode": oldValue,
                 "to_mode": newValue,
             ])
+        }
+        .onAppear {
+            let validUID = dictation.refreshMicrophones(preferredUID: microphoneUID)
+            if validUID != microphoneUID { microphoneUID = validUID }
         }
     }
 
@@ -104,7 +110,18 @@ struct MenuPopover: View {
 
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
-            label("Mode")
+            label("Microphone")
+            Picker("Microphone", selection: $microphoneUID) {
+                Text("System Default").tag(MicrophoneSetting.systemDefaultUID)
+                ForEach(dictation.microphones) { device in
+                    Text(device.name).tag(device.uid)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .disabled(dictation.isActive)
+            label("Mode").padding(.top, 11)
             MurSegment(selection: $appModeRaw,
                        options: [(AppMode.dictation.rawValue, "Dictation"),
                                  (AppMode.captions.rawValue, "Captions")])
@@ -136,6 +153,7 @@ struct MenuPopover: View {
             MurSegment(selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
                                  (TriggerMode.toggle.rawValue, "Toggle")])
+                .disabled(dictation.isActive)
             if dictation.needsAccessibilityToType {
                 Button { dictation.requestAccessibility() } label: {
                     Text("Grant Accessibility to type…")

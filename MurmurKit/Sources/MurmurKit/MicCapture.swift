@@ -1,8 +1,9 @@
 @preconcurrency import AVFoundation
 import Foundation
 
-/// Captures the default input and resamples to 16 kHz mono Float, delivering
-/// fixed 96 ms chunks via `onChunk` (1536 samples = 3 Silero frames).
+/// Captures the selected input (or the current system default) and resamples to
+/// 16 kHz mono Float, delivering fixed 96 ms chunks via `onChunk`
+/// (1536 samples = 3 Silero frames).
 ///
 /// `@unchecked Sendable`: the input-tap closure runs on the realtime audio
 /// thread, so it must NOT inherit actor isolation. All mutable state is confined
@@ -22,6 +23,7 @@ final class MicCapture: @unchecked Sendable {
     private let chunkSize = DictationSession.liveChunkSamples
     private let queue = DispatchQueue(label: "murmur.mic.capture")
     private let engine = AVAudioEngine()
+    private let inputDeviceUID: String?
     private var converter: AVAudioConverter?
     private var outFmt: AVAudioFormat?
 
@@ -29,9 +31,14 @@ final class MicCapture: @unchecked Sendable {
     private var totalSamples = 0
     private var peak: Float = 0
 
+    init(inputDeviceUID: String? = nil) {
+        self.inputDeviceUID = inputDeviceUID
+    }
+
     func start() throws {
         queue.sync { pending.removeAll(keepingCapacity: true); totalSamples = 0; peak = 0 }
 
+        try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine)
         let input = engine.inputNode
         let inFmt = input.outputFormat(forBus: 0)
         guard let out = AVAudioFormat(commonFormat: .pcmFormatFloat32,

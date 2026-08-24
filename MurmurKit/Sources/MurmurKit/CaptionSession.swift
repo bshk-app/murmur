@@ -25,10 +25,6 @@ public final class CaptionSession: @unchecked Sendable {
     /// Called on the mic capture queue for every chunk that changed the view.
     public var onSnapshot: ((CaptionSnapshot) -> Void)?
 
-    /// Builds its own model stack. An app running more than one pipeline should
-    /// pass a shared `SpeechModels` instead, or it loads the weights twice.
-    public convenience init() { self.init(models: SpeechModels()) }
-
     public init(models: SpeechModels) {
         self.engine = models.engine
     }
@@ -44,7 +40,11 @@ public final class CaptionSession: @unchecked Sendable {
         MicCapture.requestPermission(completion)
     }
 
-    public func start(language: String? = "auto") throws {
+    public func start(
+        language: String? = "auto",
+        microphoneUID: String? = nil
+    ) throws {
+        mic = MicCapture(inputDeviceUID: microphoneUID)
         engine.beginCaptions(language: language)
         mic.onChunk = { [weak self] chunk in
             guard let self, let snapshot = self.engine.stepCaptions(chunk) else { return }

@@ -9,7 +9,8 @@ import MurmurKit
 //                               → benchmark one lane, to see which one costs what
 
 let args = CommandLine.arguments
-let session = DictationSession()
+let models = SpeechModels()
+let session = DictationSession(models: models)
 
 /// Which lane(s) to benchmark. Defaults to hybrid — what the app actually runs.
 let benchMode: DictationMode = {
@@ -264,7 +265,7 @@ if args.contains("--serve-stream") {
     // ---- Captions on a fixed file: phrase segmentation and correction latency ----
     let path = args[wavIdx + 1]
     let samples = try readWav16kMono(path)
-    let captions = CaptionSession()
+    let captions = CaptionSession(models: models)
     FileHandle.standardError.write(Data("loading models + Silero (warming up MLX)…\n".utf8))
     try await captions.load()
     // The safety cap is the rarest path in production — natural speech pauses long

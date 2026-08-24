@@ -7,12 +7,10 @@ import Foundation
 /// closures, so the whole lifecycle (when an epoch restarts, which audio a
 /// correction sees, what the overlay shows) is testable without MLX.
 ///
-/// Two boundary kinds, deliberately different:
-///   * a real pause — correct the phrase, then start a fresh live epoch, since
-///     the epoch's cost grows with its length and its context is worthless once
-///     the speaker has stopped;
-///   * the safety cap — correct the phrase but keep the epoch, because the
-///     speaker is mid-sentence and restarting there would degrade the draft.
+/// Both boundaries end the live epoch: Nemotron retains all PCM and rebuilds mel
+/// from the whole epoch, so a real pause and the safety cap both have to bound it.
+/// The cap restarts immediately at the same audio position; the batch correction
+/// remains authoritative while the fresh provisional draft resumes.
 final class CaptionEngine {
     struct LiveLane {
         let begin: () -> Void
@@ -43,9 +41,6 @@ final class CaptionEngine {
     private var frameRemainder: [Float] = []
     private var openSegment: UInt64?
     private var epochOpen = false
-    /// Live text already accounted for by a confirmed phrase in this epoch — only
-    /// non-empty between a forced cut and the epoch's end.
-    private var confirmedPrefix = ""
 
     init(
         live: LiveLane,
@@ -118,20 +113,9 @@ final class CaptionEngine {
         audio.discard(before: policy.consumedSamples - preRollSamples)
     }
 
-    /// The live lane's text for the *current* phrase.
-    ///
-    /// After a forced cut the epoch survives, so `live.text()` still carries the
-    /// speech that was just confirmed. Showing it again would render the same
-    /// sentence twice — once corrected, once as a draft — so the confirmed prefix
-    /// is dropped. This is a prefix cut on one model's own monotonic output, not a
-    /// merge between the two lanes; if the model revised that prefix, the whole
-    /// text is shown rather than a wrong slice.
-    private func draftText() -> String {
-        let text = live.text()
-        guard !confirmedPrefix.isEmpty else { return text }
-        guard text.hasPrefix(confirmedPrefix) else { return text }
-        return String(text.dropFirst(confirmedPrefix.count)).trimmingCharacters(in: .whitespaces)
-    }
+    /// The live lane's text for the current phrase. A forced cap starts a fresh
+    /// live session, so nothing from the confirmed phrase can remain in this text.
+    private func draftText() -> String { live.text() }
 
     private func apply(_ event: SpeechBoundaryEvent) {
         switch event {
@@ -143,16 +127,35 @@ final class CaptionEngine {
             let id = openSegment ?? transcript.open(startSample: range.lowerBound)
             openSegment = nil
             transcript.close(id, endSample: range.upperBound)
-            // A real pause ends the epoch; the cap does not — see the type doc.
-            if forced {
-                // The epoch lives on, so remember how much of its text this phrase
-                // already accounts for.
-                confirmedPrefix = live.text()
-            } else if epochOpen {
+
+            // Both boundaries end the live epoch. Nemotron retains every PCM
+            // sample and rebuilds mel from the whole epoch, so preserving it across
+            // caps makes memory and per-step work unbounded. The batch correction
+            // is authoritative; restart the provisional lane at the cut instead.
+            if epochOpen {
                 live.finish()
+                // `finish` can emit trailing Nemotron tokens. Refresh the fallback
+                // before batch confirmation; an empty Parakeet result keeps this
+                // flushed draft rather than the stale pre-finish text.
+                transcript.updateProvisional(id, text: live.text())
                 epochOpen = false
             }
             correct(id, range: range)
+
+            guard forced else { return }
+            // A gap-based cut reserves up to one pre-roll of already captured
+            // speech. Only that case needs an immediate epoch/segment so Stop can
+            // close the tail. A cursor cut owns no tail and waits for the next
+            // speech frame; opening now would orphan an empty epoch in silence.
+            let replayRange = range.upperBound ..< policy.consumedSamples
+            guard !replayRange.isEmpty else { return }
+
+            beginEpoch()
+            openSegment = transcript.open(startSample: range.upperBound)
+            live.step(audio.slice(replayRange))
+            if let openSegment {
+                transcript.updateProvisional(openSegment, text: draftText())
+            }
         }
     }
 
@@ -175,13 +178,10 @@ final class CaptionEngine {
         audio.discard(before: range.upperBound)
     }
 
-    /// Only ever called with no epoch running: a forced cut leaves the epoch open
-    /// on purpose, and starting one there would both defeat the cap and abandon a
-    /// live session without flushing it.
+    /// Start one bounded live epoch.
     private func beginEpoch() {
         live.begin()
         epochOpen = true
-        confirmedPrefix = ""   // a fresh epoch's text is all new
     }
 }
 

@@ -3,16 +3,16 @@ import Foundation
 /// Where one caption segment begins and ends, in absolute sample positions.
 enum SpeechBoundaryEvent: Equatable {
     case opened(startSample: Int)
-    /// `forced` marks the safety cap rather than a real pause: the speaker is
-    /// still talking, so the live lane must keep running across it.
+    /// `forced` marks the safety cap rather than a real pause: the continuation
+    /// starts at this range's upper bound with no audio gap or overlap.
     case closed(range: Range<Int>, forced: Bool)
 }
 
 /// Segment boundaries from per-frame speech verdicts. No audio, no models — the
 /// caller runs the VAD and owns the samples; this only decides where to cut.
 ///
-/// Boundaries are *markers*: closing a segment hands a range to the batch pass,
-/// it never drops audio and never implies the live lane should stop.
+/// Boundaries are markers: closing a segment hands a range to the batch pass.
+/// A forced close atomically opens its continuation at the same sample.
 struct SpeechBoundaryPolicy {
     private let frameSamples: Int
     private let preRollSamples: Int
@@ -24,6 +24,8 @@ struct SpeechBoundaryPolicy {
     private var lastSpeechEnd = 0     // end of the newest speech frame
     private var lastClosedEnd = 0     // end of the newest closed segment
     private var lastGapEnd: Int?      // end of the newest non-speech frame
+    /// Cursor-aligned cap waiting to learn whether Stop flushes a sub-frame tail.
+    private var pendingCursorCut: Int?
     private var silentFrames = 0
 
     init(
@@ -42,9 +44,14 @@ struct SpeechBoundaryPolicy {
     mutating func frame(isSpeech: Bool) -> SpeechBoundaryEvent? {
         let frameStart = cursor
         cursor += frameSamples
-
         guard openStart != nil else {
-            guard isSpeech else { return nil }
+            guard isSpeech else {
+                // A complete silent frame proves there is no speech tail after a
+                // cursor cap; only a sub-frame Stop/EOF tail needs preservation.
+                pendingCursorCut = nil
+                return nil
+            }
+            pendingCursorCut = nil
             // Pre-roll catches the syllable the VAD missed, so it may only reach
             // back into silence. After a forced cut the speech either side is
             // contiguous: backdating there would hand the same samples to two
@@ -103,8 +110,15 @@ struct SpeechBoundaryPolicy {
     /// chunk on stop, and those samples belong to the phrase even though they
     /// never formed a whole VAD frame.
     mutating func finish(endSample: Int? = nil) -> SpeechBoundaryEvent? {
-        guard openStart != nil else { return nil }
-        return close(at: max(lastSpeechEnd, endSample ?? cursor), forced: false)
+        if openStart != nil {
+            return close(at: max(lastSpeechEnd, endSample ?? cursor), forced: false)
+        }
+        guard let start = pendingCursorCut else { return nil }
+        pendingCursorCut = nil
+        let end = endSample ?? cursor
+        guard end > start else { return nil }
+        lastClosedEnd = end
+        return .closed(range: start ..< end, forced: false)
     }
 
     private mutating func close(at end: Int, forced: Bool) -> SpeechBoundaryEvent? {
@@ -113,7 +127,12 @@ struct SpeechBoundaryPolicy {
             silentFrames = 0
             return nil
         }
-        openStart = nil
+        // A gap-based forced cut reserves captured audio between the gap and the
+        // cursor, so its continuation is open immediately. A cursor-aligned cut
+        // reserves nothing; wait for the next speech frame instead, or silence
+        // would leave an empty continuation that cannot close.
+        openStart = forced && end < cursor ? end : nil
+        pendingCursorCut = forced && end == cursor ? end : nil
         silentFrames = 0
         lastClosedEnd = end
         lastGapEnd = nil

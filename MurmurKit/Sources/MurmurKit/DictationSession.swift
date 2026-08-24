@@ -25,10 +25,6 @@ public final class DictationSession: @unchecked Sendable {
     /// capture queue — hop to your UI thread as needed.
     public var onUpdate: ((_ confirmed: String, _ partial: String) -> Void)?
 
-    /// Builds its own model stack. An app running more than one pipeline should
-    /// pass a shared `SpeechModels` instead, or it loads the weights twice.
-    public convenience init() { self.init(models: SpeechModels()) }
-
     public init(models: SpeechModels) {
         self.engine = models.engine
     }
@@ -49,12 +45,15 @@ public final class DictationSession: @unchecked Sendable {
         MicCapture.requestPermission(completion)
     }
 
-    /// Begin a fresh utterance and start capturing. Nemotron needs a language
-    /// prompt; callers pass the persisted choice, with model auto as the fallback.
-    public func start(mode: DictationMode = .hybrid, language: String? = "auto") throws {
+    public func start(
+        mode: DictationMode = .hybrid,
+        language: String? = "auto",
+        microphoneUID: String? = nil
+    ) throws {
         recordsUtterance = UserDefaults.standard.bool(forKey: Self.recordUtterancesKey)
         recordedSamples.removeAll(keepingCapacity: recordsUtterance)
         lastRecordingURL = nil
+        mic = MicCapture(inputDeviceUID: microphoneUID)
         engine.begin(language: language, mode: mode)
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }

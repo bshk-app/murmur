@@ -24,9 +24,9 @@ public final class TwoTierEngine {
 
     private let nemotronRepo: String
     private let parakeetRepo: String
-    private var nemotron: NemotronASRModel?
-    private var parakeet: ParakeetModel?
-    private var vad: SpeechBoundaryDetector?
+    private let nemotronModel = AsyncMemo<NemotronASRModel>()
+    private let parakeetModel = AsyncMemo<ParakeetModel>()
+    private let vadModel = AsyncMemo<SpeechBoundaryDetector>()
 
     public static var defaultMemoryLimitBytes: Int {
         Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.6)
@@ -51,27 +51,27 @@ public final class TwoTierEngine {
     }
 
     /// Captions need both models plus the boundary detector. Same weights as
-    /// `.hybrid` — a caption session must never load a second copy.
+    /// `.hybrid` — sessions built from one `SpeechModels` load one copy.
     public func prepareCaptions() async throws {
         _ = try await loadNemotron()
         _ = try await loadParakeet()
-        if vad == nil { vad = try await SpeechBoundaryDetector.load() }
+        _ = try await loadVAD()
     }
 
     public var captionsReady: Bool {
-        nemotron != nil && parakeet != nil && vad != nil
+        nemotronModel.cached != nil && parakeetModel.cached != nil && vadModel.cached != nil
     }
 
     public func isReady(_ mode: DictationMode) -> Bool {
         switch mode {
-        case .fast:     return nemotron != nil
-        case .accurate: return parakeet != nil
-        case .hybrid:   return nemotron != nil && parakeet != nil
+        case .fast:     return nemotronModel.cached != nil
+        case .accurate: return parakeetModel.cached != nil
+        case .hybrid:   return nemotronModel.cached != nil && parakeetModel.cached != nil
         }
     }
 
     var supportedLanguageCodes: [String] {
-        guard let nemotron else { return ["auto"] }
+        guard let nemotron = nemotronModel.cached else { return ["auto"] }
         return Self.canonicalLanguageCodes(nemotron.promptDictionary)
     }
 
@@ -103,17 +103,27 @@ public final class TwoTierEngine {
     }
 
     private func loadNemotron() async throws -> NemotronASRModel {
-        if let nemotron { return nemotron }
-        let m = try await NemotronASRModel.fromPretrained(nemotronRepo)
-        nemotron = m
-        return m
+        let repo = nemotronRepo
+        return try await nemotronModel.get {
+            try await NemotronASRModel.fromPretrained(repo)
+        }
     }
 
     private func loadParakeet() async throws -> ParakeetModel {
-        if let parakeet { return parakeet }
-        let m = try await ParakeetModel.fromPretrained(parakeetRepo)
-        parakeet = m
-        return m
+        let repo = parakeetRepo
+        return try await parakeetModel.get {
+            try await ParakeetModel.fromPretrained(repo)
+        }
+    }
+
+    private func loadVAD() async throws -> SpeechBoundaryDetector {
+        try await vadModel.get {
+            let detector = try await SpeechBoundaryDetector.load()
+            // Silero's first forward JIT-compiles MLX kernels. Pay that cost while
+            // the UI says Loading, then clear its state before live speech.
+            detector.warmUp()
+            return detector
+        }
     }
 
     func makeSession(for mode: DictationMode, language: String? = nil) -> UtteranceSession? {
@@ -127,7 +137,8 @@ public final class TwoTierEngine {
     /// Live Nemotron draft; pasted text is a Parakeet batch of the whole utterance.
     func makeHybridSession(language: String? = nil,
                            fastChunkMs: Int = defaultFastChunkMs) -> TwoPassSession? {
-        guard let nemotron, let parakeet else { return nil }
+        guard let nemotron = nemotronModel.cached,
+              let parakeet = parakeetModel.cached else { return nil }
         let live = nemotron.makeStreamSession(language: language, chunkMs: fastChunkMs)
         return TwoPassSession(
             liveStep: { _ = live.step($0) },
@@ -138,13 +149,13 @@ public final class TwoTierEngine {
     }
 
     func makeFastSession(language: String? = nil, chunkMs: Int = defaultFastChunkMs) -> UtteranceSession? {
-        guard let nemotron else { return nil }
+        guard let nemotron = nemotronModel.cached else { return nil }
         return NemotronOnlySession(nemotron, language: language, chunkMs: chunkMs)
     }
 
     /// No live draft — the buffer is decoded once at release.
     func makeAccurateSession() -> TwoPassSession? {
-        guard let parakeet else { return nil }
+        guard let parakeet = parakeetModel.cached else { return nil }
         return TwoPassSession(
             liveStep: { _ in },
             liveText: { "" },
@@ -153,19 +164,20 @@ public final class TwoTierEngine {
         )
     }
 
-    /// Captions: one continuous Nemotron epoch per phrase, corrected by a
-    /// Parakeet batch of that phrase's audio, with Silero marking the seams.
+    /// Captions: bounded Nemotron epochs corrected by Parakeet batches, with
+    /// Silero marking natural seams and a safety cap bounding unbroken speech.
     ///
     /// The detector's streaming state is per talk, so it is cleared here rather
     /// than carried into the next session from whatever the last one heard.
-    ///
-    /// The live stream is rebuilt on `begin` — a real pause is the only place an
-    /// epoch restarts, and a fresh session is how Nemotron's cost is kept flat
-    /// over an hour-long talk.
+    /// `CaptionEngine` rebuilds this live stream after both a pause and a cap:
+    /// Nemotron retains all epoch PCM, so keeping one session across caps would
+    /// make per-step work grow through a long monologue.
     func makeCaptionEngine(language: String? = nil,
                            fastChunkMs: Int = defaultFastChunkMs,
                            maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds) -> CaptionEngine? {
-        guard let nemotron, let parakeet, let vad else { return nil }
+        guard let nemotron = nemotronModel.cached,
+              let parakeet = parakeetModel.cached,
+              let vad = vadModel.cached else { return nil }
         vad.reset()
         var live: NemotronASRStreamSession?
         return CaptionEngine(

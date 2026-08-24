@@ -16,12 +16,6 @@ final class SpeechModelsTests: XCTestCase {
         XCTAssertTrue(dictation.engine === captions.engine)
     }
 
-    /// The convenience initialiser still gives a standalone stack — the CLI drives
-    /// one pipeline per process and should not have to name a shared object.
-    func test_default_initialisers_are_independent() {
-        XCTAssertFalse(DictationSession().engine === CaptionSession().engine)
-    }
-
     /// Two `SpeechModels` are two stacks: sharing is explicit, never accidental.
     func test_separate_models_objects_do_not_share() {
         let dictation = DictationSession(models: SpeechModels())

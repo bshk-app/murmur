@@ -80,53 +80,52 @@ final class SpeechBoundaryTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(range.count, capSamples)
     }
 
-    /// Pre-roll exists to catch the syllable before the VAD fires, so it only
-    /// makes sense reaching back into silence. At a forced cut the speech either
-    /// side is contiguous, so backdating would hand the same samples to two batch
-    /// passes and have them transcribed twice.
-    func test_segments_never_overlap_across_a_forced_cut() {
+    /// Forced cuts atomically continue at the cut point. Consecutive ranges in
+    /// uninterrupted speech therefore meet exactly — no duplicate and no hole.
+    func test_segments_are_adjacent_across_forced_cuts() {
         var policy = makePolicy()
         var closes: [Range<Int>] = []
-        var opens: [Int] = []
         for _ in 0 ..< (capSamples / frame * 2 + 20) {
-            switch policy.frame(isSpeech: true) {
-            case let .closed(range, _)?: closes.append(range)
-            case let .opened(startSample)?: opens.append(startSample)
-            case nil: break
+            if case let .closed(range, _)? = policy.frame(isSpeech: true) {
+                closes.append(range)
             }
         }
 
-        XCTAssertGreaterThanOrEqual(closes.count, 1, "the cap never fired")
-        XCTAssertGreaterThanOrEqual(opens.count, 2, "no phrase reopened after the cut")
-        // The reopen must butt up against the previous end, never precede it.
-        XCTAssertEqual(opens[1], closes[0].upperBound,
-                       "the phrase after the cut re-reads \(closes[0].upperBound - opens[1]) samples")
+        XCTAssertGreaterThanOrEqual(closes.count, 2, "the cap fired less than twice")
         for (previous, next) in zip(closes, closes.dropFirst()) {
-            XCTAssertGreaterThanOrEqual(next.lowerBound, previous.upperBound,
-                                        "batch ranges overlap: \(previous) then \(next)")
+            XCTAssertEqual(
+                next.lowerBound,
+                previous.upperBound,
+                "batch ranges are not adjacent: \(previous) then \(next)"
+            )
         }
     }
 
-    /// Drives the cap with a one-frame dip `dipFramesBack` frames before it, and
-    /// returns the forced range plus where the next phrase reopened — the pair that
-    /// shows whether any audio fell between two segments.
-    private func capWithDip(dipFramesBack: Int) -> (closed: Range<Int>, reopen: Int) {
+    /// Drives the cap with a one-frame dip `dipFramesBack` frames before it, then
+    /// closes the atomic continuation after one more speech frame. Its lower bound
+    /// is where the next batch phrase started.
+    private func capWithDip(dipFramesBack: Int) -> (closed: Range<Int>, continuation: Int) {
         var policy = makePolicy()
         var closed: Range<Int>?
-        var reopen: Int?
+        var consumed = 0
         let capFrames = capSamples / frame
         let dipAt = capFrames - dipFramesBack
-        for i in 0 ..< (capFrames + 6) {
-            switch policy.frame(isSpeech: i != dipAt) {
-            case let .closed(range, forced)?:
+        for frameIndex in 0 ..< (capFrames + 2) {
+            let event = policy.frame(isSpeech: frameIndex != dipAt)
+            consumed += frame
+            if case let .closed(range, forced)? = event {
                 XCTAssertTrue(forced, "a one-frame dip is not an endpoint")
                 closed = range
-            case let .opened(start)?:
-                if closed != nil, reopen == nil { reopen = start }
-            case nil, .some: break
+                break
             }
         }
-        return (closed ?? 0 ..< 0, reopen ?? -1)
+        guard let closed else { return (0 ..< 0, -1) }
+        _ = policy.frame(isSpeech: true)
+        consumed += frame
+        guard case let .closed(continuation, _)? = policy.finish(endSample: consumed) else {
+            return (closed, -1)
+        }
+        return (closed, continuation.lowerBound)
     }
 
     /// The cap cuts while the speaker is talking, so it can land inside a word —
@@ -135,11 +134,37 @@ final class SpeechBoundaryTests: XCTestCase {
     /// closing phrase keeps the silence and the next one starts on speech.
     func test_forced_cut_prefers_a_recent_gap() {
         let dipFramesBack = 5
-        let (closed, reopen) = capWithDip(dipFramesBack: dipFramesBack)
+        let (closed, continuation) = capWithDip(dipFramesBack: dipFramesBack)
 
         XCTAssertEqual(closed.upperBound, (capSamples / frame - dipFramesBack + 1) * frame,
                        "the cut ignored the gap and landed mid-word")
-        XCTAssertEqual(reopen, closed.upperBound, "audio fell between the two phrases")
+        XCTAssertEqual(continuation, closed.upperBound, "audio fell between the two phrases")
+    }
+
+    /// If a forced cut moves back to a recent gap, the samples between that gap
+    /// and the current cursor are already captured. Stopping before another frame
+    /// must still hand that reserved tail to the batch pass.
+    func test_finish_immediately_after_a_gap_cut_closes_the_reserved_tail() {
+        var policy = makePolicy()
+        let capFrames = capSamples / frame
+        let dipAt = capFrames - 5
+        var closed: Range<Int>?
+        var consumed = 0
+        for frameIndex in 0 ..< (capFrames + 2) {
+            let event = policy.frame(isSpeech: frameIndex != dipAt)
+            consumed += frame
+            if case let .closed(range, forced)? = event {
+                XCTAssertTrue(forced)
+                closed = range
+                break
+            }
+        }
+        guard let closed else { return XCTFail("the cap never fired") }
+
+        XCTAssertEqual(
+            policy.finish(endSample: consumed),
+            .closed(range: closed.upperBound ..< consumed, forced: false)
+        )
     }
 
     /// A gap further back than the pre-roll must be ignored: the reopen cannot
@@ -147,11 +172,11 @@ final class SpeechBoundaryTests: XCTestCase {
     /// losing words to save a duplicated one.
     func test_forced_cut_ignores_a_gap_beyond_the_pre_roll() {
         let dipFramesBack = preRollSamples / frame + 12    // well outside reach
-        let (closed, reopen) = capWithDip(dipFramesBack: dipFramesBack)
+        let (closed, continuation) = capWithDip(dipFramesBack: dipFramesBack)
 
         XCTAssertGreaterThan(closed.upperBound, (capSamples / frame - dipFramesBack) * frame,
-                             "the cut moved further back than the reopen can follow")
-        XCTAssertEqual(reopen, closed.upperBound, "audio fell between the two phrases")
+                             "the cut moved further back than the continuation can follow")
+        XCTAssertEqual(continuation, closed.upperBound, "audio fell between the two phrases")
     }
 
     /// With no gap to use — unbroken phonation — the cap still bounds the phrase,
@@ -159,18 +184,24 @@ final class SpeechBoundaryTests: XCTestCase {
     func test_forced_cut_falls_back_to_the_cap_without_a_gap() {
         var policy = makePolicy()
         var closed: Range<Int>?
-        var reopen: Int?
+        var consumed = 0
         for _ in 0 ..< (capSamples / frame + 6) {
-            switch policy.frame(isSpeech: true) {
-            case let .closed(range, _)?: closed = range
-            case let .opened(start)?: if closed != nil, reopen == nil { reopen = start }
-            case nil, .some: break
+            let event = policy.frame(isSpeech: true)
+            consumed += frame
+            if case let .closed(range, _)? = event {
+                closed = range
+                break
             }
         }
         guard let closed else { return XCTFail("the cap never fired") }
+        _ = policy.frame(isSpeech: true)
+        consumed += frame
+        guard case let .closed(continuation, _)? = policy.finish(endSample: consumed) else {
+            return XCTFail("the continuation never closed")
+        }
 
         XCTAssertGreaterThanOrEqual(closed.count, capSamples)
-        XCTAssertEqual(reopen, closed.upperBound, "audio fell between the two phrases")
+        XCTAssertEqual(continuation.lowerBound, closed.upperBound, "audio fell between the phrases")
     }
 
     /// A pause *after* the cap is still a pause. The forced-cut rule — resume
@@ -195,8 +226,10 @@ final class SpeechBoundaryTests: XCTestCase {
         guard let closed else { return XCTFail("the cap never fired") }
 
         // The speaker stops right after the cap, for far longer than an endpoint.
+        // With a cursor cut there is no reserved tail to emit; with a gap cut the
+        // tail closes here. Either way, the next speech must use normal pre-roll.
         for _ in 0 ..< (silenceFrames + 200) {
-            XCTAssertNil(policy.frame(isSpeech: false))
+            _ = policy.frame(isSpeech: false)
             consumed += frame
         }
 
@@ -239,7 +272,24 @@ final class SpeechBoundaryTests: XCTestCase {
         XCTAssertNil(policy.finish())
     }
 
+
+    /// Warm-up must execute one correctly sized zero frame and then clear the
+    /// streaming state, so the first live verdict starts from a clean detector.
+    func test_detector_warmup_runs_one_silent_frame_then_resets() {
+        var fed: [Float]?
+        var resets = 0
+
+        SpeechBoundaryDetector.performWarmUp(
+            frameSamples: SpeechBoundaryDetector.frameSamples,
+            feed: { fed = $0 },
+            reset: { resets += 1 }
+        )
+
+        XCTAssertEqual(fed, [Float](repeating: 0, count: SpeechBoundaryDetector.frameSamples))
+        XCTAssertEqual(resets, 1)
+    }
     /// Silence after a closed segment must not open an empty one.
+
     func test_finish_after_endpoint_yields_nothing() {
         var policy = makePolicy()
         _ = policy.frame(isSpeech: true)

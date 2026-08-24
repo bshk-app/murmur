@@ -13,6 +13,7 @@ private final class FakeLiveLane {
     var chunks: [[Float]] = []
     var fedSamples: Int { chunks.reduce(0) { $0 + $1.count } }
     var words: [String] = []
+    var wordOnFinish: String?
 
     var text: String { words.joined(separator: " ") }
 
@@ -21,7 +22,10 @@ private final class FakeLiveLane {
             begin: { [self] in epochs += 1; words = [] },
             step: { [self] chunk in chunks.append(chunk); words.append("w\(words.count + 1)") },
             text: { [self] in text },
-            finish: { [self] in finishes += 1 }
+            finish: { [self] in
+                finishes += 1
+                if let wordOnFinish { words.append(wordOnFinish) }
+            }
         )
     }
 }
@@ -93,17 +97,18 @@ final class CaptionEngineTests: XCTestCase {
         XCTAssertEqual(live.epochs, 2, "resumed speech gets a fresh epoch")
     }
 
-    /// THE cap invariant: a forced cut corrects the segment but must not restart
-    /// the live lane — the speaker is mid-sentence and its context is still good.
-    func test_forced_cap_corrects_without_restarting_the_live_lane() {
+    /// THE cap invariant: the batch phrase is bounded, and so is the real live
+    /// session behind it. Nemotron retains all PCM for an epoch, so preserving one
+    /// session across caps makes both memory and per-step work grow without bound.
+    func test_forced_cap_corrects_and_restarts_the_live_lane() {
         let live = FakeLiveLane()
         let engine = makeEngine(live: live, speech: { _ in true }, maxEpochSeconds: 1)
 
         for _ in 0 ..< 20 { engine.step(chunk) }   // ~1.9 s of unbroken speech
 
         XCTAssertGreaterThanOrEqual(engine.snapshot().confirmed.count, 1)
-        XCTAssertEqual(live.epochs, 1, "a forced cut must not open a new epoch")
-        XCTAssertEqual(live.finishes, 0, "a forced cut must not flush the live lane")
+        XCTAssertEqual(live.epochs, 2, "the capped epoch was not replaced")
+        XCTAssertEqual(live.finishes, 1, "the capped live lane was not flushed")
         XCTAssertEqual(live.fedSamples, 20 * chunk.count, "audio was dropped across the cap")
     }
 
@@ -124,9 +129,9 @@ final class CaptionEngineTests: XCTestCase {
 
         XCTAssertGreaterThanOrEqual(ranges.count, 2, "the cap fired less than twice")
         for (previous, next) in zip(ranges, ranges.dropFirst()) {
-            XCTAssertGreaterThanOrEqual(
+            XCTAssertEqual(
                 next.lowerBound, previous.upperBound,
-                "\(previous.upperBound - next.lowerBound) samples decoded twice"
+                "batch ranges are not adjacent: \(previous) then \(next)"
             )
         }
     }
@@ -147,6 +152,51 @@ final class CaptionEngineTests: XCTestCase {
             engine.bufferedSamples, 16_000,
             "the buffer grew through the pause after a cap"
         )
+    }
+
+    /// A cursor-aligned cap owns no tail. If the speaker stops on that exact
+    /// frame, the engine must remain closed through silence rather than opening an
+    /// empty epoch/segment that no boundary event can close.
+    func test_silence_after_a_cursor_aligned_cap_leaves_no_open_epoch() {
+        let live = FakeLiveLane()
+        var speaking = true
+        let frame = [Float](repeating: 0, count: 512)
+        let engine = makeEngine(live: live, speech: { _ in speaking }, maxEpochSeconds: 1)
+
+        for _ in 0 ..< 32 { engine.step(frame) }    // cap at 16_384, exactly cursor
+        XCTAssertEqual(live.finishes, 1)
+        XCTAssertEqual(live.epochs, 1, "the cursor cut opened an empty epoch")
+
+        speaking = false
+        for _ in 0 ..< 100 { engine.step(frame) }
+
+        XCTAssertEqual(live.epochs, 1, "silence opened an epoch after the cap")
+        XCTAssertLessThanOrEqual(engine.bufferedSamples, 16_000)
+
+        speaking = true
+        engine.step(frame)
+        XCTAssertEqual(live.epochs, 2, "new speech did not start a fresh epoch")
+    }
+
+    /// A cursor cap owns no complete continuation frame, but Stop can flush a
+    /// 1...511-sample mic tail immediately afterwards. That tail still belongs to
+    /// the next batch phrase and must not lose the final phoneme.
+    func test_sub_frame_tail_immediately_after_a_cursor_cap_is_corrected() {
+        let live = FakeLiveLane()
+        var ranges: [Range<Int>] = []
+        let frame = [Float](repeating: 0, count: 512)
+        let engine = makeEngine(
+            live: live,
+            speech: { _ in true },
+            batch: { range, _ in ranges.append(range); return "ok" },
+            maxEpochSeconds: 1
+        )
+
+        for _ in 0 ..< 32 { engine.step(frame) }  // cap at 16_384
+        engine.step([Float](repeating: 0, count: 300))
+        engine.finish()
+
+        XCTAssertEqual(ranges, [0 ..< 16_384, 16_384 ..< 16_684])
     }
 
     /// And the phrase that eventually follows must not carry the whole pause into
@@ -177,8 +227,8 @@ final class CaptionEngineTests: XCTestCase {
                           "the phrase dragged the pause in behind it")
     }
 
-    /// Live text keeps flowing across a forced cap — the only user-visible cost
-    /// of the cap is the batch pass, not a gap in the draft.
+    /// Live text resumes on a fresh epoch after a forced cap — the authoritative
+    /// batch correction stays on screen while the new provisional tail grows.
     func test_live_draft_continues_across_a_forced_cap() {
         let live = FakeLiveLane()
         let engine = makeEngine(live: live, speech: { _ in true }, maxEpochSeconds: 1)
@@ -188,29 +238,25 @@ final class CaptionEngineTests: XCTestCase {
         for _ in 0 ..< 6 { engine.step(chunk) }
         let after = engine.snapshot()
 
+        XCTAssertEqual(live.epochs, 2)
         XCTAssertFalse(after.provisional.isEmpty, "the draft resumes after the cap")
         XCTAssertNotEqual(after.provisional, mid.provisional)
     }
 
-    /// A forced cap keeps the live epoch, so its text keeps growing over speech
-    /// that is already confirmed. The draft must show only the part after the cut —
-    /// otherwise the overlay renders the same sentence twice, once corrected and
-    /// once as a draft.
+    /// Restarting the live lane means its text contains only the new phrase. The
+    /// confirmed batch phrase must not appear again in the provisional tail.
     func test_forced_cap_does_not_render_confirmed_speech_twice() {
         let live = FakeLiveLane()
         let engine = makeEngine(live: live, speech: { _ in true }, maxEpochSeconds: 1)
 
         for _ in 0 ..< 12 { engine.step(chunk) }   // trips the cap
-        let atCut = live.text
-        XCTAssertFalse(atCut.isEmpty, "the epoch had text at the cut")
+        let confirmed = engine.snapshot().confirmed.last?.text
+        XCTAssertNotNil(confirmed)
 
         for _ in 0 ..< 4 { engine.step(chunk) }
         let snapshot = engine.snapshot()
 
-        XCTAssertFalse(
-            snapshot.provisional.contains(atCut),
-            "the draft still carries the confirmed phrase: \(snapshot.provisional)"
-        )
+        XCTAssertNotEqual(snapshot.provisional, confirmed)
         XCTAssertFalse(snapshot.provisional.isEmpty, "the draft resumed after the cap")
     }
 
@@ -296,6 +342,27 @@ final class CaptionEngineTests: XCTestCase {
 
         XCTAssertTrue(engine.snapshot().confirmed.isEmpty)
         XCTAssertEqual(live.epochs, 1)
+    }
+
+
+    /// Nemotron flush can emit trailing tokens. If the authoritative batch pass
+    /// returns empty for a short/noisy phrase, fallback must keep the *flushed*
+    /// draft, not the stale text from the last step.
+    func test_empty_batch_keeps_tokens_emitted_by_live_finish() {
+        let live = FakeLiveLane()
+        live.wordOnFinish = "flushed-tail"
+        let engine = makeEngine(
+            live: live,
+            speech: { _ in true },
+            batch: { _, _ in "" }
+        )
+
+        for _ in 0 ..< 3 { engine.step(chunk) }
+        engine.finish()
+
+        let segment = engine.snapshot().confirmed.last
+        XCTAssertEqual(segment?.state, .confirmed)
+        XCTAssertTrue(segment?.text.hasSuffix("flushed-tail") == true)
     }
 
     /// The batch pass sees the phrase audio itself, sized to its range.

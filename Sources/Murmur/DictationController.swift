@@ -45,20 +45,33 @@ final class DictationController {
     /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
     /// reuses it instead of spinning up a second `DictationSession`.
     var dictationSession: DictationSession { session }
+
     @ObservationIgnored private var promptedAccessibility = false
     @ObservationIgnored private var isPreparing = false
-
-    /// Whether this utterance ends with a Return. Latched when recording begins and
-    /// left alone until it ends: in hold mode there is no separate stop gesture to
-    /// carry the intent, so letting the *stopping* key decide would make the two
-    /// trigger modes behave differently for the same pair of shortcuts.
 
     /// Which pipeline owns the live session, and whether its stop comes from a
     /// second tap rather than the key release. Both latched at start so a mode
     /// change mid-session cannot strand a running mic.
     @ObservationIgnored private var captionsRunning = false
     @ObservationIgnored private var latchedToggle = false
+
+    /// Whether this utterance ends with a Return. Latched when recording begins and
+    /// left alone until it ends: in hold mode there is no separate stop gesture to
+    /// carry the intent, so letting the *stopping* key decide would make the two
+    /// trigger modes behave differently for the same pair of shortcuts.
     @ObservationIgnored private var submitOnFinish = false
+
+    private(set) var microphones: [MicrophoneDevice] = []
+
+    /// Refresh when the popover opens. Core Audio device IDs are transient, so the
+    /// UI stores UIDs and rebuilds the current catalog each time it is shown.
+    /// Returns the selection the Picker should display; a missing device visibly
+    /// falls back to System Default.
+    @discardableResult
+    func refreshMicrophones(preferredUID: String) -> String {
+        microphones = AudioInputDevices.available()
+        return AudioInputDevices.sanitizedUID(preferredUID, devices: microphones)
+    }
 
     var shortcutLabel: String {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
@@ -160,15 +173,15 @@ final class DictationController {
         }
     }
 
-    /// Hotkey press: hold-mode starts; toggle-mode flips start/stop. Gated by the
-    /// master enable.
+    /// Hotkey press: a running session keeps the trigger it started with even if
+    /// Settings change underneath it.
     private func hotkeyDown(submit: Bool) {
-        guard DictationEnabled.value else { return }
-        if Self.togglesOnPress {
-            if state == .recording { endRecording() } else { beginRecording(submit: submit) }
-        } else {
-            beginRecording(submit: submit)
-        }
+        RecordingTriggerPolicy.route(
+            .keyDown,
+            state: recordingTriggerState,
+            begin: { beginRecording(submit: submit) },
+            end: endRecording
+        )
     }
 
     /// Captions is always tap-on / tap-off, whatever the hotkey setting says —
@@ -177,12 +190,23 @@ final class DictationController {
         AppMode.current == .captions || TriggerMode.current == .toggle
     }
 
+    private var recordingTriggerState: RecordingTriggerState {
+        RecordingTriggerState(
+            isRecording: state == .recording,
+            isActive: isActive,
+            latchedToggle: latchedToggle,
+            isEnabled: DictationEnabled.value
+        )
+    }
+
     /// Hotkey release only ends dictation in hold mode (toggle ignores release).
-    /// While a session runs, the decision latched at its start wins — the setting
-    /// may have changed under it.
     private func hotkeyUp() {
-        let toggles = isActive ? latchedToggle : Self.togglesOnPress
-        if !toggles { endRecording() }
+        RecordingTriggerPolicy.route(
+            .keyUp,
+            state: recordingTriggerState,
+            begin: {},
+            end: endRecording
+        )
     }
 
     private func beginRecording(submit: Bool) {
@@ -198,7 +222,11 @@ final class DictationController {
         do {
             // The live two-tier view stays in the HUD; the field receives one paste
             // on release (Variant B — paste is atomic, so no live-into-field typing).
-            try session.start(mode: modelMode, language: language)
+            try session.start(
+                mode: modelMode,
+                language: language,
+                microphoneUID: MicrophoneSetting.currentUID
+            )
             captionsRunning = false
             latchedToggle = toggle
             state = .recording
@@ -229,7 +257,10 @@ final class DictationController {
         let language = SpeechLanguage.current
         submitOnFinish = false
         do {
-            try captionSession.start(language: language)
+            try captionSession.start(
+                language: language,
+                microphoneUID: MicrophoneSetting.currentUID
+            )
             captionsRunning = true
             latchedToggle = true    // captions is always tap-on / tap-off
             state = .recording
