@@ -1,0 +1,48 @@
+# Proof that the app target still compiles. The shippable Release build belongs
+# to release.yml, so this runs only on pull requests and only when something the
+# app is compiled from changed: a release PR that touches VERSION and CHANGELOG
+# must not pay for a macOS build, and main gets its build from the release.
+name: App build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - Sources/**
+      - MurmurKit/**
+      - Project.swift
+      - Assets/**
+      - .github/workflows/app-build.yml
+  workflow_dispatch:
+
+concurrency:
+  group: app-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Tuist
+        run: brew install tuist
+
+      # Debug, not Release: this gate answers "does it still compile", and the
+      # optimizer pass costs minutes that release.yml already pays once.
+      - name: Build the app without signing
+        run: |
+          tuist generate --no-open
+          xcodebuild \
+            -workspace Murmur.xcworkspace \
+            -scheme Murmur \
+            -configuration Debug \
+            -destination 'generic/platform=macOS' \
+            ARCHS=arm64 \
+            ONLY_ACTIVE_ARCH=YES \
+            SWIFT_ENABLE_EXPLICIT_MODULES=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            build
