@@ -122,7 +122,7 @@ struct MenuPopover: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .disabled(dictation.isActive)
             label("Mode").padding(.top, 11)
-            MurSegment(selection: $appModeRaw,
+            MurSegment(label: "Mode", selection: $appModeRaw,
                        options: [(AppMode.dictation.rawValue, "Dictation"),
                                  (AppMode.captions.rawValue, "Captions")])
                 // Switching pipelines under a live session is not a state worth
@@ -136,7 +136,7 @@ struct MenuPopover: View {
                     .padding(.top, 7)
             }
             label("Model").padding(.top, 11)
-            MurSegment(selection: $modelRaw,
+            MurSegment(label: "Model", selection: $modelRaw,
                        options: [(DictationMode.fast.rawValue, "Fast"),
                                  (DictationMode.hybrid.rawValue, "Hybrid"),
                                  (DictationMode.accurate.rawValue, "Accurate")])
@@ -150,7 +150,7 @@ struct MenuPopover: View {
             .pickerStyle(.menu)
             .frame(maxWidth: .infinity, alignment: .leading)
             label("Hotkey").padding(.top, 11)
-            MurSegment(selection: $triggerRaw,
+            MurSegment(label: "Hotkey", selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
                                  (TriggerMode.toggle.rawValue, "Toggle")])
                 .disabled(dictation.isActive)
@@ -216,33 +216,52 @@ struct MenuPopover: View {
 
 /// Pill segmented control matching the handoff (selected: white/accent fill).
 private struct MurSegment: View {
+    let label: String
     @Binding var selection: String
     let options: [(value: String, label: String)]
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
         HStack(spacing: 2) {
-            ForEach(options, id: \.value) { opt in
-                let sel = selection == opt.value
-                Text(opt.label)
-                    .font(.system(size: 12, weight: sel ? .semibold : .regular))
-                    .foregroundStyle(sel ? (scheme == .dark ? Mur.ink : Mur.accent)
-                                         : (scheme == .dark ? Color.white.opacity(0.6) : Mur.ink.opacity(0.65)))
-                    .frame(maxWidth: .infinity).padding(.vertical, 5)
-                    .background {
-                        if sel {
-                            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .fill(scheme == .dark ? Mur.accent : Color.white)
-                                .shadow(color: scheme == .dark ? .clear : Mur.ink.opacity(0.12), radius: 1, y: 1)
-                        }
-                    }
-                    .contentShape(Rectangle())
-                    .onTapGesture { selection = opt.value }
+            ForEach(options, id: \.value) { option in
+                let selected = selection == option.value
+                Button {
+                    selection = option.value
+                } label: {
+                    Text(option.label)
+                        .font(.system(size: 12, weight: selected ? .semibold : .regular))
+                        .foregroundStyle(textColor(selected: selected))
+                        .frame(maxWidth: .infinity).padding(.vertical, 5)
+                        .background { if selected { selectedPill } }
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(option.label)
+                .accessibilityValue(selected ? "Selected" : "Not selected")
+                .accessibilityAddTraits(selected ? .isSelected : [])
             }
         }
         .padding(2)
         .background(scheme == .dark ? Color.white.opacity(0.07) : Mur.ink.opacity(0.06),
                     in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(label)
+    }
+
+    /// The selected pill carries the fill, so its text takes the fill's contrast
+    /// colour while the rest matches the popover's secondary text.
+    private func textColor(selected: Bool) -> Color {
+        let dark = scheme == .dark
+        if selected {
+            return dark ? Mur.ink : Mur.accent
+        }
+        return dark ? Color.white.opacity(0.6) : Mur.ink.opacity(0.65)
+    }
+
+    private var selectedPill: some View {
+        RoundedRectangle(cornerRadius: 6, style: .continuous)
+            .fill(scheme == .dark ? Mur.accent : Color.white)
+            .shadow(color: scheme == .dark ? .clear : Mur.ink.opacity(0.12), radius: 1, y: 1)
     }
 }
 
