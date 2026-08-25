@@ -323,6 +323,9 @@ final class DictationController {
         if captionsRunning { return endCaptions() }
         let modelModeAtStop = ModelSetting.current.rawValue
         let submitAtStop = submitOnFinish
+        // The mic is already closed by `stop()`, so the overlay must stop looking
+        // like it is listening while the batch pass runs.
+        hud.finalizing()
         // Drain off the main thread so a slow finish never freezes the UI, then
         // paste the final on the main thread (pasteboard + ⌘V).
         Task.detached(priority: .userInitiated) { [session] in
@@ -330,8 +333,9 @@ final class DictationController {
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                self.hud.finish(final, linger: 1.0)
-                if !final.isEmpty { self.insertFinal(final, submit: submitAtStop) }
+                let delivery = final.isEmpty ? TranscriptDelivery.typed
+                                             : self.insertFinal(final, submit: submitAtStop)
+                self.hud.finish(final, delivery: delivery)
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,
@@ -339,22 +343,25 @@ final class DictationController {
                     "model_mode": modelModeAtStop,
                     "insert_mode": Self.insertModeAnalyticsValue,
                     "submit_on_finish": submitAtStop,
+                    "delivered": delivery == .typed,
                 ])
                 self.state = .transcribed(final)
             }
         }
     }
 
-    /// Stop captions: close the open phrase, hold the last line on screen long
-    /// enough to finish reading it, and type nothing anywhere.
+    /// Stop captions: close the open phrase and take the overlay away. The user
+    /// asked for it to stop, so holding the last line on screen only keeps it in
+    /// front of whatever they turned back to.
     private func endCaptions() {
+        hud.finalizing()
         Task.detached(priority: .userInitiated) { [captionSession] in
             let snapshot = captionSession.stop()
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
                 let text = (snapshot?.confirmed.map(\.text) ?? []).joined(separator: " ")
-                self.hud.finish(text, linger: 4.0)
+                self.hud.finish(text, delivery: .displayedOnly)
                 PostHogSDK.shared.capture("captions_completed", properties: [
                     "phrase_count": snapshot?.confirmed.count ?? 0,
                     "character_count": text.count,
@@ -373,18 +380,20 @@ final class DictationController {
     /// `TextInjector.paste` that actually pressed ⌘V. Sending an empty message
     /// because the text never landed is the worst thing this feature could do, so
     /// that invariant is structural rather than a condition someone must remember.
-    private func insertFinal(_ text: String, submit: Bool) {
+    private func insertFinal(_ text: String, submit: Bool) -> TranscriptDelivery {
         guard Accessibility.isTrusted else {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(TextInjector.payload(text, submit: submit), forType: .string)
             if !promptedAccessibility { promptedAccessibility = true; Accessibility.prompt() }
-            return
+            return .failed(String(localized: "On the clipboard — grant Accessibility to type"))
         }
         switch TextInjector.paste(text, submit: submit) {
-        case .pasted, .failed:
-            break
+        case .pasted:
+            return .typed
+        case .failed:
+            return .failed(String(localized: "Could not type it — press ⌘V"))
         case .copiedSecureInput:
-            hud.error(String(localized: "Field is protected — press ⌘V"))
+            return .failed(String(localized: "Field is protected — press ⌘V"))
         }
     }
 }
