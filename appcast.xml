@@ -3,6 +3,33 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.3.0</title>
+            <pubDate>Tue, 25 Aug 2026 14:36:47 +0000</pubDate>
+            <sparkle:version>1025</sparkle:version>
+            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h3>Added</h3>
+<ul>
+<li>Settings now decides what happens to recordings of your voice. Murmur can keep<br>
+each dictation as an audio file so a bug can be reproduced from the real<br>
+recording — off unless you ask for it, never uploaded, and now visible instead<br>
+of hidden. You can see the files, delete them in one step, and what stays is<br>
+the last twenty for seven days.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>The overlay leaves the moment you stop. Releasing the hotkey used to hold it a<br>
+second longer, and stopping captions held it for four; now the panel goes as<br>
+soon as your words have landed, and while the final wording is being decided it<br>
+says so instead of pretending to still be listening.</li>
+<li>If the text could not be typed — no Accessibility permission, or a password<br>
+field that refuses paste — the overlay stays and says which of the two it was,<br>
+rather than disappearing with your sentence.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-v0.3.0/Murmur-0.3.0.dmg" length="19569716" type="application/octet-stream" sparkle:edSignature="zyByAWGv7/LpMcbl6zUUSUDuykXoZpwLzfW+k66AGWwNQAugCnDyR6RR9bkeTD5xh6zb6ZMKaxzvWHsRuLCLBw=="/>
+        </item>
+        <item>
             <title>0.2.1</title>
             <pubDate>Mon, 24 Aug 2026 20:28:24 +0000</pubDate>
             <sparkle:version>1021</sparkle:version>
