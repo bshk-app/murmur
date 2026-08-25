@@ -11,6 +11,26 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.3.0](https://github.com/bshk-app/murmur/compare/murmur-v0.2.1...murmur-v0.3.0) (2026-08-25)
+
+### Added
+
+- Settings now decides what happens to recordings of your voice. Murmur can keep
+  each dictation as an audio file so a bug can be reproduced from the real
+  recording — off unless you ask for it, never uploaded, and now visible instead
+  of hidden. You can see the files, delete them in one step, and what stays is
+  the last twenty for seven days.
+
+### Fixed
+
+- The overlay leaves the moment you stop. Releasing the hotkey used to hold it a
+  second longer, and stopping captions held it for four; now the panel goes as
+  soon as your words have landed, and while the final wording is being decided it
+  says so instead of pretending to still be listening.
+- If the text could not be typed — no Accessibility permission, or a password
+  field that refuses paste — the overlay stays and says which of the two it was,
+  rather than disappearing with your sentence.
+
 ## [0.2.1](https://github.com/bshk-app/murmur/compare/murmur-v0.2.0...murmur-v0.2.1) (2026-08-24)
 
 ### Changed
