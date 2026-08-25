@@ -14,7 +14,9 @@ import SwiftUI
 
 @Observable
 final class HUDModel {
-    enum Phase { case listening, transcribing, finished, error }
+    /// `finalizing` is the gap between the stop gesture and the corrected text:
+    /// the microphone is already off, so the level bars must stop with it.
+    enum Phase { case listening, transcribing, finalizing, finished, error }
     var phase: Phase = .listening
     var confirmed = ""
     var partial = ""
@@ -85,6 +87,9 @@ private struct HUDView: View {
             case .error:        mascotBubble(.error) { errorPill }
             case .listening:    mascotBubble(.listening) { listeningPill }
             case .transcribing: mascotBubble(.transcribing) { transcribePill }
+            // Same face as live decoding: the work is the same, only the audio has
+            // stopped arriving. A dedicated mascot state can slot in here.
+            case .finalizing:   mascotBubble(.transcribing) { transcribePill }
             case .finished:     mascotBubble(.success) { transcribePill }
             }
         }
@@ -96,7 +101,15 @@ private struct HUDView: View {
     // Header: animated bars + language badge; the mascot overlaps the pill edge.
     private var header: some View {
         HStack(spacing: 10) {
-            LevelBars(color: Mur.accent, count: 4, barHeight: 13)
+            // Bars mean "we are hearing you". Once the microphone is off they would
+            // be a lie, so the same slot carries the wait instead.
+            if model.phase == .finalizing {
+                Text("Finalizing…")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(Mur.accent)
+            } else {
+                LevelBars(color: Mur.accent, count: 4, barHeight: 13)
+            }
             Spacer(minLength: 8)
             if model.submits { submitBadge }
             Text(model.lang.uppercased())
@@ -323,16 +336,36 @@ final class HUDController {
         scheduleHide(after: 3.2)
     }
 
-    /// Show the final text, then fade after `linger`.
-    func finish(_ finalText: String, linger: TimeInterval = 1.0) {
+    /// The stop gesture landed; the corrected text is still being decoded. The mic
+    /// is off, so stop pretending to listen and say what is happening instead.
+    func finalizing() {
+        guard panel != nil else { return }
+        hideWork?.cancel(); hideWork = nil
+        model.recording = false
+        model.showStop = false
+        model.phase = .finalizing
+    }
+
+    /// End the presentation according to what happened to the transcript. An
+    /// explicit stop dismisses at once; only undelivered text earns a wait.
+    func finish(_ finalText: String, delivery: TranscriptDelivery) {
         guard panel != nil else { return }
         model.recording = false
         model.showStop = false
-        if !finalText.isEmpty {
+        let policy = StopPresentation.policy(for: delivery, textIsEmpty: finalText.isEmpty)
+        if policy.showsText, !finalText.isEmpty {
             show(confirmed: finalText, partial: "")
             model.phase = .finished
+            if let message = policy.message { model.errorText = message }
         }
-        scheduleHide(after: linger)
+        guard policy.linger > 0 else { return dismiss() }
+        scheduleHide(after: policy.linger)
+    }
+
+    /// Fade now, cancelling any pending hide.
+    func dismiss() {
+        hideWork?.cancel(); hideWork = nil
+        fadeOut()
     }
 
     private func scheduleHide(after delay: TimeInterval) {
