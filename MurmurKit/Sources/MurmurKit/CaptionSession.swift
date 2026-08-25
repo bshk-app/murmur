@@ -1,5 +1,26 @@
 import Foundation
 
+/// Suppresses duplicate snapshots at the pipeline/UI seam. CaptionTranscript
+/// increments `revision` only when visible state changes; mic chunks do not, so
+/// a silent stretch holds the revision still and never wakes the UI. A session
+/// token also rejects a late callback from the mic that was just stopped.
+struct CaptionSnapshotGate: Sendable {
+    private var currentSession: UInt64 = 0
+    private var lastRevision: UInt64 = 0
+
+    mutating func beginSession() -> UInt64 {
+        currentSession &+= 1
+        lastRevision = 0
+        return currentSession
+    }
+
+    mutating func shouldEmit(session: UInt64, revision: UInt64) -> Bool {
+        guard session == currentSession, revision != lastRevision else { return false }
+        lastRevision = revision
+        return true
+    }
+}
+
 /// The UI-agnostic captions pipeline: capture the mic, keep a live draft on
 /// screen, and correct each phrase with the batch model as the talk goes on.
 ///
@@ -21,6 +42,7 @@ public final class CaptionSession: @unchecked Sendable {
     /// app runs captions off the weights dictation already loaded.
     let engine: STTEngine
     private var mic = MicCapture()
+    private var snapshotGate = CaptionSnapshotGate()
 
     /// Called on the mic capture queue for every chunk that changed the view.
     public var onSnapshot: ((CaptionSnapshot) -> Void)?
@@ -46,8 +68,10 @@ public final class CaptionSession: @unchecked Sendable {
     ) throws {
         mic = MicCapture(inputDeviceUID: microphoneUID)
         engine.beginCaptions(language: language)
+        let session = snapshotGate.beginSession()
         mic.onChunk = { [weak self] chunk in
-            guard let self, let snapshot = self.engine.stepCaptions(chunk) else { return }
+            guard let self, let snapshot = self.engine.stepCaptions(chunk),
+                  self.snapshotGate.shouldEmit(session: session, revision: snapshot.revision) else { return }
             self.onSnapshot?(snapshot)
         }
         try mic.start()
