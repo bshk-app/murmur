@@ -70,27 +70,44 @@ public final class DictationSession: @unchecked Sendable {
     public func stop() -> String {
         engine.releaseLive()
         _ = mic.stop()
-        saveDiagnosticRecording()
         let final = engine.finish()
         mic = MicCapture()
+        // The recording is a diagnostic, not part of the transcript: writing it
+        // here would put a megabyte of disk I/O between the user's stop gesture
+        // and their text. Hand the samples to a background queue and return.
+        scheduleDiagnosticRecording()
         return final
     }
 
-    private func saveDiagnosticRecording() {
+    /// The URL is decided here, on the caller's thread, and published here too:
+    /// `start()` clears `lastRecordingURL`, so letting a background block assign it
+    /// would race the next utterance — which `stop()` returning faster now makes
+    /// more likely, not less. The background keeps only the bytes and the sweep.
+    private func scheduleDiagnosticRecording() {
         guard recordsUtterance, !recordedSamples.isEmpty else { return }
-        let directory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Murmur", isDirectory: true)
+        let samples = recordedSamples
+        recordedSamples.removeAll(keepingCapacity: false)
         let stamp = Int(Date().timeIntervalSince1970 * 1_000)
-        let url = directory.appendingPathComponent("utterance-\(stamp).wav")
+        let url = DiagnosticRecordings.directory()
+            .appendingPathComponent("\(DiagnosticRecordings.filePrefix)\(stamp).wav")
+        lastRecordingURL = url
+        DispatchQueue.global(qos: .utility).async {
+            Self.writeDiagnosticRecording(samples, to: url)
+            DiagnosticRecordings.sweep()
+        }
+    }
+
+    /// A failed diagnostic must never surface as a failed dictation, so this
+    /// reports and returns rather than throwing.
+    private static func writeDiagnosticRecording(_ samples: [Float], to url: URL) {
         do {
-            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            try DiagnosticWAV.write(samples: recordedSamples, to: url)
-            lastRecordingURL = url
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                    withIntermediateDirectories: true)
+            try DiagnosticWAV.write(samples: samples, to: url)
             FileHandle.standardError.write(Data("Recorded diagnostic audio: \(url.path)\n".utf8))
         } catch {
             FileHandle.standardError.write(Data("Diagnostic audio failed: \(error)\n".utf8))
         }
-        recordedSamples.removeAll(keepingCapacity: false)
     }
 
     /// Drive an utterance from externally paced chunks instead of the microphone.
