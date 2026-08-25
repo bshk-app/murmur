@@ -11,6 +11,14 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.3.1](https://github.com/bshk-app/murmur/compare/murmur-v0.3.0...murmur-v0.3.1) (2026-08-25)
+
+
+### Fixed
+
+* **accessibility:** menu segments work with VoiceOver ([84a23e0](https://github.com/bshk-app/murmur/commit/84a23e08858be2234bcc9363ef6d9549f21dae35))
+* **captions:** silence stops redrawing the overlay ([3c97bbf](https://github.com/bshk-app/murmur/commit/3c97bbf6902362a51667a67adb64ca9b081d69bb))
+
 ## [0.3.0](https://github.com/bshk-app/murmur/compare/murmur-v0.2.1...murmur-v0.3.0) (2026-08-25)
 
 ### Added
