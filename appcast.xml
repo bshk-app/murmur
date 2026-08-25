@@ -3,6 +3,20 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.3.1</title>
+            <pubDate>Tue, 25 Aug 2026 18:55:30 +0000</pubDate>
+            <sparkle:version>1029</sparkle:version>
+            <sparkle:shortVersionString>0.3.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<h3>Fixed</h3>
+<ul>
+<li><strong>accessibility:</strong> menu segments work with VoiceOver (<a href="https://github.com/bshk-app/murmur/commit/84a23e08858be2234bcc9363ef6d9549f21dae35">84a23e0</a>)</li>
+<li><strong>captions:</strong> silence stops redrawing the overlay (<a href="https://github.com/bshk-app/murmur/commit/3c97bbf6902362a51667a67adb64ca9b081d69bb">3c97bbf</a>)</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-v0.3.1/Murmur-0.3.1.dmg" length="19577407" type="application/octet-stream" sparkle:edSignature="RjZ7ioraOcDoEQY50jXSbfqxiwo59KlGOqwlnSaruiGK3eYV9ItaeDVVDLYU5o/SXgbVG0iiHCERaX9OTynwDw=="/>
+        </item>
+        <item>
             <title>0.3.0</title>
             <pubDate>Tue, 25 Aug 2026 14:36:47 +0000</pubDate>
             <sparkle:version>1025</sparkle:version>
