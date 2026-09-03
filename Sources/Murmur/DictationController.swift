@@ -32,6 +32,18 @@ final class DictationController {
     private let session: DictationSession
     private let captionSession: CaptionSession
     private let hud = HUDController()
+    /// Keeps translation models resident between utterances. Built eagerly and
+    /// cheaply: nothing loads until a target language is set and something is
+    /// actually translated.
+    private let translation = TranslationService(modelsRoot: TranslationModels.root)
+    /// The in-flight model fetch, so scrubbing through the picker cannot leave
+    /// a queue of downloads for languages nobody chose.
+    @ObservationIgnored private var translationPrepare: Task<Void, Never>?
+    /// Observed by the popover to draw the download bar.
+    private(set) var translationDownload: TranslationDownload?
+    /// Stamps each preparation so a cancelled one cannot repaint or clear the
+    /// bar that now belongs to a later choice.
+    @ObservationIgnored private var translationGeneration = 0
 
     /// Both pipelines share one model stack — switching between Dictation and
     /// Captions in the popover must not load a second ~3.4 GB copy of the weights,
@@ -150,6 +162,85 @@ final class DictationController {
         prepare(mode: ModelSetting.current)
     }
 
+    /// Fetch the translation models for the current pair if they are missing.
+    ///
+    /// Called when the target language changes rather than at stop: the files
+    /// are ~20 MB and pulling them between the stop gesture and the paste would
+    /// stall the one moment the user is waiting on. Failure is silent here — an
+    /// utterance that finds no model still pastes its original text, and a
+    /// download error at picker time is not something to interrupt anyone with.
+    func prepareTranslation() {
+        // A picker is easy to scrub through; each pass would otherwise start a
+        // fetch that nothing stops.
+        translationPrepare?.cancel()
+        translationDownload = nil
+        // Cancellation is not instant: the outgoing task may already have
+        // progress callbacks queued for the main actor, and it still has its
+        // own tidy-up to run. Both would land on a bar that now belongs to a
+        // different language, so every write is stamped and stale ones are
+        // dropped rather than raced against.
+        translationGeneration &+= 1
+        let generation = translationGeneration
+
+        let source = SpeechLanguage.current
+        guard let target = TranslationSetting.target,
+              source != SpeechLanguage.automatic,
+              let route = LanguagePair.route(from: source, to: target) else { return }
+        let legs: [LanguagePair]
+        switch route {
+        case .direct(let pair): legs = [pair]
+        case .pivot(let first, let second): legs = [first, second]
+        }
+        let root = TranslationModels.root
+
+        // Only what is actually missing. An installed leg contributes no bytes
+        // and must not inflate the total, or a pivot with one leg already on
+        // disk would stall the bar at half.
+        let pending = legs.filter { !TranslationDownloader.isInstalled(pair: $0, in: root) }
+        guard !pending.isEmpty else { return }
+
+        // Sizes come from the manifest, so the whole pivot is denominated
+        // before the first byte moves. Legs are weighted by their real size:
+        // 17 MB followed by 43 MB is not two halves.
+        let combined = CombinedDownloadProgress(
+            legBytes: pending.map { TranslationDownloader.expectedDownloadBytes(for: $0) ?? 0 })
+
+        translationPrepare = Task.detached(priority: .utility) { [weak self] in
+            for (index, leg) in pending.enumerated() {
+                // Checked between legs so a pivot abandons its second hop.
+                if Task.isCancelled { break }
+                _ = try? await TranslationDownloader.download(
+                    pair: leg, into: root,
+                    onProgress: { progress in
+                        guard let self, self.translationGeneration == generation else { return }
+                        // Weighting lives in `CombinedDownloadProgress` so it
+                        // can be tested; doing it here would put the one part
+                        // that can silently go wrong out of reach.
+                        let point = combined.at(leg: index, received: progress.receivedBytes)
+                        self.translationDownload = TranslationDownload(
+                            fraction: point.fraction,
+                            receivedBytes: point.receivedBytes,
+                            totalBytes: combined.totalBytes)
+                    })
+            }
+            await MainActor.run { [weak self] in
+                guard let self, self.translationGeneration == generation else { return }
+                self.translationDownload = nil
+            }
+        }
+    }
+
+    /// Live translation-model download, or nil when nothing is being fetched.
+    ///
+    /// Stays nil for an already-installed pair — that path returns before any
+    /// byte is requested, so switching to a language already on disk shows no
+    /// bar at all rather than flashing one for a frame.
+    struct TranslationDownload: Equatable {
+        var fraction: Double
+        var receivedBytes: Int64
+        var totalBytes: Int64
+    }
+
     /// Lazily load (download on first run) only the models `mode` needs, surfacing
     /// a loading state. A no-op when already ready or a load is in flight.
     private func prepare(mode: DictationMode) {
@@ -212,11 +303,15 @@ final class DictationController {
     private func beginRecording(submit: Bool) {
         guard state != .recording, state != .transcribing else { return }
         if AppMode.current == .captions { return beginCaptions() }
-        let modelMode = ModelSetting.current
+        let language = SpeechLanguage.current
+        // The routing matrix marks Nemotron's streaming preview unreliable for a
+        // few languages, so the live draft is dropped and the batch pass stands
+        // alone. Resolved before the readiness check: asking whether the models
+        // for Hybrid are loaded is the wrong question when Hybrid will not run.
+        let modelMode = ModelSetting.current.effective(for: language)
         // Models for this mode not loaded yet (e.g. just switched) — kick the load
         // and skip this press; the next one records once ready.
         guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
-        let language = SpeechLanguage.current
         let toggle = Self.togglesOnPress
         submitOnFinish = submit
         do {
@@ -323,19 +418,42 @@ final class DictationController {
         if captionsRunning { return endCaptions() }
         let modelModeAtStop = ModelSetting.current.rawValue
         let submitAtStop = submitOnFinish
+        // Read once, at stop: the user could change the target while the batch
+        // pass runs, and half of an utterance in one language is worse than all
+        // of it in the language they asked for when they started.
+        let sourceAtStop = SpeechLanguage.current
+        let targetAtStop = TranslationSetting.target
         // The mic is already closed by `stop()`, so the overlay must stop looking
         // like it is listening while the batch pass runs.
         hud.finalizing()
         // Drain off the main thread so a slow finish never freezes the UI, then
         // paste the final on the main thread (pasteboard + ⌘V).
-        Task.detached(priority: .userInitiated) { [session] in
+        Task.detached(priority: .userInitiated) { [session, translation] in
             let final = session.stop()
+
+            // Translate off the main thread, between the transcript and the
+            // paste: the field receives the translation, and the HUD shows both
+            // lines so the speaker can still see what was heard.
+            var translated = ""
+            // Nothing to route from under automatic detection, so do not even
+            // show the translating state for a pass that cannot produce one.
+            if let targetAtStop, !final.isEmpty,
+               TranslationSetting.canTranslate(from: sourceAtStop) {
+                await MainActor.run { self.hud.translating() }
+                translated = await translation.translateOrEmpty(
+                    final, from: sourceAtStop, to: targetAtStop)
+            }
+
             await MainActor.run { [weak self] in
                 guard let self else { return }
                 FileHandle.standardError.write(Data("\n".utf8))
-                let delivery = final.isEmpty ? TranscriptDelivery.typed
-                                             : self.insertFinal(final, submit: submitAtStop)
-                self.hud.finish(final, delivery: delivery)
+                // What lands in the field is the translation when there is one.
+                // Pasting both languages would put text the user never asked
+                // for into someone else's document.
+                let payload = translated.isEmpty ? final : translated
+                let delivery = payload.isEmpty ? TranscriptDelivery.typed
+                                               : self.insertFinal(payload, submit: submitAtStop)
+                self.hud.finish(final, delivery: delivery, translation: translated)
                 PostHogSDK.shared.capture("dictation_completed", properties: [
                     "word_count": final.split(separator: " ").count,
                     "character_count": final.count,

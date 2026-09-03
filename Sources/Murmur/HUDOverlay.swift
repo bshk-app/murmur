@@ -27,6 +27,13 @@ final class HUDModel {
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
     var shortcutLabel = ""
+    /// Two-line translate mode. Empty means the mode is off or the translation
+    /// has not arrived, and the pill stays one line — the row is not reserved,
+    /// so plain dictation looks exactly as it did.
+    var translation = ""
+    /// The translation is being produced. Shown as its own line so the pill
+    /// does not resize twice: once for the placeholder, once for the text.
+    var translating = false
     var onStop: () -> Void = {}
 }
 
@@ -149,11 +156,40 @@ private struct HUDView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            if !model.translation.isEmpty || model.translating {
+                translationLine
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 13)
         .frame(maxWidth: 460, alignment: .leading)
         .murPill(scheme, radius: 16, border: borderColor)
+    }
+
+    /// The translation, under a hairline, in the accent colour so the two lines
+    /// are never mistaken for one another. Smaller than the transcript on
+    /// purpose: the original is what the recogniser heard and the thing a user
+    /// checks; the translation is what gets pasted and needs no proofreading in
+    /// a language they may not read.
+    private var translationLine: some View {
+        VStack(alignment: .leading, spacing: 7) {
+            Rectangle()
+                .fill(Mur.draft(scheme).opacity(0.25))
+                .frame(height: 1)
+            if model.translating {
+                Text("Translating\u{2026}")
+                    .font(.system(size: 15))
+                    .foregroundStyle(Mur.draft(scheme))
+            } else {
+                Text(model.translation)
+                    .font(.system(size: 17))
+                    .lineSpacing(4)
+                    .foregroundStyle(Mur.accent)
+                    .lineLimit(HUDCapacity.maxLines)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
     }
 
     private var transcript: Text {
@@ -295,6 +331,10 @@ final class HUDController {
         model.shortcutLabel = shortcutLabel
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
+        // A translation left from the previous utterance under a fresh one
+        // would read as a translation of it.
+        model.translation = ""
+        model.translating = false
         model.recording = true
         model.showStop = interactive
         model.onStop = onStop
@@ -346,13 +386,23 @@ final class HUDController {
         model.phase = .finalizing
     }
 
+    /// The transcript is ready and the translation is not. Shown as its own
+    /// state because translating a long utterance takes long enough to notice,
+    /// and a pill that simply sat there would read as finished-but-wrong.
+    func translating() {
+        guard panel != nil else { return }
+        model.translating = true
+    }
+
     /// End the presentation according to what happened to the transcript. An
     /// explicit stop dismisses at once; only undelivered text earns a wait.
-    func finish(_ finalText: String, delivery: TranscriptDelivery) {
+    func finish(_ finalText: String, delivery: TranscriptDelivery, translation: String = "") {
         guard panel != nil else { return }
         model.recording = false
         model.showStop = false
         let policy = StopPresentation.policy(for: delivery, textIsEmpty: finalText.isEmpty)
+        model.translating = false
+        model.translation = translation
         if policy.showsText, !finalText.isEmpty {
             show(confirmed: finalText, partial: "")
             model.phase = .finished

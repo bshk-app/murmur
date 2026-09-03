@@ -1,0 +1,7 @@
+// Makes the merged bergamot archive importable from Swift as `MurmurMT`.
+// An XCFramework's -headers directory is only a header search path until a
+// module map turns it into a Clang module.
+module MurmurMT {
+    header "murmur_mt.h"
+    export *
+}
