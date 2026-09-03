@@ -108,6 +108,58 @@ enum ModelSetting {
     }
 }
 
+/// Target language for the two-line translate mode — persisted; read at stop.
+///
+/// Off by default and off is a real value, not a missing one: translation is a
+/// second model and a second decision, and a dictation app that silently
+/// started translating would be worse than one that never offered it.
+///
+/// Weights live beside the app's other downloads. The directory may not exist
+/// yet — nothing downloads translation models at present — and that is a
+/// tolerable state: `route` still resolves, loading then fails, and
+/// `translateOrEmpty` falls back to pasting the original transcript.
+enum TranslationModels {
+    static var root: URL {
+        let base = FileManager.default.urls(for: .applicationSupportDirectory,
+                                            in: .userDomainMask)[0]
+        return base.appendingPathComponent("Murmur/translation", isDirectory: true)
+    }
+}
+enum TranslationSetting {
+    static let key = "murmur.translateTo"
+    static let off = "off"
+
+    /// The language to translate into, or nil when the mode is off.
+    static var target: String? {
+        let value = UserDefaults.standard.string(forKey: key) ?? off
+        return value == off ? nil : value
+    }
+
+    static var isOn: Bool { target != nil }
+
+    /// Targets worth offering, minus whatever the user is dictating in: a
+    /// source-to-itself choice is not a translation.
+    static func offered(dictating source: String) -> [String] {
+        LanguagePair.supportedLanguages
+            .subtracting([source])
+            .sorted()
+    }
+
+    /// Whether this pairing will actually produce something, without loading a
+    /// model.
+    ///
+    /// Automatic detection cannot be translated, and that is a property of the
+    /// recognisers rather than a gap here: neither reports the language it
+    /// heard. Parakeet's `STTOutput.language` is the requested value echoed
+    /// back, and Nemotron is prompted with a language rather than detecting one.
+    /// With nothing to detect from there is no source to route from, so the
+    /// mode requires an explicit language and the picker says so.
+    static func canTranslate(from source: String) -> Bool {
+        guard let target, source != SpeechLanguage.automatic else { return false }
+        return LanguagePair.route(from: source, to: target) != nil
+    }
+}
+
 /// Anonymous usage & error analytics (PostHog). **Opt-in**: off until the user
 /// enables it on the onboarding Welcome step (or in Settings). While off,
 /// `PostHogSDK.shared.optOut()` makes every `capture(…)` a no-op — no audio or

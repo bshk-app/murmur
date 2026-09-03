@@ -25,6 +25,15 @@ let package = Package(
         .package(url: "https://github.com/huggingface/swift-huggingface.git", .upToNextMajor(from: "0.8.1")),
     ],
     targets: [
+        // bergamot-translator + marian, prebuilt and merged by
+        // Sources/CBergamot/build-bergamot.sh. Prebuilt rather than compiled
+        // here because the engine is a 36-archive CMake tree that SwiftPM
+        // cannot drive, and because it must be built once per engine bump
+        // rather than once per `swift build`.
+        .binaryTarget(
+            name: "MurmurMT",
+            path: "Vendor/MurmurMT.xcframework"
+        ),
         .target(
             name: "MurmurKit",
             dependencies: [
@@ -32,6 +41,18 @@ let package = Package(
                 .product(name: "MLXAudioCore", package: "mlx-audio-swift"),  // ModelUtils.resolveOrDownloadModel
                 .product(name: "MLXAudioVAD", package: "mlx-audio-swift"),   // Silero speech boundaries
                 .product(name: "HuggingFace", package: "swift-huggingface"), // Repo.ID / HubClient / HubCache
+                "MurmurMT",                                                  // CPU translation, off the GPU
+            ],
+            linkerSettings: [
+                // marian's float path goes through Accelerate; the int8 path is
+                // ruy, which is inside the merged archive.
+                .linkedFramework("Accelerate"),
+                .linkedLibrary("c++"),
+                // pathie (marian's path helper) converts encodings through
+                // iconv; ssplit compiles sentence-boundary patterns with PCRE2.
+                // Both ship with the SDK.
+                .linkedLibrary("iconv"),
+                .linkedLibrary("pcre2-8"),
             ]
         ),
         .executableTarget(

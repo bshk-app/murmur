@@ -20,6 +20,7 @@ struct MenuPopover: View {
     @AppStorage(TriggerMode.defaultsKey) private var triggerRaw = TriggerMode.hold.rawValue
     @AppStorage(ModelSetting.key) private var modelRaw = DictationMode.hybrid.rawValue
     @AppStorage(SpeechLanguage.defaultsKey) private var languageRaw = SpeechLanguage.systemDefault
+    @AppStorage(TranslationSetting.key) private var translateToRaw = TranslationSetting.off
     @AppStorage(MicrophoneSetting.defaultsKey)
     private var microphoneUID = MicrophoneSetting.systemDefaultUID
 
@@ -108,6 +109,59 @@ struct MenuPopover: View {
         }
     }
 
+    /// Only the modes that will actually run: offering a choice that silently
+    /// becomes another one is worse than not offering it.
+    private var modelOptions: [(String, String)] {
+        DictationMode.available(for: languageRaw).map { mode in
+            switch mode {
+            case .fast: return (mode.rawValue, "Fast")
+            case .hybrid: return (mode.rawValue, "Hybrid")
+            case .accurate: return (mode.rawValue, "Accurate")
+            }
+        }
+    }
+
+    /// Says the things a user cannot see for themselves: why the picker is
+    /// disabled, that a pair routes through English, and that a pair has no
+    /// model. Checked before the target so it also explains the disabled state.
+    ///
+    /// A determinate bar, because the size is genuinely known: the manifest
+    /// pins every file's compressed length, so the fraction is measured bytes
+    /// rather than an invented percentage.
+    @ViewBuilder
+    private func translationProgress(_ download: DictationController.TranslationDownload) -> some View {
+        VStack(alignment: .leading, spacing: 5) {
+            ProgressView(value: download.fraction)
+                .progressViewStyle(.linear)
+                .tint(Mur.accent)
+            Text("Downloading translation model \(Self.megabytes(download.receivedBytes)) of "
+                 + "\(Self.megabytes(download.totalBytes)) MB")
+                .font(.system(size: 11.5))
+                .foregroundStyle(tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 7)
+    }
+
+    private static func megabytes(_ bytes: Int64) -> String {
+        String(format: "%.0f", Double(bytes) / 1_000_000)
+    }
+    private var translationNote: String? {
+        if languageRaw == SpeechLanguage.automatic {
+            return "Translation needs an explicit language: neither recogniser reports "
+                + "the one it heard, so there is nothing to translate from."
+        }
+        guard let target = TranslationSetting.target else { return nil }
+        switch LanguagePair.route(from: languageRaw, to: target) {
+        case .pivot?:
+            return "Routed through English, which costs a second model and some accuracy."
+        case .direct?:
+            return nil
+        case nil:
+            return "No model for this pair \u{2014} dictation is pasted untranslated."
+        }
+    }
+
     private var settings: some View {
         VStack(alignment: .leading, spacing: 0) {
             label("Microphone")
@@ -136,10 +190,14 @@ struct MenuPopover: View {
                     .padding(.top, 7)
             }
             label("Model").padding(.top, 11)
-            MurSegment(label: "Model", selection: $modelRaw,
-                       options: [(DictationMode.fast.rawValue, "Fast"),
-                                 (DictationMode.hybrid.rawValue, "Hybrid"),
-                                 (DictationMode.accurate.rawValue, "Accurate")])
+            MurSegment(label: "Model", selection: $modelRaw, options: modelOptions)
+            if !DictationMode.allowsLiveDraft(language: languageRaw) {
+                Text("The live draft is unreliable in this language, so only the accurate pass runs.")
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
+            }
             label("Language").padding(.top, 11)
             Picker("Language", selection: $languageRaw) {
                 ForEach(languageCodes, id: \.self) { code in
@@ -149,6 +207,34 @@ struct MenuPopover: View {
             .labelsHidden()
             .pickerStyle(.menu)
             .frame(maxWidth: .infinity, alignment: .leading)
+            label("Translate to").padding(.top, 11)
+            Picker("Translate to", selection: $translateToRaw) {
+                Text("Off").tag(TranslationSetting.off)
+                ForEach(TranslationSetting.offered(dictating: languageRaw), id: \.self) { code in
+                    Text(SpeechLanguage.displayName(for: code)).tag(code)
+                }
+            }
+            .labelsHidden()
+            .pickerStyle(.menu)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            // Automatic detection has no source language to route from, so the
+            // choice is unavailable rather than silently ineffective.
+            .disabled(dictation.isActive || languageRaw == SpeechLanguage.automatic)
+            // Fetch on choice, not on first use: 20 MB between the stop gesture
+            // and the paste would stall the one moment that must feel instant.
+            .onChange(of: translateToRaw) { dictation.prepareTranslation() }
+            .onChange(of: languageRaw) { dictation.prepareTranslation() }
+            // The bar takes the note's slot rather than adding a row, so the
+            // popover does not grow and shrink while models arrive.
+            if let download = dictation.translationDownload {
+                translationProgress(download)
+            } else if let note = translationNote {
+                Text(note)
+                    .font(.system(size: 11.5))
+                    .foregroundStyle(tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 7)
+            }
             label("Hotkey").padding(.top, 11)
             MurSegment(label: "Hotkey", selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
