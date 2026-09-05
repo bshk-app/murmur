@@ -31,6 +31,44 @@ private final class FakeLiveLane {
 }
 
 final class CaptionEngineTests: XCTestCase {
+    func test_external_correction_does_not_block_live_or_replace_new_phrase() {
+        let live = FakeLiveLane()
+        var speaking = true
+        var pending: [UInt64] = []
+        let engine = CaptionEngine(
+            live: live.make(), isSpeech: { _ in speaking },
+            batch: { _, _ in XCTFail("Synchronous corrector must not run"); return "" },
+            endpointSilence: 0.064,
+            enqueueCorrection: { id, _, _ in pending.append(id) }
+        )
+        engine.step([Float](repeating: 1, count: 1536))
+        speaking = false
+        engine.step([Float](repeating: 0, count: 1536))
+        XCTAssertEqual(pending.count, 1)
+        XCTAssertEqual(engine.snapshot().confirmed.first?.state, .awaitingBatch)
+        let before = live.fedSamples
+        speaking = true
+        engine.step([Float](repeating: 1, count: 1536))
+        XCTAssertGreaterThan(live.fedSamples, before)
+        let draft = engine.snapshot().provisional
+        engine.applyCorrection(pending[0], text: "corrected first phrase")
+        XCTAssertEqual(engine.snapshot().confirmed.first?.text, "corrected first phrase")
+        XCTAssertEqual(engine.snapshot().provisional, draft)
+    }
+
+    func test_silence_does_not_schedule_external_corrector_or_live_asr() {
+        let live = FakeLiveLane()
+        var corrections = 0
+        let engine = CaptionEngine(
+            live: live.make(), isSpeech: { _ in false }, batch: { _, _ in "" },
+            enqueueCorrection: { _, _, _ in corrections += 1 }
+        )
+        for _ in 0..<100 { engine.step([Float](repeating: 0, count: 1536)) }
+        engine.finish()
+        XCTAssertEqual(live.fedSamples, 0)
+        XCTAssertEqual(corrections, 0)
+    }
+
     private let chunk = [Float](repeating: 0, count: 1_536)  // 96 ms
 
     private func makeEngine(
