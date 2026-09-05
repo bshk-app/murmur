@@ -29,7 +29,11 @@ final class DictationController {
     /// than dropped so historical PostHog series stay continuous.
     private static let insertModeAnalyticsValue = "inField"
 
-    private let session: DictationSession
+    // Not private, and a protocol rather than the concrete class: tests
+    // substitute a session so `beginRecording` can be reached without models
+    // or a microphone. Two latches inside it were previously provable only by
+    // reading the code - see `DictationSessioning`.
+    var session: any DictationSessioning
     private let captionSession: CaptionSession
     // Not private: tests assert on the HUD the controller drives - notably
     // that the language badge follows a target changed mid-talk - which is
@@ -115,7 +119,7 @@ final class DictationController {
 
     /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
     /// reuses it instead of spinning up a second `DictationSession`.
-    var dictationSession: DictationSession { session }
+    var dictationSession: any DictationSessioning { session }
 
     @ObservationIgnored private var promptedAccessibility = false
     @ObservationIgnored private var isPreparing = false
