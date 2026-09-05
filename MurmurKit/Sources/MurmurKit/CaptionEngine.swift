@@ -32,6 +32,7 @@ final class CaptionEngine {
     private let live: LiveLane
     private let isSpeech: ([Float]) -> Bool
     private let batch: (Range<Int>, [Float]) -> String
+    private let enqueueCorrection: ((UInt64, Range<Int>, [Float]) -> Void)?
     private let frameSamples = 512      // Silero's 32 ms frame
     private let preRollSamples: Int
 
@@ -48,12 +49,14 @@ final class CaptionEngine {
         batch: @escaping (Range<Int>, [Float]) -> String,
         endpointSilence: Double = 0.48,
         preRoll: Double = 0.288,
-        maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds
+        maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds,
+        enqueueCorrection: ((UInt64, Range<Int>, [Float]) -> Void)? = nil
     ) {
         self.live = live
         self.isSpeech = isSpeech
         self.preRollSamples = Int(preRoll * Double(Self.sampleRate))
         self.batch = batch
+        self.enqueueCorrection = enqueueCorrection
         let rate = Double(Self.sampleRate)
         self.policy = SpeechBoundaryPolicy(
             frameSamples: frameSamples,
@@ -98,6 +101,13 @@ final class CaptionEngine {
     }
 
     func snapshot() -> CaptionSnapshot { transcript.snapshot() }
+
+    /// Called on the policy owner's executor when a separate backend finishes.
+    /// Segment IDs prevent a late correction from replacing newer speech.
+    func applyCorrection(_ id: UInt64, text: String) {
+        transcript.confirm(id, text: text)
+        transcript.trimConfirmed(keep: Self.confirmedHistory)
+    }
 
     /// Samples held for the batch pass — the buffer this loop must keep bounded.
     var bufferedSamples: Int { audio.count }
@@ -173,7 +183,12 @@ final class CaptionEngine {
             transcript.confirm(id, text: "")
             return
         }
-        transcript.confirm(id, text: batch(range, audio.slice(range)))
+        let samples = audio.slice(range)
+        if let enqueueCorrection {
+            enqueueCorrection(id, range, samples)
+        } else {
+            transcript.confirm(id, text: batch(range, samples))
+        }
         transcript.trimConfirmed(keep: Self.confirmedHistory)
         audio.discard(before: range.upperBound)
     }
