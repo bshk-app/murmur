@@ -36,6 +36,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate, SPUS
     private var didStartMenuApp = false
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // A unit-test bundle for an app target is loaded *into* the app, so the
+        // app launches for every test run. Left alone it would register global
+        // hotkeys, raise the microphone prompt and load multi-gigabyte models on
+        // the developer's machine — and MLX in Debug crashes doing it. Tests get
+        // an inert host: they link the code without the app coming to life.
+        if NSClassFromString("XCTestCase") != nil { return }
         // Analytics is optional: no API key → never initialize (e.g. a privacy/App
         // Store build); key present but consent off → set up then opt out, which makes
         // every `capture(…)` a no-op. Audio/transcripts are never sent regardless.

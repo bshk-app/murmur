@@ -27,7 +27,7 @@ XCB = tuist xcodebuild build -workspace $(WORKSPACE) -scheme $(SCHEME) \
 	-configuration Release -destination 'generic/platform=macOS' -allowProvisioningUpdates \
 	ARCHS=arm64 ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO
 
-.PHONY: gen build run clean cli run-cli bench
+.PHONY: gen build run clean cli run-cli bench test-app
 
 gen:
 	tuist generate --no-open
@@ -35,6 +35,13 @@ gen:
 build: gen
 	$(XCB)
 
+# App-layer tests. Debug: these are pure decision/declaration checks with no
+# MLX in the path, so the Release caveat above does not apply and Debug links
+# far quicker.
+test-app: gen
+	tuist xcodebuild test -workspace $(WORKSPACE) -scheme $(SCHEME) -only-testing:MurmurTests \
+		-configuration Debug -destination 'platform=macOS,arch=arm64' \
+		-allowProvisioningUpdates ONLY_ACTIVE_ARCH=YES SWIFT_ENABLE_EXPLICIT_MODULES=NO
 run: build
 	-killall Murmur 2>/dev/null          # quit a stale background agent so `open` launches the fresh build
 	@sleep 1                             # let it fully die — else `open` races LaunchServices (-600)
