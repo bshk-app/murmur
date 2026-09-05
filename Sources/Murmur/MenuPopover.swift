@@ -265,6 +265,13 @@ struct MenuPopover: View {
                     .labelsHidden()
                     .pickerStyle(.menu)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    // Changing this mid-utterance never reached the running
+                    // recogniser anyway - it was already handed a language -
+                    // so an enabled control was offering something it could
+                    // not do. `DictationController.dictationSource` makes the
+                    // stale choice harmless; this makes it un-offerable, and
+                    // matches Translate to, which is disabled here too.
+                    .disabled(dictation.isActive)
                 }
                 Text("\u{2192}")
                     .font(.system(size: 12))

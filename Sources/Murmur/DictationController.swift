@@ -70,6 +70,28 @@ final class DictationController {
     /// session `beginCaptions()` would otherwise require.
     @ObservationIgnored var captionSource: String?
     @ObservationIgnored var captionTarget: String?
+    /// The language *this utterance* was recognised in, latched when the
+    /// recogniser was started.
+    ///
+    /// The same pinning captions already do, and for a stronger reason. The
+    /// target may be re-read at stop - it is a choice about the output, and
+    /// honouring the latest one is a feature. The source is not a choice: it
+    /// is a fact about what the recogniser was told, already baked into the
+    /// text it produced. Re-reading it at stop meant that changing Language
+    /// mid-utterance (easy in toggle mode, where the menu stays reachable)
+    /// translated Russian speech as though it were German - a wrong answer
+    /// with no error anywhere. Not `private`: tests assert the latch survives
+    /// a mid-utterance picker change.
+    @ObservationIgnored var dictationSource: String?
+
+    /// What a finished utterance's translation routes *from*.
+    ///
+    /// The session's latch, never the live picker. One place rather than an
+    /// expression at the call site so the rule has somewhere to be stated and
+    /// somewhere to be tested. The fallback covers only a stop with no start
+    /// behind it, where there is no recognised text to be wrong about.
+    var translationSource: String { dictationSource ?? SpeechLanguage.current }
+
     /// Bumped whenever a caption session starts or stops, and - see the
     /// comment inside `translateCaptions` - on every snapshot too.
     ///
@@ -557,6 +579,9 @@ final class DictationController {
                 microphoneUID: MicrophoneSetting.currentUID
             )
             captionsRunning = false
+            // Latched here, beside the recogniser that was just handed it, so
+            // stop cannot read a different answer than start used.
+            dictationSource = language
             latchedToggle = toggle
             state = .recording
             PostHogSDK.shared.capture("dictation_started", properties: [
@@ -741,10 +766,11 @@ final class DictationController {
         if captionsRunning { return endCaptions() }
         let modelModeAtStop = ModelSetting.current.rawValue
         let submitAtStop = submitOnFinish
-        // Read once, at stop: the user could change the target while the batch
-        // pass runs, and half of an utterance in one language is worse than all
-        // of it in the language they asked for when they started.
-        let sourceAtStop = SpeechLanguage.current
+        // The target is read fresh at stop on purpose: the user may change it
+        // while the batch pass runs, and half an utterance in one language is
+        // worse than all of it in the language they asked for. The source is
+        // the opposite case - see `translationSource`.
+        let sourceAtStop = translationSource
         let targetAtStop = TranslationSetting.target
         // The mic is already closed by `stop()`, so the overlay must stop looking
         // like it is listening while the batch pass runs.
