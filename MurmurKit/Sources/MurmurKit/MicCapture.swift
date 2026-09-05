@@ -17,6 +17,7 @@ final class MicCapture: @unchecked Sendable {
 
     /// Fixed-size 16 kHz mono chunks delivered on the capture queue.
     var onChunk: ([Float]) -> Void = { _ in }
+    var onCapture: (Int, Double, Float, String?) -> Void = { _, _, _, _ in }
 
     // 96 ms @ 16 kHz. Hybrid now only runs Nemotron live, so the old 480 ms
     // feed (a two-model MLX-overhead workaround) is no longer required.
@@ -78,6 +79,9 @@ final class MicCapture: @unchecked Sendable {
     }
 
     private func ingest(_ buffer: AVAudioPCMBuffer) {
+        let rawPeak = buffer.floatChannelData.map { channel in
+            (0..<Int(buffer.frameLength)).reduce(Float(0)) { max($0, abs(channel[0][$1])) }
+        } ?? 0
         guard let outFmt, let converter else { return }
         let ratio = outFmt.sampleRate / buffer.format.sampleRate
         let cap = AVAudioFrameCount(Double(buffer.frameLength) * ratio) + 16
@@ -91,6 +95,7 @@ final class MicCapture: @unchecked Sendable {
             status.pointee = .haveData
             return buffer
         }
+        onCapture(Int(out.frameLength), buffer.format.sampleRate, rawPeak, err?.localizedDescription)
         guard err == nil, out.frameLength > 0, let ch = out.floatChannelData else { return }
         enqueue(Array(UnsafeBufferPointer(start: ch[0], count: Int(out.frameLength))))
     }

@@ -24,6 +24,7 @@ public final class TwoTierEngine {
 
     private let nemotronRepo: String
     private let parakeetRepo: String
+    private let parakeetANE: Bool
     private let nemotronModel = AsyncMemo<NemotronASRModel>()
     private let parakeetModel = AsyncMemo<ParakeetModel>()
     private let vadModel = AsyncMemo<SpeechBoundaryDetector>()
@@ -35,11 +36,13 @@ public final class TwoTierEngine {
     public init(
         nemotronRepo: String = defaultNemotronRepo,
         parakeetRepo: String = defaultParakeetRepo,
-        memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes
+        memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes,
+        parakeetANE: Bool = false
     ) {
         GPU.set(memoryLimit: memoryLimitBytes, relaxed: false)
         self.nemotronRepo = nemotronRepo
         self.parakeetRepo = parakeetRepo
+        self.parakeetANE = parakeetANE
     }
 
     public func prepare(_ mode: DictationMode) async throws {
@@ -111,8 +114,9 @@ public final class TwoTierEngine {
 
     private func loadParakeet() async throws -> ParakeetModel {
         let repo = parakeetRepo
+        let useANE = parakeetANE
         return try await parakeetModel.get {
-            try await ParakeetModel.fromPretrained(repo)
+            try await ParakeetModel.fromPretrained(repo, aneEncoder: useANE ? .lowPower : .off)
         }
     }
 

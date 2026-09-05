@@ -15,7 +15,7 @@ public final class SpeechModels: @unchecked Sendable {
     /// MurmurKit's business, and callers only need to pass this object around.
     let engine: STTEngine
 
-    public init() {
-        self.engine = STTEngine()
+    public init(memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes, parakeetANE: Bool = false) {
+        self.engine = STTEngine(memoryLimitBytes: memoryLimitBytes, parakeetANE: parakeetANE)
     }
 }
