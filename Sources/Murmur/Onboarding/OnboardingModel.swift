@@ -34,13 +34,13 @@ final class OnboardingModel {
     /// Retry never spawn two concurrent downloads.
     @ObservationIgnored private var downloadStarted = false
 
-    private let session: DictationSession
+    private let session: any DictationSessioning
 
     /// Polls AX trust while the Permissions step is open — there's no
     /// notification for Accessibility-trust changes, so we have to ask.
     @ObservationIgnored private var accPollTimer: Timer?
 
-    init(session: DictationSession) { self.session = session }
+    init(session: any DictationSessioning) { self.session = session }
 
     // MARK: navigation
 
@@ -224,6 +224,10 @@ final class OnboardingModel {
         do {
             try session.start(
                 mode: .hybrid,
+                // Was the `start` default before the session became a
+                // protocol; spelled out because try-it runs before the user
+                // has chosen a language, so detection is the point.
+                language: SpeechLanguage.automatic,
                 microphoneUID: MicrophoneSetting.currentUID
             )
             tryListening = true
