@@ -21,7 +21,23 @@ enum Mur {
         scheme == .dark ? Color.white.opacity(0.97) : ink
     }
 
-    /// Fast-draft (provisional) transcript ink per appearance.
+    /// Secondary text: present, but not competing with the transcript.
+    ///
+    /// `rgba(255,255,255,.66)` in MurMur.dc.html's "Live translation" block,
+    /// where it paints a settled translation word. Deliberately not accent:
+    /// accent already means something in this HUD - the newest confirmed word
+    /// flashes in it - and with that flash sitting directly above the
+    /// translation the two read as one block.
+    static func secondary(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.white.opacity(0.66) : ink.opacity(0.66)
+    }
+
+    /// The hairline between transcript and translation: `rgba(255,255,255,.1)`
+    /// in the design's dark HUD, mirrored onto ink for the light theme.
+    static func hairline(_ scheme: ColorScheme) -> Color {
+        scheme == .dark ? Color.white.opacity(0.10) : ink.opacity(0.10)
+    }
+
     static func draft(_ scheme: ColorScheme) -> Color {
         scheme == .dark ? Color.white.opacity(0.34) : ink.opacity(0.34)
     }
@@ -157,6 +173,17 @@ enum TranslationSetting {
     static func canTranslate(from source: String) -> Bool {
         guard let target, source != SpeechLanguage.automatic else { return false }
         return LanguagePair.route(from: source, to: target) != nil
+    }
+
+    /// The target tag for the HUD's `RU → EN` badge, or `""` when this
+    /// utterance will not be translated.
+    ///
+    /// Gated on `canTranslate` rather than on `target` alone: an unroutable
+    /// pairing pastes the original transcript, so a badge promising `→ EN`
+    /// there would be advertising something that never arrives.
+    static func badge(dictating source: String) -> String {
+        guard canTranslate(from: source), let target else { return "" }
+        return target.uppercased()
     }
 }
 

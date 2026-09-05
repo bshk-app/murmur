@@ -31,9 +31,24 @@ final class HUDModel {
     /// has not arrived, and the pill stays one line — the row is not reserved,
     /// so plain dictation looks exactly as it did.
     var translation = ""
+    /// Whether `translation` came from the CTranslate2 quality engine rather
+    /// than the fast fallback. Purely informational - the same text is pasted
+    /// either way - so it drives a small label, not a layout change.
+    var translationIsQuality = false
     /// The translation is being produced. Shown as its own line so the pill
     /// does not resize twice: once for the placeholder, once for the text.
     var translating = false
+    /// Single source of truth for "is the second line on screen right now" -
+    /// shared by the view (whether to render `translationLine`) and the panel
+    /// (whether to reserve the extra height it needs), so the two can never
+    /// drift into a window sized for one answer while the view renders the
+    /// other.
+    var showsTranslationRow: Bool { !translation.isEmpty || translating }
+    /// The language being translated into, as a badge tag ("EN"), or empty
+    /// when the mode is off. The design pairs it with `lang` as
+    /// `{{ langTag }} → {{ targetTag }}`: the second line is much easier to
+    /// read as deliberate once the header says where it is going.
+    var target = ""
     var onStop: () -> Void = {}
 }
 
@@ -119,16 +134,35 @@ private struct HUDView: View {
             }
             Spacer(minLength: 8)
             if model.submits { submitBadge }
-            Text(model.lang.uppercased())
-                .font(.system(size: 10, weight: .medium)).tracking(0.4)
-                .foregroundStyle(scheme == .dark ? Color.white.opacity(0.4) : Mur.ink.opacity(0.5))
-                .padding(.horizontal, 7).padding(.vertical, 3)
-                .background(scheme == .dark ? Color.white.opacity(0.08) : Mur.ink.opacity(0.07),
-                            in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+            langBadge
             if model.showStop { stopButton }
         }
     }
 
+    /// `RU` alone, or `RU → EN` while translating, with the target in accent.
+    ///
+    /// The arrow is what makes the second line legible as a translation rather
+    /// than as a stray grey paragraph, so it is the badge - not the type - that
+    /// carries the explanation. Accent is safe on the target tag: it sits in
+    /// the header, far from the transcript's newest-word flash, so the two
+    /// never merge into one block the way an accent-coloured second line did.
+    private var langBadge: some View {
+        let translating = !model.target.isEmpty
+        return HStack(spacing: 5) {
+            Text(model.lang.uppercased())
+            if translating {
+                Text("\u{2192}").opacity(0.5)
+                Text(model.target.uppercased()).foregroundStyle(Mur.accent)
+            }
+        }
+        .font(.system(size: 10, weight: .medium)).tracking(0.4)
+        .foregroundStyle(scheme == .dark
+                         ? Color.white.opacity(translating ? 0.45 : 0.4)
+                         : Mur.ink.opacity(0.5))
+        .padding(.horizontal, 7).padding(.vertical, 3)
+        .background(scheme == .dark ? Color.white.opacity(0.08) : Mur.ink.opacity(0.07),
+                    in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+    }
     /// Clickable Stop (toggle mode). The panel accepts mouse events while this shows.
     private var stopButton: some View {
         Button(action: model.onStop) {
@@ -143,12 +177,19 @@ private struct HUDView: View {
 
     // Two-tier coloured transcript + blinking accent caret.
     private var transcribePill: some View {
-        VStack(alignment: .leading, spacing: 9) {
+        let translating = model.showsTranslationRow
+        return VStack(alignment: .leading, spacing: 9) {
             header
             TimelineView(.periodic(from: .now, by: 0.5)) { ctx in
                 let on = Int(ctx.date.timeIntervalSinceReferenceDate / 0.5) % 2 == 0
-                (transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
-                    .font(.system(size: 21))
+                // The caret means "more is still coming here". In translate mode
+                // the live edge is the second line, so a caret on the first one
+                // points at the wrong place - the design drops it there, and
+                // shrinks this line 21 -> 20 to give the translation its room.
+                (translating
+                 ? transcript
+                 : transcript + Text("▏").foregroundStyle(Mur.accent.opacity(on ? 1 : 0)))
+                    .font(.system(size: translating ? 20 : 21))
                     .lineSpacing(6)
                     // Hard layout guard behind the character clamp: whatever slips past
                     // the estimate, the text still cannot outgrow the panel.
@@ -156,7 +197,7 @@ private struct HUDView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
             }
-            if !model.translation.isEmpty || model.translating {
+            if translating {
                 translationLine
             }
         }
@@ -166,16 +207,25 @@ private struct HUDView: View {
         .murPill(scheme, radius: 16, border: borderColor)
     }
 
-    /// The translation, under a hairline, in the accent colour so the two lines
-    /// are never mistaken for one another. Smaller than the transcript on
-    /// purpose: the original is what the recogniser heard and the thing a user
-    /// checks; the translation is what gets pasted and needs no proofreading in
-    /// a language they may not read.
+    /// The translation, under a hairline separator.
+    ///
+    /// Per MurMur.dc.html's "Live translation" block: `400 17px/1.5` in
+    /// `rgba(255,255,255,.66)`, under a `rgba(255,255,255,.1)` rule with 11pt
+    /// of air either side. The hierarchy against the 20pt/500 transcript is
+    /// deliberate - this line is what the machine made of what you said, and
+    /// the header's `RU → EN` badge, not the type, is what explains it.
+    /// No accent here either: accent marks the newest confirmed word directly
+    /// above, and painting the translation with it merged the two into a
+    /// single orange block.
     private var translationLine: some View {
-        VStack(alignment: .leading, spacing: 7) {
+        VStack(alignment: .leading, spacing: 0) {
             Rectangle()
-                .fill(Mur.draft(scheme).opacity(0.25))
+                .fill(Mur.hairline(scheme))
                 .frame(height: 1)
+                // 9 from the enclosing VStack + 2 = the design's 11 above the
+                // rule; 11 below it.
+                .padding(.top, 2)
+                .padding(.bottom, 11)
             if model.translating {
                 Text("Translating\u{2026}")
                     .font(.system(size: 15))
@@ -183,11 +233,20 @@ private struct HUDView: View {
             } else {
                 Text(model.translation)
                     .font(.system(size: 17))
-                    .lineSpacing(4)
-                    .foregroundStyle(Mur.accent)
+                    .lineSpacing(5)
+                    .foregroundStyle(Mur.secondary(scheme))
                     .lineLimit(HUDCapacity.maxLines)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .fixedSize(horizontal: false, vertical: true)
+                // Quiet by design: it says which engine won, not that the fast
+                // one is somehow inferior - most directions have no quality
+                // model at all, and that is the ordinary case, not a warning.
+                if model.translationIsQuality {
+                    Text("Quality translation")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Mur.draft(scheme))
+                        .padding(.top, 7)
+                }
             }
         }
     }
@@ -315,25 +374,58 @@ private extension View {
 
 @MainActor
 final class HUDController {
-    private let model = HUDModel()
+    // Not private: MurmurTests reads it via @testable import to catch state
+    // (like the quality-translation label) leaking across sessions - a real
+    // regression here reads as an obviously wrong label on screen, which is
+    // exactly the kind of bug a test should catch before a person does.
+    let model = HUDModel()
     private var panel: NSPanel?
+    // Not private: a test confirms the panel actually grows to fit a
+    // translation row rather than clipping it - the exact defect a live
+    // screenshot caught, where the fixed-height panel clipped the
+    // translation's last line at the window edge.
+    var panelSize: CGSize? { panel?.frame.size }
     private var hideWork: DispatchWorkItem?
-    private let size = NSSize(width: 940, height: 260)
+    private static let baseSize = NSSize(width: 940, height: 260)
+    /// Extra room the translation row needs at its worst case: the hairline,
+    /// the 11pt of air either side of it, up to `HUDCapacity.maxLines` lines
+    /// at the translation's own 17pt/1.5 (25.5pt each, per the design), and
+    /// the "Quality translation" label with its 7pt gap: 2 + 1 + 11 + 127.5 +
+    /// 20 = 161.5, rounded up. `baseSize` was sized for the transcript alone -
+    /// see `HUDCapacity`'s doc comment for that derivation - so a translation
+    /// showing needs this added on top of it, not instead of it. Kept tight
+    /// rather than generously over-reserved because in toggle mode the panel
+    /// takes mouse events (`ignoresMouseEvents = !interactive`), so spare
+    /// height is not free: it would swallow clicks above the pill.
+    private static let translationExtraHeight: CGFloat = 165
+    /// `baseSize` plus room for the translation row exactly when one is on
+    /// screen (`HUDModel.showsTranslationRow`), so plain dictation keeps the
+    /// panel it always had and nothing is clipped when a second line joins
+    /// it. Read fresh rather than cached: it must reflect `model` at the
+    /// moment a resize actually happens, not whatever it was when the panel
+    /// was first created.
+    private var currentSize: NSSize {
+        NSSize(width: Self.baseSize.width,
+               height: Self.baseSize.height + (model.showsTranslationRow ? Self.translationExtraHeight : 0))
+    }
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
-    func begin(lang: String, interactive: Bool = false, submits: Bool = false,
+    func begin(lang: String, target: String = "", interactive: Bool = false, submits: Bool = false,
                shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
         model.lang = lang
+        model.target = target
         model.submits = submits
         model.shortcutLabel = shortcutLabel
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         // A translation left from the previous utterance under a fresh one
-        // would read as a translation of it.
+        // would read as a translation of it - and the quality label would
+        // misdescribe it too, since captions never use the quality engine.
         model.translation = ""
+        model.translationIsQuality = false
         model.translating = false
         model.recording = true
         model.showStop = interactive
@@ -346,6 +438,36 @@ final class HUDController {
     }
 
     /// Live two-tier update.
+    /// The rolling translation of a caption session.
+    ///
+    /// Separate from `finish(_:delivery:translation:)` because captions have no
+    /// finish: the second line is rewritten as phrases close, for as long as
+    /// the talk runs. Clearing it when it goes empty means switching translation
+    /// off mid-session takes the line away rather than freezing the last value
+    /// on screen.
+    /// Repoint the header badge mid-talk.
+    ///
+    /// `begin` stamps the target once, which is enough for dictation - one
+    /// utterance, one setting. Captions run for as long as the talk does and
+    /// the picker stays live throughout, so the badge has to follow it: a
+    /// header reading `RU → EN` over German, or over a second line that
+    /// translation was just switched off for, is a promise the pill no longer
+    /// keeps. `""` means "no target", which drops the arrow entirely.
+    func setTranslationTarget(_ target: String) {
+        guard panel != nil else { return }
+        model.target = target
+    }
+    func showTranslation(_ text: String) {
+        model.translating = false
+        model.translation = text
+        // Captions only ever run the fast engine (CaptionTranslator has no
+        // quality path) - explicit here rather than relying on `begin` having
+        // zeroed it once, so a caption session can never show a label a
+        // previous dictation utterance left set.
+        model.translationIsQuality = false
+        resizeForCurrentTranslationState()
+    }
+
     func update(confirmed: String, partial: String) {
         show(confirmed: confirmed, partial: partial)
         if model.phase != .error, model.recording {
@@ -392,17 +514,21 @@ final class HUDController {
     func translating() {
         guard panel != nil else { return }
         model.translating = true
+        resizeForCurrentTranslationState()
     }
 
     /// End the presentation according to what happened to the transcript. An
     /// explicit stop dismisses at once; only undelivered text earns a wait.
-    func finish(_ finalText: String, delivery: TranscriptDelivery, translation: String = "") {
+    func finish(_ finalText: String, delivery: TranscriptDelivery, translation: String = "",
+               translationIsQuality: Bool = false) {
         guard panel != nil else { return }
         model.recording = false
         model.showStop = false
         let policy = StopPresentation.policy(for: delivery, textIsEmpty: finalText.isEmpty)
         model.translating = false
         model.translation = translation
+        model.translationIsQuality = translationIsQuality
+        resizeForCurrentTranslationState()
         if policy.showsText, !finalText.isEmpty {
             show(confirmed: finalText, partial: "")
             model.phase = .finished
@@ -432,7 +558,7 @@ final class HUDController {
 
     private func ensurePanel() -> NSPanel {
         if let panel { return panel }
-        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: size),
+        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: currentSize),
                             styleMask: [.nonactivatingPanel, .borderless],
                             backing: .buffered, defer: false)
         panel.isOpaque = false
@@ -445,16 +571,34 @@ final class HUDController {
         panel.hidesOnDeactivate = false
         panel.ignoresMouseEvents = true
         let host = NSHostingView(rootView: HUDView(model: model))
-        host.frame = NSRect(origin: .zero, size: size)
+        host.frame = NSRect(origin: .zero, size: currentSize)
         host.autoresizingMask = [.width, .height]
         panel.contentView = host
         self.panel = panel
         return panel
     }
 
+    /// Height only, growing upward: the panel's bottom-left origin (AppKit's
+    /// frame is bottom-anchored) is exactly where the pill's own
+    /// `alignment: .bottom` already sits it, so changing only `size.height`
+    /// and leaving `origin` alone extends the frame upward without moving
+    /// the pill or re-querying which screen it belongs on. `position(_:)`
+    /// does the fuller job (screen + both axes) for a new utterance;
+    /// mid-utterance the translation row can arrive or clear on its own, and
+    /// re-running the screen lookup then - the cursor may since have moved
+    /// to a different display - would be a surprising reason for the panel
+    /// to jump.
+    private func resizeForCurrentTranslationState() {
+        guard let panel else { return }
+        var frame = panel.frame
+        frame.size.height = currentSize.height
+        panel.setFrame(frame, display: true)
+    }
+
     private func position(_ panel: NSPanel) {
         guard let screen = Self.targetScreen() else { return }
         let v = screen.visibleFrame
+        let size = currentSize
         panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,
                               width: size.width, height: size.height), display: true)
     }

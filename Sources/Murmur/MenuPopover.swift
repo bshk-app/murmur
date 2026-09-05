@@ -129,12 +129,13 @@ struct MenuPopover: View {
     /// pins every file's compressed length, so the fraction is measured bytes
     /// rather than an invented percentage.
     @ViewBuilder
-    private func translationProgress(_ download: DictationController.TranslationDownload) -> some View {
+    private func translationProgress(_ download: DictationController.TranslationDownload,
+                                     label: String = "translation model") -> some View {
         VStack(alignment: .leading, spacing: 5) {
             ProgressView(value: download.fraction)
                 .progressViewStyle(.linear)
                 .tint(Mur.accent)
-            Text("Downloading translation model \(Self.megabytes(download.receivedBytes)) of "
+            Text("Downloading \(label) \(Self.megabytes(download.receivedBytes)) of "
                  + "\(Self.megabytes(download.totalBytes)) MB")
                 .font(.system(size: 11.5))
                 .foregroundStyle(tertiary)
@@ -160,6 +161,57 @@ struct MenuPopover: View {
         case nil:
             return "No model for this pair \u{2014} dictation is pasted untranslated."
         }
+    }
+
+    /// The quality-model control: nothing for the 28/30 directions that have
+    /// no CTranslate2 conversion yet, a download button for one that does but
+    /// is not installed, a progress bar while it fetches, or a quiet
+    /// confirmation once it has landed. Placed under the fast tier's own note
+    /// so the two read as one "translation" section rather than two.
+    @ViewBuilder
+    private var qualitySection: some View {
+        if let pair = dictation.qualityCandidatePair, dictation.qualityModelIsOffered(for: pair) {
+            if dictation.qualityModelIsInstalled(for: pair) {
+                HStack(spacing: 5) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Mur.accent)
+                    Text("Quality model installed \u{2014} pasted text uses it automatically.")
+                        .font(.system(size: 11.5))
+                        .foregroundStyle(tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 7)
+            } else if let download = dictation.qualityDownload(for: pair) {
+                translationProgress(download, label: "quality model")
+            } else {
+                VStack(alignment: .leading, spacing: 4) {
+                    Button {
+                        dictation.downloadQualityModel(for: pair)
+                        PostHogSDK.shared.capture("quality_model_download_started", properties: [
+                            "pair": pair.description,
+                        ])
+                    } label: {
+                        Text("Download quality model (\(qualityModelSize(for: pair)))")
+                            .font(.system(size: 11.5)).foregroundStyle(Mur.accent)
+                    }
+                    .buttonStyle(.plain)
+                    if let error = dictation.qualityDownloadError(for: pair) {
+                        Text(error)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.red)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.top, 7)
+            }
+        }
+    }
+
+    private func qualityModelSize(for pair: LanguagePair) -> String {
+        guard let bytes = TranslationDownloader.expectedDownloadBytes(for: pair, kind: .quality)
+        else { return "" }
+        return "~\(Self.megabytes(bytes)) MB"
     }
 
     private var settings: some View {
@@ -198,28 +250,47 @@ struct MenuPopover: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 7)
             }
-            label("Language").padding(.top, 11)
-            Picker("Language", selection: $languageRaw) {
-                ForEach(languageCodes, id: \.self) { code in
-                    Text(SpeechLanguage.displayName(for: code)).tag(code)
+            // Side by side with an arrow between, per MurMur.dc.html's
+            // "language → translate to" row: the pair is one decision - what is
+            // heard, and what comes out - and stacking them read as two
+            // unrelated settings that happened to sit next to each other.
+            HStack(alignment: .bottom, spacing: 9) {
+                VStack(alignment: .leading, spacing: 0) {
+                    label("Language")
+                    Picker("Language", selection: $languageRaw) {
+                        ForEach(languageCodes, id: \.self) { code in
+                            Text(SpeechLanguage.displayName(for: code)).tag(code)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                Text("\u{2192}")
+                    .font(.system(size: 12))
+                    .foregroundStyle(tertiary)
+                    .padding(.bottom, 6)
+                VStack(alignment: .leading, spacing: 0) {
+                    label("Translate to")
+                    Picker("Translate to", selection: $translateToRaw) {
+                        Text("Off").tag(TranslationSetting.off)
+                        ForEach(TranslationSetting.offered(dictating: languageRaw), id: \.self) { code in
+                            Text(SpeechLanguage.displayName(for: code)).tag(code)
+                        }
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    // Automatic detection has no source language to route from, so the
+                    // choice is unavailable rather than silently ineffective.
+                    .disabled(dictation.isActive || languageRaw == SpeechLanguage.automatic)
                 }
             }
-            .labelsHidden()
-            .pickerStyle(.menu)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            label("Translate to").padding(.top, 11)
-            Picker("Translate to", selection: $translateToRaw) {
-                Text("Off").tag(TranslationSetting.off)
-                ForEach(TranslationSetting.offered(dictating: languageRaw), id: \.self) { code in
-                    Text(SpeechLanguage.displayName(for: code)).tag(code)
-                }
-            }
-            .labelsHidden()
-            .pickerStyle(.menu)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            // Automatic detection has no source language to route from, so the
-            // choice is unavailable rather than silently ineffective.
-            .disabled(dictation.isActive || languageRaw == SpeechLanguage.automatic)
+            .padding(.top, 11)
+            // `.disabled` lives on the Translate-to column above, not here: on
+            // the row it would grey out the Language picker too, and Language
+            // is exactly what you would reach for to make translation possible
+            // again.
             // Fetch on choice, not on first use: 20 MB between the stop gesture
             // and the paste would stall the one moment that must feel instant.
             .onChange(of: translateToRaw) { dictation.prepareTranslation() }
@@ -235,6 +306,7 @@ struct MenuPopover: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 7)
             }
+            qualitySection
             label("Hotkey").padding(.top, 11)
             MurSegment(label: "Hotkey", selection: $triggerRaw,
                        options: [(TriggerMode.hold.rawValue, "Hold"),
