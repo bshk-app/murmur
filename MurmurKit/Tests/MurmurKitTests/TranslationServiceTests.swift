@@ -98,6 +98,60 @@ final class TranslationServiceTests: XCTestCase {
         XCTAssertTrue(resident.contains("fi-en"))
     }
 
+    // MARK: the quality tier at paste time
+
+    func test_translateBestOrEmpty_falls_back_to_fast_when_no_quality_model_is_present() async throws {
+        let service = try service()
+        // fi-en has a fast (bergamot) model at this root but no quality
+        // conversion exists for it anywhere - the CT2 tier only covers
+        // ru-en/en-ru so far - so this is the everyday case: translateBest
+        // degrading to the fast engine without treating that as a failure.
+        guard FileManager.default.fileExists(
+            atPath: modelsRoot.appendingPathComponent("moz-fien").path)
+        else { throw XCTSkip("fi-en fast model not installed") }
+        let outcome = await service.translateBestOrEmpty(
+            "Lähetän asiakirjat huomenna.", from: "fi", to: "en")
+        XCTAssertFalse(outcome.text.isEmpty)
+        XCTAssertFalse(outcome.usedQuality)
+        let failures = await service.failures
+        XCTAssertTrue(failures.isEmpty, "a missing quality model is not a failure: \(failures)")
+    }
+
+    /// The one direction this dev machine actually has a quality conversion
+    /// for. Where `translateBestOrEmpty` genuinely gets to use CTranslate2
+    /// rather than fall back - the fallback path above proves the *degrade*,
+    /// this proves the *upgrade* actually engages when the model is present.
+    func test_translateBestOrEmpty_uses_the_quality_engine_when_installed() async throws {
+        let service = try service()
+        guard FileManager.default.fileExists(
+            atPath: modelsRoot.appendingPathComponent("ct2-ruen/model.bin").path)
+        else { throw XCTSkip("ru-en quality model not installed") }
+        let outcome = await service.translateBestOrEmpty(
+            "Я пришлю документы завтра.", from: "ru", to: "en")
+        XCTAssertTrue(outcome.text.lowercased().contains("tomorrow"), outcome.text)
+        XCTAssertTrue(outcome.usedQuality, "a present model should be used, not skipped")
+    }
+
+    func test_translateBestOrEmpty_swallows_an_unsupported_pair() async {
+        let service = TranslationService(modelsRoot: modelsRoot)
+        let outcome = await service.translateBestOrEmpty("x", from: "ru", to: "mt")
+        XCTAssertEqual(outcome.text, "")
+        XCTAssertFalse(outcome.usedQuality)
+        let failures = await service.failures
+        XCTAssertEqual(failures.count, 1)
+    }
+
+    func test_translateBestOrEmpty_matches_identity_and_blank_input_shortcuts() async throws {
+        let service = TranslationService(modelsRoot: modelsRoot)
+        let identity = await service.translateBestOrEmpty("ничего не делать", from: "ru", to: "ru")
+        XCTAssertEqual(identity.text, "ничего не делать")
+        XCTAssertFalse(identity.usedQuality)
+
+        let blank = await service.translateBestOrEmpty("  \n ", from: "ru", to: "en")
+        XCTAssertEqual(blank.text, "")
+        XCTAssertFalse(blank.usedQuality)
+    }
+
     // MARK: the fast-loop gate
 
     func test_languages_with_an_unreliable_preview_lose_the_live_draft() {

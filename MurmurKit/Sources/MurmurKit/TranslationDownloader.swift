@@ -114,6 +114,50 @@ public actor TranslationDownloader {
                 return "\(pair[..<cut])-\(pair[cut...])"
             },
             compressionSuffix: ".gz")
+
+        /// Our own CTranslate2 conversions of the Helsinki tc-big models, used
+        /// for the text that actually gets pasted.
+        ///
+        /// Served uncompressed: gzip takes 248.9 MB to 227.0 MB on int8
+        /// weights, and inflating a quarter of a gigabyte is not worth 8.8%.
+        public static let murmurQualityMirror = Source(
+            baseURL: URL(string:
+                "https://huggingface.co/beshkenadze/murmur-translation-ct2/resolve/main")!,
+            directoryName: { pair in
+                let cut = pair.index(pair.startIndex, offsetBy: 2)
+                return "\(pair[..<cut])-\(pair[cut...])"
+            },
+            compressionSuffix: "")
+    }
+
+    /// Which tier of model a downloader instance installs.
+    ///
+    /// One instance serves one kind. The download machinery below - staging
+    /// registry, sweep-before-space-check, digest verification, the join/cancel
+    /// guard - is identical for both and was hard enough to get right once;
+    /// a second downloader would have to re-earn all of it.
+    public enum Kind: String, Sendable {
+        /// bergamot student, ~22 MB, installed for every chosen direction.
+        case fast
+        /// opus-mt tc-big under CTranslate2, ~253 MB, installed on demand.
+        case quality
+
+        func directoryName(for pair: LanguagePair) -> String {
+            switch self {
+            case .fast: return pair.modelDirectoryName
+            case .quality: return pair.qualityModelDirectoryName
+            }
+        }
+
+        /// The file whose presence means "installed". For the fast tier that is
+        /// the generated config, which is written last; for the quality tier
+        /// there is no generated file, so it is the weights.
+        var sentinelFile: String {
+            switch self {
+            case .fast: return "config.bergamot.yml"
+            case .quality: return "model.bin"
+            }
+        }
     }
 
     public enum Err: Error, Equatable {
@@ -128,11 +172,19 @@ public actor TranslationDownloader {
         case notGzip(file: String)
         case inflateFailed(file: String)
         case insufficientSpace(needed: Int64, available: Int64)
+        /// A quality download is already writing to disk. Quality downloads
+        /// are serialized (see `StagingRegistry`'s quality slot) rather than
+        /// space-checked against each other's live progress, so this is the
+        /// honest refusal for a second one arriving mid-download, not a
+        /// disk-space problem.
+        case qualityDownloadBusy
     }
 
     private let source: Source
+    private let kind: Kind
     private let root: URL
     private let fetcher: Fetch
+    private let freeSpace: FreeSpace
     private let onProgress: @MainActor @Sendable (Progress) -> Void
     private var progress = Progress()
     /// Bytes from files already finished, so the fraction keeps climbing across
@@ -140,12 +192,16 @@ public actor TranslationDownloader {
     private var completedBytes: Int64 = 0
 
     private init(source: Source,
+                 kind: Kind,
                  root: URL,
                  fetcher: @escaping Fetch,
+                 freeSpace: @escaping FreeSpace = TranslationDownloader.realFreeSpace,
                  onProgress: @escaping @MainActor @Sendable (Progress) -> Void) {
         self.source = source
+        self.kind = kind
         self.root = root
         self.fetcher = fetcher
+        self.freeSpace = freeSpace
         self.onProgress = onProgress
     }
 
@@ -162,13 +218,25 @@ public actor TranslationDownloader {
     public static func download(
         pair: LanguagePair,
         into root: URL,
-        from source: Source = .mozillaMirror,
+        kind: Kind = .fast,
+        from source: Source? = nil,
         fetcher: @escaping Fetch = TranslationDownloader.streamingFetch,
+        freeSpace: @escaping FreeSpace = TranslationDownloader.realFreeSpace,
         onProgress: @escaping @MainActor @Sendable (Progress) -> Void = { _ in }
     ) async throws -> URL {
-        let downloader = TranslationDownloader(source: source, root: root,
-                                               fetcher: fetcher, onProgress: onProgress)
-        let key = "\(root.standardizedFileURL.path)|\(pair.modelDirectoryName)"
+        // Each kind has exactly one mirror it can come from, so the default is
+        // derived rather than passed. An explicit `source` is still accepted,
+        // for tests that serve from a local file URL.
+        let resolved = source ?? (kind == .quality ? .murmurQualityMirror
+                                                   : .mozillaMirror)
+        let downloader = TranslationDownloader(source: resolved, kind: kind,
+                                               root: root,
+                                               fetcher: fetcher, freeSpace: freeSpace,
+                                               onProgress: onProgress)
+        // Keyed by the install directory, which already differs per kind
+        // (`moz-ruen` against `ct2-ruen`), so a fast and a quality download of
+        // the same direction do not share a task.
+        let key = "\(root.standardizedFileURL.path)|\(kind.directoryName(for: pair))"
         return try await awaitShared(key: key) {
             try await downloader.run(pair: pair)
         }
@@ -260,14 +328,15 @@ public actor TranslationDownloader {
     ///
     /// Presence only — the digest was checked when the file was written, and
     /// re-hashing 17 MB before each utterance would cost more than it protects.
-    public static func isInstalled(pair: LanguagePair, in root: URL) -> Bool {
-        guard let items = try? artifacts(for: pair) else { return false }
-        let directory = root.appendingPathComponent(pair.modelDirectoryName)
+    public static func isInstalled(pair: LanguagePair, in root: URL,
+                                   kind: Kind = .fast) -> Bool {
+        guard let items = try? artifacts(for: pair, kind: kind) else { return false }
+        let directory = root.appendingPathComponent(kind.directoryName(for: pair))
         return items.allSatisfy {
             FileManager.default.fileExists(
                 atPath: directory.appendingPathComponent($0.localName).path)
         } && FileManager.default.fileExists(
-            atPath: directory.appendingPathComponent("config.bergamot.yml").path)
+            atPath: directory.appendingPathComponent(kind.sentinelFile).path)
     }
 
     /// Total compressed bytes for one direction, from the pinned manifest, or
@@ -277,19 +346,38 @@ public actor TranslationDownloader {
     /// has to know the whole size before the first byte moves. Without it the
     /// only honest bar for a pivot would be per-leg, and legs are not equal:
     /// 17 MB followed by 43 MB is not two halves.
-    public static func expectedDownloadBytes(for pair: LanguagePair) -> Int64? {
-        guard let pinned = TranslationModelDigests.all["\(pair.source)\(pair.target)"] else {
-            return nil
+    public static func expectedDownloadBytes(for pair: LanguagePair,
+                                             kind: Kind = .fast) -> Int64? {
+        let p = "\(pair.source)\(pair.target)"
+        switch kind {
+        case .fast:
+            guard let pinned = TranslationModelDigests.all[p] else { return nil }
+            return Int64(pinned.totalDownloadBytes)
+        case .quality:
+            guard let pinned = TranslationQualityDigests.all[p] else { return nil }
+            return Int64(pinned.totalBytes)
         }
-        return Int64(pinned.totalDownloadBytes)
     }
 
     /// The three files one direction needs, in the naming Bergamot expects.
     ///
     /// Throws for a direction with no pinned digests rather than returning
     /// artifacts that cannot be checked.
-    static func artifacts(for pair: LanguagePair) throws -> [Artifact] {
+    static func artifacts(for pair: LanguagePair,
+                          kind: Kind = .fast) throws -> [Artifact] {
         let p = "\(pair.source)\(pair.target)"
+        if kind == .quality {
+            guard let pinned = TranslationQualityDigests.all[p] else {
+                throw Err.unpinnedDirection(p)
+            }
+            // Remote and local names match: the shim reads the directory as
+            // ct2-opus-mt-converter wrote it, so renaming would only create a
+            // mapping to get wrong.
+            return pinned.files.map {
+                Artifact(remoteName: $0.name, localName: $0.name,
+                         sha256: $0.sha256, downloadBytes: $0.bytes)
+            }
+        }
         guard let pinned = TranslationModelDigests.all[p] else {
             throw Err.unpinnedDirection(p)
         }
@@ -309,48 +397,230 @@ public actor TranslationDownloader {
     }
 
     private func run(pair: LanguagePair) async throws -> URL {
-        let directory = root.appendingPathComponent(pair.modelDirectoryName)
-        if Self.isInstalled(pair: pair, in: root) { return directory }
+        let directory = root.appendingPathComponent(kind.directoryName(for: pair))
+        if Self.isInstalled(pair: pair, in: root, kind: kind) { return directory }
 
-        let items = try Self.artifacts(for: pair)
-        try Self.checkSpace(at: root)
-
-        progress.totalBytes = Int64(items.reduce(0) { $0 + $1.downloadBytes })
-        await report()
+        let items = try Self.artifacts(for: pair, kind: kind)
 
         // Everything is assembled in a private staging directory and published
         // with a single move. Writing files straight into place would let a
         // crash — or a reader arriving mid-download — see a directory holding a
         // config and a half-written model, which reads as installed and then
         // fails inside the engine. A directory is either wholly there or not.
+        //
+        // Unique per download so a cancelled run still unwinding cannot delete
+        // the directory of the run that replaced it. Debris from a process that
+        // was killed is reclaimed by the sweep instead: `defer` covers a normal
+        // return or a throw but not a kill, and nothing else sweeps, so
+        // otherwise every interrupted download would strand up to 43 MB.
         let staging = root.appendingPathComponent(".staging-\(UUID().uuidString)")
-        try FileManager.default.createDirectory(at: staging,
-                                                withIntermediateDirectories: true)
-        defer { try? FileManager.default.removeItem(at: staging) }
-
-        for artifact in items {
-            try await fetch(artifact, pair: pair, into: staging)
+        let stagingName = staging.lastPathComponent
+        let needed = Self.spaceNeeded(for: items, kind: kind)
+        // The quality tier's write phase is serialized (see the slot's own
+        // doc comment for why); the fast tier's files are tiny enough that
+        // two running at once is not worth the same treatment. Acquired
+        // before the sweep/space work below so a second quality download
+        // arriving mid-fetch fails at once rather than paying for a disk
+        // check it cannot use.
+        if kind == .quality {
+            guard await StagingRegistry.shared.tryAcquireQualitySlot(stagingName) else {
+                throw Err.qualityDownloadBusy
+            }
         }
-        try Self.writeConfig(for: pair, into: staging)
+        // Both releases below - the quality slot and the general staging claim
+        // - are awaited explicitly on every exit path, not fired-and-forgotten
+        // from `defer`. Swift does not allow `await` inside a `defer` body at
+        // all, and a `Task { await ... }` spawned from one is not awaited by
+        // the function it defers from: measured directly with a minimal
+        // repro, the spawned release was still pending in 451 of 500 trials by
+        // the time the deferring function had already returned control to its
+        // caller. For the quality slot specifically that is not a cosmetic
+        // delay - it means an immediate retry of a just-finished download can
+        // find a slot that a moment ago looked free, and get refused as
+        // "busy" for nothing. `release(stagingName)` is safe to call even when
+        // nothing was ever claimed under that name (`checkSpaceAndClaim`
+        // throwing before claiming, or the quality slot never having been
+        // acquired here) - removing an absent dictionary key is a no-op.
+        do {
+            // Swept *before* the space check, not after. Stranded staging
+            // directories are exactly what fills the disk, so checking first
+            // would let old debris refuse the very retry that would clear it
+            // — the recovery this sweep exists for would be the one case it
+            // could not perform. Ordering this ahead of the claim below is
+            // safe: this download's own staging directory does not exist on
+            // disk yet - it is not created until well after the claim,
+            // further down - so no sweep call, from this download or a
+            // concurrent one, can ever find and delete something that was
+            // never there to find.
+            await StagingRegistry.shared.sweep(in: root)
+            // Checking free space and reserving this download's share happen
+            // as one atomic step inside the actor, not as a claim here
+            // followed later by a separate read of everyone else's
+            // reservations. Two downloads racing to claim the same marginal
+            // disk must not each see the other's not-yet-committed
+            // reservation and both refuse space that was enough for one of
+            // them - nor, the failure mode this replaced, both see zero
+            // reservations and jointly overrun the disk. An actor processes
+            // one call to completion before the next, so whichever of the two
+            // calls this actually reaches first gets the space; there is no
+            // window between reading and reserving for the other to land in.
+            try await StagingRegistry.shared.checkSpaceAndClaim(
+                stagingName, needing: needed, available: freeSpace(root))
 
-        _ = try? FileManager.default.removeItem(at: directory)
-        try FileManager.default.moveItem(at: staging, to: directory)
-        return directory
+            progress.totalBytes = Int64(items.reduce(0) { $0 + $1.downloadBytes })
+            await report()
+
+            try FileManager.default.createDirectory(at: staging,
+                                                    withIntermediateDirectories: true)
+            defer { try? FileManager.default.removeItem(at: staging) }
+
+            for artifact in items {
+                try await fetch(artifact, pair: pair, into: staging)
+            }
+            // Only the fast tier needs a config synthesised: ct2-opus-mt-converter
+            // already wrote config.json, and it is downloaded and digest-checked
+            // like any other file rather than being regenerated here.
+            if kind == .fast {
+                try Self.writeConfig(for: pair, into: staging)
+            }
+
+            _ = try? FileManager.default.removeItem(at: directory)
+            try FileManager.default.moveItem(at: staging, to: directory)
+
+            await StagingRegistry.shared.release(stagingName)
+            if kind == .quality {
+                await StagingRegistry.shared.releaseQualitySlot(stagingName)
+            }
+            return directory
+        } catch {
+            await StagingRegistry.shared.release(stagingName)
+            if kind == .quality {
+                await StagingRegistry.shared.releaseQualitySlot(stagingName)
+            }
+            throw error
+        }
     }
 
-    /// Refuses to start rather than filling the disk and failing mid-write.
-    /// Three tiny-model files plus room to inflate come to well under 128 MB.
-    private static func checkSpace(at root: URL) throws {
+    /// Tracks staging directories owned by a download running right now, so
+    /// debris from a killed process can be reclaimed without touching a live
+    /// one.
+    ///
+    /// A registry rather than a naming convention because neither alternative
+    /// holds. Sweeping every `.staging-*` would delete a sibling direction's
+    /// live directory, and a cancelled download keeps running until it unwinds,
+    /// so "no other staging is live" is never guaranteed. Naming the directory
+    /// after the pair instead of a UUID is worse still: re-picking the same
+    /// language starts a fresh download while the cancelled one is still
+    /// unwinding, and its cleanup would delete the new download's directory.
+    actor StagingRegistry {
+        static let shared = StagingRegistry()
+        /// Name to the bytes it reserved. A dictionary rather than a set: two
+        /// quality downloads for different pairs run concurrently on purpose
+        /// (their dedup key is the install directory, which differs per
+        /// pair), so checking and reserving must account for what every
+        /// *other* live download has already claimed, not just whether one is
+        /// running at all.
+        private var live: [String: Int64] = [:]
+
+        func release(_ name: String) { live.removeValue(forKey: name) }
+
+        /// Owner of the single quality-download slot, or nil.
+        ///
+        /// Quality models are ~250-280 MB. Two running at once would need
+        /// `checkSpaceAndClaim` to track bytes each has *already written*, not
+        /// bytes each originally asked for - without that, a download that has
+        /// consumed 200 of its 280 MB still counts as a full 280 MB reservation
+        /// against a second one's check, even though the OS-reported free
+        /// space has *already* dropped by that same 200 MB. The two would
+        /// subtract those bytes twice and refuse space that is genuinely
+        /// there. For at most two quality directions today, serializing the
+        /// write phase is the simpler correct answer over a live-updating
+        /// reservation ledger; per-pair *state* (progress, errors) stays
+        /// independent regardless, so a caller waiting on the slot is never
+        /// misattributed the other pair's bar.
+        private var qualitySlotOwner: String?
+
+        func tryAcquireQualitySlot(_ name: String) -> Bool {
+            guard qualitySlotOwner == nil else { return false }
+            qualitySlotOwner = name
+            return true
+        }
+
+        func releaseQualitySlot(_ name: String) {
+            if qualitySlotOwner == name { qualitySlotOwner = nil }
+        }
+
+        /// Checks `needed` against what remains once every *other* live
+        /// download's reservation is subtracted from `available`, and reserves
+        /// it for `name` in the same step if it fits.
+        ///
+        /// One call, not a check followed later by a separate claim: an actor
+        /// runs one call to completion before starting the next, so as long as
+        /// nothing in this body suspends (nothing here does - `available` is
+        /// computed by the caller and handed in as a plain value), two
+        /// downloads racing to claim the same marginal disk cannot each read
+        /// zero reservations and jointly overrun it, and cannot each read the
+        /// other's reservation and both refuse space that was enough for one
+        /// of them. Whichever call this actor happens to run first wins the
+        /// space; the loser's rejection reflects a real, already-committed
+        /// claim rather than a snapshot that was stale by the time it acted on
+        /// it.
+        func checkSpaceAndClaim(_ name: String, needing needed: Int64,
+                                available: Int64?) throws {
+            guard let available else {
+                live[name] = needed   // unknown capacity is not evidence of a full disk
+                return
+            }
+            let reservedByOthers = live.filter { $0.key != name }.values.reduce(0, +)
+            let effective = available - reservedByOthers
+            guard effective > needed else {
+                throw Err.insufficientSpace(needed: needed, available: effective)
+            }
+            live[name] = needed
+        }
+
+        /// Remove staging directories no live download owns. Held inside the
+        /// actor so a claim cannot land between the check and the removal.
+        func sweep(in root: URL) {
+            let fm = FileManager.default
+            guard let entries = try? fm.contentsOfDirectory(at: root,
+                                                            includingPropertiesForKeys: nil) else {
+                return
+            }
+            for entry in entries
+            where entry.lastPathComponent.hasPrefix(".staging-")
+                && live[entry.lastPathComponent] == nil {
+                _ = try? fm.removeItem(at: entry)
+            }
+        }
+    }
+
+    /// Free bytes at `root`, or nil when the volume will not say.
+    public typealias FreeSpace = @Sendable (URL) -> Int64?
+
+    public static let realFreeSpace: FreeSpace = { root in
         let probe = FileManager.default.fileExists(atPath: root.path)
             ? root : root.deletingLastPathComponent()
-        guard let values = try? probe.resourceValues(
-                forKeys: [.volumeAvailableCapacityForImportantUsageKey]),
-              let available = values.volumeAvailableCapacityForImportantUsage
-        else { return }   // unknown capacity is not evidence of a full disk
-        let needed: Int64 = 128 * 1024 * 1024
-        guard available > needed else {
-            throw Err.insufficientSpace(needed: needed, available: available)
-        }
+        return (try? probe.resourceValues(
+            forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
+            .volumeAvailableCapacityForImportantUsage
+    }
+
+    /// Bytes that must be free to install `items`.
+    ///
+    /// Download size is not install size for the fast tier: its mirror is
+    /// gzipped and `downloadBytes` is what travels, while what lands is the
+    /// inflated file - ru-en transfers 12.6 MB and writes 17.1 MB, and the
+    /// whole direction is 15.0 MB against 22.5 MB on disk. The quality mirror
+    /// serves raw bytes, so there the two are equal.
+    ///
+    /// Staging is published with a rename inside the same volume, so the peak
+    /// is one copy rather than two; the margin covers filesystem overhead.
+    static func spaceNeeded(for items: [Artifact], kind: Kind) -> Int64 {
+        let transferred = items.reduce(Int64(0)) { $0 + Int64($1.downloadBytes) }
+        let expansion: Double = kind == .fast ? 1.6 : 1.0
+        let margin: Int64 = 32 * 1024 * 1024
+        return Int64(Double(transferred) * expansion) + margin
     }
 
     private func fetch(_ artifact: Artifact,
