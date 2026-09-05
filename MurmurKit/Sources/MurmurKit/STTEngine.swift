@@ -9,6 +9,13 @@ final class STTEngine: @unchecked Sendable {
     private var captions: CaptionEngine?
     private let languageCodesLock = NSLock()
     private var languageCodes = ["auto"]
+    private let memoryLimitBytes: Int
+    private let parakeetANE: Bool
+
+    init(memoryLimitBytes: Int = TwoTierEngine.defaultMemoryLimitBytes, parakeetANE: Bool = false) {
+        self.memoryLimitBytes = memoryLimitBytes
+        self.parakeetANE = parakeetANE
+    }
 
     /// Ready to record in `mode` — its models are loaded and warmed.
     func isReady(_ mode: DictationMode) -> Bool {
@@ -46,7 +53,7 @@ final class STTEngine: @unchecked Sendable {
     ) async throws {
         let engine = queue.sync { () -> TwoTierEngine in
             if let existing = self.engine { return existing }
-            let made = TwoTierEngine()                   // caps Metal memory in init
+            let made = TwoTierEngine(memoryLimitBytes: memoryLimitBytes, parakeetANE: parakeetANE)
             self.engine = made
             return made
         }
@@ -73,6 +80,12 @@ final class STTEngine: @unchecked Sendable {
     /// Stop the live draft. Capture leftover is still appended for the batch final.
     func releaseLive() {
         queue.sync { session?.releaseLive() }
+    }
+
+    /// Stop accepting live inference and discard an interrupted utterance
+    /// without scheduling a batch pass (e.g. an iOS app leaving foreground).
+    func cancel() {
+        queue.sync { session = nil }
     }
 
     /// Feed one 16 kHz mono chunk. The live model sees every sample so its

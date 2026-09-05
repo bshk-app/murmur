@@ -24,6 +24,10 @@ public final class DictationSession: @unchecked Sendable {
     /// Live update per fed chunk: `(confirmed, provisional)`. Called on the mic
     /// capture queue — hop to your UI thread as needed.
     public var onUpdate: ((_ confirmed: String, _ partial: String) -> Void)?
+    /// Capture diagnostics: converted samples, input rate, raw peak, conversion error.
+    public var onCapture: ((Int, Double, Float, String?) -> Void)?
+    public private(set) var capturedSeconds: Double = 0
+    public private(set) var capturedPeak: Float = 0
 
     public init(models: SpeechModels) {
         self.engine = models.engine
@@ -55,6 +59,9 @@ public final class DictationSession: @unchecked Sendable {
         lastRecordingURL = nil
         mic = MicCapture(inputDeviceUID: microphoneUID)
         engine.begin(language: language, mode: mode)
+        mic.onCapture = { [weak self] frames, rate, peak, error in
+            self?.onCapture?(frames, rate, peak, error)
+        }
         mic.onChunk = { [weak self] chunk in
             guard let self else { return }
             if self.recordsUtterance { self.recordedSamples.append(contentsOf: chunk) }
@@ -69,7 +76,9 @@ public final class DictationSession: @unchecked Sendable {
     @discardableResult
     public func stop() -> String {
         engine.releaseLive()
-        _ = mic.stop()
+        let captured = mic.stop()
+        capturedSeconds = captured.durationS
+        capturedPeak = captured.peakRMS
         let final = engine.finish()
         mic = MicCapture()
         // The recording is a diagnostic, not part of the transcript: writing it
@@ -77,6 +86,13 @@ public final class DictationSession: @unchecked Sendable {
         // and their text. Hand the samples to a background queue and return.
         scheduleDiagnosticRecording()
         return final
+    }
+
+    public func cancel() {
+        engine.cancel()
+        _ = mic.stop()
+        mic = MicCapture()
+        recordedSamples.removeAll()
     }
 
     /// The URL is decided here, on the caller's thread, and published here too:
