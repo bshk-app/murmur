@@ -87,6 +87,25 @@ let project = Project(
                 "DEVELOPMENT_TEAM": "Q8H6GWJ658",
                 "CODE_SIGN_IDENTITY": "Apple Development",
             ])
-        )
+        ),
+        // The app layer had no tests at all, which is why a missing startup
+        // step could not be caught: MurmurKit's suite cannot see anything in
+        // Sources/Murmur. Deliberately host-free — these cover decisions and
+        // declarations, not anything needing a running app.
+        .target(
+            name: "MurmurTests",
+            destinations: .macOS,
+            product: .unitTests,
+            bundleId: "app.bshk.murmur.tests",
+            deploymentTargets: .macOS("15.0"),
+            infoPlist: .default,
+            sources: ["Tests/MurmurTests/**/*.swift"],
+            dependencies: [.target(name: "Murmur")],
+            settings: .settings(base: [
+                "SWIFT_VERSION": "5.0",
+                "DEVELOPMENT_TEAM": "Q8H6GWJ658",
+                "CODE_SIGN_STYLE": "Automatic",
+            ])
+        ),
     ]
 )
