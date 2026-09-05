@@ -92,6 +92,27 @@ final class DictationController {
     /// behind it, where there is no recognised text to be wrong about.
     var translationSource: String { dictationSource ?? SpeechLanguage.current }
 
+    /// The mode this utterance actually ran in, latched at start.
+    ///
+    /// Two things go wrong without it, and only one needs a user to do
+    /// anything. First, the same staleness as `dictationSource`: switching
+    /// Model mid-utterance made the completion event describe a mode that
+    /// never ran. Second, and with nobody touching anything -
+    /// `beginRecording` runs `ModelSetting.current.effective(for:)`, which
+    /// downgrades Fast and Hybrid to Accurate for the languages with no live
+    /// draft. `dictation_started` logs that effective mode; reading the raw
+    /// setting again at stop meant every Japanese, Korean, Chinese, Arabic
+    /// and Vietnamese utterance reported started=accurate and
+    /// completed=hybrid. The routing matrix is exactly what these two events
+    /// exist to measure, so the one field that says which lane ran cannot be
+    /// the field that says which lane was asked for.
+    @ObservationIgnored var dictationMode: DictationMode?
+
+    /// The mode a finished utterance is reported as having run in.
+    ///
+    /// Fallback only covers a stop with no start behind it, where nothing ran
+    /// to be described.
+    var completedModelMode: DictationMode { dictationMode ?? ModelSetting.current }
     /// Bumped whenever a caption session starts or stops, and - see the
     /// comment inside `translateCaptions` - on every snapshot too.
     ///
@@ -579,9 +600,12 @@ final class DictationController {
                 microphoneUID: MicrophoneSetting.currentUID
             )
             captionsRunning = false
-            // Latched here, beside the recogniser that was just handed it, so
-            // stop cannot read a different answer than start used.
+            // Latched here, beside the recogniser that was just handed them,
+            // so stop cannot read a different answer than start used.
+            // `modelMode`, not `ModelSetting.current`: it is the mode after
+            // `effective(for:)`, i.e. the lane that will really run.
             dictationSource = language
+            dictationMode = modelMode
             latchedToggle = toggle
             state = .recording
             PostHogSDK.shared.capture("dictation_started", properties: [
@@ -764,7 +788,7 @@ final class DictationController {
         guard state == .recording else { return }
         state = .transcribing
         if captionsRunning { return endCaptions() }
-        let modelModeAtStop = ModelSetting.current.rawValue
+        let modelModeAtStop = completedModelMode.rawValue
         let submitAtStop = submitOnFinish
         // The target is read fresh at stop on purpose: the user may change it
         // while the batch pass runs, and half an utterance in one language is
