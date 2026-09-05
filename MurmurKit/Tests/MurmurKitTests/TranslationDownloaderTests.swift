@@ -375,6 +375,159 @@ final class TranslationDownloadSharingTests: XCTestCase {
         _ = try? await TranslationDownloader.download(pair: pair, into: root, fetcher: fetcher)
     }
 
+    // MARK: - Restart / resumption
+
+    /// A process killed mid-download leaves a staging directory no `defer` ever
+    /// runs for. Nothing else sweeps, so without reclamation it strands up to
+    /// 43 MB per interruption until `checkSpace` refuses to start.
+    func testDebrisFromAKilledProcessIsReclaimed() async throws {
+        let debris = root.appendingPathComponent(".staging-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: debris, withIntermediateDirectories: true)
+        try Data(repeating: 0, count: 4096).write(to: debris.appendingPathComponent("model.part"))
+
+        // A fresh download attempt — it fails verification, which is fine: the
+        // sweep happens before any byte is fetched.
+        await attempt(pair: LanguagePair(source: "ru", target: "en")) { _, _ in Data("junk".utf8) }
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: debris.path),
+                       "staging debris from an interrupted run was never reclaimed")
+        XCTAssertTrue(try stagingDirectories().isEmpty,
+                      "a staging directory outlived the download that made it")
+    }
+
+    /// The sweep must not touch a directory another download is filling right
+    /// now — including a download of a different direction, which the
+    /// coordinator explicitly allows to run alongside.
+    func testSweepLeavesALiveDownloadAlone() async throws {
+        let live = root.appendingPathComponent(".staging-\(UUID().uuidString)")
+        let dead = root.appendingPathComponent(".staging-\(UUID().uuidString)")
+        for dir in [live, dead] {
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        }
+
+        try await TranslationDownloader.StagingRegistry.shared.checkSpaceAndClaim(
+            live.lastPathComponent, needing: 0, available: nil)
+        await TranslationDownloader.StagingRegistry.shared.sweep(in: root)
+
+        XCTAssertTrue(FileManager.default.fileExists(atPath: live.path),
+                      "swept a staging directory a live download owns")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: dead.path),
+                       "unowned debris survived the sweep")
+
+        // Once released it is debris like any other.
+        await TranslationDownloader.StagingRegistry.shared.release(live.lastPathComponent)
+        await TranslationDownloader.StagingRegistry.shared.sweep(in: root)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: live.path))
+    }
+
+    /// Two quality downloads for different pairs are allowed to run at the
+    /// same time, so a disk with room for one but not both must grant it to
+    /// exactly one - not to both (which would jointly overrun the disk) and
+    /// not to neither (which would refuse space that was genuinely available).
+    ///
+    /// `checkSpaceAndClaim` is a single non-suspending actor call, so two
+    /// concurrent callers cannot each read the reservation table before either
+    /// has written to it: whichever the actor happens to run first commits its
+    /// claim, and the second sees that claim already there. `async let` starts
+    /// both calls as close to simultaneously as Swift allows; the property
+    /// under test (exactly one success) holds regardless of which one the
+    /// actor actually runs first.
+    func testConcurrentClaimsOnAMarginalDiskGrantExactlyOne() async throws {
+        let registry = TranslationDownloader.StagingRegistry()
+        let available: Int64 = 400_000_000
+        let needed: Int64 = 250_000_000   // two of these do not fit; one does
+
+        async let first: Bool = {
+            do {
+                try await registry.checkSpaceAndClaim("a", needing: needed, available: available)
+                return true
+            } catch { return false }
+        }()
+        async let second: Bool = {
+            do {
+                try await registry.checkSpaceAndClaim("b", needing: needed, available: available)
+                return true
+            } catch { return false }
+        }()
+
+        let outcomes = await [first, second]
+        XCTAssertEqual(outcomes.filter { $0 }.count, 1,
+                       "expected exactly one grant on a disk with room for only one; got \(outcomes)")
+    }
+
+    /// Relaunching must not re-download what is already on disk: preparation
+    /// runs on every launch now, so a non-idempotent path would refetch ~20 MB
+    /// each time the app opened.
+    func testRestartDoesNotRefetchInstalledModels() async throws {
+        let pair = LanguagePair(source: "ru", target: "en")
+        try plantInstalledModel(for: pair)
+        XCTAssertTrue(TranslationDownloader.isInstalled(pair: pair, in: root))
+
+        let calls = Counter()
+        await attempt(pair: pair) { _, _ in
+            await calls.bump()
+            return Data("junk".utf8)
+        }
+        let count = await calls.value
+        XCTAssertEqual(count, 0, "an installed model was downloaded again after restart")
+    }
+
+    /// The recovery case that motivates the sweep at all: the disk is full
+    /// *because of* stranded staging directories. If the space check ran first
+    /// it would refuse the retry that clears them, and the user would be stuck
+    /// with no path back short of deleting files by hand.
+    func testDebrisIsReclaimedEvenWhenTheDiskLooksFull() async throws {
+        let debris = root.appendingPathComponent(".staging-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: debris, withIntermediateDirectories: true)
+
+        // A volume with no room left: the space check is guaranteed to throw.
+        _ = try? await TranslationDownloader.download(
+            pair: LanguagePair(source: "ru", target: "en"),
+            into: root,
+            fetcher: { _, _ in Data("junk".utf8) },
+            freeSpace: { _ in 0 })
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: debris.path),
+                       "space was checked before the sweep, so the debris "
+                       + "filling the disk blocked its own cleanup")
+    }
+
+    /// Guards the check itself, so the test above cannot pass merely because
+    /// the space check stopped working.
+    func testAFullDiskStillRefusesTheDownload() async {
+        var thrown: Error?
+        do {
+            _ = try await TranslationDownloader.download(
+                pair: LanguagePair(source: "ru", target: "en"),
+                into: root,
+                fetcher: { _, _ in Data("junk".utf8) },
+                freeSpace: { _ in 0 })
+        } catch { thrown = error }
+
+        guard case .some(TranslationDownloader.Err.insufficientSpace) = thrown else {
+            return XCTFail("expected insufficientSpace, got \(String(describing: thrown))")
+        }
+    }
+
+    private func stagingDirectories() throws -> [URL] {
+        try FileManager.default
+            .contentsOfDirectory(at: root, includingPropertiesForKeys: nil)
+            .filter { $0.lastPathComponent.hasPrefix(".staging-") }
+    }
+
+    /// Writes the exact file set `isInstalled` looks for.
+    private func plantInstalledModel(for pair: LanguagePair) throws {
+        let dir = root.appendingPathComponent(pair.modelDirectoryName)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let p = "\(pair.source)\(pair.target)"
+        for name in ["model.\(p).intgemm.alphas.bin",
+                     "vocab.\(p).spm",
+                     "lex.50.50.\(p).s2t.bin",
+                     "config.bergamot.yml"] {
+            try Data("x".utf8).write(to: dir.appendingPathComponent(name))
+        }
+    }
+
     private actor Counter {
         private(set) var value = 0
         func bump() { value += 1 }

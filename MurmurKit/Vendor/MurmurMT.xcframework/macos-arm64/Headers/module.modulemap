@@ -3,5 +3,9 @@
 // module map turns it into a Clang module.
 module MurmurMT {
     header "murmur_mt.h"
+    // The CTranslate2 shim ships in the same archive rather than a second
+    // binary target: it resolves SentencePiece against marian's copy, so the
+    // two cannot be linked apart.
+    header "murmur_ct2.h"
     export *
 }
