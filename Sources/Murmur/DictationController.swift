@@ -577,7 +577,9 @@ final class DictationController {
         )
     }
 
-    private func beginRecording(submit: Bool) {
+    /// Not `private`: tests drive this with a substituted session to prove
+    /// what it latches.
+    func beginRecording(submit: Bool) {
         guard state != .recording, state != .transcribing else { return }
         if AppMode.current == .captions { return beginCaptions() }
         let language = SpeechLanguage.current
