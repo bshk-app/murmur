@@ -1,3 +1,4 @@
+@testable import MurmurSpeech
 import AVFoundation
 import XCTest
 @testable import MurmurKit

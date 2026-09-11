@@ -1,0 +1,38 @@
+appId: app.bshk.murmur.uitesthost
+---
+- runFlow: priority.yaml
+- launchApp:
+    arguments:
+      longConversation: settings
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible: Настройки
+- assertNotVisible: '.*(Nemotron|Parakeet|GigaAM).*'
+- takeScreenshot: after/settings
+- launchApp:
+    arguments:
+      longConversation: keyboard-setup
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: keyboard-enable
+- takeScreenshot: after/keyboard-setup
+- launchApp:
+    arguments:
+      longConversation: memory
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible: Память
+- takeScreenshot: after/memory
+- launchApp:
+    arguments:
+      longConversation: onboarding
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- takeScreenshot: after/onboarding
+- tapOn:
+    id: onboarding-next
+- takeScreenshot: after/microphone-permission
+- runFlow: surfaces.yaml
+- runFlow: languages.yaml
+- runFlow: import-reader.yaml

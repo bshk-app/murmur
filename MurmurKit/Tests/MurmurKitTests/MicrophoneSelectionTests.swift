@@ -1,3 +1,4 @@
+@testable import MurmurSpeech
 import CoreAudio
 import XCTest
 @testable import MurmurKit

@@ -1,0 +1,39 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: onboarding
+      textTranslationUITest: true
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- tapOn:
+    id: preload-now
+- assertVisible: Continue
+- tapOn:
+    id: onboarding-download
+- tapOn:
+    id: onboarding-next
+- assertVisible: Try translation
+- scrollUntilVisible:
+    element:
+      id: try-quality-translation
+    direction: DOWN
+- tapOn:
+    id: try-quality-translation
+- assertVisible:
+    id: text-translation-priority
+- tapOn:
+    id: translate-text
+- scrollUntilVisible:
+    element:
+      id: text-translation-output
+    direction: DOWN
+    timeout: 15000
+- takeScreenshot: after/quality-translation-trial
+- tapOn: Done
+- assertVisible:
+    id: onboarding-next
+- tapOn:
+    id: onboarding-skip
+- assertVisible:
+    id: record-note

@@ -1,0 +1,76 @@
+appId: app.bshk.murmur.uitesthost
+name: Storage swipe and context deletion use the same confirmation
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      storageFixture: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- scrollUntilVisible:
+    element:
+      id: open-storage
+    direction: DOWN
+- tapOn:
+    id: open-storage
+- scrollUntilVisible:
+    element:
+      id: storage-item-translation/ct2-enfi
+    direction: DOWN
+- longPressOn:
+    id: storage-item-translation/ct2-enfi
+- assertVisible:
+    id: menu-storage-delete
+- takeScreenshot: storage-context-menu
+- tapOn:
+    id: menu-storage-delete
+- runFlow: ../partials/cancel_confirmation.yaml
+- assertNotVisible: Delete downloaded model?
+- swipe:
+    from:
+      id: storage-item-translation/ct2-enfi
+    direction: LEFT
+- assertVisible:
+    id: swipe-storage-delete
+- takeScreenshot: storage-swipe-delete
+- tapOn:
+    id: swipe-storage-delete
+- tapOn:
+    id: confirm-storage-delete
+- assertNotVisible:
+    id: storage-item-translation/ct2-enfi
+- scrollUntilVisible:
+    element:
+      id: storage-item-translation/ct2-rufi
+    direction: DOWN
+- assertVisible:
+    id: storage-item-translation/ct2-rufi
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      storageFixture: true
+      storagePendingPreparation: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- scrollUntilVisible:
+    element:
+      id: open-storage
+    direction: DOWN
+- tapOn:
+    id: open-storage
+- scrollUntilVisible:
+    element:
+      id: storage-item-translation/ct2-enfi
+    direction: DOWN
+- longPressOn:
+    id: storage-item-translation/ct2-enfi
+- assertVisible:
+    id: menu-storage-delete
+    enabled: false
+- takeScreenshot: storage-context-busy

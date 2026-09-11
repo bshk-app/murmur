@@ -1,0 +1,60 @@
+appId: app.bshk.murmur.uitesthost
+name: Add speech and translation languages and leave after a preparation error
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- tapOn:
+    id: onboarding-next
+- tapOn:
+    id: onboarding-next
+- tapOn:
+    id: onboarding-languages
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: add-speech-language
+    direction: DOWN
+- tapOn:
+    id: add-speech-language
+- takeScreenshot: speech-language-picker
+- tapOn:
+    id: add-speech-en
+- tapOn: Done
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: prepare-speech:en
+    direction: DOWN
+- tapOn:
+    id: prepare-speech:en
+- assertVisible: Speech engines are tested on a physical iPhone. This simulator only tests the interface.
+- takeScreenshot: preparation-error
+- tapOn: OK
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: add-translation-language
+    direction: DOWN
+- tapOn:
+    id: add-translation-language
+- tapOn:
+    id: add-translation-en
+- tapOn: Done
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: prepare-translation:ru-en
+    direction: DOWN
+- assertVisible:
+    id: prepare-translation:ru-en
+- takeScreenshot: added-translation
+- tapOn: Setup
+- tapOn:
+    id: skip-setup
+- assertVisible:
+    id: record-note

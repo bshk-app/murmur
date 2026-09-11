@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @keyframes mslide { 0%{transform:translateX(-45%)} 100%{transform:translateX(245%)} }
+  @keyframes mpulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+  @keyframes mcaret { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  @keyframes mbar { 0%,100%{transform:scaleY(.32)} 50%{transform:scaleY(1)} }
+  *::-webkit-scrollbar { width:0; height:0; }
+  body { margin:0; -webkit-font-smoothing:antialiased; background:#e9e4dc;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
+  a { color:#c9722c; } a:hover { color:#e8893b; }
+  [data-theme="light"] { --bg:#FAF7F2; --sheet:#FFFDF9; --card:#FFFDF9; --behind:#e6dfd5;
+    --ink:#2A2520; --ink2:rgba(74,62,52,.74); --ink3:rgba(74,62,52,.52);
+    --line:rgba(60,40,20,.11); --fill:rgba(60,40,20,.07); --fill2:rgba(60,40,20,.12);
+    --acc:#E07A2F; --accT:#C9722C; --accTint:rgba(224,122,47,.13); --onAcc:#241F1C;
+    --err:#A52A17; --errTint:rgba(165,42,23,.13); --ok:#1F6640; --okTint:rgba(31,102,64,.13);
+    --sys:#e7e3dd; --sysInk:rgba(74,62,52,.62); }
+  [data-theme="dark"] { --bg:#15110E; --sheet:#1E1916; --card:rgba(255,255,255,.07); --behind:#0b0908;
+    --ink:rgba(255,255,255,.95); --ink2:rgba(255,255,255,.68); --ink3:rgba(255,255,255,.46);
+    --line:rgba(255,255,255,.12); --fill:rgba(255,255,255,.10); --fill2:rgba(255,255,255,.14);
+    --acc:#E07A2F; --accT:#F0A469; --accTint:rgba(224,122,47,.14); --onAcc:#241F1C;
+    --err:#F0A194; --errTint:rgba(240,161,148,.13); --ok:#8DCCA1; --okTint:rgba(141,204,161,.13);
+    --sys:#2a2521; --sysInk:rgba(255,255,255,.62); }
+  [data-type="std"] { --tTitle:28px; --tH:20px; --tBody:17px; --tSub:15px; --tCap:13px; --tLab:11.5px; }
+  [data-type="xxl"] { --tTitle:33px; --tH:24px; --tBody:23px; --tSub:20px; --tCap:17px; --tLab:15px; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;box-sizing:border-box;padding:20px 20px 48px;display:flex;flex-direction:column;align-items:center;gap:14px">
+
+  <div style="width:100%;max-width:1100px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px;margin-right:auto">
+      <img src="mascot.png" alt="" style="width:32px;height:32px;object-fit:contain">
+      <div>
+        <div style="font:700 17px/1.1 -apple-system,system-ui;letter-spacing:-.01em;color:#2a2520">Murmator · текстовый переводчик</div>
+        <div style="margin-top:4px;font:400 11.5px/1.3 -apple-system,system-ui;color:rgba(74,62,52,.55)">ID по SCREENS.md и APPLE_BRIEF.md · панель вокруг макета не входит в интерфейс</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      <sc-for list="{{ ctlGroups }}" as="g" hint-placeholder-count="4">
+        <div style="display:flex;gap:3px;background:rgba(60,40,20,.075);border-radius:9px;padding:3px">
+          <sc-for list="{{ g.items }}" as="b" hint-placeholder-count="2">
+            <div onClick="{{ b.go }}" style="{{ b.style }}">{{ b.label }}</div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width:100%;max-width:1100px;display:flex;flex-direction:column;gap:7px;padding-bottom:12px;border-bottom:1px solid rgba(60,40,20,.11)">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:baseline">
+        <div style="flex:none;width:150px;font:600 10.5px/1.5 -apple-system,system-ui;letter-spacing:.05em;text-transform:uppercase;color:rgba(74,62,52,.45)">{{ g.title }}</div>
+        <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="6">
+          <div onClick="{{ c.go }}" style="{{ c.style }}">{{ c.label }}</div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:6px">
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;max-width:560px">
+      <span style="background:#2a2520;color:#f7f2ea;border-radius:5px;padding:4px 7px;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace">{{ scId }}</span>
+      <span style="font:600 12.5px/1.3 -apple-system,system-ui;color:rgba(74,62,52,.7)">{{ scName }}</span>
+      <sc-if value="{{ scProposed }}" hint-placeholder-val="{{ false }}">
+        <span style="background:rgba(224,122,47,.16);color:#a3541c;border-radius:5px;padding:4px 7px;font:600 10.5px/1 -apple-system,system-ui">не реализовано · предложение</span>
+      </sc-if>
+      <sc-if value="{{ scChange }}" hint-placeholder-val="{{ false }}">
+        <span style="background:rgba(60,40,20,.08);color:rgba(74,62,52,.7);border-radius:5px;padding:4px 7px;font:600 10.5px/1 -apple-system,system-ui">{{ scChange }}</span>
+      </sc-if>
+    </div>
+
+    <div data-theme="{{ theme }}" data-type="{{ type }}" data-screen-label="{{ scId }}" style="{{ frameStyle }}">
+
+      <sc-if value="{{ chromeApp }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:none;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px 0 30px;font:600 13.5px/1 -apple-system,system-ui;color:var(--ink)">
+          <span>9:41</span>
+          <span style="display:flex;gap:5px;align-items:center;opacity:.75">
+            <span style="width:15px;height:9px;border:1.4px solid currentColor;border-radius:2px;display:inline-block"></span>
+            <span style="width:16px;height:9px;background:currentColor;border-radius:2px;display:inline-block"></span>
+          </span>
+        </div>
+      </sc-if>
+
+      <!-- ===================== SHEET SCREENS ===================== -->
+      <sc-if value="{{ isSheet }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--behind)">
+          <div style="flex:none;height:26px"></div>
+          <div style="flex:1;min-height:0;background:var(--sheet);border-radius:14px 14px 0 0;display:flex;flex-direction:column;box-shadow:0 -1px 0 var(--line)">
+            <div style="flex:none;display:flex;justify-content:center;padding:7px 0 2px">
+              <div style="width:36px;height:5px;border-radius:3px;background:var(--fill2)"></div>
+            </div>
+            <div style="flex:none;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:6px 18px 10px">
+              <div style="{{ sheetTitleStyle }}">{{ t.sheetTitle }}</div>
+              <div style="font:400 var(--tBody)/1.2 -apple-system,system-ui;color:var(--accT);white-space:nowrap">{{ t.done }}</div>
+            </div>
+
+            <!-- ---------- TEXT / VOICE TRANSLATE ---------- -->
+            <sc-if value="{{ isTr }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:1;min-height:0;display:flex;flex-direction:column">
+                <div style="flex:none;padding:0 18px 12px">
+                  <div style="display:flex;gap:3px;padding:3px;border-radius:11px;background:var(--fill)">
+                    <div style="{{ tabTextStyle }}">{{ t.tabText }}</div>
+                    <div style="{{ tabVoiceStyle }}">{{ t.tabVoice }}</div>
+                  </div>
+                  <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:7px;font:400 var(--tLab)/1.35 -apple-system,system-ui;color:var(--ink3);text-align:center">{{ t.lockedTabs }}</div>
+                  </sc-if>
+                </div>
+
+                <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 14px;display:flex;flex-direction:column;gap:12px">
+
+                  <div style="{{ langRowStyle }}">
+                    <div style="flex:1;min-width:0;border:1px solid var(--line);border-radius:15px;padding:10px 12px;background:var(--card)">
+                      <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ t.fromLabel }}</div>
+                      <div style="margin-top:5px;display:flex;align-items:center;gap:4px;font:600 var(--tSub)/1.2 -apple-system,system-ui;color:var(--accT)">
+                        <span style="text-wrap:pretty">{{ srcLangName }}</span>
+                        <span style="flex:none;font:400 11px/1 -apple-system,system-ui;opacity:.75">▼</span>
+                      </div>
+                    </div>
+                    <div style="{{ swapStyle }}">{{ swapGlyph }}</div>
+                    <div style="flex:1;min-width:0;border:1px solid var(--line);border-radius:15px;padding:10px 12px;background:var(--card)">
+                      <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ t.toLabel }}</div>
+                      <div style="margin-top:5px;display:flex;align-items:center;gap:4px;font:600 var(--tSub)/1.2 -apple-system,system-ui;color:var(--accT)">
+                        <span style="text-wrap:pretty">{{ dstLangName }}</span>
+                        <span style="flex:none;font:400 11px/1 -apple-system,system-ui;opacity:.75">▼</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <sc-if value="{{ isVoice }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--card)">
+                      <div style="display:flex;align-items:center;gap:8px;color:var(--accT)">
+                        <span style="display:flex;align-items:flex-end;gap:2px;height:14px">
+                          <span style="width:2.5px;height:100%;border-radius:2px;background:currentColor;animation:mbar 1s ease-in-out infinite"></span>
+                          <span style="width:2.5px;height:100%;border-radius:2px;background:currentColor;animation:mbar 1s ease-in-out .15s infinite"></span>
+                          <span style="width:2.5px;height:100%;border-radius:2px;background:currentColor;animation:mbar 1s ease-in-out .3s infinite"></span>
+                          <span style="width:2.5px;height:100%;border-radius:2px;background:currentColor;animation:mbar 1s ease-in-out .45s infinite"></span>
+                        </span>
+                        <span style="font:600 var(--tSub)/1.2 -apple-system,system-ui">{{ t.whileSpeak }}</span>
+                      </div>
+                      <div style="margin-top:9px;font:400 var(--tSub)/1.45 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ t.voiceBody }}</div>
+                      <div style="margin-top:8px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.voiceNote }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ isText }}" hint-placeholder-val="{{ true }}">
+                    <div style="{{ srcCardStyle }}">
+                      <sc-if value="{{ showSrcHeader }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;align-items:center;gap:10px;padding:12px 14px 0">
+                          <div style="flex:1;min-width:0;font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink2);text-transform:uppercase;letter-spacing:.04em">{{ t.srcLabel }}</div>
+                          <sc-if value="{{ showPaste }}" hint-placeholder-val="{{ true }}">
+                            <div style="flex:none;display:flex;align-items:center;gap:4px;height:28px;padding:0 9px;border-radius:8px;background:var(--sys);color:var(--sysInk);font:500 var(--tCap)/1 -apple-system,system-ui">
+                              <span style="font-size:11px">⧉</span><span>{{ t.paste }}</span>
+                            </div>
+                          </sc-if>
+                          <sc-if value="{{ showClear }}" hint-placeholder-val="{{ true }}">
+                            <div style="{{ clearStyle }}">{{ t.clear }}</div>
+                          </sc-if>
+                        </div>
+                      </sc-if>
+
+                      <div style="{{ editorStyle }}">
+                        <sc-if value="{{ hasSrc }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:flex;flex-direction:column;gap:5px">
+                            <sc-for list="{{ srcParas }}" as="p" hint-placeholder-count="2">
+                              <div style="font:400 var(--tBody)/1.42 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ p.text }}</div>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                        <sc-if value="{{ srcEmpty }}" hint-placeholder-val="{{ false }}">
+                          <div style="display:flex;align-items:baseline;gap:3px">
+                            <sc-if value="{{ caret }}" hint-placeholder-val="{{ false }}">
+                              <div style="width:2px;height:calc(var(--tBody) * 1.15);background:var(--acc);animation:mcaret 1.05s steps(1) infinite"></div>
+                            </sc-if>
+                            <div style="font:400 var(--tBody)/1.42 -apple-system,system-ui;color:var(--ink3)">{{ t.placeholder }}</div>
+                          </div>
+                        </sc-if>
+                      </div>
+
+                      <sc-if value="{{ showSrcFooter }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;align-items:center;gap:10px;padding:0 14px 12px">
+                          <div style="flex:1;min-width:0;font:400 var(--tLab)/1.35 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty">{{ t.limitHint }}</div>
+                          <div style="{{ counterStyle }}">{{ counterText }}</div>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{ srcCollapsed }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 14px 12px">
+                          <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ srcLangName }} · {{ counterText }}</div>
+                          <div style="font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--accT)">{{ t.editSrc }}</div>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ overLimit }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-radius:15px;background:var(--errTint);padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+                      <span style="flex:none;font:700 var(--tSub)/1.3 -apple-system,system-ui;color:var(--err)">!</span>
+                      <div>
+                        <div style="font:600 var(--tSub)/1.35 -apple-system,system-ui;color:var(--err);text-wrap:pretty">{{ t.limitTitle }}</div>
+                        <div style="margin-top:4px;font:400 var(--tCap)/1.4 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.limitBody }}</div>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ swapped }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:8px;align-items:flex-start;padding:0 2px">
+                      <span style="flex:none;color:var(--accT);font:400 var(--tSub)/1.3 -apple-system,system-ui">⇄</span>
+                      <div style="font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.swappedNote }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ prep }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--card)">
+                      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+                        <div style="font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.prepTitle }}</div>
+                        <div style="font:600 var(--tSub)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--accT)">36%</div>
+                      </div>
+                      <div style="margin-top:10px;height:8px;border-radius:4px;background:var(--fill2);overflow:hidden">
+                        <div style="width:36%;height:100%;border-radius:4px;background:var(--acc)"></div>
+                      </div>
+                      <div style="margin-top:9px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.prepBody }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ running }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--card)">
+                      <div style="font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.running }}</div>
+                      <div style="margin-top:10px;height:8px;border-radius:4px;background:var(--fill2);overflow:hidden">
+                        <div style="width:30%;height:100%;border-radius:4px;background:var(--acc);animation:mslide 1.5s ease-in-out infinite"></div>
+                      </div>
+                      <div style="margin-top:9px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.durUnknown }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ cancelling }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--fill)">
+                      <div style="font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink2);animation:mpulse 1.6s ease-in-out infinite">{{ t.cancelling }}</div>
+                      <div style="margin-top:10px;height:8px;border-radius:4px;background:var(--fill2);overflow:hidden">
+                        <div style="width:30%;height:100%;border-radius:4px;background:var(--ink3);animation:mslide 2.6s ease-in-out infinite"></div>
+                      </div>
+                      <div style="margin-top:9px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.cancelBody }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ hasResult }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-radius:15px;background:var(--accTint);padding:14px">
+                      <div style="display:flex;align-items:center;gap:8px">
+                        <div style="flex:1;min-width:0;font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--accT);text-transform:uppercase;letter-spacing:.04em">{{ t.resultLabel }}</div>
+                        <div style="flex:none;font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ dstLangName }}</div>
+                      </div>
+                      <div style="margin-top:10px;display:flex;flex-direction:column;gap:12px">
+                        <sc-for list="{{ resParas }}" as="p" hint-placeholder-count="2">
+                          <div style="font:400 var(--tBody)/1.42 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ p.text }}</div>
+                        </sc-for>
+                      </div>
+                      <div style="margin-top:14px;display:flex;gap:8px">
+                        <div style="flex:1;min-width:0;min-height:48px;border-radius:13px;background:var(--sheet);display:flex;align-items:center;justify-content:center;gap:7px;font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink);padding:8px">
+                          <span style="flex:none;font-size:13px">⧉</span><span style="text-align:center;text-wrap:pretty">{{ t.copyTr }}</span>
+                        </div>
+                        <div style="flex:none;width:48px;min-height:48px;border-radius:13px;background:var(--sys);display:flex;align-items:center;justify-content:center;color:var(--sysInk);font-size:15px">↑</div>
+                      </div>
+                      <div style="margin-top:8px;font:400 var(--tLab)/1.35 -apple-system,system-ui;color:var(--ink3);text-align:center">{{ t.shareSystem }}</div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ isError }}" hint-placeholder-val="{{ false }}">
+                    <div style="border-radius:15px;background:var(--errTint);padding:14px">
+                      <div style="display:flex;gap:10px;align-items:flex-start">
+                        <span style="flex:none;font:700 var(--tSub)/1.35 -apple-system,system-ui;color:var(--err)">!</span>
+                        <div>
+                          <div style="font:600 var(--tSub)/1.35 -apple-system,system-ui;color:var(--err);text-wrap:pretty">{{ t.errTitle }}</div>
+                          <div style="margin-top:4px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.errBody }}</div>
+                        </div>
+                      </div>
+                      <div style="margin-top:12px;padding-top:11px;border-top:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px">
+                        <div style="font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink2)">{{ t.details }}</div>
+                        <div style="font:400 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink3)">⌄</div>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ showFootnotes }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:7px;padding:2px 2px 0">
+                      <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty">{{ t.foot1 }}</div>
+                      <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty">{{ t.foot2 }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <div style="flex:none;padding:10px 18px;border-top:1px solid var(--line);background:var(--sheet);display:flex;flex-direction:column;gap:8px">
+                  <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <div style="flex:1;min-width:0;font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink2);overflow:hidden;text-overflow:ellipsis">{{ busyLabel }}</div>
+                      <div style="{{ cancelBtnStyle }}">{{ t.cancel }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ showCta }}" hint-placeholder-val="{{ true }}">
+                    <div style="{{ ctaStyle }}">
+                      <span style="flex:none;width:19px;height:17px;border:1.6px solid currentColor;border-radius:4px;display:flex;align-items:center;justify-content:center;font:700 9px/1 -apple-system,system-ui">A</span>
+                      <span style="text-align:center;text-wrap:pretty">{{ ctaLabel }}</span>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ kbUp }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;justify-content:flex-end">
+                      <div style="min-height:44px;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:13px;background:var(--fill);font:500 var(--tCap)/1 -apple-system,system-ui;color:var(--ink2)">
+                        <span style="font-size:13px">⌨</span><span>{{ t.hideKb }}</span>
+                      </div>
+                    </div>
+                  </sc-if>
+                </div>
+
+                <sc-if value="{{ kbUp }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:none;height:250px;background:var(--sys);border-top:1px solid var(--line);display:flex;align-items:center;justify-content:center;padding:16px;text-align:center">
+                    <div style="font:500 var(--tCap)/1.5 -apple-system,system-ui;color:var(--sysInk);text-wrap:pretty">{{ t.sysKeyboard }}</div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- ---------- AUDIO IMPORT ---------- -->
+            <sc-if value="{{ isAudio }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 20px;display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <div style="font:700 var(--tH)/1.25 -apple-system,system-ui;letter-spacing:-.01em;color:var(--ink);text-wrap:pretty">{{ t.audioH2 }}</div>
+                  <div style="margin-top:7px;font:400 var(--tSub)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.audioSub }}</div>
+                </div>
+
+                <sc-if value="{{ audioDone }}" hint-placeholder-val="{{ true }}">
+                  <div style="border:1px solid var(--line);border-radius:15px;padding:14px;background:var(--card)">
+                    <div style="display:flex;align-items:center;gap:11px">
+                      <div style="flex:none;width:38px;height:38px;border-radius:12px;background:var(--okTint);color:var(--ok);display:flex;align-items:center;justify-content:center;font:600 15px/1 -apple-system,system-ui">✓</div>
+                      <div style="flex:1;min-width:0">
+                        <div style="font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Встреча команды.m4a</div>
+                        <div style="margin-top:3px;font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">1:00:00</div>
+                      </div>
+                    </div>
+                    <div style="margin-top:12px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                      <div style="font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.transcriptSaved }}</div>
+                      <div style="{{ okChipStyle }}">{{ t.readyChip }}</div>
+                    </div>
+                    <div style="margin-top:11px;height:8px;border-radius:4px;background:var(--fill2);overflow:hidden">
+                      <div style="width:100%;height:100%;border-radius:4px;background:var(--ok)"></div>
+                    </div>
+                    <div style="margin-top:9px;font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink)">1:00:00 {{ t.ofWord }} 1:00:00</div>
+                    <div style="margin-top:3px;font:400 var(--tLab)/1.3 -apple-system,system-ui;color:var(--ink2)">100% · {{ t.savedSections }} 1</div>
+                    <div style="margin-top:12px;border-radius:13px;background:var(--fill);padding:11px 12px">
+                      <div style="font:600 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em">{{ t.transcript }}</div>
+                      <div style="margin-top:8px;display:flex;flex-direction:column;gap:10px">
+                        <sc-for list="{{ transcriptParas }}" as="p" hint-placeholder-count="2">
+                          <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ p.text }}</div>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="margin-top:12px;min-height:48px;border-radius:13px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;gap:8px;font:600 var(--tSub)/1.2 -apple-system,system-ui;padding:0 12px;text-align:center">{{ t.openTranscript }}</div>
+                  </div>
+                  <div style="min-height:48px;border-radius:13px;background:var(--fill);color:var(--ink);display:flex;align-items:center;justify-content:center;gap:7px;font:600 var(--tSub)/1.2 -apple-system,system-ui;padding:0 12px;text-align:center">＋ {{ t.importAnother }}</div>
+                  <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.audioFoot }}</div>
+                  <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.audioDoneBody }}</div>
+                </sc-if>
+
+                <sc-if value="{{ audioEmpty }}" hint-placeholder-val="{{ false }}">
+                  <div style="min-height:48px;border-radius:13px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;gap:8px;font:600 var(--tSub)/1.2 -apple-system,system-ui;padding:0 12px;text-align:center">{{ t.chooseAudio }}</div>
+                  <div style="font:400 var(--tLab)/1.4 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.audioFrom }}</div>
+                  <div style="flex:none;border-radius:15px;background:var(--fill);padding:13px 14px;display:flex;gap:10px;align-items:flex-start;margin-top:6px">
+                    <span style="flex:none;color:var(--ink3);font-size:14px">✓</span>
+                    <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.audioEmptyBody }}</div>
+                  </div>
+                  <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.audioFoot }}</div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- ---------- MEMORY ---------- -->
+            <sc-if value="{{ isMemory }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 20px;display:flex;flex-direction:column;gap:9px">
+                <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:4px 4px 0">{{ t.onDevice }}</div>
+                <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden">
+                  <sc-for list="{{ packRows }}" as="r" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)">
+                      <div style="flex:1;min-width:0">
+                        <div style="font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ r.title }}</div>
+                        <div style="margin-top:3px;font:400 var(--tLab)/1.35 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ r.sub }}</div>
+                      </div>
+                      <div style="{{ r.chipStyle }}">{{ r.chip }}</div>
+                    </div>
+                  </sc-for>
+                  <div style="padding:12px 14px;font:400 var(--tCap)/1.4 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.packsNote }}</div>
+                  <div style="margin:0 14px 14px;min-height:48px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;gap:7px;font:600 var(--tSub)/1.2 -apple-system,system-ui;color:var(--ink)">
+                    <span style="font-size:14px">⊕</span><span>{{ t.langsOffline }}</span>
+                  </div>
+                </div>
+
+                <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:10px 4px 0">{{ t.inMemory }}</div>
+                <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:14px">
+                  <div style="font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink)">{{ t.modelsMem }}</div>
+                  <div style="margin-top:4px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.modelsMemNote }}</div>
+                  <div style="margin-top:11px;display:flex;flex-wrap:wrap;gap:6px">
+                    <sc-for list="{{ memChips }}" as="c" hint-placeholder-count="3">
+                      <div style="{{ c.style }}">{{ c.label }}</div>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="min-height:48px;border-radius:13px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font:600 var(--tSub)/1.2 -apple-system,system-ui;margin-top:3px">{{ t.unload }}</div>
+                <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:2px 2px 0">{{ t.nextSession }}</div>
+              </div>
+            </sc-if>
+
+            <!-- ---------- KEYBOARD DICTATION (sheet) ---------- -->
+            <sc-if value="{{ isKbSetup }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 20px;display:flex;flex-direction:column;gap:12px">
+                <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:14px">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div style="flex:none;width:9px;height:9px;border-radius:5px;background:var(--acc);margin-top:6px"></div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ t.kbActivation }}</div>
+                      <div style="margin-top:5px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.kbActivationBody }}</div>
+                    </div>
+                  </div>
+                  <div style="margin-top:13px;min-height:48px;border-radius:13px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font:600 var(--tSub)/1.2 -apple-system,system-ui;padding:0 12px;text-align:center">{{ t.kbPrepare }}</div>
+                  <div style="margin-top:5px;min-height:44px;display:flex;align-items:center;justify-content:center;font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--accT);padding:0 12px;text-align:center">{{ t.kbHowTitle }}</div>
+                </div>
+
+                <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden">
+                  <sc-for list="{{ kbRows }}" as="r" hint-placeholder-count="4">
+                    <div style="display:flex;align-items:flex-start;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)">
+                      <div style="flex:1;min-width:0">
+                        <div style="font:600 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ r.title }}</div>
+                        <div style="margin-top:3px;font:400 var(--tCap)/1.42 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ r.sub }}</div>
+                      </div>
+                      <div style="{{ r.chipStyle }}">{{ r.chip }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);display:flex;align-items:center;gap:10px;padding:14px">
+                  <div style="flex:1;min-width:0;font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.kbLangMode }}</div>
+                  <div style="flex:none;color:var(--ink3);font-size:13px">›</div>
+                </div>
+
+                <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.kbFoot }}</div>
+                <div style="font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty;padding:0 2px">{{ t.kbFoot2 }}</div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== NOTES ===================== -->
+      <sc-if value="{{ isNotes }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg)">
+          <div style="flex:none;display:flex;align-items:center;gap:10px;padding:6px 18px 12px">
+            <div style="flex:1;min-width:0;font:700 var(--tTitle)/1.15 -apple-system,system-ui;letter-spacing:-.02em;color:var(--ink)">{{ t.notesTitle }}</div>
+            <div style="flex:none;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:16px">⤓</div>
+            <div style="flex:none;width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:16px">⚙</div>
+          </div>
+          <div style="flex:none;padding:0 18px 12px">
+            <div style="min-height:44px;border-radius:13px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;gap:9px;padding:0 13px">
+              <span style="color:var(--ink3);font-size:14px">⌕</span>
+              <span style="font:400 var(--tSub)/1.2 -apple-system,system-ui;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ t.search }}</span>
+            </div>
+          </div>
+
+          <sc-if value="{{ notesImport }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;margin:0 18px 12px;border-radius:15px;background:var(--accTint);padding:11px 12px;display:flex;align-items:center;gap:11px">
+              <div style="flex:none;width:34px;height:34px;border-radius:17px;background:var(--sheet);color:var(--accT);display:flex;align-items:center;justify-content:center;font-size:13px">❙❙</div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                  <div style="font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Встреча команды.m4a</div>
+                  <div style="flex:none;background:var(--sheet);color:var(--accT);border-radius:6px;padding:4px 8px;font:600 var(--tLab)/1 -apple-system,system-ui">{{ t.pausedChip }}</div>
+                </div>
+                <div style="margin-top:5px;height:4px;border-radius:2px;background:var(--fill2);overflow:hidden">
+                  <div style="width:40%;height:100%;border-radius:2px;background:var(--acc)"></div>
+                </div>
+                <div style="margin-top:5px;font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink2)">24:00 {{ t.ofWord }} 1:00:00</div>
+              </div>
+              <div style="flex:none;font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--accT)">{{ t.open }}</div>
+            </div>
+          </sc-if>
+
+          <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 12px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ noteCards }}" as="n" hint-placeholder-count="1">
+              <div style="border:1px solid var(--line);border-radius:15px;background:var(--card);padding:14px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="flex:none;background:var(--accTint);color:var(--accT);border-radius:6px;padding:4px 8px;font:500 var(--tLab)/1 -apple-system,system-ui;letter-spacing:.06em">{{ t.noteBadge }}</div>
+                  <div style="flex:1;min-width:0"></div>
+                  <div style="flex:none;font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ n.date }}</div>
+                </div>
+                <sc-if value="{{ n.partial }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:9px;font:600 var(--tCap)/1.25 -apple-system,system-ui;color:var(--accT)">{{ t.partial }}</div>
+                </sc-if>
+                <div style="margin-top:7px;font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ n.title }}</div>
+                <div style="margin-top:6px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ n.body }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="flex:none;padding:4px 18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+            <div style="font:400 var(--tLab)/1.35 -apple-system,system-ui;color:var(--ink3);text-align:center;text-wrap:pretty">{{ t.recordHint }}</div>
+            <div style="display:flex;align-items:center;justify-content:center;gap:26px">
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div style="width:56px;height:56px;border-radius:28px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink)">
+                  <span style="width:20px;height:18px;border:1.7px solid currentColor;border-radius:5px;display:flex;align-items:center;justify-content:center;font:700 10px/1 -apple-system,system-ui">A</span>
+                </div>
+                <div style="font:500 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink2)">{{ t.tabTranslate }}</div>
+              </div>
+              <div style="width:82px;height:82px;border-radius:41px;background:var(--acc);display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 8px 22px rgba(224,122,47,.3)">
+                <span style="width:4px;height:18px;border-radius:2px;background:var(--onAcc)"></span>
+                <span style="width:4px;height:30px;border-radius:2px;background:var(--onAcc)"></span>
+                <span style="width:4px;height:40px;border-radius:2px;background:var(--onAcc)"></span>
+                <span style="width:4px;height:28px;border-radius:2px;background:var(--onAcc)"></span>
+                <span style="width:4px;height:20px;border-radius:2px;background:var(--onAcc)"></span>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+                <div style="width:56px;height:56px;border-radius:28px;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--ink);font-size:17px">⌨</div>
+                <div style="font:500 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink2)">{{ t.tabKeyboard }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== SETTINGS (pushed screen) ===================== -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--bg)">
+          <div style="flex:none;padding:2px 18px 6px;font:400 var(--tBody)/1.2 -apple-system,system-ui;color:var(--accT)">‹ {{ t.notesTitle }}</div>
+          <div style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding:0 18px 20px;display:flex;flex-direction:column;gap:9px">
+            <div style="flex:none;font:700 var(--tTitle)/1.15 -apple-system,system-ui;letter-spacing:-.02em;color:var(--ink);padding:2px 0 6px">{{ t.sheetTitleSet }}</div>
+
+            <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:4px 4px 0;flex:none">{{ t.secSpeech }}</div>
+            <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden">
+              <div style="display:flex;align-items:center;gap:10px;padding:14px;border-bottom:1px solid var(--line)">
+                <div style="flex:1;min-width:0;font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.langsOffline }}</div>
+                <div style="flex:none;font:400 var(--tSub)/1.2 -apple-system,system-ui;color:var(--ink3)">5</div>
+                <div style="flex:none;color:var(--ink3);font-size:13px">›</div>
+              </div>
+              <div style="padding:14px">
+                <div style="display:flex;align-items:center;gap:5px;font:600 var(--tBody)/1.25 -apple-system,system-ui;color:var(--accT)">
+                  <span>{{ srcLangName }}</span><span style="font:400 12px/1 -apple-system,system-ui;opacity:.75">▼</span>
+                </div>
+                <div style="margin-top:13px;font:400 var(--tSub)/1.25 -apple-system,system-ui;color:var(--ink)">{{ t.modeLabel }}</div>
+                <div style="margin-top:9px;display:flex;gap:3px;padding:3px;border-radius:11px;background:var(--fill)">
+                  <sc-for list="{{ modeSeg }}" as="m" hint-placeholder-count="3">
+                    <div style="{{ m.style }}">{{ m.label }}</div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:11px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.modeNote }}</div>
+              </div>
+            </div>
+
+            <sc-for list="{{ setSections }}" as="s" hint-placeholder-count="2">
+              <div style="flex:none">
+                <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:14px 4px 9px">{{ s.title }}</div>
+                <div style="border:1px solid var(--line);border-radius:15px;background:var(--card);overflow:hidden">
+                  <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--line)">
+                      <div style="flex:1;min-width:0">
+                        <div style="font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ r.label }}</div>
+                        <div style="margin-top:3px;font:400 var(--tCap)/1.4 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ r.sub }}</div>
+                      </div>
+                      <div style="flex:none;color:var(--ink3);font-size:13px">›</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+
+            <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:14px 4px 9px;flex:none">{{ t.secSaving }}</div>
+            <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);padding:14px">
+              <div style="font:600 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ t.savingTitle }}</div>
+              <div style="margin-top:6px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ t.savingBody }}</div>
+            </div>
+
+            <div style="font:600 var(--tLab)/1.3 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding:14px 4px 9px;flex:none">{{ t.secHelp }}</div>
+            <div style="flex:none;border:1px solid var(--line);border-radius:15px;background:var(--card);display:flex;align-items:center;gap:12px;padding:14px">
+              <div style="flex:1;min-width:0;font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink)">{{ t.help }}</div>
+              <div style="flex:none;color:var(--ink3);font-size:13px">›</div>
+            </div>
+
+            <div style="flex:none;text-align:center;padding:20px 0 0;font:400 var(--tCap)/1.5 -apple-system,system-ui;color:var(--ink3);white-space:pre-line">{{ t.about }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== KEYBOARD RESULT ===================== -->
+      <sc-if value="{{ isKbResult }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--sys)">
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-end;padding:14px;gap:10px">
+            <div style="font:400 var(--tLab)/1.3 -apple-system,system-ui;color:var(--sysInk);text-align:center">{{ t.hostField }}</div>
+            <div style="border-radius:15px;background:var(--fill2);padding:14px 14px 18px;font:400 var(--tSub)/1.3 -apple-system,system-ui;color:var(--ink3)">…</div>
+          </div>
+          <div style="flex:none;background:var(--bg);border-top:1px solid var(--line);padding:10px 12px 14px;display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <img src="mascot.png" alt="" style="flex:none;width:22px;height:22px;object-fit:contain">
+              <div style="flex:1;min-width:0;font:700 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink);letter-spacing:-.01em">Murmator</div>
+              <div style="{{ okChipStyle }}">{{ t.resultReady }}</div>
+              <div style="flex:none;font:500 var(--tLab)/1 -apple-system,system-ui;color:var(--ink3)">{{ t.micOn }}</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;min-height:40px;border-radius:11px;background:var(--fill);display:flex;align-items:center;justify-content:center;gap:4px;font:600 var(--tCap)/1 -apple-system,system-ui;color:var(--ink)">{{ srcLangCode }} <span style="font:400 10px/1 -apple-system,system-ui;opacity:.7">▼</span></div>
+              <div style="flex:1;min-height:40px;border-radius:11px;background:var(--fill);display:flex;align-items:center;justify-content:center;gap:4px;font:600 var(--tCap)/1 -apple-system,system-ui;color:var(--ink)">→ {{ dstLangCode }} <span style="font:400 10px/1 -apple-system,system-ui;opacity:.7">▼</span></div>
+            </div>
+            <div style="border-radius:13px;background:var(--fill);padding:10px 12px">
+              <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ t.resultLabel }}</div>
+              <div style="margin-top:5px;font:400 var(--tSub)/1.35 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">Lähetän asiakirjat huomenna.</div>
+            </div>
+            <div style="min-height:48px;border-radius:13px;background:var(--acc);color:var(--onAcc);display:flex;align-items:center;justify-content:center;font:600 var(--tSub)/1.2 -apple-system,system-ui">{{ t.insertText }}</div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;min-height:44px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:500 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink2);padding:0 8px;text-align:center">{{ t.insertOriginal }}</div>
+              <div style="flex:none;width:56px;min-height:44px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--ink2);font:500 var(--tCap)/1 -apple-system,system-ui">ABC</div>
+              <div style="flex:none;width:56px;min-height:44px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;color:var(--ink2);font:400 15px/1 -apple-system,system-ui">⌦</div>
+              <div style="flex:1;min-height:44px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:500 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink2)">{{ t.send }}</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== WIDGETS ===================== -->
+      <sc-if value="{{ isWidgets }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:var(--bg);padding:18px">
+          <sc-if value="{{ wShowSmall }}" hint-placeholder-val="{{ true }}">
+            <div style="width:170px;height:170px;box-sizing:border-box;border-radius:26px;background:#17120f;padding:13px;display:flex;flex-direction:column;gap:9px;color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.24)">
+              <div style="display:flex;align-items:center;gap:6px">
+                <img src="mascot.png" alt="" style="width:15px;height:15px;object-fit:contain">
+                <div style="font:700 12px/1 -apple-system,system-ui;letter-spacing:-.01em">Murmator</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;flex:1">
+                <sc-for list="{{ wTiles4 }}" as="x" hint-placeholder-count="4">
+                  <div style="{{ x.style }}">
+                    <div style="{{ x.dot }}"></div>
+                    <div style="{{ x.lab }}">{{ x.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ wShowMedium }}" hint-placeholder-val="{{ true }}">
+            <div style="width:360px;height:170px;box-sizing:border-box;border-radius:26px;background:#17120f;padding:13px 15px;display:flex;flex-direction:column;gap:8px;color:#fff;box-shadow:0 10px 26px rgba(0,0,0,.24)">
+              <div style="display:flex;align-items:center;gap:7px">
+                <img src="mascot.png" alt="" style="width:15px;height:15px;object-fit:contain">
+                <div style="flex:1;min-width:0;font:700 12px/1 -apple-system,system-ui;letter-spacing:-.01em">Murmator</div>
+                <div style="font:400 9.5px/1 -apple-system,system-ui;color:rgba(255,255,255,.45)">{{ t.wUpdated }}</div>
+              </div>
+              <div style="font:400 10px/1.2 -apple-system,system-ui;color:rgba(255,255,255,.55)">{{ t.wUnloaded }}</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;flex:1">
+                <sc-for list="{{ wTiles6 }}" as="x" hint-placeholder-count="6">
+                  <div style="{{ x.style }}">
+                    <div style="{{ x.dot }}"></div>
+                    <div style="{{ x.lab }}">{{ x.label }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="font:400 var(--tLab)/1.4 -apple-system,system-ui;color:var(--ink3);text-align:center;max-width:300px;text-wrap:pretty">{{ t.wNote }}</div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== APPLE PROPOSALS P01–P08 ===================== -->
+      <sc-if value="{{ isP }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-height:0;display:flex;flex-direction:column;background:var(--sys);position:relative">
+          <div style="flex:1;min-height:0;padding:16px 16px 0;display:flex;flex-direction:column;gap:10px">
+            <div style="font:400 var(--tLab)/1.3 -apple-system,system-ui;color:var(--sysInk);text-align:center">{{ t.pHostNote }}</div>
+            <div style="font:400 var(--tSub)/1.5 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">
+              <span>Kiitos viestistä. </span><span style="background:rgba(120,160,255,.32);border-radius:3px">{{ pSelected }}</span><span> Voimmeko jatkaa huomenna?</span>
+            </div>
+          </div>
+          <div style="flex:none;margin:0 10px 12px;border-radius:15px;background:var(--sheet);border:1px solid var(--line);box-shadow:0 -6px 30px rgba(0,0,0,.16);padding:14px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <img src="mascot.png" alt="" style="flex:none;width:20px;height:20px;object-fit:contain">
+              <div style="flex:1;min-width:0;font:600 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink)">{{ pTitle }}</div>
+              <div style="flex:none;width:28px;height:28px;border-radius:14px;background:var(--fill);color:var(--ink3);display:flex;align-items:center;justify-content:center;font-size:12px">✕</div>
+            </div>
+
+            <sc-if value="{{ pShowSource }}" hint-placeholder-val="{{ true }}">
+              <div style="border-radius:13px;background:var(--fill);padding:10px 12px">
+                <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ pSourceLabel }}</div>
+                <div style="margin-top:5px;font:400 var(--tSub)/1.38 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ pSelected }}</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pShowLangs }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:stretch;gap:8px">
+                <div style="flex:1;min-width:0;min-height:44px;border-radius:13px;background:var(--fill);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 11px">
+                  <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ pFromLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:4px;font:600 var(--tCap)/1.25 -apple-system,system-ui;color:var(--accT)">
+                    <span style="text-wrap:pretty">{{ pFromValue }}</span>
+                    <span style="flex:none;font:400 10px/1 -apple-system,system-ui;opacity:.75">▼</span>
+                  </div>
+                </div>
+                <div style="flex:none;display:flex;align-items:center;color:var(--ink3);font-size:13px">→</div>
+                <div style="flex:1;min-width:0;min-height:44px;border-radius:13px;background:var(--fill);display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 11px">
+                  <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--ink3)">{{ t.toLabel }}</div>
+                  <div style="display:flex;align-items:center;gap:4px;font:600 var(--tCap)/1.25 -apple-system,system-ui;color:var(--accT)">
+                    <span style="text-wrap:pretty">{{ pToValue }}</span>
+                    <span style="flex:none;font:400 10px/1 -apple-system,system-ui;opacity:.75">▼</span>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pShowBar }}" hint-placeholder-val="{{ false }}">
+              <div style="height:8px;border-radius:4px;background:var(--fill2);overflow:hidden">
+                <div style="width:30%;height:100%;border-radius:4px;background:var(--acc);animation:mslide 1.5s ease-in-out infinite"></div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pShowResult }}" hint-placeholder-val="{{ false }}">
+              <div style="border-radius:13px;background:var(--accTint);padding:10px 12px">
+                <div style="font:400 var(--tLab)/1.2 -apple-system,system-ui;color:var(--accT);text-transform:uppercase;letter-spacing:.04em">{{ t.resultLabel }}</div>
+                <div style="margin-top:5px;font:400 var(--tSub)/1.38 -apple-system,system-ui;color:var(--ink);text-wrap:pretty">{{ pResult }}</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ pShowMsg }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ pMsgStyle }}">
+                <div style="font:600 var(--tCap)/1.35 -apple-system,system-ui;text-wrap:pretty">{{ pMsgTitle }}</div>
+                <div style="margin-top:4px;font:400 var(--tCap)/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">{{ pMsgBody }}</div>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <div style="{{ pPrimaryStyle }}">{{ pPrimary }}</div>
+              <sc-if value="{{ pSecondary }}" hint-placeholder-val="{{ false }}">
+                <div style="min-height:44px;border-radius:13px;background:var(--fill);display:flex;align-items:center;justify-content:center;font:500 var(--tCap)/1.2 -apple-system,system-ui;color:var(--ink2);text-align:center;padding:0 10px">{{ pSecondary }}</div>
+              </sc-if>
+            </div>
+
+            <div style="font:400 var(--tLab)/1.4 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty">{{ pFoot }}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ chromeApp }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:none;height:22px;display:flex;align-items:center;justify-content:center">
+          <div style="width:126px;height:5px;border-radius:3px;background:var(--ink);opacity:.28"></div>
+        </div>
+      </sc-if>
+    </div>
+
+    <div style="max-width:560px;display:flex;flex-direction:column;gap:8px;padding-top:2px">
+      <div style="font:600 11.5px/1.5 -apple-system,system-ui;color:rgba(74,62,52,.75);text-wrap:pretty">{{ scWhat }}</div>
+      <div style="font:400 11.5px/1.6 -apple-system,system-ui;color:rgba(74,62,52,.55);text-wrap:pretty">{{ scDesign }}</div>
+    </div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:1200}}">
+class Component extends DCLogic {
+  state = { screen:'translate-text-draft', theme:'light', lang:'ru', dev:'lg', type:'std' };
+
+  dict() {
+    return {
+      ru: {
+        sheetTitleTr:'Перевод', sheetTitleAudio:'Импорт аудио', sheetTitleMem:'Память', sheetTitleSet:'Настройки',
+        done:'Готово', cancel:'Отмена', open:'Открыть', ofWord:'из', help:'Помощь',
+        tabText:'Текст', tabVoice:'Голос',
+        lockedTabs:'Переключение вкладок недоступно, пока идёт перевод',
+        fromLabel:'С языка', toLabel:'Перевести на', spokenLabel:'Я говорю на',
+        srcLabel:'Текст для перевода', clear:'Очистить', paste:'Вставить',
+        placeholder:'Введите или вставьте текст',
+        limitHint:'До 10 000 символов за раз',
+        translateBtn:'Перевести текст', translateAgain:'Перевести заново',
+        running:'Переводим текст…', durUnknown:'Длительность заранее неизвестна.',
+        cancelling:'Отмена…', cancelBody:'Новый перевод можно запустить после остановки. Введённый текст сохранён.',
+        prepTitle:'Подготовка моделей перевода…', prepBody:'Это подготовка языкового пакета, а не процент перевода.',
+        resultLabel:'Перевод', copyTr:'Скопировать перевод', shareSystem:'«Поделиться» — системное меню, получателя выбираете вы',
+        editSrc:'Изменить',
+        errTitle:'Не удалось перевести. Исходный текст сохранён.',
+        errBody:'Повторите тем же действием «Перевести текст» или выберите другую пару языков.',
+        details:'Подробности',
+        limitTitle:'Больше 10 000 символов', limitBody:'Текст не обрезается автоматически. Сократите его, чтобы запустить перевод.',
+        swappedNote:'Перевод стал исходным текстом, направление обращено. Прежний результат больше не показывается.',
+        foot1:'Текст переводится на этом iPhone. Языковые пакеты может потребоваться скачать один раз.',
+        foot2:'Текст не сохраняется в заметки автоматически.',
+        hideKb:'Скрыть клавиатуру', sysKeyboard:'Системная клавиатура · не элемент Murmator',
+        whileSpeak:'Пока ты говоришь',
+        voiceBody:'Быстрый перевод появляется вслед за речью. Завершённые фразы уточняются перед сохранением заметки.',
+        voiceNote:'Скачай модели выбранных языков один раз для перевода без интернета.',
+        speakBtn:'Говорить и переводить',
+        notesTitle:'Заметки', search:'Поиск по заметкам',
+        recordHint:'Нажми и говори · или используй кнопку действия',
+        tabTranslate:'Перевод', tabKeyboard:'Клавиатура',
+        noteBadge:'ЗАМЕТКА', partial:'Частичная расшифровка', pausedChip:'Пауза',
+        audioH2:'Расшифровать запись',
+        audioSub:'Обработка на этом iPhone. Можно приостановить в любой момент — готовый текст сохранится.',
+        transcriptSaved:'Расшифровка сохранена', readyChip:'Готово',
+        savedSections:'Сохранено фрагментов:', transcript:'Расшифровка',
+        openTranscript:'Открыть расшифровку', importAnother:'Импортировать ещё запись',
+        audioFoot:'Оригиналы записей не меняются. Копия аудио удаляется после успешной расшифровки или удаления импорта.',
+        audioDoneBody:'Открыть расшифровку можно до закрытия листа. После закрытия успешное задание убирается из списка, заметка остаётся в «Заметках».',
+        audioEmptyBody:'Успешное задание убрано после закрытия листа. Заметка сохранена в «Заметках»; истории готовых импортов здесь нет.',
+        chooseAudio:'Выбрать аудио', audioFrom:'Из «Диктофона», «Файлов» или меню «Поделиться»',
+        onDevice:'На устройстве', inMemory:'В оперативной памяти',
+        packsNote:'Выгрузка моделей не удаляет языковые пакеты и заметки.',
+        langsOffline:'Языки и офлайн',
+        modelsMem:'Модели в памяти', modelsMemNote:'Murmator держит модели в памяти для текущей работы.',
+        unload:'Выгрузить модели',
+        nextSession:'В следующей сессии выбранные модели загрузятся с устройства. Повторно скачивать их не нужно.',
+        about:'Murmator · 1.0\nРаспознавание речи на устройстве',
+        secSpeech:'Распознавание речи', secTools:'Инструменты', secDevice:'Устройство', secSaving:'Сохранение', secHelp:'Помощь',
+        modeLabel:'Режим', modeNote:'Сначала появляется черновик, затем текст уточняется.',
+        modeFast:'Быстрый', modeHybrid:'Двойной', modeAccurate:'Точный',
+        savingTitle:'Заметки остаются на этом iPhone',
+        savingBody:'Отправляй заметки в Заметки Apple или другие приложения через меню «Поделиться». Murmator не отправляет их автоматически.',
+        kbTitle:'Диктовка с клавиатуры',
+        kbActivation:'Нужна активация',
+        kbActivationBody:'Запустите сессию диктовки и вернитесь в своё приложение.',
+        kbPrepare:'Подготовить диктовку',
+        kbHowTitle:'Как настроить клавиатуру',
+        kbLangMode:'Язык и режим',
+        kbFoot:'Между фразами микрофон остаётся включённым, но звук не обрабатывается и не сохраняется. Он выключится через 5 минут без новой записи или через минуту после закрытия клавиатуры.',
+        kbFoot2:'Полный доступ проверяется в клавиатуре отдельно от разрешения микрофона. Приложение не может проверить эту настройку.',
+        hostField:'Пример поля другого приложения',
+        resultReady:'Результат готов', micOn:'Микр. вкл.',
+        insertText:'Вставить текст', insertOriginal:'Вставить оригинал', send:'Отправить',
+        wUpdated:'Обновлено 11:43', wUnloaded:'Модели выгружены',
+        wNote:'Виджеты — отдельные рендеры компонентов. Действия открывают существующие маршруты Murmator.',
+        pHostNote:'Другое приложение · системное меню выделения',
+        pFromLabelFix:'Язык исходника',
+      },
+      en: {
+        sheetTitleTr:'Translate', sheetTitleAudio:'Audio import', sheetTitleMem:'Memory', sheetTitleSet:'Settings',
+        done:'Done', cancel:'Cancel', open:'Open', ofWord:'of', help:'Help',
+        tabText:'Text', tabVoice:'Voice',
+        lockedTabs:'Switching tabs is unavailable while a translation runs',
+        fromLabel:'From language', toLabel:'Translate to', spokenLabel:'I speak',
+        srcLabel:'Text to translate', clear:'Clear', paste:'Paste',
+        placeholder:'Type or paste text here',
+        limitHint:'Up to 10,000 characters at a time',
+        translateBtn:'Translate text', translateAgain:'Translate again',
+        running:'Translating text…', durUnknown:'Duration is not known in advance.',
+        cancelling:'Cancelling…', cancelBody:'A new translation can start once this one stops. Your text is kept.',
+        prepTitle:'Preparing translation models…', prepBody:'This prepares the language pack. It is not a percentage of the translation.',
+        resultLabel:'Translation', copyTr:'Copy translation', shareSystem:'Share is the system sheet — you choose the destination',
+        editSrc:'Edit',
+        errTitle:'Could not translate. Your text is kept.',
+        errBody:'Retry with the same Translate text button, or choose a different language pair.',
+        details:'Details',
+        limitTitle:'Over 10,000 characters', limitBody:'The text is not trimmed automatically. Shorten it to start the translation.',
+        swappedNote:'The translation became the source text and the direction is reversed. The previous result is no longer shown.',
+        foot1:'Text is translated on this iPhone. Language packs may need a one-time download.',
+        foot2:'Text is not saved as a note automatically.',
+        hideKb:'Hide keyboard', sysKeyboard:'System keyboard · not a Murmator element',
+        whileSpeak:'While you speak',
+        voiceBody:'A quick translation follows your voice. Completed phrases are then refined before the note is saved.',
+        voiceNote:'Download the selected language models once to translate offline.',
+        speakBtn:'Speak & translate',
+        notesTitle:'Notes', search:'Search transcripts',
+        recordHint:'Tap to talk · or use the Action Button',
+        tabTranslate:'Translate', tabKeyboard:'Keyboard',
+        noteBadge:'NOTE', partial:'Partial transcript', pausedChip:'Paused',
+        audioH2:'Transcribe a recording',
+        audioSub:'Processed on this iPhone. Pause at any time; completed text is saved.',
+        transcriptSaved:'Transcript saved', readyChip:'Done',
+        savedSections:'Saved sections:', transcript:'Transcript',
+        openTranscript:'Open transcript', importAnother:'Import another recording',
+        audioFoot:'Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import.',
+        audioDoneBody:'You can open the transcript before this sheet closes. After it closes the successful job is removed from the list and the note stays in Notes.',
+        audioEmptyBody:'The successful job was removed when the sheet closed. The note is saved in Notes; no history of finished imports is kept here.',
+        chooseAudio:'Choose audio', audioFrom:'From Voice Memos, Files or the system share sheet',
+        onDevice:'On device', inMemory:'In memory',
+        packsNote:'Unloading models does not remove downloaded language packs or notes.',
+        langsOffline:'Languages & offline',
+        modelsMem:'Models in memory', modelsMemNote:'Models are held by Murmator for the current work.',
+        unload:'Unload models',
+        nextSession:'The next session will load the selected models from the device. No new download is needed.',
+        about:'Murmator · 1.0\nOn-device voice to text',
+        secSpeech:'Speech', secTools:'Tools', secDevice:'Device', secSaving:'Saving', secHelp:'Help',
+        modeLabel:'Mode', modeNote:'A live draft appears first, then your words are refined.',
+        modeFast:'Fast', modeHybrid:'Hybrid', modeAccurate:'Accurate',
+        savingTitle:'Notes stay on this iPhone',
+        savingBody:'Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically.',
+        kbTitle:'Keyboard dictation',
+        kbActivation:'Activation needed',
+        kbActivationBody:'Start a dictation session, then return to your app.',
+        kbPrepare:'Prepare dictation',
+        kbHowTitle:'Keyboard setup instructions',
+        kbLangMode:'Language and mode',
+        kbFoot:'The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard.',
+        kbFoot2:'Full Access is checked by the keyboard, not by microphone permission. Murmator cannot check this setting from inside the app.',
+        hostField:'Example field in another app',
+        resultReady:'Result ready', micOn:'Mic on',
+        insertText:'Insert text', insertOriginal:'Insert original', send:'Send',
+        wUpdated:'Updated 11:43', wUnloaded:'Models unloaded',
+        wNote:'Widgets are separate component renders. The controls open existing Murmator routes.',
+        pHostNote:'Another app · system selection menu',
+        pFromLabelFix:'Source language',
+      }
+    };
+  }
+
+  meta() {
+    return {
+      'translate-text':          { g:'text', n:['Текст: пустой ввод','Text: empty input'], w:['Редактор пуст, системная вставка доступна, запуск выключен.','Empty editor, system paste available, run disabled.'], d:['Вставка переведена во вторичный вид: системная кнопка рядом с меткой, а не цветной акцент экрана.','Paste is demoted to a secondary system button next to the label, not the screen accent.'] },
+      'translate-text-typing':   { g:'text', p:1, n:['Текст: ввод с клавиатуры','Text: typing'], w:['Фокус в редакторе, кнопка скрытия клавиатуры, сноски убраны.','Editor focused, hide-keyboard button, footnotes hidden.'], d:['Нового ID в SCREENS.md нет — предложение. Системная клавиатура показана как системный блок, а не нарисованная копия.','No ID in SCREENS.md yet — a proposal. The system keyboard is shown as a system block, not a hand-drawn copy.'] },
+      'translate-text-draft':    { g:'text', n:['Текст: готов к переводу','Text: ready to translate'], w:['Языки, обмен, исходный текст, счётчик и запуск.','Languages, swap, source text, counter and run.'], d:['CTA закреплён в нижней панели: результат после перевода не уезжает под кнопку. Редактор растёт по содержимому от 132 pt.','The CTA is pinned to a bottom bar so the result never falls below it. The editor grows from 132 pt with its content.'] },
+      'translate-text-preparing':{ g:'text', n:['Подготовка языкового пакета','Preparing the language pack'], w:['Определённый прогресс 36% с прямой подписью, что это подготовка.','Determinate 36% progress, labelled as preparation.'], d:['Подготовка — единственное состояние с процентом. Языки, обмен и очистка гаснут до 38% без изменения размеров.','Preparation is the only state with a percentage. Languages, swap and clear drop to 38% opacity without changing size.'] },
+      'translate-text-running':  { g:'text', n:['Перевод выполняется','Translating'], w:['Неопределённый индикатор без числа, действие отмены.','Indeterminate indicator with no number, cancel action.'], d:['Полоса бежит и не имеет шкалы, чтобы её нельзя было прочитать как процент.','The bar slides and has no scale, so it cannot be read as a percentage.'] },
+      'translate-text-cancelling':{ g:'text', n:['Ожидание отмены','Waiting for cancel'], w:['«Отмена…» — состояние; кнопка отмены и запуск недоступны.','Cancelling… is a state; the cancel button and run are unavailable.'], d:['Индикатор теряет акцентный цвет и замедляется — видно, что работа гаснет, а не идёт.','The indicator loses the accent colour and slows down, so the work reads as stopping, not running.'] },
+      'translate-text-result':   { g:'text', n:['Текст: результат','Text: result'], w:['Оригинал свёрнут, перевод, копирование и системное «Поделиться».','Source collapsed, translation, copy and system share.'], d:['Оригинал сжимается до трёх строк с «Изменить», перевод получает акцентную подложку, CTA становится «Перевести заново».','The source collapses to three lines with Edit, the translation gets the accent ground, and the CTA becomes Translate again.'] },
+      'translate-text-swapped':  { g:'text', n:['После обмена языков','After swapping languages'], w:['Перевод стал исходным текстом, направление обращено, прежний результат снят.','The translation became the source, the direction is reversed, the old result is gone.'], d:['Строка-объяснение под парой языков: обмен после успеха выглядит как продолжение, а не потеря результата.','One explanatory line under the language pair, so a swap after success reads as a continuation, not a loss.'] },
+      'translate-text-error':    { g:'text', n:['Ошибка перевода','Translation error'], w:['Общая формулировка, исходник остаётся, подробности по раскрытию.','A plain message, the source stays, details on disclosure.'], d:['Повтор — та же кнопка внизу, отдельной кнопки «Повторить» в карточке нет: два запуска путают.','Retry is the same bottom button; the card has no separate Retry, since two run buttons confuse.'] },
+      'translate-text-limit':    { g:'text', n:['Превышен лимит','Over the limit'], w:['Больше 10 000 символов, запуск выключен, обрезания нет.','Over 10,000 characters, run disabled, no trimming.'], d:['Счётчик и сообщение используют один цвет ошибки; лимит объясняется словами, а не только красным числом.','The counter and the message share one error colour; the limit is explained in words, not only by a red number.'] },
+      'translate':               { g:'chg', c:'C04–C05', n:['Голосовая вкладка','Voice tab'], w:['Прежняя голосовая функция внутри вкладки Голос.','The existing voice feature inside the Voice tab.'], d:['Вкладка сохраняет ту же анатомию, что текстовая: пара языков, пояснение, один CTA внизу.','The tab keeps the same anatomy as the text tab: language pair, explanation, one CTA at the bottom.'] },
+      'notes':                   { g:'chg', c:'C01–C02', n:['Заметки: незавершённый импорт','Notes: unfinished import'], w:['Компактная кнопка импорта 44×44 pt и временная строка статуса.','A compact 44×44 pt import button and a temporary status row.'], d:['Строка статуса имеет прогресс, чип состояния и «Открыть» — её нельзя спутать с постоянным входом. Большая карточка не возвращается.','The status row has progress, a state chip and Open, so it cannot be mistaken for a permanent entry. The big card does not come back.'] },
+      'notes-clean':             { g:'chg', c:'C01–C03', n:['Заметки: без активного импорта','Notes: no active import'], w:['Под поиском сразу заметки.','Notes come straight after search.'], d:['Импорт живёт только в круглой кнопке у шестерёнки; готовый импорт не остаётся статусом на главной.','Import lives only in the round button by the gear; a finished import does not stay as a status on the main screen.'] },
+      'audio-complete':          { g:'chg', c:'C03', n:['Импорт: завершён в текущем листе','Import: finished in this sheet'], w:['Расшифровка сохранена, её можно открыть до закрытия листа.','The transcript is saved and can be opened before the sheet closes.'], d:['Состав листа сохранён; добавлена одна строка о том, что произойдёт после закрытия — иначе исчезновение задания выглядит как потеря.','The sheet composition is kept; one line was added about what happens after closing, otherwise the job disappearing reads as a loss.'] },
+      'audio-empty':             { g:'chg', c:'C03', n:['Импорт: повторное открытие','Import: reopened'], w:['Успешное задание убрано, заметка сохранена.','The successful job is gone, the note is kept.'], d:['Вместо высокого пустого листа — та же кнопка и спокойное объяснение, куда делось прошлое задание.','Instead of a tall empty sheet: the same button plus a calm explanation of where the previous job went.'] },
+      'memory-text':             { g:'chg', c:'C06', n:['Память: текстовые модели','Memory: text models'], w:['Общий экран учитывает текстовый переводчик.','The shared screen counts the text translator.'], d:['Разделение «на устройстве / в памяти» сохранено; residency показана чипами по типам моделей, а не по одной паре языков.','The on-device / in-memory split stays; residency is shown per model type, not guessed from one language pair.'] },
+      'settings':                { g:'chg', c:'C08', n:['Настройки','Settings'], w:['Существующие разделы: речь, инструменты, устройство, сохранение, помощь.','The existing sections: speech, tools, device, saving, help.'], d:['Состав строк оставлен как есть. Переключателя переводчика по умолчанию нет: перевод открывается нижней кнопкой и виджетом.','The row inventory is left as is. There is no default-translator switch: translation opens from the bottom button and the widget.'] },
+      'keyboard-setup':          { g:'chg', c:'C07', n:['Диктовка с клавиатуры','Keyboard dictation'], w:['Активация, полный доступ, микрофон, модели, сессия, язык и режим.','Activation, Full Access, microphone, models, session, language and mode.'], d:['Четыре строки состояния сохранены. Имя Murmator проверено в подсказках; чипы не обрезаются при XXL.','The four status rows are kept. The Murmator name is checked in the hints; chips do not clip at XXL.'] },
+      'keyboard-result':         { g:'chg', c:'C07', n:['Клавиатура: результат','Keyboard: result'], w:['Более длинное имя Murmator в компактном заголовке.','The longer Murmator name in the compact header.'], d:['Заголовок переносится в две строки при XXL, имя не сжимается и чип не обрезается.','The header wraps to two rows at XXL; the name is not squeezed and the chip is not clipped.'] },
+      'widgets':                 { g:'wid', c:'C07', n:['Виджеты вместе','Widgets together'], w:['Текущее имя, кнопки открывают существующие маршруты.','The current name; buttons open existing routes.'], d:['Один акцент — диктовка. Остальные плитки нейтральные.','One accent only — dictation. The other tiles stay neutral.'] },
+      'widget-small':            { g:'wid', c:'C07', n:['Виджет small','Small widget'], w:['Отдельный рендер компонента 170×170 pt.','A separate 170×170 pt component render.'], d:['Имя Murmator на 12 pt semibold сохраняет иерархию заголовка при четырёх плитках.','Murmator at 12 pt semibold keeps the header hierarchy with four tiles.'] },
+      'widget-medium':           { g:'wid', c:'C07', n:['Виджет medium','Medium widget'], w:['Отдельный рендер компонента 360×170 pt.','A separate 360×170 pt component render.'], d:['Строка состояния моделей отделена от плиток; «Выгрузить в Murmator» переносится в две строки.','The model-state line sits apart from the tiles; Unload in Murmator wraps to two lines.'] },
+      P01:{ g:'ap', p:1, n:['Как назначить переводчик','How to set the translator'], w:['Объяснение, путь в Settings, действие открытия настроек.','An explanation, the Settings path, and an action to open Settings.'], d:['Ни одна строка не утверждает, что функция уже включена. Экран Apple Settings не перерисован.','No line claims the feature is already on. The Apple Settings screen is not redrawn.'] },
+      P02:{ g:'ap', p:1, n:['Получено выделение','Selection received'], w:['Исходный текст, язык с возможностью исправить, целевой язык, запуск.','Source text, a correctable language, target language, run.'], d:['Повторная вставка не требуется. Лист компактный: полноэкранный редактор здесь не переиспользуется.','No re-paste is required. The sheet is compact — the full-screen editor is not reused here.'] },
+      P03:{ g:'ap', p:1, n:['Перевод','Translating'], w:['Неопределённый индикатор, исходник доступен, отмена.','Indeterminate indicator, source visible, cancel.'], d:['Тот же язык индикации, что в приложении, но в габаритах контекстного листа.','The same indicator language as in the app, at context-sheet scale.'] },
+      P04:{ g:'ap', p:1, n:['Результат в редактируемом поле','Result in an editable field'], w:['Перевод, копирование, «Заменить переводом».','Translation, copy, Replace with translation.'], d:['Замена показана только когда исходный элемент её разрешает; это не настройка Murmator.','Replacement appears only when the source element allows it; it is not a Murmator setting.'] },
+      P05:{ g:'ap', p:1, n:['Результат для чтения','Read-only result'], w:['Перевод, копирование, закрытие. Замены нет.','Translation, copy, close. No replacement.'], d:['Отличие от P04 — отсутствие замены, а не другой визуальный стиль.','The difference from P04 is the missing replacement, not a different visual style.'] },
+      P06:{ g:'ap', p:1, n:['Нет языкового пакета','No language pack'], w:['Объяснение подготовки в основном приложении, условный переход.','An explanation of preparation in the main app, with a conditional hand-off.'], d:['CTA помечена как условная: публичный переход не подтверждён, поэтому рядом дана ручная инструкция.','The CTA is marked conditional: the public hand-off is unconfirmed, so a manual instruction sits next to it.'] },
+      P07:{ g:'ap', p:1, n:['Ошибка','Error'], w:['Исходник остаётся, повтор и выбор языка, закрытие.','The source stays; retry, language choice, close.'], d:['Формулировка та же, что в приложении, чтобы состояние читалось одинаково в обоих местах.','The wording matches the app so the state reads the same in both places.'] },
+      P08:{ g:'ap', p:1, n:['Пустой или слишком длинный текст','Empty or too long selection'], w:['Явное объяснение, выбор языка или уменьшение выделения.','A plain explanation; choose a language or select less.'], d:['Без молчаливого обрезания и без выдуманной уверенности определения языка.','No silent trimming and no invented confidence in language detection.'] }
+    };
+  }
+
+  pill(active) {
+    return 'cursor:pointer;user-select:none;padding:5px 10px;border-radius:7px;font:'+(active?'600':'500')+' 11.5px/1.35 -apple-system,system-ui;'
+      + (active ? 'background:#2a2520;color:#fdf8f1;' : 'color:rgba(74,62,52,.7);');
+  }
+
+  set(k, v) { return () => this.setState({ [k]: v }); }
+
+  renderVals() {
+    const s = this.state, ru = s.lang === 'ru';
+    const t0 = this.dict()[s.lang], M = this.meta(), m = M[s.screen] || M['translate-text-draft'];
+    const i = ru ? 0 : 1;
+
+    const sc = s.screen;
+    const isTT = sc.indexOf('translate-text') === 0;
+    const isVoice = sc === 'translate';
+    const isText = isTT;
+    const isTr = isTT || isVoice;
+    const isAudio = sc === 'audio-complete' || sc === 'audio-empty';
+    const isMemory = sc === 'memory-text';
+    const isSettings = sc === 'settings';
+    const isNotes = sc === 'notes' || sc === 'notes-clean';
+    const isKbSetup = sc === 'keyboard-setup';
+    const isKbResult = sc === 'keyboard-result';
+    const isWidgets = sc.indexOf('widget') === 0;
+    const isP = sc.charAt(0) === 'P';
+    const isSheet = isTr || isAudio || isMemory || isKbSetup;
+
+    const prep = sc === 'translate-text-preparing';
+    const running = sc === 'translate-text-running';
+    const cancelling = sc === 'translate-text-cancelling';
+    const busy = prep || running || cancelling;
+    const hasResult = sc === 'translate-text-result';
+    const isError = sc === 'translate-text-error';
+    const overLimit = sc === 'translate-text-limit';
+    const swapped = sc === 'translate-text-swapped';
+    const typing = sc === 'translate-text-typing';
+    const empty = sc === 'translate-text';
+    const srcEmpty = empty || typing;
+    const kbUp = typing;
+
+    const t = Object.assign({}, t0, {
+      sheetTitle: isTr ? t0.sheetTitleTr : isAudio ? t0.sheetTitleAudio : isMemory ? t0.sheetTitleMem : t0.kbTitle,
+      fromLabel: isVoice ? t0.spokenLabel : t0.fromLabel
+    });
+
+    const src = ru
+      ? ['Отправлю документы завтра.', 'Можем встретиться в три часа?']
+      : ['I will send the documents tomorrow.', 'Can we meet at three?'];
+    const fi = ['Lähetän asiakirjat huomenna.', 'Voimmeko tavata kello kolme?'];
+
+    let srcParas = src, resParas = fi, srcName = ru ? 'Русский' : 'English', dstName = ru ? 'Финский' : 'Finnish';
+    let srcCode = ru ? 'RU' : 'EN', dstCode = 'FI', chars = ru ? 57 : 63;
+    if (swapped) { srcParas = fi; srcName = ru ? 'Финский' : 'Finnish'; dstName = ru ? 'Русский' : 'English'; srcCode = 'FI'; dstCode = ru ? 'RU' : 'EN'; chars = 61; }
+    if (overLimit) { chars = 10412; }
+    if (srcEmpty) { chars = 0; }
+    const counterText = (overLimit ? '10 412' : String(chars)) + ' / 10 000';
+
+    const dimmed = busy ? 'opacity:.38;' : '';
+    const w = s.dev === 'sm' ? 375 : 402, h = s.dev === 'sm' ? 667 : 874;
+
+    const cta = 'min-height:52px;padding-top:8px;padding-bottom:8px;border-radius:13px;display:flex;align-items:center;justify-content:center;gap:9px;font:600 var(--tSub)/1.2 -apple-system,system-ui;padding:0 14px;';
+    const runnable = !busy && !overLimit && !srcEmpty;
+
+    const chip = (kind) => 'flex:none;border-radius:6px;padding:5px 8px;font:600 var(--tLab)/1.2 -apple-system,system-ui;'
+      + (kind === 'ok' ? 'background:var(--okTint);color:var(--ok);'
+        : kind === 'acc' ? 'background:var(--accTint);color:var(--accT);'
+        : 'background:var(--fill);color:var(--ink2);');
+
+    const tile = (on) => 'border-radius:11px;padding:8px;display:flex;flex-direction:column;justify-content:space-between;'
+      + (on ? 'background:#E07A2F;' : 'background:rgba(255,255,255,.09);');
+    const tdot = (on) => 'width:5px;height:5px;border-radius:3px;background:' + (on ? '#241F1C' : 'rgba(255,255,255,.4)') + ';';
+    const tlab = (on) => 'font:600 9.5px/1.2 -apple-system,system-ui;color:' + (on ? '#241F1C' : '#fff') + ';';
+    const mk = (arr) => arr.map(x => ({ label: x.label, style: tile(x.on), dot: tdot(x.on), lab: tlab(x.on) }));
+
+    const modeSeg = [t0.modeFast, t0.modeHybrid, t0.modeAccurate].map((lab, k) => ({
+      label: lab,
+      style: 'flex:1;min-height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 4px;font:600 var(--tCap)/1.2 -apple-system,system-ui;'
+        + (k === 1 ? 'background:var(--sheet);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);' : 'color:var(--ink2);')
+    }));
+
+    const setSections = [
+      { title: t0.secTools, rows: [
+        { label: ru ? 'Клавиатура' : 'Keyboard', sub: ru ? 'Диктовка в других приложениях' : 'Dictate in other apps' },
+        { label: ru ? 'Импорт аудио' : 'Audio import', sub: ru ? 'Записи, обработка и готовый текст' : 'Recordings, progress and saved transcripts' } ] },
+      { title: t0.secDevice, rows: [
+        { label: ru ? 'Память' : 'Memory', sub: ru ? 'Языковые пакеты и модели в памяти' : 'Downloaded packs and loaded models' } ] }
+    ];
+
+    const packRows = [
+      { title: ru ? 'Модели распознавания' : 'Speech models', sub: ru ? 'Русский · двойной режим' : 'Russian · hybrid mode', chip: ru ? 'Скачано' : 'Downloaded', chipStyle: chip('ok') },
+      { title: ru ? 'Пакеты перевода · голос' : 'Translation packs · voice', sub: 'RU → FI', chip: ru ? 'Скачано' : 'Downloaded', chipStyle: chip('ok') },
+      { title: ru ? 'Пакеты перевода · текст' : 'Translation packs · text', sub: ru ? '26 языков перевода, отдельный набор от голоса' : '26 translation languages, a set separate from voice', chip: ru ? 'Скачано' : 'Downloaded', chipStyle: chip('ok') }
+    ];
+    const memChips = [
+      { label: (ru ? 'Распознавание · ' : 'Speech · ') + (ru ? 'загружены' : 'loaded'), style: chip('acc') },
+      { label: (ru ? 'Перевод текста · ' : 'Text translation · ') + (ru ? 'загружены' : 'loaded'), style: chip('acc') },
+      { label: (ru ? 'Импорт аудио · ' : 'Audio import · ') + (ru ? 'выгружены' : 'unloaded'), style: chip('') }
+    ];
+    const kbRows = [
+      { title: ru ? 'Полный доступ' : 'Full Access', sub: ru ? 'Полный доступ проверяется в клавиатуре отдельно от разрешения микрофона.' : 'Full Access is checked by the keyboard, separately from microphone permission.', chip: ru ? 'Подтверждён' : 'Confirmed', chipStyle: chip('ok') },
+      { title: ru ? 'Микрофон' : 'Microphone', sub: ru ? 'Системное разрешение. Оно не означает готовность моделей.' : 'A system permission. It does not mean models are ready.', chip: ru ? 'Разрешён' : 'Allowed', chipStyle: chip('ok') },
+      { title: ru ? 'Модели в памяти' : 'Models in memory', sub: ru ? 'Подготовка речи и перевода должна завершиться до начала диктовки.' : 'Speech and translation must finish preparing before dictation starts.', chip: ru ? 'Выгружены' : 'Unloaded', chipStyle: chip('') },
+      { title: ru ? 'Сессия' : 'Session', sub: ru ? 'Когда сессия готова, вернитесь в своё приложение.' : 'Return to your app manually when the session is ready.', chip: ru ? 'Неактивна' : 'Inactive', chipStyle: chip('') }
+    ];
+
+    const noteBody = ru
+      ? 'Обсудили план на следующую неделю. Подготовим короткий прототип и проверим его на встрече…'
+      : 'We went through next week’s plan. We will prepare a short prototype and review it at the meeting…';
+    const noteCards = [{ date: ru ? '7 сент., 12:20' : 'Sep 7, 12:20', partial: sc === 'notes', title: 'Встреча команды.m4a', body: noteBody }];
+
+    const transcriptParas = (ru
+      ? ['Обсудили план на следующую неделю. Подготовим короткий прототип и проверим его на встрече.',
+         'Я соберу замечания команды и отправлю обновлённый вариант в четверг.',
+         'Отдельно проверим удобство импорта и п…']
+      : ['We went through next week’s plan. We will prepare a short prototype and review it at the meeting.',
+         'I will collect the team’s notes and send an updated version on Thursday.',
+         'We will separately check how convenient the import is and…']).map(x => ({ text: x }));
+
+    // ---- Apple proposals ----
+    const pSelected = 'Lähetän asiakirjat huomenna.';
+    const pResRu = 'Отправлю документы завтра.', pResEn = 'I will send the documents tomorrow.';
+    const P = {
+      P01: { title: ru ? 'Переводчик по умолчанию' : 'Default translator', src: false, langs: false, msg: ['', ru ? 'Murmator ещё не выбран переводчиком по умолчанию' : 'Murmator is not the default translator yet', ru ? 'Приложение назначаете вы сами в системных настройках. Проверить эту настройку изнутри Murmator нельзя.' : 'You choose the app yourself in system settings. Murmator cannot check this setting from inside.'], primary: ru ? 'Открыть настройки' : 'Open Settings', on: true, foot: ru ? 'Функция не включена в текущей сборке. Экран системных настроек принадлежит iOS.' : 'The feature is not enabled in the current build. The system settings screen belongs to iOS.' },
+      P02: { title: ru ? 'Выделенный текст' : 'Selected text', src: true, langs: true, primary: ru ? 'Перевести' : 'Translate', on: true, foot: ru ? 'Выделение передано системой. Вставлять текст заново не нужно.' : 'The selection arrives from the system. No re-paste is needed.' },
+      P03: { title: ru ? 'Переводим…' : 'Translating…', src: true, langs: false, bar: true, primary: ru ? 'Отмена' : 'Cancel', on: false, foot: ru ? 'Длительность заранее неизвестна.' : 'Duration is not known in advance.' },
+      P04: { title: ru ? 'Перевод готов' : 'Translation ready', src: true, langs: false, result: true, primary: ru ? 'Заменить переводом' : 'Replace with translation', on: true, secondary: ru ? 'Скопировать' : 'Copy', foot: ru ? 'Замена доступна, потому что исходное поле её разрешает. Это свойство поля, а не настройка Murmator.' : 'Replacement is offered because the source field allows it. That is a property of the field, not a Murmator setting.' },
+      P05: { title: ru ? 'Перевод готов' : 'Translation ready', src: true, langs: false, result: true, primary: ru ? 'Скопировать' : 'Copy', on: true, secondary: ru ? 'Закрыть' : 'Close', foot: ru ? 'Исходное поле не разрешает замену, поэтому действия замены здесь нет.' : 'The source field does not allow replacement, so no replace action is shown.' },
+      P06: { title: ru ? 'Подготовьте язык' : 'Prepare this language', src: true, langs: true, msg: ['warn', ru ? 'Пакета для этой пары ещё нет на устройстве' : 'This pair has no pack on the device yet', ru ? 'Пакеты скачиваются в основном приложении, в разделе «Языки и офлайн».' : 'Packs are downloaded in the main app, under Languages & offline.'], primary: (ru ? 'Открыть Murmator' : 'Open Murmator') + ' *', on: true, secondary: ru ? 'Показать инструкцию' : 'Show instructions', foot: ru ? '* Переход из контекстного листа не подтверждён публичным API. Запасной вариант — ручная инструкция.' : '* The hand-off from a context sheet is not confirmed by public API. The fallback is a manual instruction.' },
+      P07: { title: ru ? 'Не удалось перевести' : 'Could not translate', src: true, langs: true, msg: ['err', ru ? 'Перевод не завершён' : 'The translation did not finish', ru ? 'Выделенный текст остался. Попробуйте снова или укажите другой исходный язык.' : 'The selected text is kept. Try again or set a different source language.'], primary: ru ? 'Повторить' : 'Retry', on: true, secondary: ru ? 'Закрыть' : 'Close', foot: ru ? 'Формулировка совпадает с ошибкой в приложении.' : 'The wording matches the in-app error.' },
+      P08: { title: ru ? 'Выделите меньше текста' : 'Select less text', src: true, langs: true, msg: ['warn', ru ? 'Больше 10 000 символов' : 'Over 10,000 characters', ru ? 'Текст не обрезается. Уменьшите выделение или задайте язык, если он определён неточно.' : 'The text is not trimmed. Select less, or set the language if detection is uncertain.'], primary: ru ? 'Выбрать язык' : 'Choose a language', on: true, secondary: ru ? 'Закрыть' : 'Close', foot: ru ? 'Определение языка показано как предположение, а не как факт.' : 'Language detection is shown as a guess, not a fact.' }
+    };
+    const p = P[sc] || P.P02;
+    const msgStyle = (k) => 'border-radius:13px;padding:10px 12px;'
+      + (k === 'err' ? 'background:var(--errTint);color:var(--err);' : k === 'warn' ? 'background:var(--accTint);color:var(--accT);' : 'background:var(--fill);color:var(--ink);');
+
+    const groups = [
+      { title: ru ? 'Текст · приоритет 1' : 'Text · priority 1', keys: ['translate-text','translate-text-typing','translate-text-draft','translate-text-preparing','translate-text-running','translate-text-cancelling','translate-text-result','translate-text-swapped','translate-text-error','translate-text-limit'] },
+      { title: ru ? 'Обновлённые окна' : 'Updated screens', keys: ['translate','notes','notes-clean','audio-complete','audio-empty','memory-text','settings','keyboard-setup','keyboard-result'] },
+      { title: ru ? 'Виджеты' : 'Widgets', keys: ['widgets','widget-small','widget-medium'] },
+      { title: ru ? 'Apple · предложение' : 'Apple · proposal', keys: ['P01','P02','P03','P04','P05','P06','P07','P08'] }
+    ].map(g => ({ title: g.title, items: g.keys.map(k => ({
+      label: k === 'translate-text' ? 'translate-text' : k.replace('translate-text-', ''),
+      go: this.set('screen', k),
+      style: this.pill(k === sc)
+    })) }));
+
+    const ctlGroups = [
+      { items: [['light', ru ? 'Светлая' : 'Light'], ['dark', ru ? 'Тёмная' : 'Dark']].map(x => ({ label: x[1], go: this.set('theme', x[0]), style: this.pill(s.theme === x[0]) })) },
+      { items: [['ru', 'RU'], ['en', 'EN']].map(x => ({ label: x[1], go: this.set('lang', x[0]), style: this.pill(s.lang === x[0]) })) },
+      { items: [['lg', '402 × 874'], ['sm', '375 × 667']].map(x => ({ label: x[1], go: this.set('dev', x[0]), style: this.pill(s.dev === x[0]) })) },
+      { items: [['std', ru ? 'Обычный шрифт' : 'Default type'], ['xxl', 'XXL']].map(x => ({ label: x[1], go: this.set('type', x[0]), style: this.pill(s.type === x[0]) })) }
+    ];
+
+    return {
+      t, theme: s.theme, type: s.type,
+      frameStyle: 'width:' + w + 'px;height:' + h + 'px;box-sizing:border-box;border-radius:' + (s.dev === 'sm' ? 30 : 46) + 'px;overflow:hidden;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;border:1px solid rgba(60,40,20,.16);box-shadow:0 22px 50px rgba(50,35,20,.18);font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;',
+      groups, ctlGroups,
+      scId: sc, scName: m.n[i], scWhat: m.w[i], scDesign: m.d[i],
+      scProposed: !!m.p, scChange: m.c || '',
+      chromeApp: !isWidgets,
+      isSheet, isTr, isText, isVoice, isAudio, isMemory, isSettings, isNotes, isKbSetup, isKbResult, isWidgets, isP,
+      sheetTitleStyle: 'flex:1;min-width:0;font:700 ' + (isKbSetup ? 'var(--tH)' : 'var(--tTitle)') + '/1.18 -apple-system,system-ui;letter-spacing:-.02em;color:var(--ink);text-wrap:pretty',
+      tabTextStyle: 'flex:1;min-height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:600 var(--tCap)/1.2 -apple-system,system-ui;' + (isText ? 'background:var(--sheet);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);' : 'color:var(--ink2);') + dimmed,
+      tabVoiceStyle: 'flex:1;min-height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font:600 var(--tCap)/1.2 -apple-system,system-ui;' + (isVoice ? 'background:var(--sheet);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08);' : 'color:var(--ink2);') + dimmed,
+      langRowStyle: 'display:flex;gap:8px;' + (s.type === 'xxl' ? 'flex-direction:column;align-items:stretch;' : 'align-items:center;') + dimmed,
+      swapGlyph: isVoice ? '→' : '⇄',
+      swapStyle: 'flex:none;align-self:center;width:44px;height:44px;border-radius:22px;display:flex;align-items:center;justify-content:center;color:var(--ink2);font:400 17px/1 -apple-system,system-ui;' + (isVoice ? '' : 'background:var(--fill);'),
+      srcLangName: srcName, dstLangName: dstName, srcLangCode: srcCode, dstLangCode: dstCode,
+      srcCardStyle: 'border:1px solid ' + (overLimit ? 'var(--err)' : 'var(--line)') + ';border-radius:15px;background:var(--card);display:flex;flex-direction:column;flex:none;',
+      editorStyle: 'padding:10px 14px;' + (hasResult ? 'max-height:calc(var(--tBody) * 3.1);overflow:hidden;mask-image:linear-gradient(180deg,#000 62%,transparent);' : 'min-height:' + (kbUp ? 96 : 132) + 'px;') + dimmed,
+      showSrcHeader: !hasResult, showSrcFooter: !hasResult, srcCollapsed: hasResult,
+      showPaste: srcEmpty && !busy, showClear: !srcEmpty,
+      clearStyle: 'flex:none;height:28px;display:flex;align-items:center;padding:0 6px;font:600 var(--tCap)/1 -apple-system,system-ui;color:' + (busy ? 'var(--ink3)' : 'var(--accT)') + ';' + (busy ? 'opacity:.5;' : ''),
+      hasSrc: !srcEmpty, srcEmpty, caret: typing, srcParas: srcParas.map(x => ({ text: x })), resParas: resParas.map(x => ({ text: x })),
+      counterText, counterStyle: 'flex:none;font:600 var(--tLab)/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;color:' + (overLimit ? 'var(--err)' : 'var(--ink3)') + ';',
+      prep, running, cancelling, busy, hasResult, isError, overLimit, swapped, kbUp,
+      showFootnotes: isText && !kbUp && !busy,
+      busyLabel: prep ? t.prepTitle : running ? t.running : t.cancelling,
+      cancelBtnStyle: 'flex:none;min-height:44px;padding:0 16px;border-radius:13px;display:flex;align-items:center;justify-content:center;font:600 var(--tCap)/1 -apple-system,system-ui;' + (cancelling ? 'background:var(--fill);color:var(--ink3);opacity:.45;' : 'background:var(--fill2);color:var(--ink);'),
+      showCta: !busy && !kbUp,
+      ctaStyle: cta + (runnable ? 'background:var(--acc);color:var(--onAcc);' : 'background:var(--fill2);color:var(--ink3);'),
+      ctaLabel: isVoice ? t.speakBtn : (hasResult ? t.translateAgain : t.translateBtn),
+      okChipStyle: chip('ok'),
+      audioDone: sc === 'audio-complete', audioEmpty: sc === 'audio-empty', transcriptParas,
+      notesImport: sc === 'notes', noteCards,
+      packRows, memChips, setSections, kbRows, modeSeg,
+      wShowSmall: sc === 'widgets' || sc === 'widget-small',
+      wShowMedium: sc === 'widgets' || sc === 'widget-medium',
+      wTiles4: mk([{ label: ru ? 'Диктовка' : 'Dictate', on: true }, { label: ru ? 'Перевод' : 'Translate' }, { label: ru ? 'Выгрузить в Murmator' : 'Unload in Murmator' }, { label: ru ? 'Настройки' : 'Settings' }]),
+      wTiles6: mk([{ label: ru ? 'Диктовка' : 'Dictate', on: true }, { label: ru ? 'Перевод' : 'Translate' }, { label: ru ? 'Клавиатура' : 'Keyboard' }, { label: ru ? 'Выгрузить в Murmator' : 'Unload in Murmator' }, { label: ru ? 'Языки' : 'Languages' }, { label: ru ? 'Настройки' : 'Settings' }]),
+      pSourceLabel: ru ? 'Выделенный текст' : 'Selected text',
+      pTitle: p.title, pSelected, pShowSource: !!p.src, pShowLangs: !!p.langs, pShowBar: !!p.bar,
+      pShowResult: !!p.result, pResult: ru ? pResRu : pResEn,
+      pShowMsg: !!p.msg, pMsgStyle: p.msg ? msgStyle(p.msg[0]) : '', pMsgTitle: p.msg ? p.msg[1] : '', pMsgBody: p.msg ? p.msg[2] : '',
+      pFromLabel: t0.pFromLabelFix, pFromValue: ru ? 'Финский' : 'Finnish', pToValue: ru ? 'Русский' : 'English',
+      pPrimary: p.primary, pSecondary: p.secondary || '',
+      pPrimaryStyle: 'min-height:48px;border-radius:13px;display:flex;align-items:center;justify-content:center;font:600 var(--tCap)/1.2 -apple-system,system-ui;text-align:center;padding:0 12px;' + (p.on ? 'background:var(--acc);color:var(--onAcc);' : 'background:var(--fill2);color:var(--ink3);'),
+      pFoot: p.foot
+    };
+  }
+}
+
+</script>
+</body>
+</html>

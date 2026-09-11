@@ -1,0 +1,45 @@
+import Foundation
+import MurmurCore
+
+public actor SafariEngineProbe {
+    public static let shared = SafariEngineProbe()
+    public private(set) var preparing = 0
+    public private(set) var unloaded = 0
+    public private(set) var inference = 0
+    public private(set) var live = 0
+    public private(set) var peak = 0
+    public var pausePreparation = true
+    public var pauseUnload = true
+    public func reset(pausePreparation: Bool, pauseUnload: Bool) {
+        preparing = 0; unloaded = 0; inference = 0; live = 0; peak = 0
+        self.pausePreparation = pausePreparation; self.pauseUnload = pauseUnload
+    }
+    public func prepared() { preparing += 1; live += 1; peak = max(peak, live) }
+    public func translated() { inference += 1 }
+    public func release() { unloaded += 1; live -= 1 }
+}
+public enum TextTranslationSession {
+    public static func availableTargets(from source: String, modelsRoot: URL) -> [String] {
+        ["en", "fi", "ru"].filter { $0 != source }
+    }
+}
+public actor PageTranslationSession: TextTranslationEngine {
+    public init(modelsRoot: URL) {}
+    public func prepare(from: String, to: String, onProgress: @escaping @MainActor @Sendable (Double) -> Void) async throws {
+        await SafariEngineProbe.shared.prepared()
+        await onProgress(0.25)
+        if await SafariEngineProbe.shared.pausePreparation { try await Task.sleep(for: .seconds(10)) }
+    }
+    public func translate(_ text: String, from: String, to: String) async throws -> String {
+        await SafariEngineProbe.shared.translated()
+        return "translated " + text
+    }
+    public var residentModelCount: Int { 0 }
+    public func unload() async {
+        if await SafariEngineProbe.shared.pauseUnload {
+            // Cleanup has to finish even after the translation task is cancelled.
+            await Task.detached { try? await Task.sleep(for: .milliseconds(120)) }.value
+        }
+        await SafariEngineProbe.shared.release()
+    }
+}

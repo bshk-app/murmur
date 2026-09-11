@@ -1,0 +1,701 @@
+"Your voice.\nYour words." = "Your voice.\nYour words.";
+"Private by design." = "Private by design.";
+"Make it yours." = "Make it yours.";
+"Ready for your\nnext thought." = "Ready for your\nnext thought.";
+"Speak naturally. Murmator turns a thought into a note — and refines it while you speak." = "Speak naturally. Murmator turns a thought into a note — and refines it while you speak.";
+"Recognition and translation run on your iPhone. Audio isn't uploaded or kept in your notes." = "Recognition and translation run on your iPhone. Audio isn't uploaded or kept in your notes.";
+"Choose your spoken language. Models download once and stay on your device." = "Choose your spoken language. Models download once and stay on your device.";
+"Start from Murmator, a Lock Screen widget, or an Action Button shortcut." = "Start from Murmator, a Lock Screen widget, or an Action Button shortcut.";
+"Back" = "Back";
+"Continue" = "Continue";
+"Start using Murmator" = "Start using Murmator";
+"I speak" = "I speak";
+"Download & prepare models" = "Download & prepare models";
+"Downloading and loading models…" = "Downloading and loading models…";
+"Warming up models…" = "Warming up models…";
+"Downloaded and warmed up" = "Downloaded and warmed up";
+"Keep Murmator open. Models download once and warm up for this session." = "Keep Murmator open. Models download once and warm up for this session.";
+"Models run a short silent test. Microphone access is not needed yet." = "Models run a short silent test. Microphone access is not needed yet.";
+"Model preparation failed" = "Model preparation failed";
+"Murmator mascot" = "Murmator mascot";
+"Step %lld of 4" = "Step %lld of 4";
+"Notes" = "Notes";
+"Note" = "Note";
+"NOTE" = "NOTE";
+"Search transcripts" = "Search transcripts";
+"A little thought.\nA note worth keeping." = "A little thought.\nA note worth keeping.";
+"Speak naturally. Murmator turns your voice into text, right on this iPhone." = "Speak naturally. Murmator turns your voice into text, right on this iPhone.";
+"Tap to talk · or use the Action Button" = "Tap to talk · or use the Action Button";
+"Record a note" = "Record a note";
+"Translate" = "Translate";
+"Keyboard" = "Keyboard";
+"Settings" = "Settings";
+"Cancel" = "Cancel";
+"Done" = "Done";
+"OK" = "OK";
+"Listening" = "Listening";
+"Listening…" = "Listening…";
+"Refining" = "Refining";
+"Getting ready" = "Getting ready";
+"Cancel recording" = "Cancel recording";
+"What's on your mind?" = "What's on your mind?";
+"A moment for your words." = "A moment for your words.";
+"Stop & save" = "Stop & save";
+"Stop & translate" = "Stop & translate";
+"You said · %@" = "You said · %@";
+"Audio stayed on this iPhone. Only the text is saved." = "Audio stayed on this iPhone. Only the text is saved.";
+"Edit" = "Edit";
+"Edit note" = "Edit note";
+"Delete" = "Delete";
+"Delete note" = "Delete note";
+"Delete this note?" = "Delete this note?";
+"Note actions" = "Note actions";
+"Save" = "Save";
+"Send to Apple Notes" = "Send to Apple Notes";
+"Copy" = "Copy";
+"Copied" = "Copied";
+"Share" = "Share";
+"Translate to" = "Translate to";
+"While you speak" = "While you speak";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved.";
+"Download the selected language models once to translate offline." = "Download the selected language models once to translate offline.";
+"Translation is not available for this language yet. You can still record a note." = "Translation is not available for this language yet. You can still record a note.";
+"Speak & translate" = "Speak & translate";
+"Speech" = "Speech";
+"Spoken language" = "Spoken language";
+"Mode" = "Mode";
+"Fast" = "Fast";
+"Hybrid" = "Hybrid";
+"Accurate" = "Accurate";
+"Hybrid shows a live draft and corrects it on a separate backend." = "Hybrid shows a live draft and corrects it on a separate backend.";
+"Models" = "Models";
+"Speech model" = "Speech model";
+"Ready on this device" = "Ready on this device";
+"Preparation needed" = "Preparation needed";
+"Download & prepare" = "Download & prepare";
+"Import model folder" = "Import model folder";
+"Advanced Core ML models can be imported as a CoreMLModels folder. Your speech never leaves the device." = "Advanced Core ML models can be imported as a CoreMLModels folder. Your speech never leaves the device.";
+"Appearance" = "Appearance";
+"Theme" = "Theme";
+"System" = "System";
+"Light" = "Light";
+"Dark" = "Dark";
+"Ways to start" = "Ways to start";
+"Action Button" = "Action Button";
+"Assign “Record a Murmator note” in Action Button or Shortcuts settings." = "Assign “Record a Murmator note” in Action Button or Shortcuts settings.";
+"Murmator keyboard" = "Murmator keyboard";
+"Lock Screen widget" = "Lock Screen widget";
+"Add the Murmator widget to your Lock Screen. It opens the app for recording." = "Add the Murmator widget to your Lock Screen. It opens the app for recording.";
+"Saving" = "Saving";
+"Notes stay on this iPhone" = "Notes stay on this iPhone";
+"Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically." = "Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically.";
+"Murmator · 1.0\nOn-device voice to text" = "Murmator · 1.0\nOn-device voice to text";
+"Your words, in any app." = "Your words, in any app.";
+"Record in Murmator, then use the Murmator keyboard to insert your latest saved text." = "Record in Murmator, then use the Murmator keyboard to insert your latest saved text.";
+"1. Open Settings → General → Keyboard.\n\n2. Add Murmator under Keyboards.\n\n3. Switch with the globe key and tap Insert." = "1. Open Settings → General → Keyboard.\n\n2. Add Murmator under Keyboards.\n\n3. Switch with the globe key and tap Insert.";
+"The keyboard does not record audio or send text over the network." = "The keyboard does not record audio or send text over the network.";
+"Insert latest note" = "Insert latest note";
+"Next keyboard" = "Next keyboard";
+"Refresh note" = "Refresh note";
+"Delete character" = "Delete character";
+"Return" = "Return";
+"Record a note in Murmator, then return here to insert it." = "Record a note in Murmator, then return here to insert it.";
+"Choose a model that supports the selected language." = "Choose a model that supports the selected language.";
+"Preparing speech models…" = "Preparing speech models…";
+"Preparing translation models…" = "Preparing translation models…";
+"Microphone access" = "Microphone access";
+"Allow microphone access in Settings to record a note." = "Allow microphone access in Settings to record a note.";
+"Draft first, refined a beat later" = "Draft first, refined a beat later";
+"Listening on this iPhone" = "Listening on this iPhone";
+"Refining your note…" = "Refining your note…";
+"Recording stopped. The captured text was kept." = "Recording stopped. The captured text was kept.";
+"Models imported" = "Models imported";
+"Could not save recovery text: %@" = "Could not save recovery text: %@";
+"The original text is saved. Translation: %@" = "The original text is saved. Translation: %@";
+"Record a Murmator note" = "Record a Murmator note";
+"Open Murmator and start on-device dictation." = "Open Murmator and start on-device dictation.";
+"Record with Murmator" = "Record with Murmator";
+"Open Murmator to capture a thought on your iPhone." = "Open Murmator to capture a thought on your iPhone.";
+"Murmator transcribes your voice on this device." = "Murmator transcribes your voice on this device.";
+"Set up models again" = "Set up models again";
+"Say it once" = "Say it once";
+"Let Murmator hear you" = "Let Murmator hear you";
+"Add your languages" = "Add your languages";
+"Warming up the models" = "Warming up the models";
+"Talk in any app" = "Talk in any app";
+"Choose languages for dictation and optional translation. Download them now or add them later in Settings." = "Choose languages for dictation and optional translation. Download them now or add them later in Settings.";
+"A short silent test prepares the models for use. You can continue or skip setup while preparation runs." = "A short silent test prepares the models for use. You can continue or skip setup while preparation runs.";
+"Microphone allowed" = "Microphone allowed";
+"Allow microphone" = "Allow microphone";
+"Optional now. Murmator will ask when you start your first recording." = "Optional now. Murmator will ask when you start your first recording.";
+"Choose languages" = "Choose languages";
+"1. Open Settings → General → Keyboard." = "1. Open Settings → General → Keyboard.";
+"2. Add the Murmator keyboard." = "2. Add the Murmator keyboard.";
+"3. Record in Murmator, then switch keyboards to insert your text." = "3. Record in Murmator, then switch keyboards to insert your text.";
+"Keyboard setup" = "Keyboard setup";
+"Step %lld of 5" = "Step %lld of 5";
+"Finish setup" = "Finish setup";
+"Skip setup" = "Skip setup";
+"Languages & offline" = "Languages & offline";
+"Offline after download" = "Offline after download";
+"After downloading, the selected languages work without internet. Audio stays on your iPhone. You can skip this and download later." = "After downloading, the selected languages work without internet. Audio stays on your iPhone. You can skip this and download later.";
+"Dictation languages" = "Dictation languages";
+"Add speech language" = "Add speech language";
+"Translation languages · optional" = "Translation languages · optional";
+"Translate from" = "Translate from";
+"No downloadable OPUS translation pack is available for this source language yet." = "No downloadable OPUS translation pack is available for this source language yet.";
+"Add translation language" = "Add translation language";
+"Downloaded" = "Downloaded";
+"Prepare again" = "Prepare again";
+"Download & warm up" = "Download & warm up";
+"You can keep going. Preparation continues while Murmator is open." = "You can keep going. Preparation continues while Murmator is open.";
+"Prepare when it suits you" = "Prepare when it suits you";
+"Nothing to download right now? Continue to your notes. Language packs can be added in Settings at any time." = "Nothing to download right now? Continue to your notes. Language packs can be added in Settings at any time.";
+"Speech engines are tested on a physical iPhone. This simulator only tests the interface." = "Speech engines are tested on a physical iPhone. This simulator only tests the interface.";
+"Preparing dictation" = "Preparing dictation";
+"Preparing live text" = "Preparing live text";
+"Preparing offline dictation" = "Preparing offline dictation";
+"Could not prepare this language. Please try again." = "Could not prepare this language. Please try again.";
+"Could not prepare translation for these languages. Please try again." = "Could not prepare translation for these languages. Please try again.";
+"Could not refine text. Your draft is still available." = "Could not refine text. Your draft is still available.";
+"Could not start dictation. Check microphone access and language downloads." = "Could not start dictation. Check microphone access and language downloads.";
+"A live draft appears first, then your words are refined." = "A live draft appears first, then your words are refined.";
+"Replay setup tour" = "Replay setup tour";
+"A quick translation follows your voice. Completed phrases are then refined before the note is saved." = "A quick translation follows your voice. Completed phrases are then refined before the note is saved.";
+"Translation is not available to download for this language yet." = "Translation is not available to download for this language yet.";
+"Translation could not be completed. Your original text is kept." = "Translation could not be completed. Your original text is kept.";
+"Text refined" = "Text refined";
+"Not downloaded" = "Not downloaded";
+"Downloading" = "Downloading";
+"Warming up" = "Warming up";
+"Ready offline" = "Ready offline";
+"Failed" = "Failed";
+"Needs warm-up" = "Needs warm-up";
+"Selecting a language does not download it." = "Selecting a language does not download it.";
+"Retry" = "Retry";
+"Details" = "Details";
+"Dismiss" = "Dismiss";
+"Remove" = "Remove";
+"Reverse direction is a separate pack." = "Reverse direction is a separate pack.";
+"Add" = "Add";
+"Already added" = "Already added";
+"Not supported yet" = "Not supported yet";
+"Nothing is downloading right now." = "Nothing is downloading right now.";
+"No notes yet" = "No notes yet";
+"Tap the mic and say the first one." = "Tap the mic and say the first one.";
+"No matches" = "No matches";
+"Clear search" = "Clear search";
+"Update translation" = "Update translation";
+"Translation may not match the edited text." = "Translation may not match the edited text.";
+"Could not save the note" = "Could not save the note";
+"Recovered draft" = "Recovered draft";
+"Advanced" = "Advanced";
+"This mode does not support the selected language." = "This mode does not support the selected language.";
+"Pack is on the device but not loaded in memory." = "Pack is on the device but not loaded in memory.";
+"Hybrid needs a second model for this language." = "Hybrid needs a second model for this language.";
+"Import failed" = "Import failed";
+"Choose a folder in Files" = "Choose a folder in Files";
+"Microphone is off" = "Microphone is off";
+"Open Settings" = "Open Settings";
+"Not now" = "Not now";
+"Widget & Live Activity" = "Widget & Live Activity";
+"Murmator cannot check this setting from inside the app." = "Murmator cannot check this setting from inside the app.";
+"Insert" = "Insert";
+"No saved text yet" = "No saved text yet";
+"Reading the note is unavailable right now." = "Reading the note is unavailable right now.";
+"Ready to insert" = "Ready to insert";
+"This cannot be undone." = "This cannot be undone.";
+"Note deleted" = "Note deleted";
+"Preparing" = "Preparing";
+"Downloaded models stay on the device." = "Downloaded models stay on the device.";
+"Duration is not known in advance." = "Duration is not known in advance.";
+"Draft" = "Draft";
+"Refined" = "Refined";
+"Draft translation" = "Draft translation";
+"Refined translation" = "Refined translation";
+"Saved" = "Saved";
+"Speech models" = "Speech models";
+"Translation packs" = "Translation packs";
+"No internet connection" = "No internet connection";
+"Downloaded packs still work." = "Downloaded packs still work.";
+"Help" = "Help";
+"Add widget" = "Add widget";
+"During recording" = "During recording";
+"Edited" = "Edited";
+"Original text" = "Original text";
+"Interrupted" = "Interrupted";
+"Stopped" = "Stopped";
+"Back to notes" = "Back to notes";
+"Try again" = "Try again";
+"Prepare later" = "Prepare later";
+"Copy failed" = "Copy failed";
+"System share sheet" = "System share sheet";
+"You choose the destination. Murmator does not send notes on its own." = "You choose the destination. Murmator does not send notes on its own.";
+"Automatic re-translation after editing is not implemented yet." = "Automatic re-translation after editing is not implemented yet.";
+"Long text is inserted in full." = "Long text is inserted in full.";
+"Live Activity appears here while Murmator is recording." = "Live Activity appears here while Murmator is recording.";
+"Turn off microphone" = "Turn off microphone";
+"Hold to talk" = "Hold to talk";
+"Release to insert" = "Release to insert";
+"Insert text" = "Insert text";
+"Insert original" = "Insert original";
+"Send" = "Send";
+"Could not update the keyboard. Open Murmator and try again." = "Could not update the keyboard. Open Murmator and try again.";
+"Full Access is required for keyboard dictation." = "Full Access is required for keyboard dictation.";
+"The text field changed. Tap Insert text when you are ready." = "The text field changed. Tap Insert text when you are ready.";
+"Enable the microphone in Murmator" = "Enable the microphone in Murmator";
+"Hold the microphone while you speak. Release to insert the text." = "Hold the microphone while you speak. Release to insert the text.";
+"Dictation" = "Dictation";
+"Enable microphone" = "Enable microphone";
+"Return to your app and hold the microphone on the Murmator keyboard." = "Return to your app and hold the microphone on the Murmator keyboard.";
+"Keyboard microphone enabled" = "Keyboard microphone enabled";
+"Keyboard dictation" = "Keyboard dictation";
+"Enable the microphone here, then return to your app. Use the Murmator keyboard to start and stop dictation." = "Enable the microphone here, then return to your app. Use the Murmator keyboard to start and stop dictation.";
+"Enable keyboard dictation" = "Enable keyboard dictation";
+"The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard." = "The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard.";
+"Enable Full Access for Murmator." = "Enable Full Access for Murmator.";
+"1. Add Murmator in Settings → General → Keyboard.\n\n2. Enable Full Access for Murmator.\n\n3. Select Murmator with the globe key, enable the microphone, then hold to talk." = "1. Add Murmator in Settings → General → Keyboard.\n\n2. Enable Full Access for Murmator.\n\n3. Select Murmator with the globe key, enable the microphone, then hold to talk.";
+"No speech detected. Hold the microphone and try again." = "No speech detected. Hold the microphone and try again.";
+"Open Murmator" = "Open Murmator";
+"Open Murmator to finish preparation." = "Open Murmator to finish preparation.";
+"Prepare dictation" = "Prepare dictation";
+"Ready to dictate" = "Ready to dictate";
+"Load models and enable dictation in Murmator" = "Load models and enable dictation in Murmator";
+"Could not load dictation models." = "Could not load dictation models.";
+"Prepare the models here, then return to your app while loading finishes. The keyboard shows when dictation is ready." = "Prepare the models here, then return to your app while loading finishes. The keyboard shows when dictation is ready.";
+"End session & unload models" = "End session & unload models";
+"Memory" = "Memory";
+"Manage loaded models" = "Manage loaded models";
+"Models loaded" = "Models loaded";
+"Models unloaded" = "Models unloaded";
+"Unload speech and translation models to release memory. Downloaded language packs and notes stay on this iPhone." = "Unload speech and translation models to release memory. Downloaded language packs and notes stay on this iPhone.";
+"Finish recording or preparation before unloading models." = "Finish recording or preparation before unloading models.";
+"Unloading models…" = "Unloading models…";
+"Unload models" = "Unload models";
+"The next session loads the models again. You will not need to download them again." = "The next session loads the models again. You will not need to download them again.";
+"Last update" = "Last update";
+"Dictate" = "Dictate";
+"Record" = "Record";
+"Unload" = "Unload";
+"Murmator controls" = "Murmator controls";
+"Start dictation, translate, unload models, or change your languages. Controls open Murmator." = "Start dictation, translate, unload models, or change your languages. Controls open Murmator.";
+"Languages" = "Languages";
+"Import audio" = "Import audio";
+"Audio imports" = "Audio imports";
+"Transcribe a recording" = "Transcribe a recording";
+"Audio is processed on this iPhone in short sections, split at pauses. Keep Murmator open; completed text is saved as it goes." = "Audio is processed on this iPhone in short sections, split at pauses. Keep Murmator open; completed text is saved as it goes.";
+"Importing audio…" = "Importing audio…";
+"Preparing transcription…" = "Preparing transcription…";
+"Transcribing audio…" = "Transcribing audio…";
+"Pausing…" = "Pausing…";
+"Pause" = "Pause";
+"Paused. Continue when you are ready." = "Paused. Continue when you are ready.";
+"Transcribe" = "Transcribe";
+"Continue transcription" = "Continue transcription";
+"No speech detected in this file." = "No speech detected in this file.";
+"Transcription saved" = "Transcription saved";
+"Partial transcript" = "Partial transcript";
+"Open transcript" = "Open transcript";
+"Remove import" = "Remove import";
+"Your original recording is unchanged. The imported copy is removed after completion; the transcript stays in Notes." = "Your original recording is unchanged. The imported copy is removed after completion; the transcript stays in Notes.";
+"Processed on this iPhone. Pause at any time; completed text is saved." = "Processed on this iPhone. Pause at any time; completed text is saved.";
+"Choose audio" = "Choose audio";
+"Import another recording" = "Import another recording";
+"Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import." = "Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import.";
+"Audio recording" = "Audio recording";
+"Could not receive the file" = "Could not receive the file";
+"File transfer" = "File transfer";
+"Transcription has not started. Choose the recording again or share it from Files." = "Transcription has not started. Choose the recording again or share it from Files.";
+"Retry import" = "Retry import";
+"Waiting" = "Waiting";
+"Recognition" = "Recognition";
+"No speech" = "No speech";
+"Language of the recording" = "Language of the recording";
+"The language is locked: the first section is saved." = "The language is locked: the first section is saved.";
+"No text note was saved. Check the language of the recording or pick another file." = "No text note was saved. Check the language of the recording or pick another file.";
+"Completed text is kept. Continue from the saved position." = "Completed text is kept. Continue from the saved position.";
+"Transcript" = "Transcript";
+"Saved so far" = "Saved so far";
+"Waiting for the current section to stop." = "Waiting for the current section to stop.";
+"Open the full note after pausing. Completed text is already saved." = "Open the full note after pausing. Completed text is already saved.";
+"Choose another language and retry" = "Choose another language and retry";
+"Add to queue" = "Add to queue";
+"Starts after the current file. One recording is processed at a time." = "Starts after the current file. One recording is processed at a time.";
+"Only the import and its audio copy are removed. Original recordings and saved notes stay." = "Only the import and its audio copy are removed. Original recordings and saved notes stay.";
+"File received" = "File received";
+"Could not transcribe this recording" = "Could not transcribe this recording";
+"of" = "of";
+"Saved sections:" = "Saved sections:";
+"On device" = "On device";
+"Downloaded language packs" = "Downloaded language packs";
+"Unloading models does not remove downloaded language packs or notes." = "Unloading models does not remove downloaded language packs or notes.";
+"In memory" = "In memory";
+"Models are held by Murmator for the current work." = "Models are held by Murmator for the current work.";
+"The next session will load the selected models from the device." = "The next session will load the selected models from the device.";
+"Loaded" = "Loaded";
+"Unloaded" = "Unloaded";
+"Unloading is unavailable right now" = "Unloading is unavailable right now";
+"Open the import and pause it" = "Open the import and pause it";
+"The app does not report how much free memory the phone has." = "The app does not report how much free memory the phone has.";
+"Start a dictation session, then return to your app." = "Start a dictation session, then return to your app.";
+"Keyboard setup instructions" = "Keyboard setup instructions";
+"Full Access" = "Full Access";
+"Confirmed" = "Confirmed";
+"Check in keyboard" = "Check in keyboard";
+"Full Access is checked by the keyboard, not by microphone permission." = "Full Access is checked by the keyboard, not by microphone permission.";
+"Microphone" = "Microphone";
+"Allowed" = "Allowed";
+"Not allowed" = "Not allowed";
+"A system permission. It does not mean models are ready." = "A system permission. It does not mean models are ready.";
+"Models in memory" = "Models in memory";
+"Loading models" = "Loading models";
+"Speech and translation must finish preparing before dictation starts." = "Speech and translation must finish preparing before dictation starts.";
+"Session" = "Session";
+"Preparing…" = "Preparing…";
+"Inactive" = "Inactive";
+"Return to your app manually when the session is ready." = "Return to your app manually when the session is ready.";
+"Language and mode" = "Language and mode";
+"From Voice Memos, Files or the system share sheet" = "From Voice Memos, Files or the system share sheet";
+"Open" = "Open";
+"Tools" = "Tools";
+"Dictate in other apps" = "Dictate in other apps";
+"Recordings, progress and saved transcripts" = "Recordings, progress and saved transcripts";
+"Device" = "Device";
+"Downloaded packs and loaded models" = "Downloaded packs and loaded models";
+"Completed text is saved. Finish transcription before editing this note." = "Completed text is saved. Finish transcription before editing this note.";
+"Activate in Murmator" = "Activate in Murmator";
+"Activation needed" = "Activation needed";
+"Result" = "Result";
+"Mic on" = "Mic on";
+"Mic off" = "Mic off";
+"Full Access needed" = "Full Access needed";
+"Result ready" = "Result ready";
+"Recording" = "Recording";
+"Choose what to insert into the current field." = "Choose what to insert into the current field.";
+"Unload in Murmator" = "Unload in Murmator";
+"Translation mode" = "Translation mode";
+"Text" = "Text";
+"Voice" = "Voice";
+"From language" = "From language";
+"Swap languages" = "Swap languages";
+"Text to translate" = "Text to translate";
+"Clear" = "Clear";
+"Type or paste text here" = "Type or paste text here";
+"Translate up to 10,000 characters at a time." = "Translate up to 10,000 characters at a time.";
+"Cancelling…" = "Cancelling…";
+"Translating text…" = "Translating text…";
+"Translate text" = "Translate text";
+"Could not translate. Your text is kept." = "Could not translate. Your text is kept.";
+"Translation" = "Translation";
+"Copy translation" = "Copy translation";
+"Text is translated on this iPhone. Language packs may need a one-time download." = "Text is translated on this iPhone. Language packs may need a one-time download.";
+"Text is not saved as a note automatically." = "Text is not saved as a note automatically.";
+"Hide keyboard" = "Hide keyboard";
+"Storage" = "Storage";
+"Refresh" = "Refresh";
+"Manage storage" = "Manage storage";
+"Downloaded models and disk space" = "Downloaded models and disk space";
+"Downloaded model files" = "Downloaded model files";
+"Available on this iPhone" = "Available on this iPhone";
+"File sizes are shown. The space reclaimed by the system may differ." = "File sizes are shown. The space reclaimed by the system may differ.";
+"Storage information unavailable" = "Storage information unavailable";
+"Calculating storage…" = "Calculating storage…";
+"Finish dictation, translation or model preparation before deleting downloads." = "Finish dictation, translation or model preparation before deleting downloads.";
+"Deleting download…" = "Deleting download…";
+"No downloaded model files" = "No downloaded model files";
+"Speech recognition" = "Speech recognition";
+"Unfinished downloads" = "Unfinished downloads";
+"Deleting a download keeps your notes, original recordings and selected languages." = "Deleting a download keeps your notes, original recordings and selected languages.";
+"Delete downloaded model?" = "Delete downloaded model?";
+"Delete download" = "Delete download";
+"The files will be downloaded again when you prepare this language or use it next time." = "The files will be downloaded again when you prepare this language or use it next time.";
+"This pack was imported. You may need the original model folder to restore it." = "This pack was imported. You may need the original model folder to restore it.";
+"Shared components may be needed by more than one language or mode. Notes and original recordings stay." = "Shared components may be needed by more than one language or mode. Notes and original recordings stay.";
+"Text and final voice translation" = "Text and final voice translation";
+"Live voice translation preview" = "Live voice translation preview";
+"Live translation preview" = "Live translation preview";
+"A direction may also be used by translations through an intermediate language." = "A direction may also be used by translations through an intermediate language.";
+"Unfinished model download" = "Unfinished model download";
+"Temporary files from a model download." = "Temporary files from a model download.";
+"Imported speech pack" = "Imported speech pack";
+"Russian speech recognition" = "Russian speech recognition";
+"Used for Russian dictation and audio imports." = "Used for Russian dictation and audio imports.";
+"Multilingual speech recognition" = "Multilingual speech recognition";
+"Shared by several dictation languages and keyboard sessions." = "Shared by several dictation languages and keyboard sessions.";
+"Live dictation" = "Live dictation";
+"Speech detection for live dictation" = "Speech detection for live dictation";
+"A shared component. Deleting it affects every mode that uses it." = "A shared component. Deleting it affects every mode that uses it.";
+"Downloaded source files for this shared component." = "Downloaded source files for this shared component.";
+"Arabic speech recognition" = "Arabic speech recognition";
+"Additional speech recognition" = "Additional speech recognition";
+"Speech detection for recordings" = "Speech detection for recordings";
+"Used by audio imports and keyboard dictation." = "Used by audio imports and keyboard dictation.";
+"Download removed. The language can be prepared again when needed." = "Download removed. The language can be prepared again when needed.";
+"Remove from list" = "Remove from list";
+"Removing a language from this list does not delete downloaded files." = "Removing a language from this list does not delete downloaded files.";
+"Imported files removed. You may need the original model folder to restore this pack." = "Imported files removed. You may need the original model folder to restore this pack.";
+"Remove this import?" = "Remove this import?";
+"Switching tabs is unavailable while a translation runs" = "Switching tabs is unavailable while a translation runs";
+"Up to 10,000 characters at a time" = "Up to 10,000 characters at a time";
+"Over 10,000 characters" = "Over 10,000 characters";
+"The text is not trimmed automatically. Shorten it to start the translation." = "The text is not trimmed automatically. Shorten it to start the translation.";
+"The translation became the source text and the direction is reversed. The previous result is no longer shown." = "The translation became the source text and the direction is reversed. The previous result is no longer shown.";
+"This prepares the language pack. It is not a percentage of the translation." = "This prepares the language pack. It is not a percentage of the translation.";
+"A new translation can start once this one stops. Your text is kept." = "A new translation can start once this one stops. Your text is kept.";
+"Retry with the same Translate text button, or choose a different language pair." = "Retry with the same Translate text button, or choose a different language pair.";
+"Translate again" = "Translate again";
+"Share is the system sheet — you choose the destination" = "Share is the system sheet — you choose the destination";
+"No imports in progress" = "No imports in progress";
+"Choose a recording from Files, or share one from Voice Memos." = "Choose a recording from Files, or share one from Voice Memos.";
+"Saved notes stay in your list. Completed jobs are not kept here." = "Saved notes stay in your list. Completed jobs are not kept here.";
+"Paused" = "Paused";
+"Translation packs · text" = "Translation packs · text";
+"Text and refined voice translation use the same downloaded packs." = "Text and refined voice translation use the same downloaded packs.";
+"No files on device" = "No files on device";
+"Files on device" = "Files on device";
+"Voice translation" = "Voice translation";
+"Text translation" = "Text translation";
+"Could not read storage." = "Could not read storage.";
+"About Murmator" = "About Murmator";
+"Version" = "Version";
+"Privacy" = "Privacy";
+"Open source" = "Open source";
+"Open-source licenses" = "Open-source licenses";
+"Export Bergamot source code" = "Export Bergamot source code";
+"Speech recognition and translation run on your device. Murmator does not upload your recordings, notes or translation text." = "Speech recognition and translation run on your device. Murmator does not upload your recordings, notes or translation text.";
+"Downloading language packs connects to model hosting services. These services receive the network information needed to deliver files." = "Downloading language packs connects to model hosting services. These services receive the network information needed to deliver files.";
+"You choose what to share using the iOS share sheet. Device backups follow your system settings." = "You choose what to share using the iOS share sheet. Device backups follow your system settings.";
+"Replace with translation" = "Replace with translation";
+"Default translation app" = "Default translation app";
+"Choose Murmator for selected text in other apps" = "Choose Murmator for selected text in other apps";
+"Open Murmator once to prepare system translation." = "Open Murmator once to prepare system translation.";
+"Your selected text is kept. Return here after opening the app." = "Your selected text is kept. Return here after opening the app.";
+"Check the source language before translating this text." = "Check the source language before translating this text.";
+"Extra copy of a language pack from an earlier app version." = "Extra copy of a language pack from an earlier app version.";
+
+"Build" = "Build";
+
+"Beginning" = "Beginning";
+
+"Text size" = "Text size";
+
+"Small" = "Small";
+
+"Medium" = "Medium";
+
+"Large" = "Large";
+
+"Extra large" = "Extra large";
+
+"Waiting for translation…" = "Waiting for translation…";
+
+"Following live text" = "Following live text";
+
+"Back to live text" = "Back to live text";
+
+"Reading earlier text" = "Reading earlier text";
+
+"Reading view" = "Reading view";
+
+"Recognition priority" = "Recognition priority";
+
+"Fast model" = "Fast model";
+
+"Quality model" = "Quality model";
+
+"Faster first words. Uses the streaming model." = "Faster first words. Uses the streaming model.";
+
+"More context for each phrase. The result may appear later." = "More context for each phrase. The result may appear later.";
+
+"Your languages" = "Your languages";
+
+"Other languages…" = "Other languages…";
+
+"Selected languages" = "Selected languages";
+
+"Step %d of %d" = "Step %d of %d";
+
+"Language %d of %d" = "Language %d of %d";
+
+"Download paused" = "Download paused";
+
+"Resume download" = "Resume download";
+
+"Cancel download" = "Cancel download";
+
+"Preparation resumes when you return to Murmator. Completed downloads are kept." = "Preparation resumes when you return to Murmator. Completed downloads are kept.";
+
+"Translating note…" = "Translating note…";
+
+"Cancel translation" = "Cancel translation";
+
+"Fast mode" = "Fast";
+
+"Quality mode" = "Quality";
+
+"Download languages" = "Download languages";
+
+"Preparing dictation…" = "Preparing dictation…";
+
+"Preparing translation…" = "Preparing translation…";
+
+"Languages imported" = "Languages imported";
+
+"Free memory" = "Free memory";
+
+"Freeing memory…" = "Freeing memory…";
+
+"End dictation" = "End dictation";
+
+"Downloads" = "Downloads";
+
+"No downloads" = "No downloads";
+
+"Delete download?" = "Delete download?";
+
+"Enable dictation in Murmator" = "Enable dictation in Murmator";
+
+"Finish the current task to free memory." = "Finish the current task to free memory.";
+
+"Finish the current task to delete downloads." = "Finish the current task to delete downloads.";
+
+"This language is unavailable in the selected mode." = "This language is unavailable in the selected mode.";
+
+"Download removed." = "Download removed.";
+
+"Language downloads require internet access." = "Language downloads require internet access.";
+
+"Notes and recordings stay. Download this language again to use it offline." = "Notes and recordings stay. Download this language again to use it offline.";
+
+"Notes and recordings stay. Keep the original files to restore this download." = "Notes and recordings stay. Keep the original files to restore this download.";
+
+"Download" = "Download";
+
+"Downloading…" = "Downloading…";
+
+"Ready" = "Ready";
+
+"Voice notes" = "Voice notes";
+
+"In use" = "In use";
+
+"Not in use" = "Not in use";
+
+"Translation languages" = "Translation languages";
+
+"Could not save audio." = "Could not save audio.";
+
+"Play recording" = "Play recording";
+
+"Pause recording" = "Pause playback";
+
+"Recording position" = "Recording position";
+
+"Share recording" = "Share recording";
+
+"Transcribe again" = "Transcribe again";
+
+"Previous versions" = "Previous versions";
+
+"Previous transcript" = "Previous transcript";
+
+"The note, its versions and recording will be deleted." = "The note, its versions and recording will be deleted.";
+
+"Translation unavailable" = "Translation unavailable";
+
+"Translation incomplete" = "Translation incomplete";
+
+"Saved notes and audio stay." = "Saved notes and audio stay.";
+
+"Recordings and transcripts are saved on this device." = "Recordings and transcripts are saved on this device.";
+
+"Delete language" = "Delete language";
+
+"Stop recording" = "Stop recording";
+
+"Close recording" = "Close recording";
+
+
+"Transcription" = "Transcription";
+
+"Only Quality is available for these languages." = "Only Quality is available for these languages.";
+
+"Turn speech into notes" = "Turn speech into notes";
+
+"Tap the microphone, speak, and keep the recording with its text." = "Tap the microphone, speak, and keep the recording with its text.";
+
+"Translate your words" = "Translate your words";
+
+"Translate speech or typed text. Share the original or just the translation." = "Translate speech or typed text. Share the original or just the translation.";
+
+"Transcribe recordings" = "Transcribe recordings";
+
+"Import an audio file and turn it into a note you can read and edit." = "Import an audio file and turn it into a note you can read and edit.";
+
+"Preload languages" = "Preload languages";
+
+"Which languages should work immediately and offline? You can download more later in Settings." = "Which languages should work immediately and offline? You can download more later in Settings.";
+
+"Includes transcription and translation." = "Includes transcription and translation.";
+
+"Translation between: %@." = "Translation between: %@.";
+
+"Downloading languages" = "Downloading languages";
+
+"Ready for offline use" = "Ready for offline use";
+
+"Download interrupted" = "Download interrupted";
+
+"Downloading transcription and translation. Recording will not start automatically." = "Downloading transcription and translation. Recording will not start automatically.";
+
+"Tap the microphone when you are ready to make your first note." = "Tap the microphone when you are ready to make your first note.";
+
+"Continue without downloads" = "Continue without downloads";
+
+"Download and continue" = "Download and continue";
+
+"Set up later" = "Set up later";
+
+"Ready. Tap Start recording when you want to speak." = "Ready. Tap Start recording when you want to speak.";
+
+"Ready to record" = "Ready to record";
+
+"Start recording" = "Start recording";
+
+"Choose your languages" = "Choose your languages";
+
+"Preload for offline use" = "Preload for offline use";
+
+"Try transcription" = "Try transcription";
+
+"Speak a few words and watch the text appear." = "Speak a few words and watch the text appear.";
+
+"Live transcription uses the Fast model. Finished audio recordings use the Quality model. Both work offline after downloading." = "Live transcription uses the Fast model. Finished audio recordings use the Quality model. Both work offline after downloading.";
+
+"Try live transcription" = "Try live transcription";
+
+"Try translation" = "Try translation";
+
+"See a translation while you speak, or translate a finished text with the Quality model." = "See a translation while you speak, or translate a finished text with the Quality model.";
+
+"Live translation uses the Fast model. For finished text and recordings, choose Quality. Both work offline after downloading." = "Live translation uses the Fast model. For finished text and recordings, choose Quality. Both work offline after downloading.";
+
+"Try live translation" = "Try live translation";
+
+"Try Quality translation" = "Try Quality translation";
+
+"Open Import audio on the notes screen and choose a recording from Files. Audio files use Quality transcription." = "Open Import audio on the notes screen and choose a recording from Files. Audio files use Quality transcription.";
+
+"Share only what you need" = "Share only what you need";
+
+"Open a note, select Original or Translation below the player, then tap Share or Copy." = "Open a note, select Original or Translation below the player, then tap Share or Copy.";
+
+"Only the selected text is exported. Use the player's share button to export the audio recording." = "Only the selected text is exported. Use the player's share button to export the audio recording.";
+
+"Your languages are ready. Try the features next." = "Your languages are ready. Try the features next.";
+
+"Download later" = "Download later";
+
+"Skip tour" = "Skip tour";
+
+"Feature example" = "Feature example";

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./doc-page.js"></script>
+<style>
+  body { margin:0; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
+  a { color:#c9722c; } a:hover { color:#e8893b; }
+</style>
+</helmet>
+
+<doc-page margin="0.7in">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px">
+    <img src="mascot.png" alt="" style="width:26px;height:26px;object-fit:contain">
+    <div style="font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.03em;color:#8a7a6a">Murmator · текстовый переводчик · 8 сентября 2026</div>
+  </div>
+
+  <h1 style="margin:0;font:700 25pt/1.12 -apple-system,system-ui;letter-spacing:-.02em;color:#2a2520">Текстовый переводчик, обновления старых окон и предложения по системному переводу</h1>
+
+  <p style="margin:14px 0 0;font:400 11.5pt/1.55 -apple-system,system-ui;color:#4a3e34;max-width:34em">Документ описывает макет <b>Murmator Text Translator</b>. Приоритет 1 — согласованный текстовый сценарий из десяти состояний. Приоритет 2 — обновления окон по CHANGES.md. Приоритет 3 — отдельный раздел P01–P08 по APPLE_BRIEF.md: предложение, не включённая функция. Внутренний экран 402 × 874 pt, проверено 375 × 667 pt; RU и EN, светлая и тёмная темы, Dynamic Type XXL.</p>
+
+  <div style="margin:18px 0 0;padding:12px 14px;border-left:3px solid #E07A2F;background:#faf5ee">
+    <div style="font:600 10pt/1.45 -apple-system,system-ui;color:#2a2520">Название продукта в интерфейсе — Murmator. Tish — группа голосовых продуктов, BSHK — общий бренд; в макете они не появляются. Идентификаторы приложения и расположение данных не переименованы и дизайну не нужны.</div>
+  </div>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">1 · Что в макете</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9.5pt/1.45 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:7px 9px;font-weight:600;color:#2a2520;width:30%">Раздел</th>
+      <th style="text-align:left;padding:7px 9px;font-weight:600;color:#2a2520">ID</th>
+    </tr>
+    <tr><td style="padding:7px 9px;border-bottom:1px solid #e6ded3;font-weight:600;color:#2a2520">Текст · приоритет 1</td><td style="padding:7px 9px;border-bottom:1px solid #e6ded3">translate-text, translate-text-typing, translate-text-draft, translate-text-preparing, translate-text-running, translate-text-cancelling, translate-text-result, translate-text-swapped, translate-text-error, translate-text-limit</td></tr>
+    <tr><td style="padding:7px 9px;border-bottom:1px solid #e6ded3;font-weight:600;color:#2a2520">Обновлённые окна</td><td style="padding:7px 9px;border-bottom:1px solid #e6ded3">translate, notes, notes-clean, audio-complete, audio-empty, memory-text, settings, keyboard-setup, keyboard-result</td></tr>
+    <tr><td style="padding:7px 9px;border-bottom:1px solid #e6ded3;font-weight:600;color:#2a2520">Виджеты</td><td style="padding:7px 9px;border-bottom:1px solid #e6ded3">widgets, widget-small, widget-medium</td></tr>
+    <tr><td style="padding:7px 9px;border-bottom:1px solid #e6ded3;font-weight:600;color:#2a2520">Apple · предложение</td><td style="padding:7px 9px;border-bottom:1px solid #e6ded3">P01, P02, P03, P04, P05, P06, P07, P08</td></tr>
+  </table>
+  <p style="margin:10px 0 0;font:400 9.5pt/1.5 -apple-system,system-ui;color:#7a6a5a"><b>translate-text-typing</b> — единственный новый ID. В SCREENS.md его нет: состояние ввода с клавиатурой нужно сценарию, но отдельным окном оно раньше не описывалось. Помечено в макете как предложение.</p>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">2 · Карта переходов текстового режима</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:22%">Из состояния</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:28%">Событие</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:22%">В состояние</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Что сохраняется</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">translate-text</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Тап в редактор</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">typing</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">—</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">translate-text / typing</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Ввод или системная вставка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Введённый текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">typing</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Скрыть клавиатуру»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft или translate-text</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст и позиция курсора</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Перевести текст», пакета нет</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст на экране</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Перевести текст», пакет готов</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст превысил 10 000 символов</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">limit</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст полностью, без обрезания</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">limit</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст сокращён до 10 000</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Пакет подготовлен</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing / running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Отмена»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">cancelling</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">cancelling</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Нативная операция остановилась</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Успех</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник и перевод</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Сбой</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">error</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник, подробности по раскрытию</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">error</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Перевести текст» повторно</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing или running</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Правка текста или смена языка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник; прежний перевод снимается</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Обмен языков</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">swapped</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод становится исходным текстом</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft (без перевода)</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Обмен языков</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">draft, направление обращено</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходный текст без изменений</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Скопировать перевод»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result + «Скопировано»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Всё; состояние кнопки временное</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Любое во время работы</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Вкладка «Голос»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Переход заблокирован</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Подпись объясняет причину</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Любое</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Готово» или уход в фон</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Лист закрыт, работа отменена</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст и результат — в пределах сессии; заметка не создаётся</td></tr>
+  </table>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">3 · Правила состояний</h2>
+  <ul style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.62 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Процент только у подготовки.</b> preparing показывает шкалу и число 36% с прямой подписью «это подготовка языкового пакета, а не процент перевода». running показывает бегущую полосу без шкалы и без числа.</li>
+    <li><b>«Отмена…» — состояние, «Отмена» — действие.</b> В cancelling кнопка остаётся на месте в том же размере, но гаснет до 45%, а индикатор теряет акцентный цвет и замедляется.</li>
+    <li><b>Блокировка видна.</b> Вкладки, пара языков, обмен, очистка и содержимое редактора идут на 38% прозрачности без изменения габаритов. Под вкладками появляется одна строка с причиной.</li>
+    <li><b>Старый результат не соседствует с новым оригиналом.</b> Любая правка текста или смена языка убирает блок перевода целиком.</li>
+    <li><b>Лимит объясняется словами.</b> Счётчик и сообщение используют один цвет ошибки; текст не обрезается.</li>
+    <li><b>Заметка не создаётся.</b> Сноска о этом остаётся на экране во всех спокойных состояниях и скрывается только когда поднята клавиатура или идёт работа.</li>
+  </ul>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">4 · Компоненты</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:22%">Компонент</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:26%">Размеры</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:24%">Типографика</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Состояния</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заголовок листа</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Отступы 18 pt, грабер 36 × 5 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">28 pt bold / 33 pt XXL; «Готово» 17 pt regular</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Один вид на всех состояниях</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Вкладки Текст / Голос</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Мин. высота 38 pt, радиус 9 pt в контейнере 11 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">13 pt semibold / 17 pt XXL</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Выбрана · не выбрана · заблокирована 38%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Поле языка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Гибкая ширина, радиус 15 pt, паддинг 10 / 12 pt; при XXL пара складывается в столбец</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Метка 11,5 pt, значение 15 pt semibold</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Активно · заблокировано · значение обрезается по ellipsis</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Кнопка обмена</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">44 × 44 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Символ 17 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Активна · заблокирована; размер не меняется</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Карточка ввода</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Радиус 15 pt (MurmurCard), паддинг 14 pt; редактор от 132 pt, при клавиатуре 96 pt, в результате максимум 3,1 строки с затуханием</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст 17 pt / 23 pt XXL, интерлиньяж 1,42</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Пусто · ввод · готово · заблокировано · свёрнуто · превышен лимит (рамка цвета ошибки)</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Системная вставка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Высота 28 pt, радиус 8 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">13 pt medium</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Показывается только при пустом поле; нейтральная системная заливка</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Счётчик символов</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">В нижней строке карточки</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">11,5 pt semibold, моноширинный</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Обычный · превышен (цвет ошибки)</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Индикатор работы</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Полоса 8 pt (ProgressTrack), капсула; карточка 15 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заголовок 15 pt semibold, пояснение 13 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Определённый 36% · неопределённый · гаснущий при отмене</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Блок перевода</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Радиус 15 pt, акцентная подложка 13%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст 17 pt, метка 13 pt uppercase</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Готов · копирование · «Скопировано»</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Основной CTA</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Мин. высота 52 pt, радиус 13 pt (DesignButton), закреплён в нижней панели</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">15 pt semibold / 20 pt XXL</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Доступен · выключен · заменён строкой статуса с «Отмена»</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Компактная кнопка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">44 × 44 pt (импорт, шестерёнка, скрыть клавиатуру); вторичные кнопки — мин. 48 pt, радиус 13 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Символ 16 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Обычная · нажатая</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Строка импорта</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Радиус 15 pt, прогресс 4 pt, круг 34 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Имя файла 13 pt semibold, время 11,5 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Распознавание · пауза · ожидание; после успеха исчезает</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Чип состояния</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">StatusTag: радиус 6 pt, паддинг 8 / 4 pt · PackStatusBadge: радиус 8 pt, паддинг 9 / 5 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">11,5 pt semibold · 11 pt semibold</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Нейтральный · акцентный · успех · ошибка; подложка 13% от цвета текста</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Плитка виджета</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Радиус 11 pt, сетка 2 × 2 в 170 pt, 3 × 2 в 360 pt</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">9,5 pt semibold, заголовок 12 pt bold</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Акцентная — только диктовка; остальные нейтральные</td></tr>
+  </table>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">5 · Токены</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:26%">Роль</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Светлая</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Тёмная</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Фон приложения</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#FAF7F2</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#15110E</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Лист</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#FFFDF9</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#1E1916</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Карточка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#FFFDF9</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Белый 7% (полупрозрачная)</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заливка / рамка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#3C2814 7% / 11%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Белый 10% / 12%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Основной текст (ink)</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#2A2520</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Белый 95%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Второй уровень / третий</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#4A3E34 74% / 52%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Белый 68% / 46%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Акцент заливки</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#E07A2F, текст на нём #241F1C</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#E07A2F, текст на нём #1B1410</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Акцент текста</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#C9722C</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#F0A469</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Ошибка</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#A52A17 на подложке 13%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#F0A194 на подложке 13%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Успех</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#1F6640 на подложке 13%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#8DCCA1 на подложке 13%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Системный элемент</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#E7E3DD, текст 62%</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#2A2521, текст 62%</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Деструктивное действие</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#C0341F</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">#C0341F</td></tr>
+  </table>
+  <p style="margin:10px 0 0;font:400 9.5pt/1.5 -apple-system,system-ui;color:#7a6a5a">Значения взяты из <code>source/Applications/iOS/Sources/DesignSystem.swift</code> (MurmurPalette, MurmurCard, DesignButton, StatusTag, ProgressTrack). Шкала Dynamic Type в макете: 28 / 20 / 17 / 15 / 13 / 11,5 pt в обычном режиме и 33 / 24 / 23 / 20 / 17 / 15 pt в XXL; базовые 15 pt кнопки и 11,5 pt чипа совпадают с <code>@ScaledMetric</code> в коде. Все контейнеры тянутся по содержимому; фиксированных высот у текстовых блоков нет.</p>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">6 · Тексты RU / EN</h2>
+  <p style="margin:10px 0 0;font:400 10pt/1.55 -apple-system,system-ui;color:#4a3e34;max-width:34em">Строки из <b>copy/changes.tsv</b> взяты без изменений. Ниже отдельно помечены строки, которых в наборе не было и которые нужно перевести на de, es, fr, fi.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:34%">RU</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:34%">EN</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Где и статус</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст для перевода</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Text to translate</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заголовок карточки ввода · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Введите или вставьте текст</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Type or paste text here</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Подсказка редактора · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">До 10 000 символов за раз</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Up to 10,000 characters at a time</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Подпись у счётчика · <b>сокращено из</b> «За один раз можно перевести до 10 000 символов.»</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевести текст</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Translate text</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">CTA · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевести заново</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Translate again</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">CTA после успеха · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Подготовка моделей перевода…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Preparing translation models…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Это подготовка языкового пакета, а не процент перевода.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">This prepares the language pack. It is not a percentage of the translation.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">preparing · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Переводим текст…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Translating text…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Длительность заранее неизвестна.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Duration is not known in advance.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">running · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Отмена…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Cancelling…</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">cancelling · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Новый перевод можно запустить после остановки. Введённый текст сохранён.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">A new translation can start once this one stops. Your text is kept.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">cancelling · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Не удалось перевести. Исходный текст сохранён.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Could not translate. Your text is kept.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">error · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Повторите тем же действием «Перевести текст» или выберите другую пару языков.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Retry with the same Translate text button, or choose a different language pair.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">error · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Больше 10 000 символов</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Over 10,000 characters</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">limit · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Текст не обрезается автоматически. Сократите его, чтобы запустить перевод.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">The text is not trimmed automatically. Shorten it to start the translation.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">limit · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод стал исходным текстом, направление обращено. Прежний результат больше не показывается.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">The translation became the source text and the direction is reversed. The previous result is no longer shown.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">swapped · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Изменить</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Edit</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Свёрнутый оригинал в result · есть в наборе</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">«Поделиться» — системное меню, получателя выбираете вы</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Share is the system sheet — you choose the destination</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">result · <b>переформулировано</b> из строки о заметках</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Переключение вкладок недоступно, пока идёт перевод</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Switching tabs is unavailable while a translation runs</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Все рабочие состояния · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Активных импортов нет</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">No imports in progress</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">audio-empty · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Сохранённые заметки остались в списке. Готовые задания здесь не хранятся.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Saved notes stay in your list. Completed jobs are not kept here.</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">audio-empty · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Пауза</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Paused</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Чип строки импорта · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Пакеты перевода · текст</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Translation packs · text</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">memory-text · <b>новая строка</b></td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Скрыть клавиатуру</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Hide keyboard</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">typing · есть в наборе</td></tr>
+  </table>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">7 · Обновления старых окон</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:12%">ID</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:20%">Окно</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Что сделано в макете</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C01</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заметки</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Импорт остаётся круглой кнопкой 44 × 44 pt слева от шестерёнки. Большой постоянной карточки нет ни в одном состоянии.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C02</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Заметки · импорт</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Временная строка статуса отличается от кнопки: прогресс 4 pt, чип состояния и «Открыть». Появляется только при активной, приостановленной или ожидающей обработке.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C03</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Импорт аудио</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">audio-complete даёт открыть заметку до закрытия листа. audio-empty — компактное пустое состояние; истории готовых импортов нет.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C04</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Общий лист с вкладками Текст / Голос. При работающем переводе переключение заблокировано с объяснением причины.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C05</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод · Голос</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Голосовая форма сохранена целиком и получила ту же анатомию, что текстовая: пара языков, пояснение, один CTA внизу.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C06</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Память</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Три строки на устройстве: распознавание, пакеты перевода голоса, пакеты перевода текста. В памяти — чипы по типам моделей, а не по одной паре языков.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C07</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Клавиатура, виджеты</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">keyboard-setup остаётся листом с четырьмя строками состояния (полный доступ, микрофон, модели в памяти, сессия) и строкой «Язык и режим». Имя Murmator проверено в компактном заголовке клавиатуры и в плитке «Выгрузить в Murmator» на 170 pt. Заголовок переносится, чип не обрезается.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">C08</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Настройки</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Состав разделов оставлен как в сборке: речь (языки, режим), инструменты, устройство, сохранение, помощь. Экран открывается пушем с «‹ Заметки», не листом. Переключателя переводчика по умолчанию нет. Перевод открывается нижней кнопкой и виджетом; будущий сценарий вынесен в раздел P.</td></tr>
+  </table>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">8 · Проверки локализации и доступности</h2>
+  <ul style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.62 -apple-system,system-ui;color:#4a3e34">
+    <li>Все значения языков и метки в полях обрезаются по ellipsis и не ломают строку; ширина полей гибкая.</li>
+    <li>«Скопировать перевод» и «Включить диктовку с клавиатуры» проверены при XXL: кнопки растут по высоте, текст переносится по центру.</li>
+    <li>375 × 667 pt: содержимое листа прокручивается, CTA закреплён — результат и копирование не уходят под кнопку при коротком вводе.</li>
+    <li>Немецкий и финский длиннее русского на 15–30%; в макете это учтено запасом по высоте кнопок и переносом в две строки вместо сжатия.</li>
+    <li>Контраст: основной текст на акценте — #241F1C на #E07A2F; системная вставка использует системную заливку и не конкурирует по цвету с основным CTA.</li>
+  </ul>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">9 · P01–P08 · системный перевод выделенного текста</h2>
+  <div style="margin:12px 0 0;padding:12px 14px;border-left:3px solid #A8351C;background:#fdf3f0">
+    <div style="font:600 10pt/1.45 -apple-system,system-ui;color:#2a2520">Статус: предложение, не реализовано в сборке 6. Ни один экран раздела не изображает функцию включённой. Экран системных настроек, меню выделения и Share Sheet принадлежат iOS и в макете не перерисованы.</div>
+  </div>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9pt/1.4 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f3ece3">
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:8%">ID</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520;width:36%">Состав листа</th>
+      <th style="text-align:left;padding:6px 8px;font-weight:600;color:#2a2520">Условие и ограничение</th>
+    </tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P01</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Объяснение, путь в системные настройки, «Открыть настройки»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Приложение выбирает пользователь. Проверить настройку изнутри нельзя — формулировка это признаёт.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P02</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Выделенный текст, исходный язык с правкой, целевой язык, «Перевести»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Повторная вставка не требуется. Полноэкранный редактор не переиспользуется.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P03</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник, неопределённый индикатор, «Отмена»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Процента нет, длительность заранее неизвестна.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P04</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод, «Заменить переводом», «Скопировать»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Замена показывается только при <code>allowsReplacement</code> исходного элемента. Это свойство поля, а не настройка Murmator.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P05</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Перевод, «Скопировать», «Закрыть»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Отличие от P04 — отсутствие замены, а не другой визуальный стиль.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P06</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Объяснение подготовки, «Открыть Murmator*», «Показать инструкцию»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Звёздочка раскрыта в сноске: публичный переход из контекстного листа не подтверждён, запасной вариант — ручная инструкция.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P07</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Исходник, ошибка, «Повторить», «Закрыть»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Формулировка совпадает с ошибкой в приложении.</td></tr>
+    <tr><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">P08</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Объяснение лимита, «Выбрать язык», «Закрыть»</td><td style="padding:6px 8px;border-bottom:1px solid #e6ded3">Без молчаливого обрезания. Определённый язык подписан как предположение.</td></tr>
+  </table>
+  <p style="margin:10px 0 0;font:400 9.5pt/1.5 -apple-system,system-ui;color:#7a6a5a">В раздел не перенесены Full Access и разрешение микрофона от клавиатуры. Автоматическая замена страницы Safari, Live Translation и команды Siri не изображены и не упомянуты. Названия движков, entitlement и пути файлов пользователю не показываются.</p>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">10 · Предложения, требующие изменения логики</h2>
+  <p style="margin:10px 0 0;font:400 10pt/1.55 -apple-system,system-ui;color:#4a3e34;max-width:34em">Каждый пункт нарисован в макете, но выходит за пределы текущего поведения. Решение за вами; без него макет остаётся описанием текущей логики.</p>
+  <ol style="margin:12px 0 0;padding-left:22px;font:400 10.5pt/1.62 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Закреплённая нижняя панель с CTA.</b> Сейчас кнопка стоит в потоке между оригиналом и результатом. Предложение переносит её в нижнюю панель — это меняет вёрстку экрана, а не поведение.</li>
+    <li><b>Свёрнутый оригинал после успеха.</b> Требуется состояние «оригинал свёрнут» и действие «Изменить», разворачивающее редактор обратно. Правка по-прежнему снимает перевод.</li>
+    <li><b>CTA меняет подпись на «Перевести заново».</b> Нужна отдельная строка и признак «результат для текущего текста уже получен».</li>
+    <li><b>Отдельное состояние ввода с клавиатурой (translate-text-typing).</b> Нужен новый ID в SCREENS.md, иначе состояние остаётся вариантом translate-text.</li>
+    <li><b>Строка о блокировке вкладок.</b> Сейчас переключение просто недоступно. Предложение добавляет видимую причину; это новая строка локализации.</li>
+    <li><b>Чип состояния в строке импорта.</b> «Пауза», «Распознавание», «Ожидает» как явные значения статуса требуют, чтобы состояние импорта отдавалось на главный экран.</li>
+    <li><b>Память по типам моделей.</b> Чипы «распознавание / перевод текста / импорт аудио» требуют разделения residency по типу, а не одного общего признака «загружены».</li>
+    <li><b>Клавиатура: строка «Модели в памяти» с состоянием загрузки.</b> Нужен доступ клавиатуры к состоянию подготовки основного приложения; сейчас на экране только полный доступ и микрофон.</li>
+    <li><b>Раздел P01–P08 целиком.</b> Системный перевод выделенного текста, замена по <code>allowsReplacement</code> и переход в приложение при отсутствии пакета — новая функциональность, требующая проверки публичного контракта и памяти расширения.</li>
+  </ol>
+
+  <h2 style="margin:32px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">11 · Чего в макете сознательно нет</h2>
+  <ul style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.62 -apple-system,system-ui;color:#4a3e34">
+    <li>Экрана выбора движков или моделей.</li>
+    <li>Обещаний бесконечной фоновой работы: уход в фон отменяет перевод.</li>
+    <li>Автоматического создания заметки из переведённого текста.</li>
+    <li>Автоматического повторного перевода после правки.</li>
+    <li>Большой постоянной карточки Import audio над заметками и истории готовых импортов.</li>
+    <li>Активного переключателя переводчика по умолчанию в текущих настройках.</li>
+  </ul>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>

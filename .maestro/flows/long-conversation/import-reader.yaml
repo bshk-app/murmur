@@ -1,0 +1,21 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: import
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: import-transcript-.*-end-button
+    direction: DOWN
+- takeScreenshot: after/import-beginning
+- tapOn:
+    id: import-transcript-.*-end-button
+- assertVisible: '.*Kiitos osallistumisesta.*'
+- takeScreenshot: after/import-end
+- tapOn:
+    id: import-transcript-.*-beginning-button
+- assertVisible: '.*Hyvää iltaa.*'
+- takeScreenshot: after/import-returned-to-beginning

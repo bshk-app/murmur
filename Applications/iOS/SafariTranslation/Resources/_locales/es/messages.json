@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Traduce páginas de forma progresiva en tu dispositivo."
+  },
+  "source": {
+    "message": "De"
+  },
+  "target": {
+    "message": "A"
+  },
+  "close": {
+    "message": "Cerrar y restaurar el original"
+  },
+  "original": {
+    "message": "Original"
+  },
+  "translation": {
+    "message": "Traducción"
+  },
+  "stop": {
+    "message": "Detener"
+  },
+  "retry": {
+    "message": "Reintentar"
+  },
+  "pageProgress": {
+    "message": "Progreso de traducción de la página"
+  },
+  "preparing": {
+    "message": "Preparando…"
+  },
+  "translating": {
+    "message": "$1% traducido"
+  },
+  "translated": {
+    "message": "Traducido al $1"
+  },
+  "stopped": {
+    "message": "Detenido"
+  },
+  "empty": {
+    "message": "No hay texto para traducir"
+  },
+  "unsupported": {
+    "message": "Elige idiomas compatibles"
+  },
+  "setupRequired": {
+    "message": "Abre Murmator para terminar la configuración y vuelve a intentarlo."
+  },
+  "failed": {
+    "message": "No se pudo traducir. Inténtalo de nuevo."
+  },
+  "busy": {
+    "message": "Otra traducción está terminando…"
+  },
+  "preparingModel": {
+    "message": "Preparando el modelo de idioma…"
+  },
+  "partial": {
+    "message": "Se omitió parte del texto modificado o demasiado extenso."
+  }
+}

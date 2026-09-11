@@ -1,3 +1,4 @@
+@testable import MurmurTranslation
 import XCTest
 
 @testable import MurmurKit
@@ -15,6 +16,58 @@ final class TranslationServiceTests: XCTestCase {
     }
 
     // MARK: routing
+
+    func test_bundled_direct_quality_route_does_not_change_fast_pivot() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let dir = root.appendingPathComponent("ct2-rufi")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        try Data().write(to: dir.appendingPathComponent("model.bin"))
+        let service = TranslationService(modelsRoot: modelsRoot, qualityModelsRoots: [root])
+        XCTAssertEqual(service.qualityRoute(from: "ru", to: "fi"), .direct(.init(source: "ru", target: "fi")))
+        XCTAssertEqual(service.route(from: "ru", to: "fi"), .pivot(.init(source: "ru", target: "en"), .init(source: "en", target: "fi")))
+        XCTAssertNil(service.qualityRoute(from: "ru", to: "ru"))
+    }
+
+    func test_bundled_finnish_opus_models_translate_with_one_quality_pass() async throws {
+        let root = URL(fileURLWithPath: "/Volumes/DATA/Murmur/Prototypes/iOS/build/TranslationModels")
+        guard FileManager.default.fileExists(atPath: root.appendingPathComponent("catalog.json").path) else {
+            throw XCTSkip("prototype Finnish OPUS models not prepared")
+        }
+        let service = TranslationService(modelsRoot: modelsRoot, qualityModelsRoots: [root])
+        for (source, target, text, expected) in [
+            ("ru", "fi", "Я пришлю документы завтра.", "huomenna"),
+            ("fi", "ru", "Lähetän asiakirjat huomenna.", "завтра"),
+            ("en", "fi", "I will send the documents tomorrow.", "huomenna"),
+            ("fi", "en", "Lähetän asiakirjat huomenna.", "tomorrow"),
+        ] {
+            let result = try await service.translateQuality(text, from: source, to: target)
+            XCTAssertTrue(result.usedQuality)
+            XCTAssertEqual(result.passes.map(\.pair), [.init(source: source, target: target)])
+            XCTAssertTrue(result.text.lowercased().contains(expected), result.text)
+        }
+    }
+
+    func test_identity_diagnostics_do_not_claim_a_model_ran() async throws {
+        let service = TranslationService(modelsRoot: modelsRoot)
+        let result = try await service.translateDetailed("unchanged", from: "en", to: "en")
+        XCTAssertEqual(result.text, "unchanged")
+        XCTAssertTrue(result.passes.isEmpty)
+    }
+
+    func test_pivot_diagnostics_preserve_each_models_input_and_output() async throws {
+        let service = try service()
+        let text = "Lähetän asiakirjat huomenna."
+        let result = try await service.translateDetailed(text, from: "fi", to: "de")
+        XCTAssertEqual(result.passes.map(\.pair.description), ["fi-en", "en-de"])
+        let first = try XCTUnwrap(result.passes.first)
+        let last = try XCTUnwrap(result.passes.last)
+        XCTAssertEqual(first.input, text)
+        XCTAssertEqual(last.input, first.output)
+        XCTAssertEqual(last.output, result.text)
+        XCTAssertFalse(first.usedQuality)
+        XCTAssertFalse(last.usedQuality)
+    }
 
     func test_identity_returns_the_input_untouched() async throws {
         let service = TranslationService(modelsRoot: modelsRoot)
@@ -100,6 +153,44 @@ final class TranslationServiceTests: XCTestCase {
 
     // MARK: the quality tier at paste time
 
+    func test_strict_quality_does_not_fall_back_to_installed_mozilla() async throws {
+        let service = try service()
+        do {
+            _ = try await service.translateQuality("Lähetän asiakirjat huomenna.", from: "fi", to: "en")
+            XCTFail("A missing OPUS model must be explicit")
+        } catch let error as TranslationService.QualityUnavailable {
+            XCTAssertEqual(error.pair, LanguagePair(source: "fi", target: "en"))
+        }
+        let loadedFast = await service.residentPairs
+        XCTAssertTrue(loadedFast.isEmpty)
+    }
+
+    func test_strict_quality_rejects_an_incomplete_quality_install() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = root.appendingPathComponent("ct2-ruen")
+        try FileManager.default.createDirectory(at: model, withIntermediateDirectories: true)
+        try Data([0]).write(to: model.appendingPathComponent("model.bin"))
+        let service = TranslationService(modelsRoot: root)
+        do {
+            _ = try await service.translateQuality("Привет", from: "ru", to: "en")
+            XCTFail("An unusable OPUS model must not trigger a fallback")
+        } catch let error as TranslationService.QualityUnavailable {
+            XCTAssertEqual(error.pair, LanguagePair(source: "ru", target: "en"))
+        }
+    }
+
+    func test_strict_quality_uses_opus_when_installed() async throws {
+        let service = try service()
+        guard FileManager.default.fileExists(atPath: modelsRoot.appendingPathComponent("ct2-ruen/model.bin").path)
+        else { throw XCTSkip("ru-en quality model not installed") }
+        let result = try await service.translateQuality("Я пришлю документы завтра.", from: "ru", to: "en")
+        XCTAssertTrue(result.usedQuality)
+        XCTAssertFalse(result.passes.isEmpty)
+        XCTAssertTrue(result.passes.allSatisfy(\.usedQuality))
+        XCTAssertTrue(result.text.lowercased().contains("tomorrow"))
+    }
+
     func test_translateBestOrEmpty_falls_back_to_fast_when_no_quality_model_is_present() async throws {
         let service = try service()
         // fi-en has a fast (bergamot) model at this root but no quality
@@ -113,6 +204,9 @@ final class TranslationServiceTests: XCTestCase {
             "Lähetän asiakirjat huomenna.", from: "fi", to: "en")
         XCTAssertFalse(outcome.text.isEmpty)
         XCTAssertFalse(outcome.usedQuality)
+        let pass = try XCTUnwrap(outcome.passes.first)
+        XCTAssertFalse(pass.usedQuality, "Bergamot fallback must not be reported as an OPUS response")
+        XCTAssertEqual(pass.output, outcome.text)
         let failures = await service.failures
         XCTAssertTrue(failures.isEmpty, "a missing quality model is not a failure: \(failures)")
     }
@@ -130,6 +224,9 @@ final class TranslationServiceTests: XCTestCase {
             "Я пришлю документы завтра.", from: "ru", to: "en")
         XCTAssertTrue(outcome.text.lowercased().contains("tomorrow"), outcome.text)
         XCTAssertTrue(outcome.usedQuality, "a present model should be used, not skipped")
+        let pass = try XCTUnwrap(outcome.passes.first)
+        XCTAssertTrue(pass.usedQuality)
+        XCTAssertEqual(pass.output, outcome.text)
     }
 
     func test_translateBestOrEmpty_swallows_an_unsupported_pair() async {

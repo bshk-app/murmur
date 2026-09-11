@@ -1,0 +1,45 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: languages
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- tapOn:
+    id: add-speech-language
+- scrollUntilVisible:
+    element:
+      id: add-speech-de
+    direction: DOWN
+- tapOn:
+    id: add-speech-de
+    point: '96%,50%'
+- takeScreenshot: after/speech-language-plus
+- tapOn: Готово
+- scrollUntilVisible:
+    element:
+      id: language-status-speech:de
+    direction: DOWN
+- assertVisible:
+    id: language-status-speech:de
+- scrollUntilVisible:
+    element:
+      id: add-translation-language
+    direction: DOWN
+- tapOn:
+    id: add-translation-language
+- scrollUntilVisible:
+    element:
+      id: add-translation-bg
+    direction: UP
+- tapOn:
+    id: add-translation-bg
+    point: '96%,50%'
+- takeScreenshot: after/translation-language-plus
+- tapOn: Готово
+- scrollUntilVisible:
+    element:
+      id: language-status-translation:fi-bg
+    direction: DOWN
+- assertVisible:
+    id: language-status-translation:fi-bg

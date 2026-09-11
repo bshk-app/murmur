@@ -1,0 +1,14 @@
+appId: app.bshk.murmur.uitesthost
+name: Capture settings after presentation settles
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- assertVisible: Spoken language
+- takeScreenshot: settings-current

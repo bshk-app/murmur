@@ -1,0 +1,44 @@
+appId: app.bshk.murmur.uitesthost
+---
+- runFlow: ../long-conversation/reading.yaml
+- launchApp:
+    arguments:
+      longConversation: audio-note
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: play-recording
+- tapOn:
+    id: play-recording
+- takeScreenshot: after/audio-player
+- tapOn:
+    id: play-recording
+- tapOn:
+    id: note-actions
+- tapOn: Предыдущие версии
+- assertVisible: '.*Ensimmäinen alkuperäinen litterointi.*'
+- takeScreenshot: after/transcript-versions
+- tapOn: '.*Ensimmäinen alkuperäinen litterointi.*'
+- assertVisible: '.*Предыдущая расшифровка сохранена.*'
+- takeScreenshot: after/previous-transcript
+- launchApp:
+    arguments:
+      longConversation: audio-note
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- tapOn:
+    id: retranscribe-recording
+- assertVisible: Повторная расшифровка.wav
+- takeScreenshot: after/retranscription-task
+- launchApp:
+    arguments:
+      longConversation: languages-ready
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- tapOn:
+    id: delete-language-speech:ru
+- assertNotVisible:
+    id: language-status-speech:ru
+- assertVisible:
+    id: language-status-speech:fi
+- takeScreenshot: after/language-removed

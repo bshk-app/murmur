@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Käännä sivuja vähitellen omalla laitteellasi."
+  },
+  "source": {
+    "message": "Kielestä"
+  },
+  "target": {
+    "message": "Kielelle"
+  },
+  "close": {
+    "message": "Sulje ja palauta alkuperäinen"
+  },
+  "original": {
+    "message": "Alkuperäinen"
+  },
+  "translation": {
+    "message": "Käännös"
+  },
+  "stop": {
+    "message": "Pysäytä"
+  },
+  "retry": {
+    "message": "Yritä uudelleen"
+  },
+  "pageProgress": {
+    "message": "Sivun käännöksen edistyminen"
+  },
+  "preparing": {
+    "message": "Valmistellaan…"
+  },
+  "translating": {
+    "message": "$1% käännetty"
+  },
+  "translated": {
+    "message": "Käännetty kielelle $1"
+  },
+  "stopped": {
+    "message": "Pysäytetty"
+  },
+  "empty": {
+    "message": "Ei käännettävää tekstiä"
+  },
+  "unsupported": {
+    "message": "Valitse tuetut kielet"
+  },
+  "setupRequired": {
+    "message": "Viimeistele asetukset avaamalla Murmator ja yritä uudelleen."
+  },
+  "failed": {
+    "message": "Käännös epäonnistui. Yritä uudelleen."
+  },
+  "busy": {
+    "message": "Toinen käännös valmistuu…"
+  },
+  "preparingModel": {
+    "message": "Valmistellaan kielimallia…"
+  },
+  "partial": {
+    "message": "Osa muuttuneesta tai liian pitkästä tekstistä ohitettiin."
+  }
+}

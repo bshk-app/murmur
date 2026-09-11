@@ -1,0 +1,32 @@
+appId: app.bshk.murmur.uitesthost
+name: All five setup pages without downloading or permissions
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: allow-microphone
+- takeScreenshot: microphone
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: onboarding-languages
+- takeScreenshot: languages
+- tapOn:
+    id: onboarding-next
+- assertVisible: Prepare when it suits you
+- takeScreenshot: warmup-optional
+- tapOn:
+    id: onboarding-next
+- assertVisible: Talk in any app
+- takeScreenshot: keyboard-setup
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: record-note

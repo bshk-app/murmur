@@ -1,0 +1,25 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    stopApp: true
+    arguments:
+      notePaginationFixture: true
+      onboardingComplete: true
+      onboardingVersion: 4
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- runFlow:
+    when:
+      visible: Skip setup
+    commands:
+      - tapOn: Skip setup
+- tapOn:
+    id: search-notes
+- inputText: Page note 119
+- pressKey: Enter
+- assertVisible:
+    id: note-00000000-0000-0000-0000-000000000119
+- longPressOn:
+    id: note-00000000-0000-0000-0000-000000000119
+- tapOn: Copy
+- takeScreenshot: after/copy-full-note

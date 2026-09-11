@@ -1,0 +1,15 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: priority
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: speech-priority
+- tapOn: Быстрая
+- assertNotVisible: "Nemotron|Parakeet.*|GigaAM.*"
+- takeScreenshot: after/fast-model
+- tapOn: Качественная
+- assertNotVisible: "Nemotron|Parakeet.*|GigaAM.*"
+- takeScreenshot: after/quality-model

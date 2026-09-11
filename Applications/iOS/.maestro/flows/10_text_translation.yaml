@@ -1,0 +1,47 @@
+appId: app.bshk.murmur.uitesthost
+name: Text translator input, result, copy, language swap and voice tab
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      textTranslationUITest: true
+- tapOn:
+    id: skip-setup
+- tapOn: Translate
+- assertVisible: Text
+- assertVisible: Voice
+- tapOn:
+    id: text-translation-input
+- inputText: Hello from the UI test.
+- tapOn:
+    id: text-hide-keyboard
+- scrollUntilVisible:
+    element:
+      id: translate-text
+    direction: DOWN
+- tapOn:
+    id: translate-text
+- scrollUntilVisible:
+    element:
+      id: text-translation-output
+    direction: DOWN
+- assertVisible: UI test translation
+- tapOn: Copy translation
+- assertVisible: Copied
+- takeScreenshot: text-translation-result
+- scrollUntilVisible:
+    element:
+      id: text-swap-languages
+    direction: UP
+- tapOn:
+    id: text-swap-languages
+- assertNotVisible:
+    id: text-translation-output
+- tapOn:
+    id: text-clear
+- assertVisible: Type or paste text here
+- tapOn: Voice
+- assertVisible:
+    id: start-translation
+- takeScreenshot: voice-translation-tab

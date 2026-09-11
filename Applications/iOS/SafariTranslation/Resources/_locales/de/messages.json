@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Seiten nach und nach auf deinem Gerät übersetzen."
+  },
+  "source": {
+    "message": "Von"
+  },
+  "target": {
+    "message": "Nach"
+  },
+  "close": {
+    "message": "Schließen und Original wiederherstellen"
+  },
+  "original": {
+    "message": "Original"
+  },
+  "translation": {
+    "message": "Übersetzung"
+  },
+  "stop": {
+    "message": "Stopp"
+  },
+  "retry": {
+    "message": "Erneut"
+  },
+  "pageProgress": {
+    "message": "Fortschritt der Seitenübersetzung"
+  },
+  "preparing": {
+    "message": "Vorbereitung…"
+  },
+  "translating": {
+    "message": "$1% übersetzt"
+  },
+  "translated": {
+    "message": "Übersetzt auf $1"
+  },
+  "stopped": {
+    "message": "Angehalten"
+  },
+  "empty": {
+    "message": "Kein Text zum Übersetzen"
+  },
+  "unsupported": {
+    "message": "Unterstützte Sprachen auswählen"
+  },
+  "setupRequired": {
+    "message": "Öffne Murmator, um die Einrichtung abzuschließen, und versuche es erneut."
+  },
+  "failed": {
+    "message": "Übersetzung fehlgeschlagen. Erneut versuchen."
+  },
+  "busy": {
+    "message": "Eine andere Übersetzung wird beendet…"
+  },
+  "preparingModel": {
+    "message": "Sprachmodell wird vorbereitet…"
+  },
+  "partial": {
+    "message": "Einige geänderte oder zu große Texte wurden übersprungen."
+  }
+}

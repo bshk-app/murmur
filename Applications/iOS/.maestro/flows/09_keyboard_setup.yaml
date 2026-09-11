@@ -1,0 +1,20 @@
+appId: app.bshk.murmur.uitesthost
+name: Keyboard setup offers live dictation controls without a saved-note insertion button
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+- tapOn:
+    id: skip-setup
+- tapOn: Keyboard
+- assertVisible: Keyboard dictation
+- assertVisible: Spoken language
+- assertVisible: Translate
+- assertVisible:
+    id: keyboard-enable
+- assertNotVisible: Insert latest note
+- takeScreenshot: live-keyboard-setup
+- tapOn:
+    id: keyboard-enable
+- assertVisible: Speech engines are tested on a physical iPhone. This simulator only tests the interface.

@@ -1,0 +1,705 @@
+"Your voice.\nYour words." = "Твой голос.\nТвои слова.";
+"Private by design." = "Приватность по умолчанию.";
+"Make it yours." = "Настрой под себя.";
+"Ready for your\nnext thought." = "Всё готово\nдля новых мыслей.";
+"Speak naturally. Murmator turns a thought into a note — and refines it while you speak." = "Говори как обычно. Murmator записывает мысли и уточняет текст, пока ты говоришь.";
+"Recognition and translation run on your iPhone. Audio isn't uploaded or kept in your notes." = "Распознавание и перевод работают на iPhone. Аудио не отправляется на сервер и не сохраняется в заметках.";
+"Choose your spoken language. Models download once and stay on your device." = "Выбери язык речи. Модели скачаются один раз и останутся на устройстве.";
+"Start from Murmator, a Lock Screen widget, or an Action Button shortcut." = "Начинай запись в Murmator, через виджет экрана блокировки или команду для кнопки действия.";
+"Back" = "Назад";
+"Continue" = "Продолжить";
+"Start using Murmator" = "Начать пользоваться Murmator";
+"I speak" = "Я говорю на";
+"Download & prepare models" = "Скачать и подготовить модели";
+"Downloading and loading models…" = "Скачивание и загрузка моделей…";
+"Warming up models…" = "Прогрев моделей…";
+"Downloaded and warmed up" = "Скачаны и прогреты";
+"Keep Murmator open. Models download once and warm up for this session." = "Не закрывай Murmator. Модели скачаются один раз и прогреются для текущего сеанса.";
+"Models run a short silent test. Microphone access is not needed yet." = "Модели пройдут короткий тест на тишине. Доступ к микрофону пока не нужен.";
+"Model preparation failed" = "Не удалось подготовить модели";
+"Murmator mascot" = "Маскот Murmator";
+"Step %lld of 4" = "Шаг %lld из 4";
+"Notes" = "Заметки";
+"Note" = "Заметка";
+"NOTE" = "ЗАМЕТКА";
+"Search transcripts" = "Поиск по заметкам";
+"A little thought.\nA note worth keeping." = "Мимолётная мысль.\nЗаметка на память.";
+"Speak naturally. Murmator turns your voice into text, right on this iPhone." = "Говори как обычно. Murmator превращает речь в текст прямо на этом iPhone.";
+"Tap to talk · or use the Action Button" = "Нажми и говори · или используй кнопку действия";
+"Record a note" = "Записать заметку";
+"Translate" = "Перевод";
+"Keyboard" = "Клавиатура";
+"Settings" = "Настройки";
+"Cancel" = "Отмена";
+"Done" = "Готово";
+"OK" = "ОК";
+"Listening" = "Слушаю";
+"Listening…" = "Слушаю…";
+"Refining" = "Уточнение";
+"Getting ready" = "Подготовка";
+"Cancel recording" = "Отменить запись";
+"What's on your mind?" = "О чём думаешь?";
+"A moment for your words." = "Минутку для твоих слов.";
+"Stop & save" = "Остановить и сохранить";
+"Stop & translate" = "Остановить и перевести";
+"You said · %@" = "Твоя речь · %@";
+"Audio stayed on this iPhone. Only the text is saved." = "Аудио осталось на этом iPhone. Сохраняется только текст.";
+"Edit" = "Изменить";
+"Edit note" = "Изменить заметку";
+"Delete" = "Удалить";
+"Delete note" = "Удалить заметку";
+"Delete this note?" = "Удалить эту заметку?";
+"Note actions" = "Действия с заметкой";
+"Save" = "Сохранить";
+"Send to Apple Notes" = "В Заметки Apple";
+"Copy" = "Копировать";
+"Copied" = "Скопировано";
+"Share" = "Поделиться";
+"Translate to" = "Перевести на";
+"While you speak" = "Пока ты говоришь";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Черновой перевод появляется вслед за речью. OPUS уточняет завершённые фразы и итоговый текст перед сохранением.";
+"Download the selected language models once to translate offline." = "Скачай модели выбранных языков один раз для перевода без интернета.";
+"Translation is not available for this language yet. You can still record a note." = "Перевод для этого языка пока недоступен. Записать заметку можно.";
+"Speak & translate" = "Говорить и переводить";
+"Speech" = "Распознавание речи";
+"Spoken language" = "Язык речи";
+"Mode" = "Режим";
+"Fast" = "Быстрый";
+"Hybrid" = "Двойной";
+"Accurate" = "Точный";
+"Hybrid shows a live draft and corrects it on a separate backend." = "Двойной режим показывает черновик и параллельно уточняет его отдельным движком.";
+"Models" = "Модели";
+"Speech model" = "Модель распознавания";
+"Ready on this device" = "Готово на устройстве";
+"Preparation needed" = "Нужна подготовка";
+"Download & prepare" = "Скачать и подготовить";
+"Import model folder" = "Импортировать папку моделей";
+"Advanced Core ML models can be imported as a CoreMLModels folder. Your speech never leaves the device." = "Дополнительные модели Core ML можно импортировать папкой CoreMLModels. Речь не покидает устройство.";
+"Appearance" = "Оформление";
+"Theme" = "Тема";
+"System" = "Системная";
+"Light" = "Светлая";
+"Dark" = "Тёмная";
+"Ways to start" = "Как начать запись";
+"Action Button" = "Кнопка действия";
+"Assign “Record a Murmator note” in Action Button or Shortcuts settings." = "Выбери «Записать заметку Murmator» в настройках кнопки действия или Команд.";
+"Murmator keyboard" = "Клавиатура Murmator";
+"Lock Screen widget" = "Виджет экрана блокировки";
+"Add the Murmator widget to your Lock Screen. It opens the app for recording." = "Добавь виджет Murmator на экран блокировки. Он открывает приложение для записи.";
+"Saving" = "Сохранение";
+"Notes stay on this iPhone" = "Заметки остаются на этом iPhone";
+"Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically." = "Отправляй заметки в Заметки Apple или другие приложения через меню «Поделиться». Murmator не отправляет их автоматически.";
+"Murmator · 1.0\nOn-device voice to text" = "Murmator · 1.0\nРаспознавание речи на устройстве";
+"Your words, in any app." = "Твои слова в любом приложении.";
+"Record in Murmator, then use the Murmator keyboard to insert your latest saved text." = "Запиши речь в Murmator, затем вставь последний сохранённый текст с клавиатуры Murmator.";
+"1. Open Settings → General → Keyboard.\n\n2. Add Murmator under Keyboards.\n\n3. Switch with the globe key and tap Insert." = "1. Открой Настройки → Основные → Клавиатура.\n\n2. Добавь Murmator в список клавиатур.\n\n3. Переключись кнопкой глобуса и нажми «Вставить».";
+"The keyboard does not record audio or send text over the network." = "Клавиатура не записывает звук и не отправляет текст по сети.";
+"Insert latest note" = "Вставить последнюю заметку";
+"Next keyboard" = "Следующая клавиатура";
+"Refresh note" = "Обновить заметку";
+"Delete character" = "Удалить символ";
+"Return" = "Перевод строки";
+"Record a note in Murmator, then return here to insert it." = "Запиши заметку в Murmator и вернись сюда, чтобы вставить её.";
+"Choose a model that supports the selected language." = "Выбери модель с поддержкой выбранного языка.";
+"Preparing speech models…" = "Подготовка моделей распознавания…";
+"Preparing translation models…" = "Подготовка моделей перевода…";
+"Microphone access" = "Доступ к микрофону";
+"Allow microphone access in Settings to record a note." = "Разреши доступ к микрофону в Настройках, чтобы записать заметку.";
+"Draft first, refined a beat later" = "Сначала черновик, затем уточнение";
+"Listening on this iPhone" = "Распознавание на этом iPhone";
+"Refining your note…" = "Уточняю заметку…";
+"Recording stopped. The captured text was kept." = "Запись остановлена. Распознанный текст сохранён.";
+"Models imported" = "Модели импортированы";
+"Could not save recovery text: %@" = "Не удалось сохранить черновик: %@";
+"The original text is saved. Translation: %@" = "Исходный текст сохранён. Ошибка перевода: %@";
+"Record a Murmator note" = "Записать заметку Murmator";
+"Open Murmator and start on-device dictation." = "Открыть Murmator и начать распознавание на устройстве.";
+"Record with Murmator" = "Запись в Murmator";
+"Open Murmator to capture a thought on your iPhone." = "Открой Murmator, чтобы записать мысль на iPhone.";
+"Murmator transcribes your voice on this device." = "Murmator распознаёт твою речь на этом устройстве.";
+"Set up models again" = "Повторить настройку моделей";
+"Say it once" = "Просто скажи";
+"Let Murmator hear you" = "Разреши Murmator услышать тебя";
+"Add your languages" = "Добавь свои языки";
+"Warming up the models" = "Прогрев моделей";
+"Talk in any app" = "Твои слова в любом приложении";
+"Choose languages for dictation and optional translation. Download them now or add them later in Settings." = "Выбери языки для диктовки и перевода. Скачай их сейчас или добавь позже в настройках.";
+"A short silent test prepares the models for use. You can continue or skip setup while preparation runs." = "Короткий тест на тишине подготовит модели к работе. Пока идёт подготовка, можно продолжить или пропустить настройку.";
+"Microphone allowed" = "Микрофон разрешён";
+"Allow microphone" = "Разрешить микрофон";
+"Optional now. Murmator will ask when you start your first recording." = "Сейчас это необязательно. Murmator запросит доступ при первой записи.";
+"Choose languages" = "Выбрать языки";
+"1. Open Settings → General → Keyboard." = "1. Открой Настройки → Основные → Клавиатура.";
+"2. Add the Murmator keyboard." = "2. Добавь клавиатуру Murmator.";
+"3. Record in Murmator, then switch keyboards to insert your text." = "3. Запиши речь в Murmator, затем переключи клавиатуру и вставь текст.";
+"Keyboard setup" = "Настройка клавиатуры";
+"Step %lld of 5" = "Шаг %lld из 5";
+"Finish setup" = "Завершить настройку";
+"Skip setup" = "Пропустить настройку";
+"Languages & offline" = "Языки и офлайн";
+"Offline after download" = "Офлайн после скачивания";
+"After downloading, the selected languages work without internet. Audio stays on your iPhone. You can skip this and download later." = "После скачивания выбранные языки работают без интернета. Аудио остаётся на iPhone. Можно пропустить этот шаг и скачать позже.";
+"Dictation languages" = "Языки диктовки";
+"Add speech language" = "Добавить язык диктовки";
+"Translation languages · optional" = "Языки перевода · необязательно";
+"Translate from" = "Переводить с";
+"No downloadable OPUS translation pack is available for this source language yet." = "Для этого исходного языка пока нет пакета перевода OPUS, доступного для скачивания.";
+"Add translation language" = "Добавить язык перевода";
+"Downloaded" = "Скачано";
+"Prepare again" = "Подготовить повторно";
+"Download & warm up" = "Скачать и прогреть";
+"You can keep going. Preparation continues while Murmator is open." = "Можно продолжить. Подготовка идёт, пока Murmator открыт.";
+"Prepare when it suits you" = "Подготовь, когда удобно";
+"Nothing to download right now? Continue to your notes. Language packs can be added in Settings at any time." = "Не хочешь скачивать сейчас? Переходи к заметкам. Языковые пакеты можно добавить в настройках в любое время.";
+"Speech engines are tested on a physical iPhone. This simulator only tests the interface." = "Движки речи проверяются на настоящем iPhone. Этот симулятор проверяет только интерфейс.";
+"Preparing dictation" = "Подготовка диктовки";
+"Preparing live text" = "Подготовка текста в реальном времени";
+"Preparing offline dictation" = "Подготовка офлайн-диктовки";
+"Could not prepare this language. Please try again." = "Не удалось подготовить этот язык. Попробуй ещё раз.";
+"Could not prepare translation for these languages. Please try again." = "Не удалось подготовить перевод для этих языков. Попробуй ещё раз.";
+"Could not refine text. Your draft is still available." = "Не удалось уточнить текст. Черновик сохранён на экране.";
+"Could not start dictation. Check microphone access and language downloads." = "Не удалось начать диктовку. Проверь доступ к микрофону и загрузку языков.";
+"A live draft appears first, then your words are refined." = "Сначала появляется черновик, затем текст уточняется.";
+"Replay setup tour" = "Повторить знакомство с приложением";
+"A quick translation follows your voice. Completed phrases are then refined before the note is saved." = "Быстрый перевод появляется вслед за речью. Завершённые фразы уточняются перед сохранением заметки.";
+"Translation is not available to download for this language yet." = "Перевод для этого языка пока нельзя скачать.";
+"Translation could not be completed. Your original text is kept." = "Не удалось завершить перевод. Исходный текст сохранён.";
+"Text refined" = "Текст уточнён";
+"Not downloaded" = "Не скачано";
+"Downloading" = "Скачивание";
+"Warming up" = "Прогрев";
+"Ready offline" = "Готово офлайн";
+"Failed" = "Ошибка";
+"Needs warm-up" = "Нужен прогрев";
+"Selecting a language does not download it." = "Выбор языка не скачивает его.";
+"Retry" = "Повторить";
+"Details" = "Подробности";
+"Dismiss" = "Закрыть";
+"Remove" = "Убрать";
+"Reverse direction is a separate pack." = "Обратное направление — отдельный пакет.";
+"Add" = "Добавить";
+"Already added" = "Уже добавлен";
+"Not supported yet" = "Пока не поддерживается";
+"Nothing is downloading right now." = "Сейчас ничего не скачивается.";
+"No notes yet" = "Заметок пока нет";
+"Tap the mic and say the first one." = "Нажми микрофон и скажи первую.";
+"No matches" = "Нет совпадений";
+"Clear search" = "Очистить поиск";
+"Update translation" = "Обновить перевод";
+"Translation may not match the edited text." = "Перевод может не совпадать с изменённым текстом.";
+"Could not save the note" = "Не удалось сохранить заметку";
+"Recovered draft" = "Восстановленный черновик";
+"Advanced" = "Дополнительно";
+"This mode does not support the selected language." = "Этот режим не поддерживает выбранный язык.";
+"Pack is on the device but not loaded in memory." = "Пакет на устройстве, но не загружен в память.";
+"Hybrid needs a second model for this language." = "Двойному режиму нужен второй комплект для этого языка.";
+"Import failed" = "Импорт не удался";
+"Choose a folder in Files" = "Выбрать папку в Файлах";
+"Microphone is off" = "Микрофон выключен";
+"Open Settings" = "Открыть Настройки";
+"Not now" = "Не сейчас";
+"Widget & Live Activity" = "Виджет и Live Activity";
+"Murmator cannot check this setting from inside the app." = "Приложение не может проверить эту настройку.";
+"Insert" = "Вставить";
+"No saved text yet" = "Пока нет сохранённого текста";
+"Reading the note is unavailable right now." = "Чтение заметки сейчас недоступно.";
+"Ready to insert" = "Готово к вставке";
+"This cannot be undone." = "Действие нельзя отменить.";
+"Note deleted" = "Заметка удалена";
+"Preparing" = "Подготовка";
+"Downloaded models stay on the device." = "Скачанные модели остаются на устройстве.";
+"Duration is not known in advance." = "Длительность заранее неизвестна.";
+"Draft" = "Черновик";
+"Refined" = "Уточнено";
+"Draft translation" = "Черновой перевод";
+"Refined translation" = "Уточнённый перевод";
+"Saved" = "Сохранено";
+"Speech models" = "Модели распознавания";
+"Translation packs" = "Пакеты перевода";
+"No internet connection" = "Нет подключения к интернету";
+"Downloaded packs still work." = "Скачанные пакеты продолжают работать.";
+"Help" = "Помощь";
+"Add widget" = "Добавить виджет";
+"During recording" = "Во время записи";
+"Edited" = "Изменено";
+"Original text" = "Исходный текст";
+"Interrupted" = "Прервано";
+"Stopped" = "Остановлено";
+"Back to notes" = "К заметкам";
+"Try again" = "Повторить попытку";
+"Prepare later" = "Подготовить позже";
+"Copy failed" = "Не удалось скопировать";
+"System share sheet" = "Системное меню «Поделиться»";
+"You choose the destination. Murmator does not send notes on its own." = "Получателя выбираешь ты. Murmator не отправляет заметки сам.";
+"Automatic re-translation after editing is not implemented yet." = "Автоматический повторный перевод после правки пока не реализован.";
+"Long text is inserted in full." = "Длинный текст вставляется полностью.";
+"Live Activity appears here while Murmator is recording." = "Live Activity появляется здесь во время записи в Murmator.";
+"Turn off microphone" = "Выключить микрофон";
+"Hold to talk" = "Держи и говори";
+"Release to insert" = "Отпусти, чтобы вставить";
+"Insert text" = "Вставить текст";
+"Insert original" = "Вставить оригинал";
+"Send" = "Отправить";
+"Could not update the keyboard. Open Murmator and try again." = "Не удалось связаться с клавиатурой. Открой Murmator и повтори попытку.";
+"Full Access is required for keyboard dictation." = "Для диктовки с клавиатуры нужен полный доступ.";
+"The text field changed. Tap Insert text when you are ready." = "Поле ввода изменилось. Нажми «Вставить текст», когда будешь готов.";
+"Enable the microphone in Murmator" = "Включи микрофон в Murmator";
+"Hold the microphone while you speak. Release to insert the text." = "Держи кнопку микрофона, пока говоришь. Отпусти, чтобы вставить текст.";
+"Dictation" = "Диктовка";
+"Enable microphone" = "Включить микрофон";
+"Return to your app and hold the microphone on the Murmator keyboard." = "Вернись в своё приложение и держи кнопку микрофона на клавиатуре Murmator.";
+"Keyboard microphone enabled" = "Микрофон клавиатуры включён";
+"Keyboard dictation" = "Диктовка с клавиатуры";
+"Enable the microphone here, then return to your app. Use the Murmator keyboard to start and stop dictation." = "Включи микрофон здесь и вернись в своё приложение. На клавиатуре Murmator держи кнопку, пока говоришь, и отпусти для вставки текста.";
+"Enable keyboard dictation" = "Включить диктовку с клавиатуры";
+"The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard." = "Между фразами микрофон остаётся включённым, но звук не обрабатывается и не сохраняется. Он выключится через 5 минут без новой записи или через минуту после закрытия клавиатуры.";
+"Enable Full Access for Murmator." = "Разреши полный доступ для Murmator.";
+"1. Add Murmator in Settings → General → Keyboard.\n\n2. Enable Full Access for Murmator.\n\n3. Select Murmator with the globe key, enable the microphone, then hold to talk." = "1. Добавь Murmator: Настройки → Основные → Клавиатура.\n\n2. Разреши полный доступ для Murmator.\n\n3. Выбери Murmator кнопкой глобуса, включи микрофон и держи кнопку, пока говоришь.";
+"No speech detected. Hold the microphone and try again." = "Речь не обнаружена. Зажми микрофон и попробуй ещё раз.";
+"Open Murmator" = "Открыть Murmator";
+"Open Murmator to finish preparation." = "Открой Murmator, чтобы завершить подготовку.";
+"Prepare dictation" = "Подготовить диктовку";
+"Ready to dictate" = "Можно диктовать";
+"Load models and enable dictation in Murmator" = "Загрузите модели и включите диктовку в Murmator";
+"Could not load dictation models." = "Не удалось загрузить модели диктовки.";
+"Prepare the models here, then return to your app while loading finishes. The keyboard shows when dictation is ready." = "Начните загрузку моделей здесь и возвращайтесь в своё приложение. Клавиатура покажет, когда можно диктовать.";
+"End session & unload models" = "Завершить и выгрузить модели";
+"Memory" = "Память";
+"Manage loaded models" = "Управление моделями в памяти";
+"Models loaded" = "Модели в памяти";
+"Models unloaded" = "Модели выгружены";
+"Unload speech and translation models to release memory. Downloaded language packs and notes stay on this iPhone." = "Выгрузите модели речи и перевода, чтобы освободить память. Скачанные языковые пакеты и заметки останутся на iPhone.";
+"Finish recording or preparation before unloading models." = "Завершите запись или подготовку, чтобы выгрузить модели.";
+"Unloading models…" = "Выгружаем модели…";
+"Unload models" = "Выгрузить модели";
+"The next session loads the models again. You will not need to download them again." = "При следующем запуске модели снова загрузятся в память. Повторно скачивать их не нужно.";
+"Last update" = "Обновлено";
+"Dictate" = "Диктовка";
+"Record" = "Запись";
+"Unload" = "Выгрузить";
+"Murmator controls" = "Управление Murmator";
+"Start dictation, translate, unload models, or change your languages. Controls open Murmator." = "Диктуйте, переводите, выгружайте модели и выбирайте языки. Действия открывают Murmator.";
+"Languages" = "Языки";
+"Import audio" = "Импорт аудио";
+"Audio imports" = "Импорт аудио";
+"Transcribe a recording" = "Расшифровать запись";
+"Audio is processed on this iPhone in short sections, split at pauses. Keep Murmator open; completed text is saved as it goes." = "Аудио обрабатывается на iPhone короткими фрагментами с разделением по паузам. Оставьте Murmator открытым — готовый текст сохраняется по ходу работы.";
+"Importing audio…" = "Импортируем аудио…";
+"Preparing transcription…" = "Готовим распознавание…";
+"Transcribing audio…" = "Расшифровываем аудио…";
+"Pausing…" = "Приостанавливаем…";
+"Pause" = "Пауза";
+"Paused. Continue when you are ready." = "На паузе. Продолжите, когда будете готовы.";
+"Transcribe" = "Расшифровать";
+"Continue transcription" = "Продолжить расшифровку";
+"No speech detected in this file." = "В этом файле не обнаружена речь.";
+"Transcription saved" = "Расшифровка сохранена";
+"Partial transcript" = "Частичная расшифровка";
+"Open transcript" = "Открыть расшифровку";
+"Remove import" = "Убрать импорт";
+"Your original recording is unchanged. The imported copy is removed after completion; the transcript stays in Notes." = "Исходная запись не меняется. После завершения импортированная копия удаляется, а расшифровка остаётся в заметках.";
+"Processed on this iPhone. Pause at any time; completed text is saved." = "Обработка на этом iPhone. Можно приостановить в любой момент — готовый текст сохранится.";
+"Choose audio" = "Выбрать аудио";
+"Import another recording" = "Импортировать ещё запись";
+"Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import." = "Оригиналы записей не меняются. Копия аудио удаляется после успешной расшифровки или удаления импорта.";
+"Audio recording" = "Аудиозапись";
+"Could not receive the file" = "Не удалось получить файл";
+"File transfer" = "Передача файла";
+"Transcription has not started. Choose the recording again or share it from Files." = "Расшифровка не началась. Выберите запись снова или отправьте её из «Файлов».";
+"Retry import" = "Повторить импорт";
+"Waiting" = "Ожидает";
+"Recognition" = "Распознавание";
+"No speech" = "Нет речи";
+"Language of the recording" = "Язык записи";
+"The language is locked: the first section is saved." = "Язык закреплён: первый фрагмент уже сохранён.";
+"No text note was saved. Check the language of the recording or pick another file." = "Текстовая заметка не создана. Проверьте язык записи или выберите другой файл.";
+"Completed text is kept. Continue from the saved position." = "Готовый текст сохранён. Можно продолжить с сохранённого места.";
+"Transcript" = "Расшифровка";
+"Saved so far" = "Уже сохранено";
+"Waiting for the current section to stop." = "Ожидаем остановки текущего фрагмента.";
+"Open the full note after pausing. Completed text is already saved." = "Полную заметку можно открыть после паузы. Готовый текст уже сохранён.";
+"Choose another language and retry" = "Выбрать другой язык и повторить";
+"Add to queue" = "Добавить в очередь";
+"Starts after the current file. One recording is processed at a time." = "Начнётся после текущего файла. Записи обрабатываются по одной.";
+"Only the import and its audio copy are removed. Original recordings and saved notes stay." = "Удалятся только импорт и копия аудио. Оригинал и сохранённые заметки останутся.";
+"File received" = "Файл получен";
+"Could not transcribe this recording" = "Не удалось расшифровать запись";
+"of" = "из";
+"Saved sections:" = "Сохранено фрагментов:";
+"On device" = "На устройстве";
+"Downloaded language packs" = "Загруженные языковые пакеты";
+"Unloading models does not remove downloaded language packs or notes." = "Выгрузка моделей не удаляет языковые пакеты и заметки.";
+"In memory" = "В оперативной памяти";
+"Models are held by Murmator for the current work." = "Murmator держит модели в памяти для текущей работы.";
+"The next session will load the selected models from the device." = "В следующей сессии выбранные модели загрузятся с устройства.";
+"Loaded" = "Загружены";
+"Unloaded" = "Выгружены";
+"Unloading is unavailable right now" = "Сейчас выгрузить нельзя";
+"Open the import and pause it" = "Открыть импорт и приостановить";
+"The app does not report how much free memory the phone has." = "Приложение не показывает объём свободной памяти телефона.";
+"Start a dictation session, then return to your app." = "Запустите сессию диктовки и вернитесь в своё приложение.";
+"Keyboard setup instructions" = "Как настроить клавиатуру";
+"Full Access" = "Полный доступ";
+"Confirmed" = "Подтверждён";
+"Check in keyboard" = "Проверить в клавиатуре";
+"Full Access is checked by the keyboard, not by microphone permission." = "Полный доступ проверяется в клавиатуре отдельно от разрешения микрофона.";
+"Microphone" = "Микрофон";
+"Allowed" = "Разрешён";
+"Not allowed" = "Не разрешён";
+"A system permission. It does not mean models are ready." = "Системное разрешение. Оно не означает готовность моделей.";
+"Models in memory" = "Модели в памяти";
+"Loading models" = "Загрузка моделей";
+"Speech and translation must finish preparing before dictation starts." = "Подготовка речи и перевода должна завершиться до начала диктовки.";
+"Session" = "Сессия";
+"Preparing…" = "Подготовка…";
+"Inactive" = "Неактивна";
+"Return to your app manually when the session is ready." = "Когда сессия готова, вернитесь в своё приложение.";
+"Language and mode" = "Язык и режим";
+"From Voice Memos, Files or the system share sheet" = "Из «Диктофона», «Файлов» или меню «Поделиться»";
+"Open" = "Открыть";
+"Tools" = "Инструменты";
+"Dictate in other apps" = "Диктовка в других приложениях";
+"Recordings, progress and saved transcripts" = "Записи, обработка и готовый текст";
+"Device" = "Устройство";
+"Downloaded packs and loaded models" = "Языковые пакеты и модели в памяти";
+"Completed text is saved. Finish transcription before editing this note." = "Готовый текст сохранён. Завершите расшифровку перед редактированием заметки.";
+"Activate in Murmator" = "Активировать в Murmator";
+"Activation needed" = "Нужна активация";
+"Result" = "Результат";
+"Mic on" = "Микр. вкл.";
+"Mic off" = "Микр. выкл.";
+"Full Access needed" = "Нужен полный доступ";
+"Result ready" = "Результат готов";
+"Recording" = "Запись";
+"Choose what to insert into the current field." = "Выберите текст для вставки в текущее поле.";
+"Unload in Murmator" = "Выгрузить в Murmator";
+"Translation mode" = "Режим перевода";
+"Text" = "Текст";
+"Voice" = "Голос";
+"From language" = "С языка";
+"Swap languages" = "Поменять языки местами";
+"Text to translate" = "Текст для перевода";
+"Clear" = "Очистить";
+"Type or paste text here" = "Введите или вставьте текст";
+"Translate up to 10,000 characters at a time." = "За один раз можно перевести до 10 000 символов.";
+"Cancelling…" = "Отмена…";
+"Translating text…" = "Переводим текст…";
+"Translate text" = "Перевести текст";
+"Could not translate. Your text is kept." = "Не удалось перевести. Исходный текст сохранён.";
+"Translation" = "Перевод";
+"Copy translation" = "Скопировать перевод";
+"Text is translated on this iPhone. Language packs may need a one-time download." = "Текст переводится на этом iPhone. Языковые пакеты может потребоваться скачать один раз.";
+"Text is not saved as a note automatically." = "Текст не сохраняется в заметки автоматически.";
+"Hide keyboard" = "Скрыть клавиатуру";
+"Storage" = "Хранилище";
+"Refresh" = "Обновить";
+"Manage storage" = "Управлять хранилищем";
+"Downloaded models and disk space" = "Скачанные модели и место на устройстве";
+"Downloaded model files" = "Скачанные файлы моделей";
+"Available on this iPhone" = "Доступно на iPhone";
+"File sizes are shown. The space reclaimed by the system may differ." = "Показаны размеры файлов. Объём освобождённого места может отличаться.";
+"Storage information unavailable" = "Не удалось определить объём файлов";
+"Calculating storage…" = "Подсчитываем размер…";
+"Finish dictation, translation or model preparation before deleting downloads." = "Завершите диктовку, перевод или подготовку моделей перед удалением файлов.";
+"Deleting download…" = "Удаляем файлы…";
+"No downloaded model files" = "Нет скачанных моделей";
+"Speech recognition" = "Распознавание речи";
+"Unfinished downloads" = "Незавершённые загрузки";
+"Deleting a download keeps your notes, original recordings and selected languages." = "Удаление файлов моделей не удаляет заметки, исходные записи и выбранные языки.";
+"Delete downloaded model?" = "Удалить скачанную модель?";
+"Delete download" = "Удалить файлы";
+"The files will be downloaded again when you prepare this language or use it next time." = "Файлы можно скачать снова при подготовке языка или следующем использовании.";
+"This pack was imported. You may need the original model folder to restore it." = "Этот пакет был импортирован. Для восстановления может понадобиться исходная папка модели.";
+"Shared components may be needed by more than one language or mode. Notes and original recordings stay." = "Общие компоненты могут использоваться несколькими языками и режимами. Заметки и исходные записи останутся.";
+"Text and final voice translation" = "Текстовый и итоговый голосовой перевод";
+"Live voice translation preview" = "Черновик голосового перевода";
+"Live translation preview" = "Перевод в реальном времени";
+"A direction may also be used by translations through an intermediate language." = "Это направление может использоваться и для перевода через промежуточный язык.";
+"Unfinished model download" = "Незавершённая загрузка модели";
+"Temporary files from a model download." = "Временные файлы загрузки модели.";
+"Imported speech pack" = "Импортированный пакет речи";
+"Russian speech recognition" = "Распознавание русской речи";
+"Used for Russian dictation and audio imports." = "Для диктовки и расшифровки записей на русском.";
+"Multilingual speech recognition" = "Распознавание на нескольких языках";
+"Shared by several dictation languages and keyboard sessions." = "Общий пакет для нескольких языков диктовки и клавиатуры.";
+"Live dictation" = "Диктовка в реальном времени";
+"Speech detection for live dictation" = "Определение речи при диктовке";
+"A shared component. Deleting it affects every mode that uses it." = "Общий компонент. Удаление затронет все использующие его режимы.";
+"Downloaded source files for this shared component." = "Скачанные исходные файлы общего компонента.";
+"Arabic speech recognition" = "Распознавание арабской речи";
+"Additional speech recognition" = "Дополнительный пакет распознавания";
+"Speech detection for recordings" = "Определение речи в записях";
+"Used by audio imports and keyboard dictation." = "Для импорта аудио и диктовки с клавиатуры.";
+"Download removed. The language can be prepared again when needed." = "Файлы удалены. При необходимости язык можно подготовить снова.";
+"Remove from list" = "Убрать из списка";
+"Removing a language from this list does not delete downloaded files." = "Удаление языка из списка не удаляет скачанные файлы.";
+"Imported files removed. You may need the original model folder to restore this pack." = "Импортированные файлы удалены. Для восстановления может понадобиться исходная папка модели.";
+"Remove this import?" = "Удалить этот импорт?";
+"Switching tabs is unavailable while a translation runs" = "Во время перевода переключение вкладок недоступно";
+"Up to 10,000 characters at a time" = "До 10 000 символов за один раз";
+"Over 10,000 characters" = "Больше 10 000 символов";
+"The text is not trimmed automatically. Shorten it to start the translation." = "Текст не обрезается автоматически. Сократите его, чтобы начать перевод.";
+"The translation became the source text and the direction is reversed. The previous result is no longer shown." = "Перевод стал исходным текстом, а направление изменилось. Предыдущий результат больше не отображается.";
+"This prepares the language pack. It is not a percentage of the translation." = "Это подготовка языкового пакета, а не процент выполнения перевода.";
+"A new translation can start once this one stops. Your text is kept." = "Новый перевод можно начать после остановки текущего. Ваш текст сохранится.";
+"Retry with the same Translate text button, or choose a different language pair." = "Повторите попытку кнопкой «Перевести текст» или выберите другую языковую пару.";
+"Translate again" = "Перевести ещё раз";
+"Share is the system sheet — you choose the destination" = "В системном меню «Поделиться» вы выбираете, куда отправить текст";
+"No imports in progress" = "Нет активных импортов";
+"Choose a recording from Files, or share one from Voice Memos." = "Выберите запись в «Файлах» или отправьте её из «Диктофона».";
+"Saved notes stay in your list. Completed jobs are not kept here." = "Сохранённые заметки остаются в списке. Завершённые задания здесь не хранятся.";
+"Paused" = "На паузе";
+"Translation packs · text" = "Пакеты перевода · текст";
+"Text and refined voice translation use the same downloaded packs." = "Перевод текста и уточнение голосового перевода используют общие скачанные пакеты.";
+"No files on device" = "На устройстве нет файлов";
+"Files on device" = "Файлы на устройстве";
+"Voice translation" = "Голосовой перевод";
+"Text translation" = "Перевод текста";
+"Could not read storage." = "Не удалось прочитать хранилище.";
+"About Murmator" = "О Murmator";
+"Version" = "Версия";
+"Privacy" = "Приватность";
+"Open source" = "Открытый исходный код";
+"Open-source licenses" = "Лицензии компонентов";
+"Export Bergamot source code" = "Экспортировать исходники Bergamot";
+"Speech recognition and translation run on your device. Murmator does not upload your recordings, notes or translation text." = "Распознавание речи и перевод выполняются на устройстве. Murmator не отправляет ваши записи, заметки и тексты перевода на сервер.";
+"Downloading language packs connects to model hosting services. These services receive the network information needed to deliver files." = "При скачивании языковых пакетов приложение подключается к сервисам хранения моделей. Они получают сетевые данные, необходимые для передачи файлов.";
+"You choose what to share using the iOS share sheet. Device backups follow your system settings." = "Вы сами выбираете, чем поделиться через меню iOS. Резервное копирование устройства зависит от системных настроек.";
+"Replace with translation" = "Заменить переводом";
+"Default translation app" = "Переводчик по умолчанию";
+"Choose Murmator for selected text in other apps" = "Выбери Murmator для перевода текста в других приложениях";
+"Open Murmator once to prepare system translation." = "Открой Murmator один раз, чтобы подготовить системный перевод.";
+"Your selected text is kept. Return here after opening the app." = "Выделенный текст сохранён. Вернись сюда после открытия приложения.";
+"Check the source language before translating this text." = "Проверь исходный язык перед переводом этого текста.";
+"Extra copy of a language pack from an earlier app version." = "Дополнительная копия языкового пакета из предыдущей версии приложения.";
+
+"Build" = "Сборка";
+
+"Beginning" = "В начало";
+
+"Text size" = "Размер текста";
+
+"Small" = "Маленький";
+
+"Medium" = "Средний";
+
+"Large" = "Большой";
+
+"Extra large" = "Очень большой";
+
+"Waiting for translation…" = "Ожидаем перевод…";
+
+"Following live text" = "Текущая речь";
+
+"Back to live text" = "К текущей речи";
+
+"Reading earlier text" = "Чтение истории";
+
+"Reading view" = "Режим чтения";
+
+"Recognition priority" = "Приоритет распознавания";
+
+"Fast model" = "Быстрая";
+
+"Quality model" = "Качественная";
+
+"Faster first words. Uses the streaming model." = "Первые слова появляются быстрее. Используется потоковая модель.";
+
+"More context for each phrase. The result may appear later." = "Больше контекста для каждой фразы. Результат может появляться позже.";
+
+"Your languages" = "Ваши языки";
+
+"Other languages…" = "Другие языки…";
+
+"Selected languages" = "Выбранные языки";
+
+"Step %d of %d" = "Этап %d из %d";
+
+"Language %d of %d" = "Язык %d из %d";
+
+"Download paused" = "Загрузка приостановлена";
+
+"Resume download" = "Продолжить загрузку";
+
+"Cancel download" = "Отменить загрузку";
+
+"Preparation resumes when you return to Murmator. Completed downloads are kept." = "Подготовка продолжится, когда вы вернётесь в Murmator. Завершённые загрузки сохраняются.";
+
+"Translating note…" = "Переводим заметку…";
+
+"Cancel translation" = "Отменить перевод";
+
+"New text below" = "Ниже появился новый текст";
+
+"End" = "В конец";
+
+"Fast mode" = "Быстрая";
+
+"Quality mode" = "Качественная";
+
+"Download languages" = "Скачать языки";
+
+"Preparing dictation…" = "Подготовка диктовки…";
+
+"Preparing translation…" = "Подготовка перевода…";
+
+"Languages imported" = "Языки импортированы";
+
+"Free memory" = "Освободить память";
+
+"Freeing memory…" = "Освобождение памяти…";
+
+"End dictation" = "Завершить диктовку";
+
+"Downloads" = "Загрузки";
+
+"No downloads" = "Нет загрузок";
+
+"Delete download?" = "Удалить загрузку?";
+
+"Enable dictation in Murmator" = "Включите диктовку в Murmator";
+
+"Finish the current task to free memory." = "Завершите текущую задачу, чтобы освободить память.";
+
+"Finish the current task to delete downloads." = "Завершите текущую задачу, чтобы удалить загрузки.";
+
+"This language is unavailable in the selected mode." = "Этот язык недоступен в выбранном режиме.";
+
+"Download removed." = "Загрузка удалена.";
+
+"Language downloads require internet access." = "Для загрузки языков нужен интернет.";
+
+"Notes and recordings stay. Download this language again to use it offline." = "Заметки и записи останутся. Для работы офлайн потребуется скачать язык снова.";
+
+"Notes and recordings stay. Keep the original files to restore this download." = "Заметки и записи останутся. Для восстановления нужны исходные файлы.";
+
+"Download" = "Скачать";
+
+"Downloading…" = "Скачивание…";
+
+"Ready" = "Готово";
+
+"Voice notes" = "Голосовые заметки";
+
+"In use" = "Используется";
+
+"Not in use" = "Не используется";
+
+"Translation languages" = "Языки перевода";
+
+"Could not save audio." = "Не удалось сохранить аудио.";
+
+"Play recording" = "Прослушать запись";
+
+"Pause recording" = "Пауза";
+
+"Recording position" = "Позиция в записи";
+
+"Share recording" = "Поделиться записью";
+
+"Transcribe again" = "Расшифровать заново";
+
+"Previous versions" = "Предыдущие версии";
+
+"Previous transcript" = "Предыдущая расшифровка";
+
+"The note, its versions and recording will be deleted." = "Заметка, её версии и аудиозапись будут удалены.";
+
+"Translation unavailable" = "Не удалось перевести";
+
+"Translation incomplete" = "Перевод не завершён";
+
+"Saved notes and audio stay." = "Сохранённые заметки и аудио останутся.";
+
+"Recordings and transcripts are saved on this device." = "Аудиозаписи и расшифровки сохраняются на этом устройстве.";
+
+"Delete language" = "Удалить язык";
+
+"Stop recording" = "Остановить запись";
+
+"Close recording" = "Закрыть запись";
+
+
+"Transcription" = "Транскрипция";
+
+"Only Quality is available for these languages." = "Для этих языков доступна только качественная модель.";
+
+"Turn speech into notes" = "Превращайте речь в заметки";
+
+"Tap the microphone, speak, and keep the recording with its text." = "Нажмите микрофон и говорите. Запись сохранится вместе с текстом.";
+
+"Translate your words" = "Переводите речь и текст";
+
+"Translate speech or typed text. Share the original or just the translation." = "Переводите речь или написанный текст. Делитесь оригиналом или только переводом.";
+
+"Transcribe recordings" = "Получайте текст из аудио";
+
+"Import an audio file and turn it into a note you can read and edit." = "Откройте аудиофайл, чтобы получить заметку, которую можно читать и редактировать.";
+
+"Preload languages" = "Предзагрузить языки";
+
+"Which languages should work immediately and offline? You can download more later in Settings." = "Какие языки должны работать сразу и без интернета? Остальные можно скачать позже в настройках.";
+
+"Includes transcription and translation." = "Включает транскрипцию и перевод.";
+
+"Translation between: %@." = "Перевод между языками: %@.";
+
+"Downloading languages" = "Загружаем языки";
+
+"Ready for offline use" = "Готово к работе офлайн";
+
+"Download interrupted" = "Загрузка прервана";
+
+"Downloading transcription and translation. Recording will not start automatically." = "Загружаем транскрипцию и перевод. Запись сама не начнётся.";
+
+"Tap the microphone when you are ready to make your first note." = "Нажмите микрофон, когда будете готовы записать первую заметку.";
+
+"Continue without downloads" = "Продолжить без загрузки";
+
+"Download and continue" = "Скачать и продолжить";
+
+"Set up later" = "Настроить позже";
+
+"Ready. Tap Start recording when you want to speak." = "Всё готово. Нажмите «Начать запись», когда захотите говорить.";
+
+"Ready to record" = "Можно начинать запись";
+
+"Start recording" = "Начать запись";
+
+"Choose your languages" = "Выберите языки";
+
+"Preload for offline use" = "Предзагрузить для работы без интернета";
+
+"Try transcription" = "Попробуйте транскрипцию";
+
+"Speak a few words and watch the text appear." = "Произнесите несколько слов и смотрите, как появляется текст.";
+
+"Live transcription uses the Fast model. Finished audio recordings use the Quality model. Both work offline after downloading." = "В реальном времени работает быстрая модель. Для обработки готовых аудиозаписей — качественная. После загрузки обе работают без интернета.";
+
+"Try live transcription" = "Попробовать в реальном времени";
+
+"Try translation" = "Попробуйте перевод";
+
+"See a translation while you speak, or translate a finished text with the Quality model." = "Получайте перевод во время речи или переведите готовый текст качественной моделью.";
+
+"Live translation uses the Fast model. For finished text and recordings, choose Quality. Both work offline after downloading." = "Перевод в реальном времени использует быструю модель. Для готового текста и записей выбирайте качественную. После загрузки обе работают без интернета.";
+
+"Try live translation" = "Попробовать живой перевод";
+
+"Try Quality translation" = "Попробовать качественный перевод";
+
+"Open Import audio on the notes screen and choose a recording from Files. Audio files use Quality transcription." = "Откройте импорт аудио на экране заметок и выберите запись из «Файлов». Для аудиофайлов используется качественная транскрипция.";
+
+"Share only what you need" = "Делитесь только нужным";
+
+"Open a note, select Original or Translation below the player, then tap Share or Copy." = "Откройте заметку, выберите оригинал или перевод под плеером и нажмите «Поделиться» или «Копировать».";
+
+"Only the selected text is exported. Use the player's share button to export the audio recording." = "Передаётся только выбранный текст. Чтобы отправить аудиозапись, используйте кнопку «Поделиться» в плеере.";
+
+"Your languages are ready. Try the features next." = "Языки готовы. Теперь можно попробовать функции приложения.";
+
+"Download later" = "Скачать позже";
+
+"Skip tour" = "Пропустить знакомство";
+
+"Feature example" = "Пример функции";

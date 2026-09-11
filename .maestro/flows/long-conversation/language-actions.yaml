@@ -1,0 +1,22 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: languages-ready
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- assertNotVisible: Prepare again
+- assertNotVisible:
+    id: prepare-speech:ru
+- assertVisible:
+    id: language-status-translation:fi-ru
+    text: Downloaded
+- assertNotVisible:
+    id: prepare-all-languages
+- scrollUntilVisible:
+    element:
+      text: '(?i)translation languages'
+    direction: DOWN
+- assertNotVisible: '.*OPTIONAL.*'
+- takeScreenshot: after/language-actions
+- runFlow: languages.yaml

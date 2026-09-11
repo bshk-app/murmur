@@ -1,0 +1,42 @@
+/* Safari page translation. */
+"Translate page" = "Käännä sivu";
+"Reading webpage…" = "Luetaan verkkosivua…";
+"This action needs a Safari webpage." = "Tämä toiminto tarvitsee Safarissa avatun verkkosivun.";
+"No readable text was found on this page." = "Tältä sivulta ei löytynyt luettavaa tekstiä.";
+"This page is too large to translate at once." = "Tämä sivu on liian suuri käännettäväksi kerralla.";
+"Open Murmator once before translating webpages." = "Avaa Murmator kerran ennen verkkosivujen kääntämistä.";
+"From language" = "Lähdekieli";
+"Translate to" = "Käännä kielelle";
+"Detected language" = "Tunnistettu kieli";
+"Check the source language" = "Tarkista lähdekieli";
+"Download missing language packs and translate." = "Lataa puuttuvat kielipaketit ja käännä sivu.";
+"Page text is processed on this device." = "Sivun teksti käsitellään tällä laitteella.";
+"Preparing language packs…" = "Valmistellaan kielipaketteja…";
+"Translated %d of %d blocks" = "Käännetty %d/%d tekstilohkoa";
+"Stopping…" = "Pysäytetään…";
+"Translate" = "Käännä";
+"Cancel" = "Peruuta";
+"Close" = "Sulje";
+"Translation failed. The original page is unchanged." = "Kääntäminen epäonnistui. Alkuperäinen sivu ei muuttunut.";
+"Translation into %@" = "Käännöskieli: %@";
+"Show original" = "Näytä alkuperäinen";
+"Show translation" = "Näytä käännös";
+"Some page content changed and was left unchanged." = "Osa sivun sisällöstä muuttui ja jätettiin kääntämättä.";
+"Some formatted fragments were translated separately." = "Osa muotoilluista tekstikatkelmista käännettiin erikseen.";
+"Translate Safari pages" = "Käännä Safarin sivuja";
+"Open a webpage in Safari, tap Share, then choose Murmator." = "Avaa verkkosivu Safarissa, napauta Jaa ja valitse Murmator.";
+"Choose languages and translate. Language packs are shared with the app." = "Valitse kielet ja käännä. Kielipaketit ovat yhteisiä sovelluksen kanssa.";
+"Close restores the original page. Newly loaded content may need another translation." = "Sulje palauttaa alkuperäisen sivun. Uusi ladattu sisältö voi vaatia uuden käännöksen.";
+
+/* Progressive page translation setup. */
+"Enable Murmator in Safari Extensions and allow it on this website." = "Ota Murmator käyttöön Safarin laajennuksissa ja salli sen toiminta tällä sivustolla.";
+"Open Murmator" = "Avaa Murmator";
+"Could not start page translation. Try again from Share." = "Sivun käännöstä ei voitu aloittaa. Yritä uudelleen Jaa-valikosta.";
+"Open Safari Extensions" = "Avaa Safarin laajennukset";
+"In Settings, open Apps → Safari → Extensions → Murmator and turn it on." = "Avaa Asetukset → Apit → Safari → Laajennukset → Murmator ja ota laajennus käyttöön.";
+"In Safari's page menu, allow Murmator to work on the website, then reload the page." = "Salli Murmatorin toiminta sivustolla Safarin sivuvalikosta ja lataa sivu uudelleen.";
+"One-time setup" = "Ensimmäinen käyttöönotto";
+"The page stays visible. Translations appear gradually; progress and languages are in the page header." = "Sivu pysyy näkyvissä. Käännökset ilmestyvät vähitellen; edistyminen ja kielet näkyvät sivun yläreunassa.";
+"Language packs are shared with the app and download when needed." = "Kielipaketit ovat yhteisiä apin kanssa ja latautuvat tarvittaessa.";
+
+"Start from Safari’s page menu → Murmator. Allow website access if asked." = "Aloita Safarin sivuvalikosta → Murmator. Salli sivuston käyttö pyydettäessä.";

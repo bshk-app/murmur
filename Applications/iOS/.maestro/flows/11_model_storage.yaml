@@ -1,0 +1,67 @@
+appId: app.bshk.murmur.uitesthost
+name: Storage deletes selected files and blocks deletion during pending preparation
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      uiFixture: true
+      storageFixture: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- scrollUntilVisible:
+    element:
+      id: open-storage
+    direction: DOWN
+- tapOn:
+    id: open-storage
+- assertVisible:
+    id: model-storage-total
+- scrollUntilVisible:
+    element:
+      id: delete-storage-translation/ct2-rufi
+    direction: DOWN
+- tapOn:
+    id: delete-storage-translation/ct2-rufi
+- assertVisible: Delete downloaded model?
+- tapOn:
+    id: confirm-storage-delete
+- assertNotVisible:
+    id: storage-item-translation/ct2-rufi
+- scrollUntilVisible:
+    element:
+      id: storage-item-translation/ct2-enfi
+    direction: UP
+- assertVisible:
+    id: storage-item-translation/ct2-enfi
+- takeScreenshot: storage-after-delete
+- tapOn: Done
+- tapOn: Notes
+- assertVisible:
+    id: note-.*
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      storageFixture: true
+      storagePendingPreparation: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- scrollUntilVisible:
+    element:
+      id: open-storage
+    direction: DOWN
+- tapOn:
+    id: open-storage
+- scrollUntilVisible:
+    element:
+      id: delete-storage-translation/ct2-enfi
+    direction: DOWN
+- assertVisible:
+    id: delete-storage-translation/ct2-enfi
+    enabled: false
+- takeScreenshot: storage-protected-during-preparation

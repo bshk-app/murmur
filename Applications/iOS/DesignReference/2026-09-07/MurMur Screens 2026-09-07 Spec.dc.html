@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./doc-page.js"></script>
+<style>
+  doc-page:not(:defined) { visibility:hidden }
+  body { margin:0; -webkit-font-smoothing:antialiased; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
+  a { color:#c9722c; } a:hover { color:#e8893b; }
+</style>
+</helmet>
+
+<doc-page margin="0.7in">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:26px">
+    <img src="mascot.png" alt="" style="width:26px;height:26px;object-fit:contain">
+    <div style="font:600 10pt/1 -apple-system,system-ui;letter-spacing:.02em;color:#8a7a6a">MurMur · новые экраны · 7 сентября 2026</div>
+  </div>
+
+  <h1 style="margin:0;font:700 26pt/1.1 -apple-system,system-ui;letter-spacing:-.02em;color:#2a2520">Аудиоимпорт, память, клавиатура и виджеты</h1>
+  <p style="margin:14px 0 0;font:400 11.5pt/1.55 -apple-system,system-ui;color:#4a3e34;max-width:34em">Документ описывает макет <b>MurMur Screens 2026-09-07</b>: 28 экранов и состояний с ID из SCREENS.md, два превью виджетов, карту переходов, спецификации компонентов, тексты RU/EN и отдельный список предложений, которые требуют изменения логики продукта. Внутренний экран: 402 × 874 pt, проверено также 375 × 667 pt.</p>
+
+  <h2 style="margin:34px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">1 · Что изменено относительно инженерной сборки</h2>
+  <ul style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Вход в импорт.</b> Вместо иконки в заголовке — строка действия «Импорт аудио» с подписью источников. Иконка в заголовке убрана: она не читалась как действие.</li>
+    <li><b>Иерархия листа.</b> Файл → язык записи → основной CTA → ход обработки → результат. Пояснение о локальной обработке сокращено до двух строк и стоит один раз, над карточкой.</li>
+    <li><b>Пауза, продолжение и открытие результата — кнопки</b>, а не строки текста. В инженерной сборке это был обычный текст внутри карточки.</li>
+    <li><b>Прогресс длинной записи</b> показывает время и процент: «12:04 из 31:20 · 40% · фрагмент 8 из 21». Полоса не выдаёт чтение файла за готовый результат: до первого распознанного фрагмента она индикативная, без процента.</li>
+    <li><b>Контраст.</b> Оранжевая заливка CTA получила тёмный текст #241F1C (≈6,6:1) вместо белого — в обеих темах.</li>
+    <li><b>«Речь не обнаружена»</b> — отдельный вид карточки: пометка, объяснение «текстовая заметка не сохранена» и выбор языка рядом. Не похоже на сохранённую расшифровку.</li>
+    <li><b>Ошибки разделены:</b> <code>audio-error</code> — ошибка распознавания с сохранённым частичным текстом; <code>audio-error-recv</code> — ошибка получения файла, распознавание не начиналось.</li>
+    <li><b>«Убрать импорт»</b> всегда сопровождается строкой о том, что исходная запись и сохранённая заметка остаются.</li>
+    <li><b>Память разделена на два блока:</b> «На устройстве» (скачанные пакеты) и «В памяти» (модели, которые удерживает приложение). Одно слово «готово» больше не обслуживает оба понятия.</li>
+    <li><b>Экран памяти прокручивается</b> и живёт в листе, а не в VStack: при XXL-шрифте текст не обрезается, кнопки растут вместе с текстом.</li>
+    <li><b>Клавиатура.</b> Статусы «полный доступ», «микрофон», «модели в памяти» и «сессия» — четыре отдельные строки. Повторная активация — компактная строка статуса, а не прохождение настройки заново.</li>
+    <li><b>Виджеты</b> без иконок-заглушек: подпись действия плюс акцентная плитка диктовки. Подпись статуса содержит время снимка.</li>
+  </ul>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">2 · Карта переходов</h2>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Аудиоимпорт</h3>
+  <p style="margin:9px 0 0;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34"><code>notes</code> → системное «Поделиться» или строка «Импорт аудио» → <code>audio-receiving</code> → <code>audio-ready</code> → «Расшифровать» → <code>audio-preparing</code> → <code>audio-progress</code> → <code>audio-complete</code> → <code>note-complete</code>.</p>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><code>audio-progress</code> → «Пауза» → <code>audio-pausing</code> → <code>audio-paused</code>. Уход в фон даёт тот же переход без нажатия.</li>
+    <li><code>audio-paused</code> → «Продолжить расшифровку» → <code>audio-progress</code>; «Открыть расшифровку» → <code>note-partial</code>.</li>
+    <li><code>note-partial</code> → «Продолжить расшифровку» → <code>audio-paused</code> → <code>audio-progress</code>.</li>
+    <li><code>audio-progress</code> → сбой распознавания → <code>audio-error</code> → повтор продолжает с сохранённой позиции.</li>
+    <li>Приём файла не удался → <code>audio-error-recv</code> → «Повторить импорт» → <code>audio-receiving</code>. Заметка не создаётся.</li>
+    <li>Речь не найдена → <code>audio-silent</code> → смена языка и повтор либо «Убрать импорт». Текстовой заметки нет.</li>
+    <li>Второй файл во время работы → <code>audio-queue</code>: активная карточка сверху, ожидающая — без заливки, с пометкой «Ожидает».</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Память</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><code>settings</code> → «Память» → <code>memory-loaded</code> → «Выгрузить модели» → <code>memory-empty</code>.</li>
+    <li><code>memory-empty</code> → «Подготовить повторно» → <code>memory-loaded</code>. Скачивание не требуется.</li>
+    <li>Во время записи, подготовки или обработки файла → <code>memory-busy</code>: выгрузка недоступна, рядом кнопка «Открыть импорт и поставить на паузу».</li>
+    <li>Виджет → «Выгрузить в MurMur» → открывается приложение → <code>memory-loaded</code> или <code>memory-busy</code> по фактическому состоянию.</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Клавиатура</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><code>keyboard-activate</code> (в чужом приложении) → «Активировать в MurMur» → <code>keyboard-setup</code> → «Подготовить диктовку» → <code>keyboard-preparing</code> → <code>keyboard-ready</code> → ручной возврат → <code>keyboard-load</code> либо сразу <code>keyboard-hold</code>.</li>
+    <li><code>keyboard-hold</code> → удержание → <code>keyboard-listening</code> → отпускание → вставка в прежнее неизменённое поле.</li>
+    <li>Поле изменилось → <code>keyboard-result</code>: «Вставить текст» или «Вставить оригинал», затем возврат в <code>keyboard-hold</code>.</li>
+    <li><code>keyboard-ready</code> → «Завершить и выгрузить модели» → <code>memory-empty</code>.</li>
+  </ul>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">3 · Состояния действий</h2>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9.5pt/1.45 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f4efe7"><th style="text-align:left;padding:7px 8px;font-weight:600;color:#2a2520;width:26%">Экран</th><th style="text-align:left;padding:7px 8px;font-weight:600;color:#2a2520;width:30%">Основное действие</th><th style="text-align:left;padding:7px 8px;font-weight:600;color:#2a2520">Состояние и вторичные действия</th></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-ready</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Расшифровать — enabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Язык записи меняется; «Убрать импорт» — деструктивное</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-receiving</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Расшифровать — disabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Индикативная полоса, процента нет</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-preparing</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Пауза — enabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Язык ещё меняется; процента нет</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-progress</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Пауза — enabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Язык заблокирован; открытие заметки недоступно до паузы</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-pausing</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Пауза — disabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Спиннер, «Приостанавливаем…», прогресс сохраняется</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-paused</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Продолжить расшифровку</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Открыть расшифровку — вторичное; «Убрать импорт»</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-complete</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Открыть расшифровку</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Полоса 100 % зелёная; копия аудио удалена</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-error</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Продолжить расшифровку</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Подробности — ссылка; частичный текст сохранён</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-error-recv</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Повторить импорт</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Прогресса и текста нет; заметка не создана</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>audio-silent</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Выбрать другой язык и повторить</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Заметка не сохранена; «Убрать импорт»</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>memory-loaded</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Выгрузить модели</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Блок «В памяти» с пометками «Загружены»</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>memory-empty</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Подготовить повторно</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Пакеты остаются «Скачано»</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>memory-busy</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Выгрузить модели — disabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Объяснение причины и путь к паузе</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-setup</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Подготовить диктовку</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Инструкция активации — ссылка</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-preparing</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Подготовить диктовку — loading</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Отмена — ссылка; можно уйти из приложения</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-ready</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Завершить и выгрузить модели</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Четыре строки статуса; возврат вручную</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-load</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Подготовка… — disabled</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Смена языка доступна, диктовка нет</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-listening</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Отпусти, чтобы вставить</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Смена языка недоступна (opacity 0,5)</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2"><code>keyboard-result</code></td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Вставить текст</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Вставить оригинал — вторичное</td></tr>
+  </table>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">4 · Компоненты</h2>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Кнопки</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Основная:</b> высота ≥ 48 pt, радиус 13, фон #E07A2F, текст #241F1C, 600 15 pt, внутренние отступы 13 / 16, зазор с иконкой 9. В расширении клавиатуры — 56 pt, радиус 15, 17 pt.</li>
+        <li><b>Вторичная:</b> фон card2, рамка 1 pt line, текст ink. <b>Disabled:</b> фон card2, текст ink3, рамка line — форма сохраняется, чтобы не прыгала компоновка. <b>Деструктивная:</b> прозрачный фон, текст #C0341F, рамка rgba(192,52,31,.32). <b>Ссылка:</b> высота ≥ 44 pt, цвет #C9722C.</li>
+    <li>При XXL-шрифте кнопки растут вместе с текстом: высота задана как <code>min-height</code>, подпись переносится (<code>text-wrap: pretty</code>), горизонтальные ряды заменяются вертикальным стеком с зазором 9.</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Карточка импорта</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li>Радиус 18, padding 15 / 16, фон card, рамка 1 pt line. Иконка файла 38 × 38, радиус 11. Имя файла 16 pt / 600 с <code>overflow-wrap: anywhere</code> — длинное имя переносится, а не обрезается.</li>
+    <li>Полоса прогресса: высота 8, радиус 5. Заливка #E07A2F; ошибка #C0341F; завершение #2E7A4A. Индикативное состояние — та же полоса с бегущим сегментом 30 % (анимация 1,5 с).</li>
+    <li>Под полосой строка «12:04 из 31:20» (600 15 pt, tabular-nums), процент и номер фрагмента — 12,5 pt ink2/ink3. При XXL строка переносится, порядок сохраняется.</li>
+    <li>Блок сохранённого текста: фон card2, радиус 13, заголовок 11,5 pt uppercase ink3, текст 14 pt / 1,5.</li>
+    <li>Пометки: радиус 6, padding 4 / 8, 600 11,5 pt. Тона — нейтральный (card2 / ink2), акцентный (rgba(224,122,47,.16) / #A3541C), успех (rgba(46,122,74,.14) / #1F6640), ошибка (rgba(192,52,31,.13) / #A52A17).</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Листы и списки</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li>Лист: радиус 26 сверху, максимум 92 % высоты экрана, шапка с заголовком 16 pt / 600 и кнопкой «Готово» 44 pt. Содержимое прокручивается; основное действие всегда внутри карточки, а не под сгибом страницы.</li>
+    <li>Строка настроек: min-height 60, padding 13 / 15, разделитель 1 pt line, значение или пометка справа, шеврон 0,85 em ink3.</li>
+    <li>Строка языка: радиус 14, padding 13 / 15; название 15 pt / 600, статус — пометка справа, пояснение 12,5 pt ink2, действие — вторичная кнопка на всю ширину.</li>
+    <li>Строка «Импорт аудио» на экране заметок: min-height 64, радиус 16, иконка 42 × 42 на фоне rgba(224,122,47,.14), подпись источников 13 pt ink2.</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Клавиатура и виджеты</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li>Панель расширения: фон kb, padding 14 / 20 / 30, вертикальный зазор 12. Шапка: маскот 22 pt, «MurMur», пометка состояния, справа подпись микрофона. Ряд языков: две кнопки 46 pt. Служебный ряд: глобус и удаление по 46 pt, Send — 1,4 доли ширины.</li>
+    <li>Статус в расширении и статус моделей — разные элементы: «Микрофон включён» стоит справа в шапке, готовность моделей — в пометке рядом с названием.</li>
+    <li>Виджет small 170 × 170 pt: padding 15, плитки радиус 11, зазор 7, подпись 10 pt / 600. Виджет medium 360 × 170 pt: три колонки, подпись статуса 11,5 pt и время снимка справа в шапке.</li>
+    <li>Поверхность виджета фиксированно тёмная: фон #17120F, рамка rgba(255,255,255,.08), акцентная плитка #E07A2F с текстом #241F1C.</li>
+  </ul>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Токены</h3>
+  <p style="margin:9px 0 0;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">Светлая: bg #FAF7F2, card #FFFDF9, card2 rgba(60,40,20,.07), line rgba(60,40,20,.11), ink #2A2520, ink2 rgba(74,62,52,.74), ink3 rgba(74,62,52,.52), лист #FFFDF9, поле чата #F1ECE4, клавиатура #E6E0D6.<br>Тёмная: bg #15110E, card rgba(255,255,255,.07), card2 rgba(255,255,255,.10), line rgba(255,255,255,.12), ink rgba(255,255,255,.95), ink2 rgba(255,255,255,.68), ink3 rgba(255,255,255,.46), лист #1E1916, поле чата #0E0B09, клавиатура #1C1714.<br>Акцент #E07A2F одинаков в обеих темах; текст на акценте всегда #241F1C. Оранжевый как цвет текста: #C9722C на светлом, #F0A469 на тёмном.</p>
+  <p style="margin:9px 0 0;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">Типографика от базового кегля: 16 px обычный режим, 21 px при Accessibility 2. Шкала em: .719 (пометки) · .75 · .781 · .813 · .875 · .938 · 1 · 1.25 (заголовок листа) · 1.375 · 1.938 (крупный заголовок). Все размеры заданы в em, поэтому XXL-шрифт масштабирует экран целиком.</p>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">5 · Тексты RU / EN</h2>
+  <p style="margin:9px 0 0;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">Строки из <code>copy/translations.tsv</code> взяты без изменений. Ниже — только новые формулировки, которых в файле нет; их нужно добавить в локализацию.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:12px;font:400 9.5pt/1.45 -apple-system,system-ui;color:#4a3e34">
+    <tr style="background:#f4efe7"><th style="text-align:left;padding:7px 8px;font-weight:600;color:#2a2520;width:34%">RU</th><th style="text-align:left;padding:7px 8px;font-weight:600;color:#2a2520">EN</th></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Из «Диктофона», «Файлов» или системного «Поделиться»</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">From Voice Memos, Files or the system share sheet</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Файл принят</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">File received</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Язык записи</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Language of the recording</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Язык уже нельзя изменить: первый фрагмент сохранён.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">The language is locked: the first section is saved.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Сохранено на сейчас</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Saved so far</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">фрагмент 8 из 21</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">section 8 of 21</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Открыть заметку целиком можно после паузы. Готовый текст уже сохранён.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Open the full note after pausing. Completed text is already saved.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Ждём остановки текущего фрагмента. Повторная пауза недоступна.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Waiting for the current section to stop. Pause is unavailable until then.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Не удалось распознать запись</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Could not transcribe this recording</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Не удалось получить файл</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Could not receive the file</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Текстовая заметка не сохранена. Проверьте язык записи или выберите другой файл.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">No text note was saved. Check the language of the recording or pick another file.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">«Убрать импорт» удаляет задание и его копию аудио. Исходная запись в «Диктофоне» и сохранённая заметка остаются.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">“Remove import” deletes the job and its audio copy. Your original recording and any saved note stay.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Начнётся после текущего файла. Одновременно обрабатывается одна запись.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Starts after the current file. One recording is processed at a time.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">На устройстве / В памяти</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">On device / In memory</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Сейчас выгрузка недоступна</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Unloading is unavailable right now</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Открыть импорт и поставить на паузу</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Open the import and pause it</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Точный объём свободной памяти телефона приложение не показывает.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">The app does not report how much free memory the phone has.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Клавиатура добавлена</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Keyboard is added</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Микрофон · Разрешение системы. Не означает, что модели готовы.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Microphone · A system permission. It does not mean models are ready.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Экран нужен один раз за сеанс. Повторная активация выполняется этой же строкой статуса.</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">This screen is needed once per session. Re-activation uses the same status row.</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Нужна активация / Загрузка моделей / Можно диктовать / Запись / Результат готов</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Activation needed / Loading models / Ready to dictate / Recording / Result ready</td></tr>
+    <tr><td style="padding:7px 8px;border-top:1px solid #e6ded2">Выгрузить в MurMur · Обновлено 12:24</td><td style="padding:7px 8px;border-top:1px solid #e6ded2">Unload in MurMur · Updated 12:24</td></tr>
+  </table>
+
+  <h3 style="margin:18px 0 0;font:600 9.5pt/1 -apple-system,system-ui;letter-spacing:.07em;text-transform:uppercase;color:#8a7a6a">Замечания по длинным локализациям</h3>
+  <ul style="margin:9px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li>Немецкий и финский длиннее английского на 25–45 %. «Завершить и выгрузить модели» → «Sitzung beenden und Modelle entladen» занимает две строки уже при обычном кегле — все кнопки рассчитаны на два ряда текста.</li>
+    <li>Русские строки состояний длинные: «Расшифровываем аудио…», «Приостанавливаем…». Держите статус в одной колонке со спиннером, без бокового значения справа.</li>
+    <li>«Скачано», «в памяти», «не скачано» — пометки, не кнопки. В немецком «Nicht geladen» почти совпадает с «Nicht geladen» для памяти: для диска используйте «Heruntergeladen», для памяти — «Entladen».</li>
+    <li>Слово «фрагмент» не сокращать до «фр.»: строка прогресса читается вместе с временем.</li>
+    <li>В расширении клавиатуры язык показан кодом (RU, EN, FI) — названия языков не влезают в 46 pt кнопку ни в одной локализации.</li>
+  </ul>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">6 · Указания для реализации</h2>
+  <ul style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Длинные файлы.</b> Показывайте позицию и длительность из модели задания; процент — производная величина. Пока позиция неизвестна (получение файла, подготовка) — индикативная полоса без процента.</li>
+    <li><b>Сохранение по фрагментам.</b> После каждого фрагмента обновляйте текст и позицию. Блок «Сохранено на сейчас» — это то, что уже лежит в заметке, а не буфер экрана.</li>
+    <li><b>Пауза.</b> Состояние «Приостанавливаем…» может длиться до конца текущего фрагмента: кнопка disabled, прогресс не сбрасывается. Уход в фон приводит к тому же состоянию.</li>
+    <li><b>Малые экраны (375 × 667).</b> Внутренние отступы уменьшаются с 20 до 17 pt; лист занимает до 92 % высоты; основное действие остаётся в карточке, чтобы не уходить за прокрутку. Экран заметок при этом сохраняет строку импорта над списком.</li>
+    <li><b>Accessibility 2.</b> Все кегли в em от базового 21 px; списки и ряды кнопок переходят в вертикальный стек; ни один контейнер не имеет фиксированной высоты. Проверено на 375 × 667 и 402 × 874.</li>
+    <li><b>Не перерисовывать системное.</b> Share Sheet, файловый браузер и запросы разрешений остаются системными; в макете они не показаны намеренно.</li>
+    <li><b>Разделение понятий в коде.</b> Разрешение микрофона, активная сессия, скачанные пакеты и модели в памяти — четыре независимых признака; баннер на главном экране не должен зависеть от <code>isActive</code> во время подготовки.</li>
+  </ul>
+
+  <h2 style="margin:30px 0 0;font:700 15pt/1.25 -apple-system,system-ui;color:#2a2520">7 · Предложения, требующие изменения логики продукта</h2>
+  <p style="margin:9px 0 0;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">Это предложения дизайна. В интерфейсе они показаны как макеты и не являются подтверждёнными возможностями сборки.</p>
+  <ol style="margin:12px 0 0;padding-left:20px;font:400 10.5pt/1.6 -apple-system,system-ui;color:#4a3e34">
+    <li><b>Компактная активация клавиатуры.</b> Экраны <code>keyboard-setup</code> и <code>keyboard-ready</code> нарисованы как одна строка статуса с одним действием. Требуется хранить состояние сессии и передавать его в расширение, иначе повторная активация снова выглядит как настройка.</li>
+    <li><b>Очередь из нескольких файлов.</b> <code>audio-queue</code> предполагает список заданий с последовательной обработкой и пометкой «Ожидает». Сейчас предполагается одно активное задание.</li>
+    <li><b>Разделение ошибок.</b> <code>audio-error</code> и <code>audio-error-recv</code> требуют разных кодов ошибок от движка и слоя приёма файла. Текст в макете — пример; реальные системные сообщения нужно сопоставить с этими двумя видами.</li>
+    <li><b>Правки частичной заметки.</b> Предупреждение «правки могут быть перезаписаны следующим фрагментом» отражает текущий конфликт. Полное решение — либо блокировать редактирование до завершения, либо сливать правки с сохранённым текстом задания.</li>
+    <li><b>Прогресс по времени.</b> Строка «12:04 из 31:20» требует, чтобы длительность и позиция были в UI-модели, а не только процент.</li>
+    <li><b>Время снимка в виджете.</b> Подпись «Обновлено 12:24» требует хранить время последнего снимка состояния. Живого индикатора памяти в интерфейсе нет и не предлагается.</li>
+    <li><b>Кнопка «Выгрузить» в виджете.</b> Действие открывает MurMur и выполняет проверку состояния там; автоматический возврат в приложение-источник не обещается.</li>
+    <li><b>Фоновая обработка.</b> Полноценная обработка в фоне — отдельная техническая задача. Все макеты исходят из того, что уход в фон означает паузу.</li>
+  </ol>
+
+</doc-page>
+
+</x-dc>
+</body>
+</html>

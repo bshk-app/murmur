@@ -1,0 +1,42 @@
+/* Safari page translation. */
+"Translate page" = "Traduire la page";
+"Reading webpage…" = "Lecture de la page web…";
+"This action needs a Safari webpage." = "Cette action nécessite une page web dans Safari.";
+"No readable text was found on this page." = "Aucun texte lisible n’a été trouvé sur cette page.";
+"This page is too large to translate at once." = "Cette page est trop volumineuse pour être traduite en une seule fois.";
+"Open Murmator once before translating webpages." = "Ouvrez Murmator une fois avant de traduire des pages web.";
+"From language" = "Langue source";
+"Translate to" = "Traduire en";
+"Detected language" = "Langue détectée";
+"Check the source language" = "Vérifiez la langue source";
+"Download missing language packs and translate." = "Téléchargez les packs de langues manquants et traduisez la page.";
+"Page text is processed on this device." = "Le texte de la page est traité sur cet appareil.";
+"Preparing language packs…" = "Préparation des packs de langues…";
+"Translated %d of %d blocks" = "%d blocs traduits sur %d";
+"Stopping…" = "Arrêt en cours…";
+"Translate" = "Traduire";
+"Cancel" = "Annuler";
+"Close" = "Fermer";
+"Translation failed. The original page is unchanged." = "La traduction a échoué. La page d’origine est inchangée.";
+"Translation into %@" = "Traduction en %@";
+"Show original" = "Afficher l’original";
+"Show translation" = "Afficher la traduction";
+"Some page content changed and was left unchanged." = "Certains contenus de la page ont changé et n’ont pas été traduits.";
+"Some formatted fragments were translated separately." = "Certains fragments mis en forme ont été traduits séparément.";
+"Translate Safari pages" = "Traduire les pages Safari";
+"Open a webpage in Safari, tap Share, then choose Murmator." = "Ouvrez une page web dans Safari, touchez Partager, puis choisissez Murmator.";
+"Choose languages and translate. Language packs are shared with the app." = "Choisissez les langues et traduisez. Les packs de langues sont partagés avec l’app.";
+"Close restores the original page. Newly loaded content may need another translation." = "Fermer rétablit la page d’origine. Le contenu chargé ensuite peut nécessiter une nouvelle traduction.";
+
+/* Progressive page translation setup. */
+"Enable Murmator in Safari Extensions and allow it on this website." = "Activez Murmator dans les extensions Safari et autorisez son utilisation sur ce site.";
+"Open Murmator" = "Ouvrir Murmator";
+"Could not start page translation. Try again from Share." = "Impossible de lancer la traduction de la page. Réessayez depuis le menu Partager.";
+"Open Safari Extensions" = "Ouvrir les extensions Safari";
+"In Settings, open Apps → Safari → Extensions → Murmator and turn it on." = "Dans Réglages, ouvrez Apps → Safari → Extensions → Murmator et activez l’extension.";
+"In Safari's page menu, allow Murmator to work on the website, then reload the page." = "Dans le menu de page de Safari, autorisez Murmator à fonctionner sur le site, puis rechargez la page.";
+"One-time setup" = "Configuration initiale";
+"The page stays visible. Translations appear gradually; progress and languages are in the page header." = "La page reste visible. Les traductions apparaissent progressivement ; la progression et les langues sont affichées en haut de la page.";
+"Language packs are shared with the app and download when needed." = "Les modules linguistiques sont partagés avec l’app et téléchargés si nécessaire.";
+
+"Start from Safari’s page menu → Murmator. Allow website access if asked." = "Lancez depuis le menu de page Safari → Murmator. Autorisez l’accès au site si demandé.";

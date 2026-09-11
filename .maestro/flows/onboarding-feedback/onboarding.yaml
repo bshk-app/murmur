@@ -1,0 +1,92 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: onboarding
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible: Выберите языки
+- assertNotVisible:
+    id: onboarding-skip
+- assertVisible:
+    id: preload-language-ru
+- tapOn:
+    id: preload-language-ru
+- assertVisible:
+    id: onboarding-download
+    enabled: false
+- tapOn:
+    id: preload-language-ru
+- takeScreenshot: after/mandatory-languages
+- tapOn:
+    id: onboarding-download
+    waitToSettleTimeoutMs: 0
+- extendedWaitUntil:
+    visible: Готово к работе офлайн
+    timeout: 15000
+- assertNotVisible:
+    id: stop-recording
+- takeScreenshot: after/preloaded
+- tapOn:
+    id: onboarding-download-next
+- assertVisible: Попробуйте транскрипцию
+- assertVisible:
+    id: onboarding-skip
+- assertVisible:
+    id: onboarding-screenshot
+- takeScreenshot: after/try-transcription
+- scrollUntilVisible:
+    element:
+      id: try-transcription
+    direction: DOWN
+- tapOn:
+    id: try-transcription
+- assertVisible:
+    id: confirm-start-recording
+- assertNotVisible:
+    id: stop-recording
+- tapOn:
+    id: confirm-start-recording
+- assertVisible:
+    id: live-transcript
+- takeScreenshot: after/live-transcription
+- tapOn:
+    id: stop-recording
+- assertVisible:
+    id: try-transcription
+- tapOn:
+    id: onboarding-next
+- assertVisible: Попробуйте перевод
+- takeScreenshot: after/try-translation
+- scrollUntilVisible:
+    element:
+      id: try-live-translation
+    direction: DOWN
+- tapOn:
+    id: try-live-translation
+- assertVisible:
+    id: confirm-start-recording
+- tapOn:
+    id: confirm-start-recording
+- assertVisible:
+    id: live-translation
+- takeScreenshot: after/live-translation
+- tapOn:
+    id: stop-recording
+- tapOn:
+    id: onboarding-next
+- assertVisible: Получайте текст из аудио
+- takeScreenshot: after/import-feature
+- tapOn:
+    id: onboarding-next
+- assertVisible: Делитесь только нужным
+- takeScreenshot: after/export-feature
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: record-note
+- assertVisible:
+    id: speech-priority
+- assertNotVisible:
+    id: stop-recording
+- takeScreenshot: after/home

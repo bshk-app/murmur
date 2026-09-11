@@ -1,0 +1,27 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: priority
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- assertVisible:
+    id: speech-priority
+- assertVisible:
+    id: translation-priority
+- tapOn:
+    text: Fast
+    index: 0
+- tapOn:
+    text: Fast
+    index: 1
+- assertNotVisible: "Nemotron|Parakeet.*|GigaAM.*"
+- takeScreenshot: after/both-fast
+- tapOn:
+    text: Quality
+    index: 0
+- takeScreenshot: after/quality-transcription-fast-translation
+- tapOn: Text
+- assertVisible:
+    id: text-translation-priority
+- takeScreenshot: after/text-translation-priority

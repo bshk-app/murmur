@@ -1,0 +1,165 @@
+import MurmurCore
+@preconcurrency import AVFoundation
+import Foundation
+
+/// Captures the selected input (or the current system default) and resamples to
+/// 16 kHz mono Float, delivering fixed 96 ms chunks via `onChunk`
+/// (1536 samples = 3 Silero frames).
+///
+/// `@unchecked Sendable`: the input-tap closure runs on the realtime audio
+/// thread, so it must NOT inherit actor isolation. All mutable state is confined
+/// to `queue`; a single stateful `AVAudioConverter` keeps resampler continuity.
+public final class MicCapture: @unchecked Sendable {
+    public struct Result {
+        public let sampleCount: Int
+        public let durationS: Double
+        public let peakRMS: Float
+    }
+
+    /// Fixed-size 16 kHz mono chunks delivered on the capture queue.
+    public var onChunk: ([Float]) -> Void = { _ in }
+    public var onCapture: (Int, Double, Float, String?) -> Void = { _, _, _, _ in }
+
+    // 96 ms @ 16 kHz. Hybrid now only runs Nemotron live, so the old 480 ms
+    // feed (a two-model MLX-overhead workaround) is no longer required.
+    private let chunkSize = 1536
+    private let queue = DispatchQueue(label: "murmur.mic.capture")
+    private let engine = AVAudioEngine()
+    private let inputDeviceUID: String?
+    private let allowConcurrentPlayback: Bool
+    private var tapInstalled = false
+    private var converter: AVAudioConverter?
+    private var outFmt: AVAudioFormat?
+
+    private var pending: [Float] = []
+    private var totalSamples = 0
+    private var peak: Float = 0
+
+    public init(inputDeviceUID: String? = nil, allowConcurrentPlayback: Bool = false) {
+        self.inputDeviceUID = inputDeviceUID
+        self.allowConcurrentPlayback = allowConcurrentPlayback
+    }
+
+    public func start() throws {
+        queue.sync { pending.removeAll(keepingCapacity: true); totalSamples = 0; peak = 0 }
+
+        #if os(iOS)
+        try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine, allowConcurrentPlayback: allowConcurrentPlayback)
+        #else
+        try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine)
+        #endif
+        let input = engine.inputNode
+        let inFmt = input.outputFormat(forBus: 0)
+        guard let out = AVAudioFormat(commonFormat: .pcmFormatFloat32,
+                                      sampleRate: 16000, channels: 1, interleaved: false),
+              let conv = AVAudioConverter(from: inFmt, to: out)
+        else {
+            throw NSError(domain: "Murmur.MicCapture", code: 1, userInfo:
+                [NSLocalizedDescriptionKey: "could not build a 16 kHz mono converter from \(inFmt)"])
+        }
+        outFmt = out
+        converter = conv
+
+        input.installTap(onBus: 0, bufferSize: 4096, format: inFmt) { [weak self] buffer, _ in
+            self?.ingest(buffer)
+        }
+        tapInstalled = true
+        engine.prepare()
+        do { try engine.start() } catch { input.removeTap(onBus: 0); tapInstalled = false; throw error }
+    }
+
+    /// Stop capture, drain the resampler, flush the trailing partial chunk, and
+    /// report what was heard.
+    public func stop() -> Result {
+        engine.stop()
+        if tapInstalled { engine.inputNode.removeTap(onBus: 0); tapInstalled = false }
+        if let converter, let outFmt {
+            enqueue(Self.drain(converter, outputFormat: outFmt))
+        }
+        return queue.sync {
+            if !pending.isEmpty {
+                onChunk(pending)
+                pending.removeAll(keepingCapacity: true)
+            }
+            return Result(sampleCount: totalSamples,
+                          durationS: Double(totalSamples) / 16000.0,
+                          peakRMS: peak)
+        }
+    }
+
+    /// End an utterance without ending the explicitly armed keyboard session.
+    public func flushPending() {
+        queue.sync {
+            if !pending.isEmpty { onChunk(pending); pending.removeAll(keepingCapacity: true) }
+        }
+    }
+    public func atCaptureBoundary(_ action: () throws -> Void) rethrows { try queue.sync(execute: action) }
+
+    private func ingest(_ buffer: AVAudioPCMBuffer) {
+        let rawPeak = buffer.floatChannelData.map { channel in
+            (0..<Int(buffer.frameLength)).reduce(Float(0)) { max($0, abs(channel[0][$1])) }
+        } ?? 0
+        guard let outFmt, let converter else { return }
+        let ratio = outFmt.sampleRate / buffer.format.sampleRate
+        let cap = AVAudioFrameCount(Double(buffer.frameLength) * ratio) + 16
+        guard let out = AVAudioPCMBuffer(pcmFormat: outFmt, frameCapacity: cap) else { return }
+
+        var consumed = false
+        var err: NSError?
+        converter.convert(to: out, error: &err) { _, status in
+            if consumed { status.pointee = .noDataNow; return nil }
+            consumed = true
+            status.pointee = .haveData
+            return buffer
+        }
+        onCapture(Int(out.frameLength), buffer.format.sampleRate, rawPeak, err?.localizedDescription)
+        guard err == nil, out.frameLength > 0, let ch = out.floatChannelData else { return }
+        enqueue(Array(UnsafeBufferPointer(start: ch[0], count: Int(out.frameLength))))
+    }
+
+    private func enqueue(_ chunk: [Float]) {
+        guard !chunk.isEmpty else { return }
+        var sum: Float = 0
+        for value in chunk { sum += value * value }
+        let rms = (sum / Float(chunk.count)).squareRoot()
+        queue.async { [self] in
+            totalSamples += chunk.count
+            if rms > peak { peak = rms }
+            pending.append(contentsOf: chunk)
+            while pending.count >= chunkSize {
+                let next = Array(pending.prefix(chunkSize))
+                pending.removeFirst(chunkSize)
+                onChunk(next)
+            }
+        }
+    }
+
+    public static func drain(_ converter: AVAudioConverter, outputFormat: AVAudioFormat) -> [Float] {
+        guard let output = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: 4_096) else {
+            return []
+        }
+        var error: NSError?
+        converter.convert(to: output, error: &error) { _, status in
+            status.pointee = .endOfStream
+            return nil
+        }
+        guard error == nil, output.frameLength > 0, let channel = output.floatChannelData else {
+            return []
+        }
+        return Array(UnsafeBufferPointer(start: channel[0], count: Int(output.frameLength)))
+    }
+
+    /// Mic TCC gate. Calls back on the main queue.
+    public static func requestPermission(_ completion: @escaping (Bool) -> Void) {
+        switch AVCaptureDevice.authorizationStatus(for: .audio) {
+        case .authorized:
+            completion(true)
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .audio) { ok in
+                DispatchQueue.main.async { completion(ok) }
+            }
+        default:
+            completion(false)
+        }
+    }
+}

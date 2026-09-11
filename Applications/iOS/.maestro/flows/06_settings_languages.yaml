@@ -1,0 +1,20 @@
+appId: app.bshk.murmur.uitesthost
+name: Settings offer language preparation without engine names
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: settings
+- assertVisible: Languages & offline
+- assertNotVisible: Speech model
+- assertNotVisible: GigaAM.*
+- takeScreenshot: simple-settings
+- tapOn: Languages & offline
+- assertVisible: Dictation languages
+- assertVisible:
+    id: prepare-speech:ru
+- takeScreenshot: settings-language-library

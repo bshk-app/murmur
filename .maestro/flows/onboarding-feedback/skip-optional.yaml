@@ -1,0 +1,24 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: onboarding
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- assertVisible: Choose your languages
+- assertNotVisible:
+    id: onboarding-skip
+- tapOn:
+    id: preload-now
+- assertVisible: Continue
+- assertNotVisible: Download and continue
+- tapOn:
+    id: onboarding-download
+- assertVisible: Try transcription
+- tapOn:
+    id: onboarding-skip
+- assertVisible:
+    id: record-note
+- assertNotVisible:
+    id: stop-recording
+- takeScreenshot: after/optional-tour-skipped

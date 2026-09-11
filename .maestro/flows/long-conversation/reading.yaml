@@ -1,0 +1,47 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: live
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: transcript-beginning
+- tapOn:
+    id: transcript-beginning
+- assertVisible:
+    id: live-translation
+- extendedWaitUntil:
+    visible:
+      id: transcript-unread
+    timeout: 12000
+- assertVisible:
+    id: live-translation
+- takeScreenshot: after/live-history
+- tapOn:
+    id: transcript-font-size
+- tapOn: Большой
+- assertVisible:
+    id: live-translation
+- takeScreenshot: after/live-large-text
+- tapOn:
+    id: transcript-latest
+- assertNotVisible:
+    id: live-translation
+- takeScreenshot: after/live-latest
+- launchApp:
+    arguments:
+      longConversation: note
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: note-translation
+- takeScreenshot: after/note-beginning
+- tapOn:
+    id: note-end-button
+- assertVisible: '.*Конец собрания.*'
+- takeScreenshot: after/note-end
+- tapOn:
+    id: note-beginning
+- assertVisible:
+    id: note-translation

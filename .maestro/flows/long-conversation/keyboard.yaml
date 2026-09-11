@@ -1,0 +1,21 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: keyboard
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: keyboard-live-text
+- takeScreenshot: after/keyboard-result-beginning
+- swipe:
+    from:
+      id: keyboard-live-text
+    direction: UP
+- takeScreenshot: after/keyboard-result-scroll
+- tapOn:
+    id: keyboard-text-end
+- takeScreenshot: after/keyboard-result-end
+- tapOn:
+    id: keyboard-text-beginning
+- takeScreenshot: after/keyboard-result-returned

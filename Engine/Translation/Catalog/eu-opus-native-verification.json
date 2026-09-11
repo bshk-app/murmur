@@ -1,0 +1,331 @@
+[
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Утре ще изпратя документите.",
+    "to" : "bg",
+    "usedQuality" : true
+  },
+  {
+    "from" : "bg",
+    "input" : "Ще изпратя документите утре.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Zítra vám ty dokumenty pošlu.",
+    "to" : "cs",
+    "usedQuality" : true
+  },
+  {
+    "from" : "cs",
+    "input" : "Pošlu dokumenty zítra.",
+    "output" : "I'll send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Jeg sender dokumentene i morgen.",
+    "to" : "da",
+    "usedQuality" : true
+  },
+  {
+    "from" : "da",
+    "input" : "Jeg sender dokumenterne i morgen.",
+    "output" : "I'll send you the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Ich schicke die Dokumente morgen.",
+    "to" : "de",
+    "usedQuality" : true
+  },
+  {
+    "from" : "de",
+    "input" : "Ich schicke die Dokumente morgen.",
+    "output" : "I'll send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Θα στείλω τα έγγραφα αύριο.",
+    "to" : "el",
+    "usedQuality" : true
+  },
+  {
+    "from" : "el",
+    "input" : "Θα στείλω τα έγγραφα αύριο.",
+    "output" : "I'll send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Mañana enviaré los documentos.",
+    "to" : "es",
+    "usedQuality" : true
+  },
+  {
+    "from" : "es",
+    "input" : "Enviaré los documentos mañana.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Homme saadan dokumendid.",
+    "to" : "et",
+    "usedQuality" : true
+  },
+  {
+    "from" : "et",
+    "input" : "Saadan dokumendid homme.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Je vous enverrai les documents demain.",
+    "to" : "fr",
+    "usedQuality" : true
+  },
+  {
+    "from" : "fr",
+    "input" : "Je vous enverrai les documents demain.",
+    "output" : "I'll send you the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Cuirfidh mé na doiciméid chuig an am amárach.",
+    "to" : "ga",
+    "usedQuality" : true
+  },
+  {
+    "from" : "ga",
+    "input" : "Seolfaidh mé na doiciméid amárach.",
+    "output" : "I will send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Poslat ću dokumente sutra.",
+    "to" : "hr",
+    "usedQuality" : true
+  },
+  {
+    "from" : "hr",
+    "input" : "Poslat ću dokumente sutra.",
+    "output" : "I'll send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Holnap elküldöm a dokumentumokat.",
+    "to" : "hu",
+    "usedQuality" : true
+  },
+  {
+    "from" : "hu",
+    "input" : "Holnap elküldöm a dokumentumokat.",
+    "output" : "I'll send you the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Domani manderò i documenti.",
+    "to" : "it",
+    "usedQuality" : true
+  },
+  {
+    "from" : "it",
+    "input" : "Invierò i documenti domani.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Rytoj atsiųsime dokumentus.",
+    "to" : "lt",
+    "usedQuality" : true
+  },
+  {
+    "from" : "lt",
+    "input" : "Dokumentus atsiųsiu rytoj.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Rīt sūtīšu dokumentus.",
+    "to" : "lv",
+    "usedQuality" : true
+  },
+  {
+    "from" : "lv",
+    "input" : "Es nosūtīšu dokumentus rīt.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "I se tibgħat id-dokumenti għada.",
+    "to" : "mt",
+    "usedQuality" : true
+  },
+  {
+    "from" : "mt",
+    "input" : "Nibgħat id-dokumenti għada.",
+    "output" : "I send documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Ik zal de documenten morgen sturen.",
+    "to" : "nl",
+    "usedQuality" : true
+  },
+  {
+    "from" : "nl",
+    "input" : "Ik stuur de documenten morgen.",
+    "output" : "I'll send the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Prześ ju ju ju ju ju ju ju ju ju jutro.",
+    "to" : "pl",
+    "usedQuality" : true
+  },
+  {
+    "from" : "pl",
+    "input" : "Wyślę dokumenty jutro.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Amanhã vou enviar os documentos.",
+    "to" : "pt",
+    "usedQuality" : true
+  },
+  {
+    "from" : "pt",
+    "input" : "Vou enviar os documentos amanhã.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Mâine voi trimite documentele.",
+    "to" : "ro",
+    "usedQuality" : true
+  },
+  {
+    "from" : "ro",
+    "input" : "Voi trimite documentele mâine.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Zajtra pošlem dokumenty.",
+    "to" : "sk",
+    "usedQuality" : true
+  },
+  {
+    "from" : "sk",
+    "input" : "Pošlem dokumenty zajtra.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Poslat ću dokumente sutra.",
+    "to" : "sl",
+    "usedQuality" : true
+  },
+  {
+    "from" : "sl",
+    "input" : "Dokumente bom poslal jutri.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Jeg sender dokumentene i morgen.",
+    "to" : "sv",
+    "usedQuality" : true
+  },
+  {
+    "from" : "sv",
+    "input" : "Jag skickar dokumenten i morgon.",
+    "output" : "I'll send you the documents tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "en",
+    "input" : "I will send the documents tomorrow.",
+    "output" : "Завтра я пришлю документы.",
+    "to" : "uk",
+    "usedQuality" : true
+  },
+  {
+    "from" : "uk",
+    "input" : "Я надішлю документи завтра.",
+    "output" : "I'll send the papers tomorrow.",
+    "to" : "en",
+    "usedQuality" : true
+  },
+  {
+    "from" : "mt",
+    "output" : "Seol mé doiciméid amárach.",
+    "preview" : "Seol mé doiciméid amárach.",
+    "to" : "ga",
+    "usedQuality" : true
+  }
+]
