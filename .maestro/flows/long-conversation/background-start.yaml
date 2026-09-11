@@ -1,0 +1,43 @@
+appId: app.bshk.murmur.ios
+---
+- launchApp:
+    arguments:
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- openLink: murmur://languages
+- runFlow:
+    when:
+      visible: '^(Open|Открыть)$'
+    commands:
+      - tapOn: '^(Open|Открыть)$'
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: add-translation-language
+    direction: DOWN
+- tapOn:
+    id: add-translation-language
+- tapOn:
+    id: add-translation-source
+- tapOn: Финский
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: add-translation-sv
+    direction: DOWN
+- tapOn:
+    id: add-translation-sv
+    point: '96%,50%'
+- tapOn: Готово
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: prepare-translation:fi-sv
+    direction: DOWN
+- tapOn:
+    id: prepare-translation:fi-sv
+    waitToSettleTimeoutMs: 0
+- assertVisible:
+    id: preparation-stage
+- takeScreenshot: after/download-started
+- pressKey: Home

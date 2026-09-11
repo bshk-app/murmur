@@ -1,0 +1,15 @@
+appId: app.bshk.murmur.ios
+---
+- openLink: murmur://languages
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      text: 'Финский → Шведский'
+    direction: DOWN
+- takeScreenshot: after/download-returned-to-app
+- extendedWaitUntil:
+    visible:
+      id: language-status-translation:fi-sv
+      text: Скачано
+    timeout: 240000
+- takeScreenshot: after/download-resumed-complete

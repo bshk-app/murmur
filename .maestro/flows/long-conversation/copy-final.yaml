@@ -1,0 +1,10 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: memory
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible: 'Не используется'
+- takeScreenshot: after/memory
+- runFlow: import-reader.yaml

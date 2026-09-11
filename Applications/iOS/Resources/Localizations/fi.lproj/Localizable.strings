@@ -1,0 +1,705 @@
+"Your voice.\nYour words." = "Sinun äänesi.\nSinun sanasi.";
+"Private by design." = "Yksityinen alusta asti.";
+"Make it yours." = "Tee siitä omasi.";
+"Ready for your\nnext thought." = "Valmiina seuraavaan\najatukseesi.";
+"Speak naturally. Murmator turns a thought into a note — and refines it while you speak." = "Puhu luonnollisesti. Murmator kirjoittaa ajatuksesi muistiin ja tarkentaa tekstiä puhuessasi.";
+"Recognition and translation run on your iPhone. Audio isn't uploaded or kept in your notes." = "Tunnistus ja kääntäminen toimivat iPhonessasi. Ääntä ei lähetetä palvelimelle eikä tallenneta muistiinpanoihin.";
+"Choose your spoken language. Models download once and stay on your device." = "Valitse puhekieli. Mallit ladataan kerran ja säilytetään laitteellasi.";
+"Start from Murmator, a Lock Screen widget, or an Action Button shortcut." = "Aloita Murmatorista, lukitun näytön widgetistä tai toimintopainikkeen pikakomennolla.";
+"Back" = "Takaisin";
+"Continue" = "Jatka";
+"Start using Murmator" = "Aloita Murmatorin käyttö";
+"I speak" = "Puhun";
+"Download & prepare models" = "Lataa ja valmistele mallit";
+"Downloading and loading models…" = "Ladataan malleja laitteelle ja muistiin…";
+"Warming up models…" = "Lämmitetään malleja…";
+"Downloaded and warmed up" = "Ladattu ja lämmitetty";
+"Keep Murmator open. Models download once and warm up for this session." = "Pidä Murmator avoinna. Mallit ladataan kerran ja lämmitetään tätä istuntoa varten.";
+"Models run a short silent test. Microphone access is not needed yet." = "Mallit testataan lyhyellä hiljaisella näytteellä. Mikrofonia ei vielä tarvita.";
+"Model preparation failed" = "Mallien valmistelu epäonnistui";
+"Murmator mascot" = "Murmatorin maskotti";
+"Step %lld of 4" = "Vaihe %lld/4";
+"Notes" = "Muistiinpanot";
+"Note" = "Muistiinpano";
+"NOTE" = "MUISTIINPANO";
+"Search transcripts" = "Hae muistiinpanoista";
+"A little thought.\nA note worth keeping." = "Pieni ajatus.\nMuistiinpano talteen.";
+"Speak naturally. Murmator turns your voice into text, right on this iPhone." = "Puhu luonnollisesti. Murmator muuntaa puheesi tekstiksi tällä iPhonella.";
+"Tap to talk · or use the Action Button" = "Napauta ja puhu · tai käytä toimintopainiketta";
+"Record a note" = "Tallenna muistiinpano";
+"Translate" = "Käännä";
+"Keyboard" = "Näppäimistö";
+"Settings" = "Asetukset";
+"Cancel" = "Peruuta";
+"Done" = "Valmis";
+"OK" = "OK";
+"Listening" = "Kuuntelen";
+"Listening…" = "Kuuntelen…";
+"Refining" = "Tarkennetaan";
+"Getting ready" = "Valmistellaan";
+"Cancel recording" = "Peruuta tallennus";
+"What's on your mind?" = "Mitä mietit?";
+"A moment for your words." = "Hetki sanoillesi.";
+"Stop & save" = "Pysäytä ja tallenna";
+"Stop & translate" = "Pysäytä ja käännä";
+"You said · %@" = "Puheesi · %@";
+"Audio stayed on this iPhone. Only the text is saved." = "Ääni pysyi tällä iPhonella. Vain teksti tallennetaan.";
+"Edit" = "Muokkaa";
+"Edit note" = "Muokkaa muistiinpanoa";
+"Delete" = "Poista";
+"Delete note" = "Poista muistiinpano";
+"Delete this note?" = "Poistetaanko tämä muistiinpano?";
+"Note actions" = "Muistiinpanon toiminnot";
+"Save" = "Tallenna";
+"Send to Apple Notes" = "Lähetä Applen Muistiinpanoihin";
+"Copy" = "Kopioi";
+"Copied" = "Kopioitu";
+"Share" = "Jaa";
+"Translate to" = "Käännä kielelle";
+"While you speak" = "Puhuessasi";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Nopea käännösluonnos seuraa puhettasi. OPUS tarkentaa valmiit lauseet ja lopullisen tekstin ennen tallennusta.";
+"Download the selected language models once to translate offline." = "Lataa valittujen kielten mallit kerran, niin voit kääntää ilman verkkoyhteyttä.";
+"Translation is not available for this language yet. You can still record a note." = "Tälle kielelle ei ole vielä käännöstä. Voit silti tallentaa muistiinpanon.";
+"Speak & translate" = "Puhu ja käännä";
+"Speech" = "Puheentunnistus";
+"Spoken language" = "Puhekieli";
+"Mode" = "Tila";
+"Fast" = "Nopea";
+"Hybrid" = "Hybridi";
+"Accurate" = "Tarkka";
+"Hybrid shows a live draft and corrects it on a separate backend." = "Hybriditila näyttää luonnoksen reaaliajassa ja korjaa sitä erillisellä moottorilla.";
+"Models" = "Mallit";
+"Speech model" = "Puhemalli";
+"Ready on this device" = "Valmis tällä laitteella";
+"Preparation needed" = "Valmistelu tarvitaan";
+"Download & prepare" = "Lataa ja valmistele";
+"Import model folder" = "Tuo mallikansio";
+"Advanced Core ML models can be imported as a CoreMLModels folder. Your speech never leaves the device." = "Muita Core ML -malleja voi tuoda CoreMLModels-kansiona. Puheesi pysyy laitteella.";
+"Appearance" = "Ulkoasu";
+"Theme" = "Teema";
+"System" = "Järjestelmä";
+"Light" = "Vaalea";
+"Dark" = "Tumma";
+"Ways to start" = "Aloitustavat";
+"Action Button" = "Toimintopainike";
+"Assign “Record a Murmator note” in Action Button or Shortcuts settings." = "Valitse ”Tallenna Murmator-muistiinpano” toimintopainikkeen asetuksista tai Pikakomennoista.";
+"Murmator keyboard" = "Murmator-näppäimistö";
+"Lock Screen widget" = "Lukitun näytön widget";
+"Add the Murmator widget to your Lock Screen. It opens the app for recording." = "Lisää Murmator-widget lukitulle näytölle. Se avaa sovelluksen tallennusta varten.";
+"Saving" = "Tallennus";
+"Notes stay on this iPhone" = "Muistiinpanot pysyvät tällä iPhonella";
+"Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically." = "Jaa muistiinpano Applen Muistiinpanoihin tai muuhun sovellukseen järjestelmän jakovalikosta. Murmator ei lähetä niitä automaattisesti.";
+"Murmator · 1.0\nOn-device voice to text" = "Murmator · 1.0\nPuhe tekstiksi laitteella";
+"Your words, in any app." = "Sanasi missä tahansa sovelluksessa.";
+"Record in Murmator, then use the Murmator keyboard to insert your latest saved text." = "Tallenna Murmatorissa ja lisää viimeisin teksti Murmator-näppäimistöllä.";
+"1. Open Settings → General → Keyboard.\n\n2. Add Murmator under Keyboards.\n\n3. Switch with the globe key and tap Insert." = "1. Avaa Asetukset → Yleiset → Näppäimistö.\n\n2. Lisää Murmator näppäimistöihin.\n\n3. Vaihda maapallopainikkeella ja napauta Lisää.";
+"The keyboard does not record audio or send text over the network." = "Näppäimistö ei tallenna ääntä eikä lähetä tekstiä verkkoon.";
+"Insert latest note" = "Lisää viimeisin muistiinpano";
+"Next keyboard" = "Seuraava näppäimistö";
+"Refresh note" = "Päivitä muistiinpano";
+"Delete character" = "Poista merkki";
+"Return" = "Rivinvaihto";
+"Record a note in Murmator, then return here to insert it." = "Tallenna muistiinpano Murmatorissa ja palaa tähän lisäämään se.";
+"Choose a model that supports the selected language." = "Valitse malli, joka tukee valittua kieltä.";
+"Preparing speech models…" = "Valmistellaan puhemalleja…";
+"Preparing translation models…" = "Valmistellaan käännösmalleja…";
+"Microphone access" = "Mikrofonin käyttö";
+"Allow microphone access in Settings to record a note." = "Salli mikrofonin käyttö Asetuksissa, jotta voit tallentaa muistiinpanon.";
+"Draft first, refined a beat later" = "Ensin luonnos, sitten tarkennus";
+"Listening on this iPhone" = "Kuuntelen tällä iPhonella";
+"Refining your note…" = "Tarkennetaan muistiinpanoa…";
+"Recording stopped. The captured text was kept." = "Tallennus pysäytettiin. Tunnistettu teksti säilytettiin.";
+"Models imported" = "Mallit tuotu";
+"Could not save recovery text: %@" = "Palautustekstiä ei voitu tallentaa: %@";
+"The original text is saved. Translation: %@" = "Alkuperäinen teksti tallennettiin. Käännös: %@";
+"Record a Murmator note" = "Tallenna Murmator-muistiinpano";
+"Open Murmator and start on-device dictation." = "Avaa Murmator ja aloita sanelu laitteella.";
+"Record with Murmator" = "Tallenna Murmatorilla";
+"Open Murmator to capture a thought on your iPhone." = "Avaa Murmator ja tallenna ajatuksesi iPhonella.";
+"Murmator transcribes your voice on this device." = "Murmator muuntaa puheesi tekstiksi tällä laitteella.";
+"Set up models again" = "Määritä mallit uudelleen";
+"Say it once" = "Sano se kerran";
+"Let Murmator hear you" = "Anna Murmatorin kuulla sinut";
+"Add your languages" = "Lisää kielesi";
+"Warming up the models" = "Mallien lämmitys";
+"Talk in any app" = "Sanasi missä tahansa sovelluksessa";
+"Choose languages for dictation and optional translation. Download them now or add them later in Settings." = "Valitse sanelun ja kääntämisen kielet. Lataa ne nyt tai lisää myöhemmin Asetuksissa.";
+"A short silent test prepares the models for use. You can continue or skip setup while preparation runs." = "Lyhyt hiljainen testi valmistelee mallit. Voit jatkaa tai ohittaa käyttöönoton valmistelun aikana.";
+"Microphone allowed" = "Mikrofoni sallittu";
+"Allow microphone" = "Salli mikrofoni";
+"Optional now. Murmator will ask when you start your first recording." = "Tämä on nyt valinnaista. Murmator pyytää lupaa ensimmäisen tallennuksen alussa.";
+"Choose languages" = "Valitse kielet";
+"1. Open Settings → General → Keyboard." = "1. Avaa Asetukset → Yleiset → Näppäimistö.";
+"2. Add the Murmator keyboard." = "2. Lisää Murmator-näppäimistö.";
+"3. Record in Murmator, then switch keyboards to insert your text." = "3. Tallenna Murmatorissa, vaihda näppäimistöä ja lisää teksti.";
+"Keyboard setup" = "Näppäimistön asetukset";
+"Step %lld of 5" = "Vaihe %lld/5";
+"Finish setup" = "Viimeistele käyttöönotto";
+"Skip setup" = "Ohita käyttöönotto";
+"Languages & offline" = "Kielet ja offline-käyttö";
+"Offline after download" = "Offline latauksen jälkeen";
+"After downloading, the selected languages work without internet. Audio stays on your iPhone. You can skip this and download later." = "Latauksen jälkeen valitut kielet toimivat ilman internetiä. Ääni pysyy iPhonessasi. Voit ohittaa tämän ja ladata myöhemmin.";
+"Dictation languages" = "Sanelukielet";
+"Add speech language" = "Lisää sanelukieli";
+"Translation languages · optional" = "Käännöskielet · valinnainen";
+"Translate from" = "Käännä kielestä";
+"No downloadable OPUS translation pack is available for this source language yet." = "Tälle lähdekielelle ei ole vielä ladattavaa OPUS-käännöspakettia.";
+"Add translation language" = "Lisää käännöskieli";
+"Downloaded" = "Ladattu";
+"Prepare again" = "Valmistele uudelleen";
+"Download & warm up" = "Lataa ja lämmitä";
+"You can keep going. Preparation continues while Murmator is open." = "Voit jatkaa. Valmistelu jatkuu Murmatorin ollessa avoinna.";
+"Prepare when it suits you" = "Valmistele kun sinulle sopii";
+"Nothing to download right now? Continue to your notes. Language packs can be added in Settings at any time." = "Etkö halua ladata nyt? Jatka muistiinpanoihin. Kielipaketteja voi lisätä Asetuksissa milloin tahansa.";
+"Speech engines are tested on a physical iPhone. This simulator only tests the interface." = "Puhemoottorit testataan oikealla iPhonella. Tämä simulaattori testaa vain käyttöliittymää.";
+"Preparing dictation" = "Valmistellaan sanelua";
+"Preparing live text" = "Valmistellaan reaaliaikaista tekstiä";
+"Preparing offline dictation" = "Valmistellaan offline-sanelua";
+"Could not prepare this language. Please try again." = "Tämän kielen valmistelu epäonnistui. Yritä uudelleen.";
+"Could not prepare translation for these languages. Please try again." = "Näiden kielten käännöksen valmistelu epäonnistui. Yritä uudelleen.";
+"Could not refine text. Your draft is still available." = "Tekstiä ei voitu tarkentaa. Luonnos on edelleen käytettävissä.";
+"Could not start dictation. Check microphone access and language downloads." = "Sanelua ei voitu aloittaa. Tarkista mikrofonin lupa ja ladatut kielet.";
+"A live draft appears first, then your words are refined." = "Ensin näkyy reaaliaikainen luonnos, sitten tekstiä tarkennetaan.";
+"Replay setup tour" = "Katso esittely uudelleen";
+"A quick translation follows your voice. Completed phrases are then refined before the note is saved." = "Nopea käännös seuraa puhettasi. Valmiit lauseet tarkennetaan ennen tallennusta.";
+"Translation is not available to download for this language yet." = "Tälle kielelle ei ole vielä ladattavaa käännöstä.";
+"Translation could not be completed. Your original text is kept." = "Käännöstä ei voitu viimeistellä. Alkuperäinen teksti säilytetään.";
+"Text refined" = "Teksti tarkennettu";
+"Not downloaded" = "Ei ladattu";
+"Downloading" = "Ladataan";
+"Warming up" = "Lämmitetään";
+"Ready offline" = "Valmis offline-tilassa";
+"Failed" = "Epäonnistui";
+"Needs warm-up" = "Vaatii lämmityksen";
+"Selecting a language does not download it." = "Kielen valinta ei lataa sitä.";
+"Retry" = "Yritä uudelleen";
+"Details" = "Tiedot";
+"Dismiss" = "Sulje";
+"Remove" = "Poista";
+"Reverse direction is a separate pack." = "Vastakkainen suunta on eri paketti.";
+"Add" = "Lisää";
+"Already added" = "Jo lisätty";
+"Not supported yet" = "Ei vielä tuettu";
+"Nothing is downloading right now." = "Mitään ei ladata juuri nyt.";
+"No notes yet" = "Ei vielä muistiinpanoja";
+"Tap the mic and say the first one." = "Napauta mikrofonia ja sano ensimmäinen.";
+"No matches" = "Ei osumia";
+"Clear search" = "Tyhjennä haku";
+"Update translation" = "Päivitä käännös";
+"Translation may not match the edited text." = "Käännös ei ehkä vastaa muokattua tekstiä.";
+"Could not save the note" = "Muistiinpanoa ei voitu tallentaa";
+"Recovered draft" = "Palautettu luonnos";
+"Advanced" = "Lisäasetukset";
+"This mode does not support the selected language." = "Tämä tila ei tue valittua kieltä.";
+"Pack is on the device but not loaded in memory." = "Paketti on laitteella mutta ei muistissa.";
+"Hybrid needs a second model for this language." = "Hybriditila tarvitsee toisen mallin tälle kielelle.";
+"Import failed" = "Tuonti epäonnistui";
+"Choose a folder in Files" = "Valitse kansio Tiedostoissa";
+"Microphone is off" = "Mikrofoni on pois";
+"Open Settings" = "Avaa Asetukset";
+"Not now" = "Ei nyt";
+"Widget & Live Activity" = "Widget ja Live Activity";
+"Murmator cannot check this setting from inside the app." = "Sovellus ei voi tarkistaa tätä asetusta.";
+"Insert" = "Lisää";
+"No saved text yet" = "Ei vielä tallennettua tekstiä";
+"Reading the note is unavailable right now." = "Muistiinpanon luku ei ole nyt käytettävissä.";
+"Ready to insert" = "Valmis lisättäväksi";
+"This cannot be undone." = "Tätä ei voi kumota.";
+"Note deleted" = "Muistiinpano poistettu";
+"Preparing" = "Valmistellaan";
+"Downloaded models stay on the device." = "Ladatut mallit pysyvät laitteella.";
+"Duration is not known in advance." = "Kestoa ei tiedetä ennalta.";
+"Draft" = "Luonnos";
+"Refined" = "Tarkennettu";
+"Draft translation" = "Käännösluonnos";
+"Refined translation" = "Tarkennettu käännös";
+"Saved" = "Tallennettu";
+"Speech models" = "Puhemallit";
+"Translation packs" = "Käännöspaketit";
+"No internet connection" = "Ei internet-yhteyttä";
+"Downloaded packs still work." = "Ladatut paketit toimivat edelleen.";
+"Help" = "Ohje";
+"Add widget" = "Lisää widget";
+"During recording" = "Tallennuksen aikana";
+"Edited" = "Muokattu";
+"Original text" = "Alkuperäinen teksti";
+"Interrupted" = "Keskeytetty";
+"Stopped" = "Pysäytetty";
+"Back to notes" = "Takaisin muistiinpanoihin";
+"Try again" = "Yritä uudelleen";
+"Prepare later" = "Valmistele myöhemmin";
+"Copy failed" = "Kopiointi epäonnistui";
+"System share sheet" = "Järjestelmän jakovalikko";
+"You choose the destination. Murmator does not send notes on its own." = "Valitset kohteen itse. Murmator ei lähetä muistiinpanoja itsestään.";
+"Automatic re-translation after editing is not implemented yet." = "Automaattista uudelleenkäännöstä muokkauksen jälkeen ei ole vielä toteutettu.";
+"Long text is inserted in full." = "Pitkä teksti lisätään kokonaan.";
+"Live Activity appears here while Murmator is recording." = "Live Activity näkyy tässä, kun Murmator tallentaa.";
+"Turn off microphone" = "Sammuta mikrofoni";
+"Hold to talk" = "Puhu pitämällä painettuna";
+"Release to insert" = "Lisää teksti vapauttamalla";
+"Insert text" = "Lisää teksti";
+"Insert original" = "Lisää alkuperäinen";
+"Send" = "Lähetä";
+"Could not update the keyboard. Open Murmator and try again." = "Näppäimistöä ei voitu päivittää. Avaa Murmator ja yritä uudelleen.";
+"Full Access is required for keyboard dictation." = "Näppäimistösanelu vaatii täyden käyttöoikeuden.";
+"The text field changed. Tap Insert text when you are ready." = "Tekstikenttä muuttui. Napauta Lisää teksti, kun olet valmis.";
+"Enable the microphone in Murmator" = "Ota mikrofoni käyttöön Murmatorissa";
+"Hold the microphone while you speak. Release to insert the text." = "Pidä mikrofonipainiketta painettuna puhuessasi. Lisää teksti vapauttamalla painike.";
+"Dictation" = "Sanelu";
+"Enable microphone" = "Ota mikrofoni käyttöön";
+"Return to your app and hold the microphone on the Murmator keyboard." = "Palaa sovellukseesi ja pidä Murmator-näppäimistön mikrofonia painettuna.";
+"Keyboard microphone enabled" = "Näppäimistön mikrofoni käytössä";
+"Keyboard dictation" = "Näppäimistösanelu";
+"Enable the microphone here, then return to your app. Use the Murmator keyboard to start and stop dictation." = "Ota mikrofoni käyttöön tässä ja palaa sovellukseesi. Aloita ja lopeta sanelu Murmator-näppäimistöllä.";
+"Enable keyboard dictation" = "Ota näppäimistösanelu käyttöön";
+"The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard." = "Mikrofoni pysyy käytössä lauseiden välillä. Odotusajan ääni hylätään. Se sammuu 5 minuutin kuluttua ilman uutta tallennusta tai 1 minuutin kuluttua näppäimistöstä poistumisesta.";
+"Enable Full Access for Murmator." = "Salli Murmatorille täysi käyttöoikeus.";
+"1. Add Murmator in Settings → General → Keyboard.\n\n2. Enable Full Access for Murmator.\n\n3. Select Murmator with the globe key, enable the microphone, then hold to talk." = "1. Lisää Murmator kohdassa Asetukset → Yleiset → Näppäimistö.\n\n2. Salli Murmatorille täysi käyttöoikeus.\n\n3. Valitse Murmator maapallopainikkeella, ota mikrofoni käyttöön ja puhu pitämällä painettuna.";
+"No speech detected. Hold the microphone and try again." = "Puhetta ei havaittu. Pidä mikrofonia painettuna ja yritä uudelleen.";
+"Open Murmator" = "Avaa Murmator";
+"Open Murmator to finish preparation." = "Avaa Murmator viimeistelläksesi valmistelun.";
+"Prepare dictation" = "Valmistele sanelu";
+"Ready to dictate" = "Valmis sanelemaan";
+"Load models and enable dictation in Murmator" = "Lataa mallit ja ota sanelu käyttöön Murmatorissa";
+"Could not load dictation models." = "Sanelumallien lataaminen epäonnistui.";
+"Prepare the models here, then return to your app while loading finishes. The keyboard shows when dictation is ready." = "Valmistele mallit tässä ja palaa sovellukseesi latauksen ajaksi. Näppäimistö ilmoittaa, kun sanelu on valmis.";
+"End session & unload models" = "Lopeta ja vapauta mallit";
+"Memory" = "Muisti";
+"Manage loaded models" = "Hallitse ladattuja malleja";
+"Models loaded" = "Mallit muistissa";
+"Models unloaded" = "Mallit vapautettu";
+"Unload speech and translation models to release memory. Downloaded language packs and notes stay on this iPhone." = "Vapauta puhe- ja käännösmallit muistista. Ladatut kielipaketit ja muistiinpanot säilyvät tässä iPhonessa.";
+"Finish recording or preparation before unloading models." = "Lopeta tallennus tai valmistelu ennen mallien vapauttamista.";
+"Unloading models…" = "Vapautetaan malleja…";
+"Unload models" = "Vapauta mallit";
+"The next session loads the models again. You will not need to download them again." = "Seuraava istunto lataa mallit takaisin muistiin. Niitä ei tarvitse ladata verkosta uudelleen.";
+"Last update" = "Päivitetty";
+"Dictate" = "Sanele";
+"Record" = "Tallenna";
+"Unload" = "Vapauta";
+"Murmator controls" = "Murmator-ohjaimet";
+"Start dictation, translate, unload models, or change your languages. Controls open Murmator." = "Sanele, käännä, vapauta mallit tai vaihda kieliä. Toiminnot avaavat Murmatorin.";
+"Languages" = "Kielet";
+"Import audio" = "Tuo ääni";
+"Audio imports" = "Tuodut äänet";
+"Transcribe a recording" = "Litteroi tallenne";
+"Audio is processed on this iPhone in short sections, split at pauses. Keep Murmator open; completed text is saved as it goes." = "Ääni käsitellään tässä iPhonessa lyhyinä, tauoista jaettuina osina. Pidä Murmator auki; valmis teksti tallennetaan työn edetessä.";
+"Importing audio…" = "Tuodaan ääntä…";
+"Preparing transcription…" = "Valmistellaan litterointia…";
+"Transcribing audio…" = "Litteroidaan ääntä…";
+"Pausing…" = "Keskeytetään…";
+"Pause" = "Keskeytä";
+"Paused. Continue when you are ready." = "Keskeytetty. Jatka, kun olet valmis.";
+"Transcribe" = "Litteroi";
+"Continue transcription" = "Jatka litterointia";
+"No speech detected in this file." = "Tiedostosta ei havaittu puhetta.";
+"Transcription saved" = "Litterointi tallennettu";
+"Partial transcript" = "Osittainen litterointi";
+"Open transcript" = "Avaa litterointi";
+"Remove import" = "Poista tuonti";
+"Your original recording is unchanged. The imported copy is removed after completion; the transcript stays in Notes." = "Alkuperäinen tallenne säilyy ennallaan. Tuotu kopio poistetaan valmistumisen jälkeen; litterointi jää muistiinpanoihin.";
+"Processed on this iPhone. Pause at any time; completed text is saved." = "Käsitellään tällä iPhonella. Voit keskeyttää milloin tahansa; valmis teksti tallennetaan.";
+"Choose audio" = "Valitse ääni";
+"Import another recording" = "Tuo toinen tallenne";
+"Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import." = "Alkuperäisiä tallenteita ei muuteta. Tuotu ääni poistetaan onnistuneen litteroinnin jälkeen tai kun poistat tuonnin.";
+"Audio recording" = "Äänitallenne";
+"Could not receive the file" = "Tiedostoa ei voitu vastaanottaa";
+"File transfer" = "Tiedoston siirto";
+"Transcription has not started. Choose the recording again or share it from Files." = "Litterointi ei ole alkanut. Valitse tallenne uudelleen tai jaa se Tiedostot-apista.";
+"Retry import" = "Yritä tuontia uudelleen";
+"Waiting" = "Odottaa";
+"Recognition" = "Tunnistus";
+"No speech" = "Ei puhetta";
+"Language of the recording" = "Tallenteen kieli";
+"The language is locked: the first section is saved." = "Kieli on lukittu: ensimmäinen osuus on tallennettu.";
+"No text note was saved. Check the language of the recording or pick another file." = "Tekstimuistiinpanoa ei tallennettu. Tarkista kieli tai valitse toinen tiedosto.";
+"Completed text is kept. Continue from the saved position." = "Valmis teksti säilytetään. Jatka tallennetusta kohdasta.";
+"Transcript" = "Litterointi";
+"Saved so far" = "Tähän mennessä tallennettu";
+"Waiting for the current section to stop." = "Odotetaan nykyisen osuuden pysähtymistä.";
+"Open the full note after pausing. Completed text is already saved." = "Avaa koko muistiinpano tauon jälkeen. Valmis teksti on jo tallennettu.";
+"Choose another language and retry" = "Valitse toinen kieli ja yritä uudelleen";
+"Add to queue" = "Lisää jonoon";
+"Starts after the current file. One recording is processed at a time." = "Alkaa nykyisen tiedoston jälkeen. Tallenteet käsitellään yksi kerrallaan.";
+"Only the import and its audio copy are removed. Original recordings and saved notes stay." = "Vain tuonti ja sen äänikopio poistetaan. Alkuperäiset tallenteet ja muistiinpanot säilyvät.";
+"File received" = "Tiedosto vastaanotettu";
+"Could not transcribe this recording" = "Tallennetta ei voitu litteroida";
+"of" = "/";
+"Saved sections:" = "Tallennetut osuudet:";
+"On device" = "Laitteella";
+"Downloaded language packs" = "Ladatut kielipaketit";
+"Unloading models does not remove downloaded language packs or notes." = "Mallien poistaminen muistista ei poista kielipaketteja tai muistiinpanoja.";
+"In memory" = "Muistissa";
+"Models are held by Murmator for the current work." = "Murmator pitää mallit muistissa nykyistä tehtävää varten.";
+"The next session will load the selected models from the device." = "Seuraava istunto lataa valitut mallit laitteelta.";
+"Loaded" = "Ladattu";
+"Unloaded" = "Poistettu muistista";
+"Unloading is unavailable right now" = "Muistia ei voi vapauttaa juuri nyt";
+"Open the import and pause it" = "Avaa tuonti ja keskeytä se";
+"The app does not report how much free memory the phone has." = "Appi ei näytä puhelimen vapaan muistin määrää.";
+"Start a dictation session, then return to your app." = "Aloita saneluistunto ja palaa sitten appiisi.";
+"Keyboard setup instructions" = "Näppäimistön käyttöönotto";
+"Full Access" = "Täysi käyttöoikeus";
+"Confirmed" = "Vahvistettu";
+"Check in keyboard" = "Tarkista näppäimistössä";
+"Full Access is checked by the keyboard, not by microphone permission." = "Näppäimistö tarkistaa täyden käyttöoikeuden erillään mikrofoniluvasta.";
+"Microphone" = "Mikrofoni";
+"Allowed" = "Sallittu";
+"Not allowed" = "Ei sallittu";
+"A system permission. It does not mean models are ready." = "Järjestelmän lupa. Se ei tarkoita, että mallit ovat valmiina.";
+"Models in memory" = "Mallit muistissa";
+"Loading models" = "Ladataan malleja";
+"Speech and translation must finish preparing before dictation starts." = "Puheen ja käännöksen valmistelun on päätyttävä ennen sanelua.";
+"Session" = "Istunto";
+"Preparing…" = "Valmistellaan…";
+"Inactive" = "Ei aktiivinen";
+"Return to your app manually when the session is ready." = "Palaa appiisi, kun istunto on valmis.";
+"Language and mode" = "Kieli ja tila";
+"From Voice Memos, Files or the system share sheet" = "Sanelimesta, Tiedostoista tai jakovalikosta";
+"Open" = "Avaa";
+"Tools" = "Työkalut";
+"Dictate in other apps" = "Sanele muissa apeissa";
+"Recordings, progress and saved transcripts" = "Tallenteet, edistyminen ja litteroinnit";
+"Device" = "Laite";
+"Downloaded packs and loaded models" = "Ladatut paketit ja muistissa olevat mallit";
+"Completed text is saved. Finish transcription before editing this note." = "Valmis teksti on tallennettu. Viimeistele litterointi ennen muistiinpanon muokkaamista.";
+"Activate in Murmator" = "Aktivoi Murmatorissa";
+"Activation needed" = "Aktivointi tarvitaan";
+"Result" = "Tulos";
+"Mic on" = "Mikr. päällä";
+"Mic off" = "Mikr. pois";
+"Full Access needed" = "Täysi käyttöoikeus tarvitaan";
+"Result ready" = "Tulos valmis";
+"Recording" = "Tallennus";
+"Choose what to insert into the current field." = "Valitse nykyiseen kenttään lisättävä teksti.";
+"Unload in Murmator" = "Vapauta Murmatorissa";
+"Translation mode" = "Käännöstila";
+"Text" = "Teksti";
+"Voice" = "Puhe";
+"From language" = "Lähtökieli";
+"Swap languages" = "Vaihda kielet keskenään";
+"Text to translate" = "Käännettävä teksti";
+"Clear" = "Tyhjennä";
+"Type or paste text here" = "Kirjoita tai liitä teksti tähän";
+"Translate up to 10,000 characters at a time." = "Käännä enintään 10 000 merkkiä kerrallaan.";
+"Cancelling…" = "Peruutetaan…";
+"Translating text…" = "Käännetään tekstiä…";
+"Translate text" = "Käännä teksti";
+"Could not translate. Your text is kept." = "Kääntäminen epäonnistui. Tekstisi säilytetään.";
+"Translation" = "Käännös";
+"Copy translation" = "Kopioi käännös";
+"Text is translated on this iPhone. Language packs may need a one-time download." = "Teksti käännetään tällä iPhonella. Kielipaketit on ehkä ladattava kerran.";
+"Text is not saved as a note automatically." = "Tekstiä ei tallenneta automaattisesti muistiinpanoksi.";
+"Hide keyboard" = "Piilota näppäimistö";
+"Storage" = "Tallennustila";
+"Refresh" = "Päivitä";
+"Manage storage" = "Hallitse tallennustilaa";
+"Downloaded models and disk space" = "Ladatut mallit ja tallennustila";
+"Downloaded model files" = "Ladatut mallitiedostot";
+"Available on this iPhone" = "Käytettävissä tällä iPhonella";
+"File sizes are shown. The space reclaimed by the system may differ." = "Näytetään tiedostojen koot. Järjestelmän vapauttama tila voi poiketa niistä.";
+"Storage information unavailable" = "Tallennustilan tietoja ei ole saatavilla";
+"Calculating storage…" = "Lasketaan tallennustilaa…";
+"Finish dictation, translation or model preparation before deleting downloads." = "Lopeta sanelu, käännös tai mallien valmistelu ennen tiedostojen poistamista.";
+"Deleting download…" = "Poistetaan tiedostoja…";
+"No downloaded model files" = "Ei ladattuja mallitiedostoja";
+"Speech recognition" = "Puheentunnistus";
+"Unfinished downloads" = "Keskeneräiset lataukset";
+"Deleting a download keeps your notes, original recordings and selected languages." = "Mallien poistaminen säilyttää muistiinpanot, alkuperäiset tallenteet ja valitut kielet.";
+"Delete downloaded model?" = "Poistetaanko ladattu malli?";
+"Delete download" = "Poista lataus";
+"The files will be downloaded again when you prepare this language or use it next time." = "Tiedostot voidaan ladata uudelleen kielen valmistelun tai seuraavan käyttökerran yhteydessä.";
+"This pack was imported. You may need the original model folder to restore it." = "Tämä paketti on tuotu. Palauttamiseen saatetaan tarvita alkuperäinen mallikansio.";
+"Shared components may be needed by more than one language or mode. Notes and original recordings stay." = "Useat kielet tai tilat voivat tarvita yhteisiä osia. Muistiinpanot ja alkuperäiset tallenteet säilyvät.";
+"Text and final voice translation" = "Tekstin ja puheen lopullinen käännös";
+"Live voice translation preview" = "Puhekäännöksen reaaliaikainen esikatselu";
+"Live translation preview" = "Reaaliaikainen käännösesikatselu";
+"A direction may also be used by translations through an intermediate language." = "Tätä käännössuuntaa voidaan käyttää myös välikielen kautta kääntämiseen.";
+"Unfinished model download" = "Keskeneräinen mallin lataus";
+"Temporary files from a model download." = "Mallin latauksen väliaikaiset tiedostot.";
+"Imported speech pack" = "Tuotu puhepaketti";
+"Russian speech recognition" = "Venäjän puheentunnistus";
+"Used for Russian dictation and audio imports." = "Venäjän saneluun ja tuotuihin tallenteisiin.";
+"Multilingual speech recognition" = "Monikielinen puheentunnistus";
+"Shared by several dictation languages and keyboard sessions." = "Useiden sanelukielten ja näppäimistöistuntojen yhteinen paketti.";
+"Live dictation" = "Reaaliaikainen sanelu";
+"Speech detection for live dictation" = "Puheen havaitseminen sanelussa";
+"A shared component. Deleting it affects every mode that uses it." = "Yhteinen osa. Poistaminen vaikuttaa kaikkiin sitä käyttäviin tiloihin.";
+"Downloaded source files for this shared component." = "Tämän yhteisen osan ladatut lähdetiedostot.";
+"Arabic speech recognition" = "Arabian puheentunnistus";
+"Additional speech recognition" = "Lisäpaketti puheentunnistukseen";
+"Speech detection for recordings" = "Puheen havaitseminen tallenteissa";
+"Used by audio imports and keyboard dictation." = "Äänen tuontiin ja näppäimistösaneluun.";
+"Download removed. The language can be prepared again when needed." = "Lataus poistettu. Kielen voi valmistella uudelleen tarvittaessa.";
+"Remove from list" = "Poista luettelosta";
+"Removing a language from this list does not delete downloaded files." = "Kielen poistaminen luettelosta ei poista ladattuja tiedostoja.";
+"Imported files removed. You may need the original model folder to restore this pack." = "Tuodut tiedostot poistettu. Palauttamiseen saatetaan tarvita alkuperäinen mallikansio.";
+"Remove this import?" = "Poistetaanko tämä tuonti?";
+"Switching tabs is unavailable while a translation runs" = "Välilehteä ei voi vaihtaa käännöksen aikana";
+"Up to 10,000 characters at a time" = "Enintään 10 000 merkkiä kerrallaan";
+"Over 10,000 characters" = "Yli 10 000 merkkiä";
+"The text is not trimmed automatically. Shorten it to start the translation." = "Tekstiä ei lyhennetä automaattisesti. Lyhennä sitä aloittaaksesi käännöksen.";
+"The translation became the source text and the direction is reversed. The previous result is no longer shown." = "Käännös siirrettiin lähdetekstiksi ja suunta vaihdettiin. Edellistä tulosta ei enää näytetä.";
+"This prepares the language pack. It is not a percentage of the translation." = "Tämä valmistelee kielipaketin. Prosentti ei kuvaa käännöksen edistymistä.";
+"A new translation can start once this one stops. Your text is kept." = "Uuden käännöksen voi aloittaa, kun tämä pysähtyy. Tekstisi säilyy.";
+"Retry with the same Translate text button, or choose a different language pair." = "Yritä uudelleen Käännä teksti -painikkeella tai valitse toinen kielipari.";
+"Translate again" = "Käännä uudelleen";
+"Share is the system sheet — you choose the destination" = "Valitset kohteen järjestelmän jakovalikossa";
+"No imports in progress" = "Ei tuonteja käynnissä";
+"Choose a recording from Files, or share one from Voice Memos." = "Valitse tallenne Tiedostot-apista tai jaa se Sanelimesta.";
+"Saved notes stay in your list. Completed jobs are not kept here." = "Tallennetut muistiinpanot pysyvät luettelossasi. Valmiita tehtäviä ei säilytetä täällä.";
+"Paused" = "Keskeytetty";
+"Translation packs · text" = "Käännöspaketit · teksti";
+"Text and refined voice translation use the same downloaded packs." = "Tekstin kääntäminen ja puhekäännöksen viimeistely käyttävät samoja ladattuja paketteja.";
+"No files on device" = "Laitteessa ei ole tiedostoja";
+"Files on device" = "Laitteen tiedostot";
+"Voice translation" = "Puhekäännös";
+"Text translation" = "Tekstin kääntäminen";
+"Could not read storage." = "Tallennustilaa ei voitu lukea.";
+"About Murmator" = "Tietoja Murmatorista";
+"Version" = "Versio";
+"Privacy" = "Tietosuoja";
+"Open source" = "Avoin lähdekoodi";
+"Open-source licenses" = "Avoimen lähdekoodin lisenssit";
+"Export Bergamot source code" = "Vie Bergamotin lähdekoodi";
+"Speech recognition and translation run on your device. Murmator does not upload your recordings, notes or translation text." = "Puheentunnistus ja kääntäminen tapahtuvat laitteellasi. Murmator ei lähetä tallenteitasi, muistiinpanojasi tai käännettäviä tekstejä palvelimelle.";
+"Downloading language packs connects to model hosting services. These services receive the network information needed to deliver files." = "Kielipakettien lataaminen muodostaa yhteyden malleja tarjoaviin palveluihin. Ne saavat tiedostojen toimittamiseen tarvittavat verkkotiedot.";
+"You choose what to share using the iOS share sheet. Device backups follow your system settings." = "Valitset itse jaettavan sisällön iOS:n jakovalikosta. Laitteen varmuuskopiot noudattavat järjestelmäasetuksiasi.";
+"Replace with translation" = "Korvaa käännöksellä";
+"Default translation app" = "Oletuskäännössovellus";
+"Choose Murmator for selected text in other apps" = "Valitse Murmator muissa sovelluksissa valitun tekstin kääntämiseen";
+"Open Murmator once to prepare system translation." = "Avaa Murmator kerran järjestelmän käännöstoiminnon valmistelemiseksi.";
+"Your selected text is kept. Return here after opening the app." = "Valittu teksti säilyy. Palaa tähän avattuasi sovelluksen.";
+"Check the source language before translating this text." = "Tarkista lähdekieli ennen tämän tekstin kääntämistä.";
+"Extra copy of a language pack from an earlier app version." = "Kielipaketin ylimääräinen kopio sovelluksen aiemmasta versiosta.";
+
+"Build" = "Koontiversio";
+
+"Beginning" = "Alkuun";
+
+"Text size" = "Tekstin koko";
+
+"Small" = "Pieni";
+
+"Medium" = "Keskikokoinen";
+
+"Large" = "Suuri";
+
+"Extra large" = "Erittäin suuri";
+
+"Waiting for translation…" = "Odotetaan käännöstä…";
+
+"Following live text" = "Seurataan puhetta";
+
+"Back to live text" = "Takaisin uusimpaan tekstiin";
+
+"Reading earlier text" = "Luetaan aiempaa tekstiä";
+
+"Reading view" = "Lukunäkymä";
+
+"Recognition priority" = "Puheentunnistuksen painotus";
+
+"Fast model" = "Nopea";
+
+"Quality model" = "Tarkka";
+
+"Faster first words. Uses the streaming model." = "Ensimmäiset sanat näkyvät nopeammin. Käyttää suoratoistomallia.";
+
+"More context for each phrase. The result may appear later." = "Enemmän kontekstia kullekin lauseelle. Tulos voi näkyä myöhemmin.";
+
+"Your languages" = "Omat kielet";
+
+"Other languages…" = "Muut kielet…";
+
+"Selected languages" = "Valitut kielet";
+
+"Step %d of %d" = "Vaihe %d/%d";
+
+"Language %d of %d" = "Kieli %d/%d";
+
+"Download paused" = "Lataus keskeytetty";
+
+"Resume download" = "Jatka latausta";
+
+"Cancel download" = "Peruuta lataus";
+
+"Preparation resumes when you return to Murmator. Completed downloads are kept." = "Valmistelu jatkuu, kun palaat Murmatoriin. Valmiit lataukset säilyvät.";
+
+"Translating note…" = "Käännetään muistiinpanoa…";
+
+"Cancel translation" = "Peruuta käännös";
+
+"New text below" = "Alempana on uutta tekstiä";
+
+"End" = "Loppuun";
+
+"Fast mode" = "Nopea";
+
+"Quality mode" = "Tarkka";
+
+"Download languages" = "Lataa kielet";
+
+"Preparing dictation…" = "Valmistellaan sanelua…";
+
+"Preparing translation…" = "Valmistellaan käännöstä…";
+
+"Languages imported" = "Kielet tuotu";
+
+"Free memory" = "Vapauta muistia";
+
+"Freeing memory…" = "Vapautetaan muistia…";
+
+"End dictation" = "Lopeta sanelu";
+
+"Downloads" = "Lataukset";
+
+"No downloads" = "Ei latauksia";
+
+"Delete download?" = "Poistetaanko lataus?";
+
+"Enable dictation in Murmator" = "Ota sanelu käyttöön Murmatorissa";
+
+"Finish the current task to free memory." = "Viimeistele nykyinen tehtävä vapauttaaksesi muistia.";
+
+"Finish the current task to delete downloads." = "Viimeistele nykyinen tehtävä poistaaksesi latauksia.";
+
+"This language is unavailable in the selected mode." = "Tämä kieli ei ole käytettävissä valitussa tilassa.";
+
+"Download removed." = "Lataus poistettu.";
+
+"Language downloads require internet access." = "Kielten lataaminen vaatii internetyhteyden.";
+
+"Notes and recordings stay. Download this language again to use it offline." = "Muistiinpanot ja tallenteet säilyvät. Lataa kieli uudelleen offline-käyttöä varten.";
+
+"Notes and recordings stay. Keep the original files to restore this download." = "Muistiinpanot ja tallenteet säilyvät. Säilytä alkuperäiset tiedostot palauttamista varten.";
+
+"Download" = "Lataa";
+
+"Downloading…" = "Ladataan…";
+
+"Ready" = "Valmis";
+
+"Voice notes" = "Äänimuistiinpanot";
+
+"In use" = "Käytössä";
+
+"Not in use" = "Ei käytössä";
+
+"Translation languages" = "Käännöskielet";
+
+"Could not save audio." = "Äänen tallennus epäonnistui.";
+
+"Play recording" = "Toista tallenne";
+
+"Pause recording" = "Keskeytä toisto";
+
+"Recording position" = "Tallenteen kohta";
+
+"Share recording" = "Jaa tallenne";
+
+"Transcribe again" = "Litteroi uudelleen";
+
+"Previous versions" = "Aiemmat versiot";
+
+"Previous transcript" = "Aiempi litterointi";
+
+"The note, its versions and recording will be deleted." = "Muistiinpano, sen versiot ja äänitallenne poistetaan.";
+
+"Translation unavailable" = "Käännös ei ole saatavilla";
+
+"Translation incomplete" = "Käännös on keskeneräinen";
+
+"Saved notes and audio stay." = "Tallennetut muistiinpanot ja äänet säilyvät.";
+
+"Recordings and transcripts are saved on this device." = "Tallenteet ja litteroinnit tallennetaan tähän laitteeseen.";
+
+"Delete language" = "Poista kieli";
+
+"Stop recording" = "Lopeta tallennus";
+
+"Close recording" = "Sulje tallennus";
+
+
+"Transcription" = "Litterointi";
+
+"Only Quality is available for these languages." = "Näille kielille on saatavilla vain laadukas malli.";
+
+"Turn speech into notes" = "Muuta puhe muistiinpanoiksi";
+
+"Tap the microphone, speak, and keep the recording with its text." = "Napauta mikrofonia ja puhu. Äänite ja teksti tallennetaan yhdessä.";
+
+"Translate your words" = "Käännä puhetta ja tekstiä";
+
+"Translate speech or typed text. Share the original or just the translation." = "Käännä puhetta tai kirjoitettua tekstiä. Jaa alkuperäinen tai pelkkä käännös.";
+
+"Transcribe recordings" = "Litteroi äänitteitä";
+
+"Import an audio file and turn it into a note you can read and edit." = "Tuo äänitiedosto ja muuta se muistiinpanoksi, jota voit lukea ja muokata.";
+
+"Preload languages" = "Lataa kielet etukäteen";
+
+"Which languages should work immediately and offline? You can download more later in Settings." = "Mitä kieliä haluat käyttää heti ilman verkkoyhteyttä? Voit ladata lisää myöhemmin asetuksista.";
+
+"Includes transcription and translation." = "Sisältää litteroinnin ja käännökset.";
+
+"Translation between: %@." = "Käännökset kielten välillä: %@.";
+
+"Downloading languages" = "Ladataan kieliä";
+
+"Ready for offline use" = "Valmis offline-käyttöön";
+
+"Download interrupted" = "Lataus keskeytyi";
+
+"Downloading transcription and translation. Recording will not start automatically." = "Ladataan litterointia ja käännöksiä. Tallennus ei ala automaattisesti.";
+
+"Tap the microphone when you are ready to make your first note." = "Napauta mikrofonia, kun olet valmis tekemään ensimmäisen muistiinpanosi.";
+
+"Continue without downloads" = "Jatka lataamatta";
+
+"Download and continue" = "Lataa ja jatka";
+
+"Set up later" = "Määritä myöhemmin";
+
+"Ready. Tap Start recording when you want to speak." = "Valmis. Napauta Aloita tallennus, kun haluat puhua.";
+
+"Ready to record" = "Valmis tallentamaan";
+
+"Start recording" = "Aloita tallennus";
+
+"Choose your languages" = "Valitse kielet";
+
+"Preload for offline use" = "Lataa etukäteen offline-käyttöä varten";
+
+"Try transcription" = "Kokeile litterointia";
+
+"Speak a few words and watch the text appear." = "Sano muutama sana ja katso tekstin ilmestymistä.";
+
+"Live transcription uses the Fast model. Finished audio recordings use the Quality model. Both work offline after downloading." = "Reaaliaikainen litterointi käyttää nopeaa mallia. Valmiit äänitteet käsitellään laadukkaalla mallilla. Molemmat toimivat lataamisen jälkeen offline-tilassa.";
+
+"Try live transcription" = "Kokeile reaaliaikaista litterointia";
+
+"Try translation" = "Kokeile kääntämistä";
+
+"See a translation while you speak, or translate a finished text with the Quality model." = "Näe käännös puhuessasi tai käännä valmis teksti laadukkaalla mallilla.";
+
+"Live translation uses the Fast model. For finished text and recordings, choose Quality. Both work offline after downloading." = "Reaaliaikainen käännös käyttää nopeaa mallia. Valitse laadukas malli valmiille tekstille ja äänitteille. Molemmat toimivat lataamisen jälkeen offline-tilassa.";
+
+"Try live translation" = "Kokeile reaaliaikaista käännöstä";
+
+"Try Quality translation" = "Kokeile laadukasta käännöstä";
+
+"Open Import audio on the notes screen and choose a recording from Files. Audio files use Quality transcription." = "Avaa äänen tuonti muistiinpanonäkymästä ja valitse äänite Tiedostoista. Äänitiedostot litteroidaan laadukkaalla mallilla.";
+
+"Share only what you need" = "Jaa vain tarvitsemasi";
+
+"Open a note, select Original or Translation below the player, then tap Share or Copy." = "Avaa muistiinpano, valitse alkuperäinen tai käännös soittimen alta ja napauta Jaa tai Kopioi.";
+
+"Only the selected text is exported. Use the player's share button to export the audio recording." = "Vain valittu teksti viedään. Vie äänite soittimen jakopainikkeella.";
+
+"Your languages are ready. Try the features next." = "Kielet ovat valmiina. Kokeile seuraavaksi sovelluksen toimintoja.";
+
+"Download later" = "Lataa myöhemmin";
+
+"Skip tour" = "Ohita esittely";
+
+"Feature example" = "Esimerkki toiminnosta";

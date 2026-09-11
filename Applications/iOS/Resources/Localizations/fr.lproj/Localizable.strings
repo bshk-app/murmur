@@ -1,0 +1,705 @@
+"Your voice.\nYour words." = "Votre voix.\nVos mots.";
+"Private by design." = "La confidentialité, par défaut.";
+"Make it yours." = "À votre façon.";
+"Ready for your\nnext thought." = "Prêt pour votre\nprochaine idée.";
+"Speak naturally. Murmator turns a thought into a note — and refines it while you speak." = "Parlez naturellement. Murmator transforme vos idées en notes et affine le texte pendant que vous parlez.";
+"Recognition and translation run on your iPhone. Audio isn't uploaded or kept in your notes." = "La reconnaissance et la traduction s’exécutent sur votre iPhone. L’audio n’est ni envoyé ni conservé dans les notes.";
+"Choose your spoken language. Models download once and stay on your device." = "Choisissez votre langue. Les modèles sont téléchargés une fois et restent sur votre appareil.";
+"Start from Murmator, a Lock Screen widget, or an Action Button shortcut." = "Commencez dans Murmator, avec un widget d’écran verrouillé ou un raccourci du bouton Action.";
+"Back" = "Retour";
+"Continue" = "Continuer";
+"Start using Murmator" = "Commencer avec Murmator";
+"I speak" = "Je parle";
+"Download & prepare models" = "Télécharger et préparer les modèles";
+"Downloading and loading models…" = "Téléchargement et chargement des modèles…";
+"Warming up models…" = "Préchauffage des modèles…";
+"Downloaded and warmed up" = "Téléchargés et préchauffés";
+"Keep Murmator open. Models download once and warm up for this session." = "Gardez Murmator ouvert. Les modèles sont téléchargés une fois et préchauffés pour cette session.";
+"Models run a short silent test. Microphone access is not needed yet." = "Les modèles effectuent un bref test avec du silence. Le microphone n’est pas encore nécessaire.";
+"Model preparation failed" = "Échec de la préparation des modèles";
+"Murmator mascot" = "Mascotte Murmator";
+"Step %lld of 4" = "Étape %lld sur 4";
+"Notes" = "Notes";
+"Note" = "Note";
+"NOTE" = "NOTE";
+"Search transcripts" = "Rechercher dans les notes";
+"A little thought.\nA note worth keeping." = "Une petite idée.\nUne note à garder.";
+"Speak naturally. Murmator turns your voice into text, right on this iPhone." = "Parlez naturellement. Murmator transforme votre voix en texte sur cet iPhone.";
+"Tap to talk · or use the Action Button" = "Touchez pour parler · ou utilisez le bouton Action";
+"Record a note" = "Enregistrer une note";
+"Translate" = "Traduire";
+"Keyboard" = "Clavier";
+"Settings" = "Réglages";
+"Cancel" = "Annuler";
+"Done" = "Terminé";
+"OK" = "OK";
+"Listening" = "À l’écoute";
+"Listening…" = "À l’écoute…";
+"Refining" = "Amélioration";
+"Getting ready" = "Préparation";
+"Cancel recording" = "Annuler l’enregistrement";
+"What's on your mind?" = "À quoi pensez-vous ?";
+"A moment for your words." = "Un instant pour vos mots.";
+"Stop & save" = "Arrêter et enregistrer";
+"Stop & translate" = "Arrêter et traduire";
+"You said · %@" = "Vos paroles · %@";
+"Audio stayed on this iPhone. Only the text is saved." = "L’audio est resté sur cet iPhone. Seul le texte est enregistré.";
+"Edit" = "Modifier";
+"Edit note" = "Modifier la note";
+"Delete" = "Supprimer";
+"Delete note" = "Supprimer la note";
+"Delete this note?" = "Supprimer cette note ?";
+"Note actions" = "Actions de la note";
+"Save" = "Enregistrer";
+"Send to Apple Notes" = "Envoyer vers Notes d’Apple";
+"Copy" = "Copier";
+"Copied" = "Copié";
+"Share" = "Partager";
+"Translate to" = "Traduire en";
+"While you speak" = "Pendant que vous parlez";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Un aperçu suit votre voix. OPUS affine les phrases terminées et le texte final avant l’enregistrement.";
+"Download the selected language models once to translate offline." = "Téléchargez une fois les modèles choisis pour traduire hors ligne.";
+"Translation is not available for this language yet. You can still record a note." = "La traduction n’est pas encore disponible pour cette langue. Vous pouvez enregistrer une note.";
+"Speak & translate" = "Parler et traduire";
+"Speech" = "Reconnaissance vocale";
+"Spoken language" = "Langue parlée";
+"Mode" = "Mode";
+"Fast" = "Rapide";
+"Hybrid" = "Hybride";
+"Accurate" = "Précis";
+"Hybrid shows a live draft and corrects it on a separate backend." = "Le mode hybride affiche un brouillon en direct et le corrige avec un moteur distinct.";
+"Models" = "Modèles";
+"Speech model" = "Modèle vocal";
+"Ready on this device" = "Prêt sur cet appareil";
+"Preparation needed" = "Préparation nécessaire";
+"Download & prepare" = "Télécharger et préparer";
+"Import model folder" = "Importer un dossier de modèles";
+"Advanced Core ML models can be imported as a CoreMLModels folder. Your speech never leaves the device." = "Les modèles Core ML supplémentaires s’importent via un dossier CoreMLModels. Votre voix reste sur l’appareil.";
+"Appearance" = "Apparence";
+"Theme" = "Thème";
+"System" = "Système";
+"Light" = "Clair";
+"Dark" = "Sombre";
+"Ways to start" = "Façons de commencer";
+"Action Button" = "Bouton Action";
+"Assign “Record a Murmator note” in Action Button or Shortcuts settings." = "Choisissez « Enregistrer une note Murmator » dans les réglages du bouton Action ou dans Raccourcis.";
+"Murmator keyboard" = "Clavier Murmator";
+"Lock Screen widget" = "Widget d’écran verrouillé";
+"Add the Murmator widget to your Lock Screen. It opens the app for recording." = "Ajoutez le widget Murmator à l’écran verrouillé. Il ouvre l’app pour enregistrer.";
+"Saving" = "Enregistrement";
+"Notes stay on this iPhone" = "Les notes restent sur cet iPhone";
+"Share a note to Apple Notes or another app using the system share sheet. Murmator does not send notes automatically." = "Partagez vos notes vers Notes d’Apple ou une autre app via le menu système. Murmator ne les envoie pas automatiquement.";
+"Murmator · 1.0\nOn-device voice to text" = "Murmator · 1.0\nTranscription sur l’appareil";
+"Your words, in any app." = "Vos mots dans toutes les apps.";
+"Record in Murmator, then use the Murmator keyboard to insert your latest saved text." = "Enregistrez dans Murmator, puis insérez le dernier texte avec le clavier Murmator.";
+"1. Open Settings → General → Keyboard.\n\n2. Add Murmator under Keyboards.\n\n3. Switch with the globe key and tap Insert." = "1. Ouvrez Réglages → Général → Clavier.\n\n2. Ajoutez Murmator dans Claviers.\n\n3. Utilisez la touche globe et touchez Insérer.";
+"The keyboard does not record audio or send text over the network." = "Le clavier n’enregistre pas d’audio et n’envoie pas de texte sur le réseau.";
+"Insert latest note" = "Insérer la dernière note";
+"Next keyboard" = "Clavier suivant";
+"Refresh note" = "Actualiser la note";
+"Delete character" = "Supprimer un caractère";
+"Return" = "Retour à la ligne";
+"Record a note in Murmator, then return here to insert it." = "Enregistrez une note dans Murmator, puis revenez ici pour l’insérer.";
+"Choose a model that supports the selected language." = "Choisissez un modèle prenant en charge cette langue.";
+"Preparing speech models…" = "Préparation des modèles vocaux…";
+"Preparing translation models…" = "Préparation des modèles de traduction…";
+"Microphone access" = "Accès au microphone";
+"Allow microphone access in Settings to record a note." = "Autorisez le microphone dans Réglages pour enregistrer une note.";
+"Draft first, refined a beat later" = "Un brouillon, puis les corrections";
+"Listening on this iPhone" = "À l’écoute sur cet iPhone";
+"Refining your note…" = "Amélioration de votre note…";
+"Recording stopped. The captured text was kept." = "L’enregistrement est arrêté. Le texte reconnu a été conservé.";
+"Models imported" = "Modèles importés";
+"Could not save recovery text: %@" = "Impossible d’enregistrer le texte de récupération : %@";
+"The original text is saved. Translation: %@" = "Le texte original est enregistré. Traduction : %@";
+"Record a Murmator note" = "Enregistrer une note Murmator";
+"Open Murmator and start on-device dictation." = "Ouvrir Murmator et dicter sur l’appareil.";
+"Record with Murmator" = "Enregistrer avec Murmator";
+"Open Murmator to capture a thought on your iPhone." = "Ouvrez Murmator pour noter une idée sur votre iPhone.";
+"Murmator transcribes your voice on this device." = "Murmator transcrit votre voix sur cet appareil.";
+"Set up models again" = "Configurer les modèles à nouveau";
+"Say it once" = "Dites-le simplement";
+"Let Murmator hear you" = "Laissez Murmator vous entendre";
+"Add your languages" = "Ajoutez vos langues";
+"Warming up the models" = "Préchauffage des modèles";
+"Talk in any app" = "Vos mots dans toutes les apps";
+"Choose languages for dictation and optional translation. Download them now or add them later in Settings." = "Choisissez les langues de dictée et de traduction. Téléchargez-les maintenant ou ajoutez-les plus tard dans Réglages.";
+"A short silent test prepares the models for use. You can continue or skip setup while preparation runs." = "Un bref test silencieux prépare les modèles. Vous pouvez continuer ou passer la configuration pendant ce temps.";
+"Microphone allowed" = "Microphone autorisé";
+"Allow microphone" = "Autoriser le microphone";
+"Optional now. Murmator will ask when you start your first recording." = "Facultatif pour le moment. Murmator le demandera au premier enregistrement.";
+"Choose languages" = "Choisir les langues";
+"1. Open Settings → General → Keyboard." = "1. Ouvrez Réglages → Général → Clavier.";
+"2. Add the Murmator keyboard." = "2. Ajoutez le clavier Murmator.";
+"3. Record in Murmator, then switch keyboards to insert your text." = "3. Enregistrez dans Murmator, puis changez de clavier pour insérer le texte.";
+"Keyboard setup" = "Configurer le clavier";
+"Step %lld of 5" = "Étape %lld sur 5";
+"Finish setup" = "Terminer la configuration";
+"Skip setup" = "Passer la configuration";
+"Languages & offline" = "Langues et mode hors ligne";
+"Offline after download" = "Hors ligne après téléchargement";
+"After downloading, the selected languages work without internet. Audio stays on your iPhone. You can skip this and download later." = "Après téléchargement, les langues choisies fonctionnent sans internet. L’audio reste sur votre iPhone. Vous pouvez passer cette étape et télécharger plus tard.";
+"Dictation languages" = "Langues de dictée";
+"Add speech language" = "Ajouter une langue de dictée";
+"Translation languages · optional" = "Langues de traduction · facultatif";
+"Translate from" = "Traduire depuis";
+"No downloadable OPUS translation pack is available for this source language yet." = "Aucun pack OPUS téléchargeable n’est encore disponible pour cette langue source.";
+"Add translation language" = "Ajouter une langue de traduction";
+"Downloaded" = "Téléchargé";
+"Prepare again" = "Préparer à nouveau";
+"Download & warm up" = "Télécharger et préchauffer";
+"You can keep going. Preparation continues while Murmator is open." = "Vous pouvez continuer. La préparation se poursuit tant que Murmator reste ouvert.";
+"Prepare when it suits you" = "Préparez quand vous voulez";
+"Nothing to download right now? Continue to your notes. Language packs can be added in Settings at any time." = "Rien à télécharger maintenant ? Accédez à vos notes. Les packs de langues peuvent être ajoutés à tout moment dans Réglages.";
+"Speech engines are tested on a physical iPhone. This simulator only tests the interface." = "Les moteurs vocaux sont testés sur un iPhone physique. Ce simulateur ne teste que l’interface.";
+"Preparing dictation" = "Préparation de la dictée";
+"Preparing live text" = "Préparation du texte en direct";
+"Preparing offline dictation" = "Préparation de la dictée hors ligne";
+"Could not prepare this language. Please try again." = "Impossible de préparer cette langue. Réessayez.";
+"Could not prepare translation for these languages. Please try again." = "Impossible de préparer la traduction pour ces langues. Réessayez.";
+"Could not refine text. Your draft is still available." = "Impossible d’affiner le texte. Votre brouillon reste disponible.";
+"Could not start dictation. Check microphone access and language downloads." = "Impossible de démarrer la dictée. Vérifiez l’accès au microphone et les langues téléchargées.";
+"A live draft appears first, then your words are refined." = "Un brouillon apparaît en direct, puis le texte est affiné.";
+"Replay setup tour" = "Revoir la présentation";
+"A quick translation follows your voice. Completed phrases are then refined before the note is saved." = "Une traduction rapide suit votre voix. Les phrases terminées sont affinées avant l’enregistrement.";
+"Translation is not available to download for this language yet." = "La traduction n’est pas encore téléchargeable pour cette langue.";
+"Translation could not be completed. Your original text is kept." = "La traduction n’a pas pu être terminée. Le texte original est conservé.";
+"Text refined" = "Texte affiné";
+"Not downloaded" = "Non téléchargé";
+"Downloading" = "Téléchargement";
+"Warming up" = "Préchauffage";
+"Ready offline" = "Prêt hors ligne";
+"Failed" = "Échec";
+"Needs warm-up" = "Préchauffage requis";
+"Selecting a language does not download it." = "Choisir une langue ne la télécharge pas.";
+"Retry" = "Réessayer";
+"Details" = "Détails";
+"Dismiss" = "Fermer";
+"Remove" = "Retirer";
+"Reverse direction is a separate pack." = "Le sens inverse est un pack distinct.";
+"Add" = "Ajouter";
+"Already added" = "Déjà ajouté";
+"Not supported yet" = "Pas encore pris en charge";
+"Nothing is downloading right now." = "Aucun téléchargement en cours.";
+"No notes yet" = "Aucune note pour l’instant";
+"Tap the mic and say the first one." = "Touchez le micro et dites la première.";
+"No matches" = "Aucun résultat";
+"Clear search" = "Effacer la recherche";
+"Update translation" = "Mettre à jour la traduction";
+"Translation may not match the edited text." = "La traduction peut ne plus correspondre au texte modifié.";
+"Could not save the note" = "Impossible d’enregistrer la note";
+"Recovered draft" = "Brouillon récupéré";
+"Advanced" = "Avancé";
+"This mode does not support the selected language." = "Ce mode ne prend pas en charge la langue choisie.";
+"Pack is on the device but not loaded in memory." = "Le pack est sur l’appareil mais pas en mémoire.";
+"Hybrid needs a second model for this language." = "Le mode hybride nécessite un second modèle pour cette langue.";
+"Import failed" = "Échec de l’import";
+"Choose a folder in Files" = "Choisir un dossier dans Fichiers";
+"Microphone is off" = "Le microphone est désactivé";
+"Open Settings" = "Ouvrir Réglages";
+"Not now" = "Plus tard";
+"Widget & Live Activity" = "Widget et activité en direct";
+"Murmator cannot check this setting from inside the app." = "L’app ne peut pas vérifier ce réglage.";
+"Insert" = "Insérer";
+"No saved text yet" = "Aucun texte enregistré";
+"Reading the note is unavailable right now." = "La lecture de la note est indisponible.";
+"Ready to insert" = "Prêt à insérer";
+"This cannot be undone." = "Cette action est irréversible.";
+"Note deleted" = "Note supprimée";
+"Preparing" = "Préparation";
+"Downloaded models stay on the device." = "Les modèles téléchargés restent sur l’appareil.";
+"Duration is not known in advance." = "La durée n’est pas connue à l’avance.";
+"Draft" = "Brouillon";
+"Refined" = "Affiné";
+"Draft translation" = "Traduction brouillon";
+"Refined translation" = "Traduction affinée";
+"Saved" = "Enregistré";
+"Speech models" = "Modèles vocaux";
+"Translation packs" = "Packs de traduction";
+"No internet connection" = "Pas de connexion internet";
+"Downloaded packs still work." = "Les packs téléchargés fonctionnent toujours.";
+"Help" = "Aide";
+"Add widget" = "Ajouter le widget";
+"During recording" = "Pendant l’enregistrement";
+"Edited" = "Modifié";
+"Original text" = "Texte original";
+"Interrupted" = "Interrompu";
+"Stopped" = "Arrêté";
+"Back to notes" = "Retour aux notes";
+"Try again" = "Réessayer";
+"Prepare later" = "Préparer plus tard";
+"Copy failed" = "Échec de la copie";
+"System share sheet" = "Menu de partage du système";
+"You choose the destination. Murmator does not send notes on its own." = "Vous choisissez la destination. Murmator n’envoie pas les notes tout seul.";
+"Automatic re-translation after editing is not implemented yet." = "La retraduction automatique après modification n’est pas encore implémentée.";
+"Long text is inserted in full." = "Le texte long est inséré en entier.";
+"Live Activity appears here while Murmator is recording." = "L’activité en direct apparaît ici pendant l’enregistrement.";
+"Turn off microphone" = "Désactiver le microphone";
+"Hold to talk" = "Maintenez pour parler";
+"Release to insert" = "Relâchez pour insérer";
+"Insert text" = "Insérer le texte";
+"Insert original" = "Insérer l’original";
+"Send" = "Envoyer";
+"Could not update the keyboard. Open Murmator and try again." = "Impossible de mettre à jour le clavier. Ouvrez Murmator et réessayez.";
+"Full Access is required for keyboard dictation." = "L’accès complet est nécessaire pour dicter depuis le clavier.";
+"The text field changed. Tap Insert text when you are ready." = "Le champ a changé. Touchez Insérer le texte quand vous êtes prêt.";
+"Enable the microphone in Murmator" = "Activez le microphone dans Murmator";
+"Hold the microphone while you speak. Release to insert the text." = "Maintenez le microphone pendant que vous parlez. Relâchez pour insérer le texte.";
+"Dictation" = "Dictée";
+"Enable microphone" = "Activer le microphone";
+"Return to your app and hold the microphone on the Murmator keyboard." = "Revenez à votre app et maintenez le microphone du clavier Murmator.";
+"Keyboard microphone enabled" = "Microphone du clavier activé";
+"Keyboard dictation" = "Dictée au clavier";
+"Enable the microphone here, then return to your app. Use the Murmator keyboard to start and stop dictation." = "Activez le microphone ici, puis revenez à votre app. Utilisez le clavier Murmator pour démarrer et arrêter la dictée.";
+"Enable keyboard dictation" = "Activer la dictée au clavier";
+"The microphone stays enabled between phrases. Idle audio is discarded. It turns off after 5 minutes without a new recording, or 1 minute after leaving the keyboard." = "Le microphone reste actif entre les phrases. Le son en attente est ignoré. Il s’éteint après 5 minutes sans nouvel enregistrement ou 1 minute après avoir quitté le clavier.";
+"Enable Full Access for Murmator." = "Autorisez l’accès complet à Murmator.";
+"1. Add Murmator in Settings → General → Keyboard.\n\n2. Enable Full Access for Murmator.\n\n3. Select Murmator with the globe key, enable the microphone, then hold to talk." = "1. Ajoutez Murmator dans Réglages → Général → Clavier.\n\n2. Autorisez l’accès complet à Murmator.\n\n3. Choisissez Murmator avec le globe, activez le microphone et maintenez pour parler.";
+"No speech detected. Hold the microphone and try again." = "Aucune parole détectée. Maintenez le microphone et réessayez.";
+"Open Murmator" = "Ouvrir Murmator";
+"Open Murmator to finish preparation." = "Ouvrez Murmator pour terminer la préparation.";
+"Prepare dictation" = "Préparer la dictée";
+"Ready to dictate" = "Prêt à dicter";
+"Load models and enable dictation in Murmator" = "Chargez les modèles et activez la dictée dans Murmator";
+"Could not load dictation models." = "Impossible de charger les modèles de dictée.";
+"Prepare the models here, then return to your app while loading finishes. The keyboard shows when dictation is ready." = "Préparez les modèles ici, puis revenez à votre app pendant le chargement. Le clavier indique quand la dictée est prête.";
+"End session & unload models" = "Terminer et libérer les modèles";
+"Memory" = "Mémoire";
+"Manage loaded models" = "Gérer les modèles chargés";
+"Models loaded" = "Modèles en mémoire";
+"Models unloaded" = "Modèles libérés";
+"Unload speech and translation models to release memory. Downloaded language packs and notes stay on this iPhone." = "Libérez les modèles vocaux et de traduction pour récupérer de la mémoire. Les langues téléchargées et les notes restent sur cet iPhone.";
+"Finish recording or preparation before unloading models." = "Terminez l’enregistrement ou la préparation avant de libérer les modèles.";
+"Unloading models…" = "Libération des modèles…";
+"Unload models" = "Libérer les modèles";
+"The next session loads the models again. You will not need to download them again." = "La prochaine session rechargera les modèles en mémoire. Aucun nouveau téléchargement ne sera nécessaire.";
+"Last update" = "Mis à jour";
+"Dictate" = "Dicter";
+"Record" = "Enregistrer";
+"Unload" = "Libérer";
+"Murmator controls" = "Commandes Murmator";
+"Start dictation, translate, unload models, or change your languages. Controls open Murmator." = "Dictez, traduisez, libérez les modèles ou changez de langue. Les commandes ouvrent Murmator.";
+"Languages" = "Langues";
+"Import audio" = "Importer un audio";
+"Audio imports" = "Audios importés";
+"Transcribe a recording" = "Transcrire un enregistrement";
+"Audio is processed on this iPhone in short sections, split at pauses. Keep Murmator open; completed text is saved as it goes." = "L’audio est traité sur cet iPhone en courts segments séparés aux pauses. Gardez Murmator ouvert ; le texte est enregistré au fur et à mesure.";
+"Importing audio…" = "Importation de l’audio…";
+"Preparing transcription…" = "Préparation de la transcription…";
+"Transcribing audio…" = "Transcription de l’audio…";
+"Pausing…" = "Mise en pause…";
+"Pause" = "Pause";
+"Paused. Continue when you are ready." = "En pause. Reprenez quand vous le souhaitez.";
+"Transcribe" = "Transcrire";
+"Continue transcription" = "Reprendre la transcription";
+"No speech detected in this file." = "Aucune parole détectée dans ce fichier.";
+"Transcription saved" = "Transcription enregistrée";
+"Partial transcript" = "Transcription partielle";
+"Open transcript" = "Ouvrir la transcription";
+"Remove import" = "Supprimer l’importation";
+"Your original recording is unchanged. The imported copy is removed after completion; the transcript stays in Notes." = "L’enregistrement original reste inchangé. La copie importée est supprimée à la fin ; la transcription reste dans les notes.";
+"Processed on this iPhone. Pause at any time; completed text is saved." = "Traitement sur cet iPhone. Faites une pause à tout moment ; le texte terminé est enregistré.";
+"Choose audio" = "Choisir un audio";
+"Import another recording" = "Importer un autre enregistrement";
+"Original recordings are unchanged. Imported audio is removed after a successful transcript, or when you remove the import." = "Les originaux restent inchangés. L’audio importé est supprimé après une transcription réussie ou lors du retrait de l’importation.";
+"Audio recording" = "Enregistrement audio";
+"Could not receive the file" = "Impossible de recevoir le fichier";
+"File transfer" = "Transfert du fichier";
+"Transcription has not started. Choose the recording again or share it from Files." = "La transcription n’a pas commencé. Sélectionnez à nouveau l’enregistrement ou partagez-le depuis Fichiers.";
+"Retry import" = "Réessayer l’importation";
+"Waiting" = "En attente";
+"Recognition" = "Reconnaissance";
+"No speech" = "Aucune parole";
+"Language of the recording" = "Langue de l’enregistrement";
+"The language is locked: the first section is saved." = "La langue est verrouillée : la première section est enregistrée.";
+"No text note was saved. Check the language of the recording or pick another file." = "Aucune note de texte enregistrée. Vérifiez la langue ou choisissez un autre fichier.";
+"Completed text is kept. Continue from the saved position." = "Le texte terminé est conservé. Reprenez à la position enregistrée.";
+"Transcript" = "Transcription";
+"Saved so far" = "Déjà enregistré";
+"Waiting for the current section to stop." = "En attente de l’arrêt de la section en cours.";
+"Open the full note after pausing. Completed text is already saved." = "Ouvrez la note complète après une pause. Le texte terminé est déjà enregistré.";
+"Choose another language and retry" = "Choisir une autre langue et réessayer";
+"Add to queue" = "Ajouter à la file d’attente";
+"Starts after the current file. One recording is processed at a time." = "Démarre après le fichier en cours. Un seul enregistrement est traité à la fois.";
+"Only the import and its audio copy are removed. Original recordings and saved notes stay." = "Seuls l’importation et sa copie audio sont supprimées. Les originaux et les notes enregistrées sont conservés.";
+"File received" = "Fichier reçu";
+"Could not transcribe this recording" = "Impossible de transcrire cet enregistrement";
+"of" = "sur";
+"Saved sections:" = "Sections enregistrées :";
+"On device" = "Sur l’appareil";
+"Downloaded language packs" = "Packs de langues téléchargés";
+"Unloading models does not remove downloaded language packs or notes." = "Libérer les modèles de la mémoire ne supprime ni les packs de langues ni les notes.";
+"In memory" = "En mémoire";
+"Models are held by Murmator for the current work." = "Murmator conserve les modèles en mémoire pour le travail en cours.";
+"The next session will load the selected models from the device." = "La prochaine session chargera les modèles sélectionnés depuis l’appareil.";
+"Loaded" = "Chargés";
+"Unloaded" = "Libérés";
+"Unloading is unavailable right now" = "Libération indisponible pour le moment";
+"Open the import and pause it" = "Ouvrir l’importation et la suspendre";
+"The app does not report how much free memory the phone has." = "L’app n’indique pas la quantité de mémoire libre du téléphone.";
+"Start a dictation session, then return to your app." = "Démarrez une session de dictée, puis revenez dans votre app.";
+"Keyboard setup instructions" = "Configurer le clavier";
+"Full Access" = "Accès complet";
+"Confirmed" = "Confirmé";
+"Check in keyboard" = "Vérifier dans le clavier";
+"Full Access is checked by the keyboard, not by microphone permission." = "Le clavier vérifie l’accès complet séparément de l’autorisation du microphone.";
+"Microphone" = "Microphone";
+"Allowed" = "Autorisé";
+"Not allowed" = "Non autorisé";
+"A system permission. It does not mean models are ready." = "Une autorisation système. Elle ne signifie pas que les modèles sont prêts.";
+"Models in memory" = "Modèles en mémoire";
+"Loading models" = "Chargement des modèles";
+"Speech and translation must finish preparing before dictation starts." = "La préparation de la parole et de la traduction doit être terminée avant de dicter.";
+"Session" = "Session";
+"Preparing…" = "Préparation…";
+"Inactive" = "Inactive";
+"Return to your app manually when the session is ready." = "Revenez dans votre app lorsque la session est prête.";
+"Language and mode" = "Langue et mode";
+"From Voice Memos, Files or the system share sheet" = "Depuis Dictaphone, Fichiers ou le menu de partage";
+"Open" = "Ouvrir";
+"Tools" = "Outils";
+"Dictate in other apps" = "Dicter dans d’autres apps";
+"Recordings, progress and saved transcripts" = "Enregistrements, progression et transcriptions";
+"Device" = "Appareil";
+"Downloaded packs and loaded models" = "Packs téléchargés et modèles en mémoire";
+"Completed text is saved. Finish transcription before editing this note." = "Le texte terminé est enregistré. Terminez la transcription avant de modifier cette note.";
+"Activate in Murmator" = "Activer dans Murmator";
+"Activation needed" = "Activation nécessaire";
+"Result" = "Résultat";
+"Mic on" = "Micro actif";
+"Mic off" = "Micro coupé";
+"Full Access needed" = "Accès complet requis";
+"Result ready" = "Résultat prêt";
+"Recording" = "Enregistrement";
+"Choose what to insert into the current field." = "Choisissez quoi insérer dans le champ actuel.";
+"Unload in Murmator" = "Libérer dans Murmator";
+"Translation mode" = "Mode de traduction";
+"Text" = "Texte";
+"Voice" = "Voix";
+"From language" = "Langue source";
+"Swap languages" = "Inverser les langues";
+"Text to translate" = "Texte à traduire";
+"Clear" = "Effacer";
+"Type or paste text here" = "Saisissez ou collez du texte ici";
+"Translate up to 10,000 characters at a time." = "Traduisez jusqu’à 10 000 caractères à la fois.";
+"Cancelling…" = "Annulation…";
+"Translating text…" = "Traduction du texte…";
+"Translate text" = "Traduire le texte";
+"Could not translate. Your text is kept." = "Traduction impossible. Votre texte est conservé.";
+"Translation" = "Traduction";
+"Copy translation" = "Copier la traduction";
+"Text is translated on this iPhone. Language packs may need a one-time download." = "Le texte est traduit sur cet iPhone. Un téléchargement initial des packs de langues peut être nécessaire.";
+"Text is not saved as a note automatically." = "Le texte n’est pas enregistré automatiquement comme note.";
+"Hide keyboard" = "Masquer le clavier";
+"Storage" = "Stockage";
+"Refresh" = "Actualiser";
+"Manage storage" = "Gérer le stockage";
+"Downloaded models and disk space" = "Modèles téléchargés et espace disque";
+"Downloaded model files" = "Fichiers de modèles téléchargés";
+"Available on this iPhone" = "Disponible sur cet iPhone";
+"File sizes are shown. The space reclaimed by the system may differ." = "Les tailles des fichiers sont affichées. L’espace réellement libéré peut varier.";
+"Storage information unavailable" = "Informations de stockage indisponibles";
+"Calculating storage…" = "Calcul du stockage…";
+"Finish dictation, translation or model preparation before deleting downloads." = "Terminez la dictée, la traduction ou la préparation des modèles avant de supprimer les fichiers.";
+"Deleting download…" = "Suppression des fichiers…";
+"No downloaded model files" = "Aucun modèle téléchargé";
+"Speech recognition" = "Reconnaissance vocale";
+"Unfinished downloads" = "Téléchargements incomplets";
+"Deleting a download keeps your notes, original recordings and selected languages." = "La suppression des modèles conserve les notes, les enregistrements originaux et les langues sélectionnées.";
+"Delete downloaded model?" = "Supprimer le modèle téléchargé ?";
+"Delete download" = "Supprimer le téléchargement";
+"The files will be downloaded again when you prepare this language or use it next time." = "Les fichiers pourront être téléchargés à nouveau lors de la préparation de la langue ou de sa prochaine utilisation.";
+"This pack was imported. You may need the original model folder to restore it." = "Ce pack a été importé. Le dossier d’origine peut être nécessaire pour le restaurer.";
+"Shared components may be needed by more than one language or mode. Notes and original recordings stay." = "Des composants peuvent être partagés entre plusieurs langues ou modes. Les notes et les originaux sont conservés.";
+"Text and final voice translation" = "Traduction de texte et résultat vocal final";
+"Live voice translation preview" = "Aperçu de traduction vocale";
+"Live translation preview" = "Aperçu de traduction en direct";
+"A direction may also be used by translations through an intermediate language." = "Cette direction peut aussi servir aux traductions passant par une langue intermédiaire.";
+"Unfinished model download" = "Téléchargement de modèle incomplet";
+"Temporary files from a model download." = "Fichiers temporaires d’un téléchargement de modèle.";
+"Imported speech pack" = "Pack vocal importé";
+"Russian speech recognition" = "Reconnaissance vocale russe";
+"Used for Russian dictation and audio imports." = "Pour la dictée et les enregistrements importés en russe.";
+"Multilingual speech recognition" = "Reconnaissance vocale multilingue";
+"Shared by several dictation languages and keyboard sessions." = "Pack partagé par plusieurs langues de dictée et sessions du clavier.";
+"Live dictation" = "Dictée en direct";
+"Speech detection for live dictation" = "Détection de parole pour la dictée";
+"A shared component. Deleting it affects every mode that uses it." = "Composant partagé. Sa suppression affecte tous les modes qui l’utilisent.";
+"Downloaded source files for this shared component." = "Fichiers sources téléchargés de ce composant partagé.";
+"Arabic speech recognition" = "Reconnaissance vocale arabe";
+"Additional speech recognition" = "Reconnaissance vocale supplémentaire";
+"Speech detection for recordings" = "Détection de parole dans les enregistrements";
+"Used by audio imports and keyboard dictation." = "Pour l’importation audio et la dictée au clavier.";
+"Download removed. The language can be prepared again when needed." = "Téléchargement supprimé. Vous pourrez préparer la langue à nouveau si nécessaire.";
+"Remove from list" = "Retirer de la liste";
+"Removing a language from this list does not delete downloaded files." = "Retirer une langue de cette liste ne supprime pas ses fichiers téléchargés.";
+"Imported files removed. You may need the original model folder to restore this pack." = "Fichiers importés supprimés. Le dossier d’origine peut être nécessaire pour restaurer ce pack.";
+"Remove this import?" = "Supprimer cette importation ?";
+"Switching tabs is unavailable while a translation runs" = "Impossible de changer d’onglet pendant la traduction";
+"Up to 10,000 characters at a time" = "Jusqu’à 10 000 caractères à la fois";
+"Over 10,000 characters" = "Plus de 10 000 caractères";
+"The text is not trimmed automatically. Shorten it to start the translation." = "Le texte n’est pas tronqué automatiquement. Raccourcissez-le pour lancer la traduction.";
+"The translation became the source text and the direction is reversed. The previous result is no longer shown." = "La traduction est devenue le texte source et le sens a été inversé. Le résultat précédent n’est plus affiché.";
+"This prepares the language pack. It is not a percentage of the translation." = "Il s’agit de la préparation du pack linguistique, pas du pourcentage de traduction.";
+"A new translation can start once this one stops. Your text is kept." = "Une nouvelle traduction pourra démarrer après l’arrêt de celle-ci. Votre texte est conservé.";
+"Retry with the same Translate text button, or choose a different language pair." = "Réessayez avec « Traduire le texte » ou choisissez une autre paire de langues.";
+"Translate again" = "Traduire à nouveau";
+"Share is the system sheet — you choose the destination" = "Le menu de partage du système vous laisse choisir la destination";
+"No imports in progress" = "Aucune importation en cours";
+"Choose a recording from Files, or share one from Voice Memos." = "Choisissez un enregistrement dans Fichiers ou partagez-le depuis Dictaphone.";
+"Saved notes stay in your list. Completed jobs are not kept here." = "Les notes enregistrées restent dans votre liste. Les tâches terminées ne sont pas conservées ici.";
+"Paused" = "En pause";
+"Translation packs · text" = "Packs de traduction · texte";
+"Text and refined voice translation use the same downloaded packs." = "La traduction de texte et l’affinage de la traduction vocale utilisent les mêmes packs téléchargés.";
+"No files on device" = "Aucun fichier sur l’appareil";
+"Files on device" = "Fichiers sur l’appareil";
+"Voice translation" = "Traduction vocale";
+"Text translation" = "Traduction de texte";
+"Could not read storage." = "Impossible de lire le stockage.";
+"About Murmator" = "À propos de Murmator";
+"Version" = "Version";
+"Privacy" = "Confidentialité";
+"Open source" = "Code source ouvert";
+"Open-source licenses" = "Licences open source";
+"Export Bergamot source code" = "Exporter le code source de Bergamot";
+"Speech recognition and translation run on your device. Murmator does not upload your recordings, notes or translation text." = "La reconnaissance vocale et la traduction ont lieu sur votre appareil. Murmator ne transmet pas vos enregistrements, notes ni textes à traduire.";
+"Downloading language packs connects to model hosting services. These services receive the network information needed to deliver files." = "Le téléchargement des packs de langues utilise des services d’hébergement de modèles. Ils reçoivent les données réseau nécessaires à la transmission des fichiers.";
+"You choose what to share using the iOS share sheet. Device backups follow your system settings." = "Vous choisissez quoi partager via le menu iOS. Les sauvegardes de l’appareil suivent vos réglages système.";
+"Replace with translation" = "Remplacer par la traduction";
+"Default translation app" = "App de traduction par défaut";
+"Choose Murmator for selected text in other apps" = "Choisissez Murmator pour le texte sélectionné dans d’autres apps";
+"Open Murmator once to prepare system translation." = "Ouvrez Murmator une fois pour préparer la traduction système.";
+"Your selected text is kept. Return here after opening the app." = "Votre texte sélectionné est conservé. Revenez ici après avoir ouvert l’app.";
+"Check the source language before translating this text." = "Vérifiez la langue source avant de traduire ce texte.";
+"Extra copy of a language pack from an earlier app version." = "Copie supplémentaire d’un pack de langue d’une version précédente de l’app.";
+
+"Build" = "Build";
+
+"Beginning" = "Au début";
+
+"Text size" = "Taille du texte";
+
+"Small" = "Petit";
+
+"Medium" = "Moyen";
+
+"Large" = "Grand";
+
+"Extra large" = "Très grand";
+
+"Waiting for translation…" = "En attente de traduction…";
+
+"Following live text" = "Suivi du texte en direct";
+
+"Back to live text" = "Revenir au texte en direct";
+
+"Reading earlier text" = "Lecture du texte précédent";
+
+"Reading view" = "Vue de lecture";
+
+"Recognition priority" = "Priorité de reconnaissance";
+
+"Fast model" = "Rapide";
+
+"Quality model" = "Précis";
+
+"Faster first words. Uses the streaming model." = "Les premiers mots apparaissent plus vite. Utilise le modèle en continu.";
+
+"More context for each phrase. The result may appear later." = "Plus de contexte par phrase. Le résultat peut apparaître plus tard.";
+
+"Your languages" = "Vos langues";
+
+"Other languages…" = "Autres langues…";
+
+"Selected languages" = "Langues sélectionnées";
+
+"Step %d of %d" = "Étape %d sur %d";
+
+"Language %d of %d" = "Langue %d sur %d";
+
+"Download paused" = "Téléchargement en pause";
+
+"Resume download" = "Reprendre le téléchargement";
+
+"Cancel download" = "Annuler le téléchargement";
+
+"Preparation resumes when you return to Murmator. Completed downloads are kept." = "La préparation reprend à votre retour dans Murmator. Les téléchargements terminés sont conservés.";
+
+"Translating note…" = "Traduction de la note…";
+
+"Cancel translation" = "Annuler la traduction";
+
+"New text below" = "Nouveau texte plus bas";
+
+"End" = "À la fin";
+
+"Fast mode" = "Rapide";
+
+"Quality mode" = "Précise";
+
+"Download languages" = "Télécharger les langues";
+
+"Preparing dictation…" = "Préparation de la dictée…";
+
+"Preparing translation…" = "Préparation de la traduction…";
+
+"Languages imported" = "Langues importées";
+
+"Free memory" = "Libérer la mémoire";
+
+"Freeing memory…" = "Libération de la mémoire…";
+
+"End dictation" = "Terminer la dictée";
+
+"Downloads" = "Téléchargements";
+
+"No downloads" = "Aucun téléchargement";
+
+"Delete download?" = "Supprimer le téléchargement ?";
+
+"Enable dictation in Murmator" = "Activez la dictée dans Murmator";
+
+"Finish the current task to free memory." = "Terminez la tâche en cours pour libérer la mémoire.";
+
+"Finish the current task to delete downloads." = "Terminez la tâche en cours pour supprimer les téléchargements.";
+
+"This language is unavailable in the selected mode." = "Cette langue est indisponible dans le mode sélectionné.";
+
+"Download removed." = "Téléchargement supprimé.";
+
+"Language downloads require internet access." = "Internet est nécessaire pour télécharger les langues.";
+
+"Notes and recordings stay. Download this language again to use it offline." = "Les notes et enregistrements sont conservés. Téléchargez à nouveau la langue pour une utilisation hors ligne.";
+
+"Notes and recordings stay. Keep the original files to restore this download." = "Les notes et enregistrements sont conservés. Gardez les fichiers originaux pour les restaurer.";
+
+"Download" = "Télécharger";
+
+"Downloading…" = "Téléchargement…";
+
+"Ready" = "Prêt";
+
+"Voice notes" = "Notes vocales";
+
+"In use" = "Utilisée";
+
+"Not in use" = "Non utilisée";
+
+"Translation languages" = "Langues de traduction";
+
+"Could not save audio." = "Impossible d’enregistrer l’audio.";
+
+"Play recording" = "Écouter l’enregistrement";
+
+"Pause recording" = "Mettre en pause";
+
+"Recording position" = "Position dans l’enregistrement";
+
+"Share recording" = "Partager l’enregistrement";
+
+"Transcribe again" = "Transcrire à nouveau";
+
+"Previous versions" = "Versions précédentes";
+
+"Previous transcript" = "Transcription précédente";
+
+"The note, its versions and recording will be deleted." = "La note, ses versions et l’enregistrement seront supprimés.";
+
+"Translation unavailable" = "Traduction indisponible";
+
+"Translation incomplete" = "Traduction incomplète";
+
+"Saved notes and audio stay." = "Les notes et fichiers audio sauvegardés sont conservés.";
+
+"Recordings and transcripts are saved on this device." = "Les enregistrements et transcriptions sont sauvegardés sur cet appareil.";
+
+"Delete language" = "Supprimer la langue";
+
+"Stop recording" = "Arrêter l’enregistrement";
+
+"Close recording" = "Fermer l’enregistrement";
+
+
+"Transcription" = "Transcription";
+
+"Only Quality is available for these languages." = "Seul le modèle de qualité est disponible pour ces langues.";
+
+"Turn speech into notes" = "Transformez la parole en notes";
+
+"Tap the microphone, speak, and keep the recording with its text." = "Touchez le micro et parlez. L’enregistrement et son texte sont conservés ensemble.";
+
+"Translate your words" = "Traduisez vos mots";
+
+"Translate speech or typed text. Share the original or just the translation." = "Traduisez la parole ou un texte saisi. Partagez l’original ou uniquement la traduction.";
+
+"Transcribe recordings" = "Transcrivez vos enregistrements";
+
+"Import an audio file and turn it into a note you can read and edit." = "Importez un fichier audio pour créer une note à lire et à modifier.";
+
+"Preload languages" = "Précharger des langues";
+
+"Which languages should work immediately and offline? You can download more later in Settings." = "Quelles langues voulez-vous utiliser immédiatement hors ligne ? Vous pourrez en télécharger d’autres dans les réglages.";
+
+"Includes transcription and translation." = "Inclut la transcription et la traduction.";
+
+"Translation between: %@." = "Traduction entre : %@.";
+
+"Downloading languages" = "Téléchargement des langues";
+
+"Ready for offline use" = "Prêt pour une utilisation hors ligne";
+
+"Download interrupted" = "Téléchargement interrompu";
+
+"Downloading transcription and translation. Recording will not start automatically." = "Téléchargement de la transcription et de la traduction. L’enregistrement ne démarre pas automatiquement.";
+
+"Tap the microphone when you are ready to make your first note." = "Touchez le micro quand vous êtes prêt à enregistrer votre première note.";
+
+"Continue without downloads" = "Continuer sans télécharger";
+
+"Download and continue" = "Télécharger et continuer";
+
+"Set up later" = "Configurer plus tard";
+
+"Ready. Tap Start recording when you want to speak." = "Tout est prêt. Touchez Démarrer l’enregistrement quand vous voulez parler.";
+
+"Ready to record" = "Prêt à enregistrer";
+
+"Start recording" = "Démarrer l’enregistrement";
+
+"Choose your languages" = "Choisissez vos langues";
+
+"Preload for offline use" = "Précharger pour une utilisation hors ligne";
+
+"Try transcription" = "Essayez la transcription";
+
+"Speak a few words and watch the text appear." = "Dites quelques mots et regardez le texte apparaître.";
+
+"Live transcription uses the Fast model. Finished audio recordings use the Quality model. Both work offline after downloading." = "La transcription en direct utilise le modèle rapide. Les enregistrements utilisent le modèle de qualité. Après téléchargement, les deux fonctionnent hors ligne.";
+
+"Try live transcription" = "Essayer la transcription en direct";
+
+"Try translation" = "Essayez la traduction";
+
+"See a translation while you speak, or translate a finished text with the Quality model." = "Voyez la traduction pendant que vous parlez, ou traduisez un texte avec le modèle de qualité.";
+
+"Live translation uses the Fast model. For finished text and recordings, choose Quality. Both work offline after downloading." = "La traduction en direct utilise le modèle rapide. Pour les textes et enregistrements, choisissez Qualité. Après téléchargement, les deux fonctionnent hors ligne.";
+
+"Try live translation" = "Essayer la traduction en direct";
+
+"Try Quality translation" = "Essayer le modèle de qualité";
+
+"Open Import audio on the notes screen and choose a recording from Files. Audio files use Quality transcription." = "Ouvrez l’import audio dans les notes et choisissez un enregistrement dans Fichiers. Les fichiers audio utilisent la transcription de qualité.";
+
+"Share only what you need" = "Partagez uniquement l’essentiel";
+
+"Open a note, select Original or Translation below the player, then tap Share or Copy." = "Ouvrez une note, choisissez Original ou Traduction sous le lecteur, puis touchez Partager ou Copier.";
+
+"Only the selected text is exported. Use the player's share button to export the audio recording." = "Seul le texte choisi est exporté. Utilisez le bouton de partage du lecteur pour envoyer l’audio.";
+
+"Your languages are ready. Try the features next." = "Vos langues sont prêtes. Essayez maintenant les fonctionnalités.";
+
+"Download later" = "Télécharger plus tard";
+
+"Skip tour" = "Passer la présentation";
+
+"Feature example" = "Exemple de fonctionnalité";

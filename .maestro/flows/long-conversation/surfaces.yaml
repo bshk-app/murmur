@@ -1,0 +1,48 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: text
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: text-translation-output
+- takeScreenshot: after/text-translation
+- tapOn:
+    id: text-source-language
+- assertVisible: Ваши языки
+- assertVisible: 'Другие языки…'
+- takeScreenshot: after/downloaded-languages-menu
+- launchApp:
+    arguments:
+      longConversation: compact
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: compact-output
+- assertVisible:
+    id: compact-copy
+- takeScreenshot: after/selected-text-translation
+- swipe:
+    from:
+      id: compact-output-scroll
+    direction: UP
+- assertVisible:
+    id: compact-copy
+- launchApp:
+    arguments:
+      longConversation: storage
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: storage-languages-speech/multilingual-accurate
+    text: '.*Английский.*Финский.*'
+- takeScreenshot: after/shared-model-languages
+- launchApp:
+    arguments:
+      longConversation: progress
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- assertVisible:
+    id: preparation-stage
+- takeScreenshot: after/download-progress-stages

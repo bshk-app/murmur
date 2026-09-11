@@ -1,0 +1,49 @@
+appId: app.bshk.murmur.uitesthost
+name: Capture current screens for the design handoff
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- tapOn:
+    id: skip-setup
+- takeScreenshot: notes-empty
+- launchApp:
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+      uiFixture: true
+- assertVisible:
+    id: note-.*
+- takeScreenshot: notes-populated
+- tapOn:
+    id: search-notes
+- inputText: no-match-example
+- takeScreenshot: search-empty
+- launchApp:
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+      uiFixture: true
+- tapOn:
+    id: note-.*
+- assertVisible:
+    id: note-text
+- takeScreenshot: note-detail
+- tapOn: Note actions
+- tapOn: Edit
+- takeScreenshot: note-editor
+- tapOn: Cancel
+- tapOn: Note actions
+- tapOn: Delete
+- assertVisible: Delete note
+- takeScreenshot: delete-confirmation
+- launchApp:
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- tapOn:
+    id: settings
+- assertVisible: Spoken language
+- takeScreenshot: settings-current

@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Traduisez les pages progressivement sur votre appareil."
+  },
+  "source": {
+    "message": "De"
+  },
+  "target": {
+    "message": "Vers"
+  },
+  "close": {
+    "message": "Fermer et rétablir l’original"
+  },
+  "original": {
+    "message": "Original"
+  },
+  "translation": {
+    "message": "Traduction"
+  },
+  "stop": {
+    "message": "Arrêter"
+  },
+  "retry": {
+    "message": "Réessayer"
+  },
+  "pageProgress": {
+    "message": "Progression de la traduction de la page"
+  },
+  "preparing": {
+    "message": "Préparation…"
+  },
+  "translating": {
+    "message": "$1% traduit"
+  },
+  "translated": {
+    "message": "Traduit en $1"
+  },
+  "stopped": {
+    "message": "Arrêté"
+  },
+  "empty": {
+    "message": "Aucun texte à traduire"
+  },
+  "unsupported": {
+    "message": "Choisissez des langues prises en charge"
+  },
+  "setupRequired": {
+    "message": "Ouvrez Murmator pour terminer la configuration, puis réessayez."
+  },
+  "failed": {
+    "message": "Échec de la traduction. Réessayez."
+  },
+  "busy": {
+    "message": "Une autre traduction se termine…"
+  },
+  "preparingModel": {
+    "message": "Préparation du modèle de langue…"
+  },
+  "partial": {
+    "message": "Certains textes modifiés ou trop longs ont été ignorés."
+  }
+}

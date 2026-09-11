@@ -1,3 +1,4 @@
+@testable import MurmurTranslation
 import XCTest
 @testable import MurmurKit
 
@@ -20,6 +21,26 @@ final class TranslationQualityDownloadTests: XCTestCase {
 
     private func pair(_ source: String, _ target: String) throws -> LanguagePair {
         try XCTUnwrap(LanguagePair(source: source, target: target))
+    }
+
+    func testUnsupportedQualityRouteFailsBeforeDownloadingPreview() async throws {
+        let session = TranslationSession(modelsRoot: root)
+        do { try await session.prepare(from: "ja", to: "en"); XCTFail("Missing quality model must be explicit") }
+        catch let error as TranslationService.Unsupported { XCTAssertEqual(error.source, "ja") }
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: root.path).isEmpty)
+    }
+
+    func testFinnishDownloadRoutesAreDirectBeforeInstallation() throws {
+        let service = TranslationService(modelsRoot: root)
+        for (from, to) in [("ru", "fi"), ("fi", "ru"), ("en", "fi"), ("fi", "en")] {
+            let pair = LanguagePair(source: from, target: to)
+            guard case .direct(let leg) = service.qualityDownloadRoute(from: from, to: to) else { return XCTFail("Missing direct OPUS route") }
+            XCTAssertEqual(leg, pair)
+            let artifacts = try TranslationDownloader.artifacts(for: pair, kind: .quality)
+            XCTAssertGreaterThan(artifacts.reduce(0) { $0 + $1.downloadBytes }, 240_000_000)
+            XCTAssertTrue(artifacts.allSatisfy { $0.sha256.count == 64 })
+            XCTAssertEqual(artifacts.contains { $0.localName == "target_tag.txt" }, to == "ru")
+        }
     }
 
     // MARK: - shape
@@ -58,10 +79,10 @@ final class TranslationQualityDownloadTests: XCTestCase {
 
     func testAnUnconvertedDirectionIsRefusedRatherThanFetchedUnchecked() throws {
         XCTAssertThrowsError(
-            try TranslationDownloader.artifacts(for: pair("de", "en"), kind: .quality)
+            try TranslationDownloader.artifacts(for: pair("ja", "en"), kind: .quality)
         ) { error in
             XCTAssertEqual(error as? TranslationDownloader.Err,
-                           .unpinnedDirection("deen"))
+                           .unpinnedDirection("jaen"))
         }
     }
 

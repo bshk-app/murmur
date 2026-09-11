@@ -1,0 +1,80 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    clearState: true
+    arguments:
+      notePaginationFixture: true
+      onboardingComplete: true
+      onboardingVersion: 4
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- runFlow:
+    when:
+      visible: Skip setup
+    commands:
+      - tapOn: Skip setup
+- extendedWaitUntil:
+    visible:
+      id: note-00000000-0000-0000-0000-000000000001
+    timeout: 30000
+- takeScreenshot: after/first-page
+- scrollUntilVisible:
+    element:
+      id: note-00000000-0000-0000-0000-000000000051
+    direction: DOWN
+    timeout: 180000
+    speed: 35
+- takeScreenshot: after/second-page
+- scrollUntilVisible:
+    element:
+      id: note-00000000-0000-0000-0000-000000000101
+    direction: DOWN
+    timeout: 180000
+    speed: 35
+- takeScreenshot: after/third-page
+- scrollUntilVisible:
+    element:
+      id: note-00000000-0000-0000-0000-000000000123
+    direction: DOWN
+    timeout: 60000
+    speed: 35
+- assertNotVisible:
+    id: notes-load-more
+- takeScreenshot: after/end
+- tapOn:
+    id: search-notes
+- inputText: Needle from older transcript
+- pressKey: Enter
+- assertVisible:
+    id: note-00000000-0000-0000-0000-000000000120
+- assertNotVisible:
+    id: note-00000000-0000-0000-0000-000000000123
+- takeScreenshot: after/search-old-note
+- tapOn:
+    id: note-00000000-0000-0000-0000-000000000120
+- assertVisible:
+    id: note-reader
+- scrollUntilVisible:
+    element:
+      text: '.*Needle from older transcript.*'
+    direction: DOWN
+- takeScreenshot: after/full-note
+- tapOn:
+    id: note-actions
+- tapOn: Delete
+- tapOn: Delete note
+- assertVisible: No matches
+- launchApp:
+    stopApp: true
+    arguments:
+      notePaginationFixture: true
+      onboardingComplete: true
+      onboardingVersion: 4
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- tapOn:
+    id: search-notes
+- inputText: Needle from older transcript
+- pressKey: Enter
+- assertVisible: No matches
+- takeScreenshot: after/deletion-persists

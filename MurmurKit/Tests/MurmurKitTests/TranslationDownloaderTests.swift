@@ -1,3 +1,4 @@
+@testable import MurmurTranslation
 import Foundation
 import XCTest
 @testable import MurmurKit

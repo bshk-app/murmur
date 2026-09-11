@@ -1,0 +1,18 @@
+appId: app.bshk.murmur.uitesthost
+name: Skip setup without microphone or models
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+    arguments:
+      AppleLanguages: "(en)"
+      AppleLocale: en_US
+- assertVisible:
+    id: onboarding-mascot
+- takeScreenshot: welcome
+- tapOn:
+    id: skip-setup
+- assertVisible:
+    id: record-note
+- assertVisible: Notes

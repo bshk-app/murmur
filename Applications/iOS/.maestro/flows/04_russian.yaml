@@ -1,0 +1,24 @@
+appId: app.bshk.murmur.uitesthost
+name: Russian onboarding can be skipped
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+    arguments:
+      AppleLanguages: "(ru)"
+      AppleLocale: ru_RU
+- assertVisible: Просто скажи
+- takeScreenshot: welcome-ru
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: allow-microphone
+- tapOn:
+    id: onboarding-next
+- assertVisible:
+    id: onboarding-languages
+- takeScreenshot: languages-ru
+- tapOn:
+    id: skip-setup
+- assertVisible: Заметки

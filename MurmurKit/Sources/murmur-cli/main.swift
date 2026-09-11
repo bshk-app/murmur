@@ -261,6 +261,24 @@ if args.contains("--serve-stream") {
              r.audioSeconds, r.computeSeconds, r.wallSeconds, r.audioProcessedSeconds, r.rtf))
     print("\ntext: \(r.text)")
     }
+} else if args.contains("--recording-recovery"), let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
+    func option(_ name: String, fallback: String) -> String {
+        guard let index = args.firstIndex(of: name), index + 1 < args.count else { return fallback }; return args[index + 1]
+    }
+    try await RecordingRecoveryProbe.run(source: readWav16kMono(args[wavIdx + 1]), seconds: Int(option("--seconds", fallback: "1200")) ?? 1200,
+        language: option("--language", fallback: "fi"), target: option("--target", fallback: "ru"),
+        modelsRoot: URL(fileURLWithPath: option("--models-root", fallback: "/tmp/murmur-conversation-models")),
+        output: URL(fileURLWithPath: option("--json-out", fallback: "/tmp/recording-recovery.json")))
+} else if args.contains("--phone-conversation"), let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
+    func option(_ name: String, fallback: String) -> String {
+        guard let i = args.firstIndex(of: name), i + 1 < args.count else { return fallback }
+        return args[i + 1]
+    }
+    try await PhoneConversationProbe.run(samples: readWav16kMono(args[wavIdx + 1]),
+        seconds: Int(option("--seconds", fallback: "160")) ?? 160, mode: benchMode,
+        language: option("--language", fallback: "fi"), target: option("--target", fallback: "ru"),
+        modelsRoot: URL(fileURLWithPath: option("--models-root", fallback: "/tmp/murmur-conversation-models")),
+        output: URL(fileURLWithPath: option("--json-out", fallback: "/tmp/murmur-conversation-report.json")))
 } else if args.contains("--captions"), let wavIdx = args.firstIndex(of: "--wav"), wavIdx + 1 < args.count {
     // ---- Captions on a fixed file: phrase segmentation and correction latency ----
     let path = args[wavIdx + 1]

@@ -1,0 +1,67 @@
+appId: app.bshk.murmur.uitesthost
+name: Language catalogs and selected languages support swipe and context actions
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+- tapOn:
+    id: onboarding-next
+- tapOn:
+    id: onboarding-next
+- swipe:
+    from:
+      id: summary-speech:ru
+    direction: LEFT
+- assertVisible:
+    id: swipe-summary-remove
+- takeScreenshot: onboarding-language-swipe
+- tapOn:
+    id: swipe-summary-remove
+- assertNotVisible:
+    id: summary-speech:ru
+- tapOn:
+    id: onboarding-languages
+- tapOn:
+    id: add-speech-language
+- longPressOn:
+    id: add-speech-en
+- assertVisible:
+    id: menu-speech-selection
+- tapOn:
+    id: menu-speech-selection
+- swipe:
+    from:
+      id: add-speech-en
+    direction: LEFT
+- assertVisible: Remove from list
+- takeScreenshot: language-catalog-swipe
+- tapOn: Done
+- longPressOn: English
+- assertVisible:
+    id: menu-language-prepare
+- assertVisible:
+    id: menu-language-storage
+- takeScreenshot: language-context-menu
+- tapOn:
+    id: menu-language-remove
+- assertNotVisible:
+    id: prepare-speech:en
+- scrollUntilVisible:
+    element:
+      id: add-translation-language
+    direction: DOWN
+- tapOn:
+    id: add-translation-language
+- swipe:
+    from:
+      id: add-translation-en
+    direction: LEFT
+- tapOn:
+    id: swipe-translation-selection
+- longPressOn:
+    id: add-translation-en
+- assertVisible: Remove from list
+- tapOn:
+    id: menu-translation-selection
+- tapOn: Done

@@ -1,0 +1,27 @@
+appId: app.bshk.murmur.uitesthost
+name: Note context copy and share work in dark appearance
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      uiFixture: true
+      appearance: dark
+- tapOn:
+    id: skip-setup
+- longPressOn:
+    id: note-.*
+- takeScreenshot: dark-note-context
+- tapOn:
+    id: menu-note-copy
+- assertVisible:
+    id: note-.*
+- longPressOn:
+    id: note-.*
+- tapOn:
+    id: menu-note-share
+- assertVisible: Copy
+- takeScreenshot: dark-note-share-sheet
+- tapOn: Close
+- assertVisible:
+    id: note-.*

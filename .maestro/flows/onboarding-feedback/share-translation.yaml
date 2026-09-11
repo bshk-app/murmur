@@ -1,0 +1,16 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: audio-note
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- assertVisible:
+    id: play-recording
+- assertVisible:
+    id: note-reading-mode
+- takeScreenshot: after/player-above-tabs
+- tapOn:
+    id: share-note
+- takeScreenshot: after/share-translation
+- tapOn: Copy

@@ -1,0 +1,18 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: live
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- extendedWaitUntil:
+    visible:
+      id: stop-recording
+    timeout: 15000
+- takeScreenshot: Applications/iOS/Regression/long-conversation/screenshots/before/live-hour
+- launchApp:
+    arguments:
+      longConversation: note
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- takeScreenshot: Applications/iOS/Regression/long-conversation/screenshots/before/note-hour

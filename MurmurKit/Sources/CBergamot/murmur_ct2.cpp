@@ -7,6 +7,9 @@
 #include <algorithm>
 #include <fstream>
 #include <vector>
+#ifdef __APPLE__
+#include <malloc/malloc.h>
+#endif
 
 #include "ctranslate2/translator.h"
 #include "sentencepiece_processor.h"
@@ -29,6 +32,11 @@ constexpr size_t kMaxDecodingLength = 512;
 // ever see.
 constexpr size_t kMaxSourcePieces = 200;
 constexpr size_t kMaxBatchSize = 8;
+
+bool low_memory_mode() {
+  const char* value = std::getenv("CT2_MMAP_WEIGHTS");
+  return value && std::strcmp(value, "1") == 0;
+}
 
 char *copy_c_string(const std::string &value) {
   char *out = static_cast<char *>(std::malloc(value.size() + 1));
@@ -267,7 +275,7 @@ char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
     options.max_decoding_length = kMaxDecodingLength;
 
     auto results = engine->translator->translate_batch(
-        batch, options, kMaxBatchSize);
+        batch, options, low_memory_mode() ? 1 : kMaxBatchSize);
     if (results.size() != batch.size()) {
       report(error_out, "the decoder returned the wrong number of results");
       return nullptr;
@@ -306,6 +314,11 @@ char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
   }
 }
 
-void murmur_ct2_close(MurmurCT2Engine *engine) { delete engine; }
+void murmur_ct2_close(MurmurCT2Engine *engine) {
+  delete engine;
+#ifdef __APPLE__
+  if (low_memory_mode()) malloc_zone_pressure_relief(nullptr, 0);
+#endif
+}
 
 void murmur_ct2_string_free(char *value) { std::free(value); }

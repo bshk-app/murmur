@@ -1,0 +1,30 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: note-untranslated
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- tapOn:
+    id: note-end-button
+- tapOn:
+    id: translate-note
+- tapOn: Русский
+- assertVisible:
+    id: note-translation
+- takeScreenshot: after/inline-note-translation
+- launchApp:
+    arguments:
+      longConversation: live-original
+      AppleLanguages: '(ru)'
+      AppleLocale: ru_RU
+- tapOn:
+    id: enable-live-translation
+- tapOn: Русский
+- assertVisible:
+    id: live-reading-mode
+- tapOn:
+    id: transcript-beginning
+- assertVisible:
+    id: live-translation
+- takeScreenshot: after/inline-live-translation

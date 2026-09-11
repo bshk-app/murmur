@@ -1,0 +1,7 @@
+{
+  "name": "murmator-page-dom-tests",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test page-dom.test.mjs" },
+  "devDependencies": { "jsdom": "26.1.0" }
+}

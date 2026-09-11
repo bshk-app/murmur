@@ -1,0 +1,31 @@
+appId: app.bshk.murmur.uitesthost
+name: Note detail deletion uses a modal alert with explicit cancellation
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      listActionsFixture: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: note-11111111-1111-1111-1111-111111111111
+- tapOn: Note actions
+- tapOn: Delete
+- assertVisible: Delete this note?
+- assertVisible: Cancel
+- assertNotVisible:
+    id: PopoverDismissRegion
+- takeScreenshot: detail-modal-confirmation
+- tapOn: Cancel
+- assertVisible:
+    id: note-text
+- tapOn: Note actions
+- tapOn: Delete
+- tapOn: Delete note
+- assertVisible:
+    id: record-note
+- assertNotVisible:
+    id: note-11111111-1111-1111-1111-111111111111
+- assertVisible:
+    id: note-22222222-2222-2222-2222-222222222222

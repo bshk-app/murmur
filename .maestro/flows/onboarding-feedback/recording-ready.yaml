@@ -1,0 +1,17 @@
+appId: app.bshk.murmur.uitesthost
+---
+- launchApp:
+    arguments:
+      longConversation: recording-ready
+      AppleLanguages: '(en)'
+      AppleLocale: en_US
+- assertVisible:
+    id: confirm-start-recording
+- assertNotVisible:
+    id: stop-recording
+- takeScreenshot: after/recording-ready
+- tapOn:
+    id: confirm-start-recording
+- assertVisible:
+    id: stop-recording
+- takeScreenshot: after/recording-started

@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Постепенный перевод страниц на вашем устройстве."
+  },
+  "source": {
+    "message": "С"
+  },
+  "target": {
+    "message": "На"
+  },
+  "close": {
+    "message": "Закрыть и вернуть оригинал"
+  },
+  "original": {
+    "message": "Оригинал"
+  },
+  "translation": {
+    "message": "Перевод"
+  },
+  "stop": {
+    "message": "Стоп"
+  },
+  "retry": {
+    "message": "Повторить"
+  },
+  "pageProgress": {
+    "message": "Прогресс перевода страницы"
+  },
+  "preparing": {
+    "message": "Подготовка…"
+  },
+  "translating": {
+    "message": "Переведено $1%"
+  },
+  "translated": {
+    "message": "Переведено на $1"
+  },
+  "stopped": {
+    "message": "Остановлено"
+  },
+  "empty": {
+    "message": "Нет текста для перевода"
+  },
+  "unsupported": {
+    "message": "Выберите поддерживаемые языки"
+  },
+  "setupRequired": {
+    "message": "Откройте Murmator для завершения настройки и повторите."
+  },
+  "failed": {
+    "message": "Не удалось перевести. Повторите попытку."
+  },
+  "busy": {
+    "message": "Завершается другой перевод…"
+  },
+  "preparingModel": {
+    "message": "Подготовка языковой модели…"
+  },
+  "partial": {
+    "message": "Часть изменённого или слишком большого текста пропущена."
+  }
+}

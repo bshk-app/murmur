@@ -1,0 +1,57 @@
+appId: app.bshk.murmur.uitesthost
+name: Import actions follow active and paused state and preserve notes
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      listActionsFixture: true
+      activeImportFixture: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: audio-imports
+- longPressOn:
+    id: import-item-33333333-3333-3333-3333-333333333333
+- assertVisible:
+    id: menu-import-pause
+- assertNotVisible:
+    id: menu-import-remove
+- takeScreenshot: active-import-context
+- tapOn:
+    id: menu-import-pause
+- longPressOn:
+    id: import-item-33333333-3333-3333-3333-333333333333
+- assertVisible:
+    id: menu-import-start
+- assertVisible:
+    id: menu-import-open
+- tapOn:
+    id: menu-import-remove
+- assertVisible: Remove this import?
+- runFlow: ../partials/cancel_confirmation.yaml
+- assertNotVisible: Remove this import?
+- scrollUntilVisible:
+    element:
+      id: import-item-33333333-3333-3333-3333-333333333333
+    direction: DOWN
+- swipe:
+    from:
+      id: import-item-33333333-3333-3333-3333-333333333333
+    direction: LEFT
+- takeScreenshot: import-swipe-remove
+- tapOn:
+    id: swipe-import-remove
+- tapOn:
+    id: confirm-import-remove
+- assertNotVisible:
+    id: import-item-33333333-3333-3333-3333-333333333333
+- scrollUntilVisible:
+    element:
+      id: import-item-44444444-4444-4444-4444-444444444444
+    direction: UP
+- assertVisible:
+    id: import-item-44444444-4444-4444-4444-444444444444
+- tapOn: Done
+- assertVisible:
+    id: note-33333333-3333-3333-3333-333333333333

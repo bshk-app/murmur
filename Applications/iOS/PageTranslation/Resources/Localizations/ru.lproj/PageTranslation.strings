@@ -1,0 +1,42 @@
+/* Safari page translation. */
+"Translate page" = "Перевести страницу";
+"Reading webpage…" = "Читаем страницу…";
+"This action needs a Safari webpage." = "Это действие доступно для страницы в Safari.";
+"No readable text was found on this page." = "На этой странице нет текста для перевода.";
+"This page is too large to translate at once." = "Страница слишком большая для перевода за один раз.";
+"Open Murmator once before translating webpages." = "Перед переводом страниц открой Murmator хотя бы один раз.";
+"From language" = "Исходный язык";
+"Translate to" = "Перевести на";
+"Detected language" = "Определённый язык";
+"Check the source language" = "Проверь исходный язык";
+"Download missing language packs and translate." = "Скачай недостающие языковые пакеты и переведи страницу.";
+"Page text is processed on this device." = "Текст страницы обрабатывается на этом устройстве.";
+"Preparing language packs…" = "Подготовка языковых пакетов…";
+"Translated %d of %d blocks" = "Переведено блоков: %d из %d";
+"Stopping…" = "Останавливаем…";
+"Translate" = "Перевести";
+"Cancel" = "Отмена";
+"Close" = "Закрыть";
+"Translation failed. The original page is unchanged." = "Не удалось перевести. Исходная страница не изменена.";
+"Translation into %@" = "Перевод на %@";
+"Show original" = "Показать оригинал";
+"Show translation" = "Показать перевод";
+"Some page content changed and was left unchanged." = "Часть содержимого страницы обновилась и оставлена без перевода.";
+"Some formatted fragments were translated separately." = "Некоторые фрагменты с форматированием переведены отдельно.";
+"Translate Safari pages" = "Перевод страниц Safari";
+"Open a webpage in Safari, tap Share, then choose Murmator." = "Открой страницу в Safari, нажми «Поделиться» и выбери Murmator.";
+"Choose languages and translate. Language packs are shared with the app." = "Выбери языки и переведи страницу. Языковые пакеты общие с приложением.";
+"Close restores the original page. Newly loaded content may need another translation." = "Кнопка «Закрыть» возвращает исходную страницу. Для нового содержимого может понадобиться повторный перевод.";
+
+/* Progressive page translation setup. */
+"Enable Murmator in Safari Extensions and allow it on this website." = "Включите Murmator в расширениях Safari и разрешите ему работать на этом сайте.";
+"Open Murmator" = "Открыть Murmator";
+"Could not start page translation. Try again from Share." = "Не удалось запустить перевод страницы. Повторите через меню «Поделиться».";
+"Open Safari Extensions" = "Открыть расширения Safari";
+"In Settings, open Apps → Safari → Extensions → Murmator and turn it on." = "В Настройках откройте Приложения → Safari → Расширения → Murmator и включите его.";
+"In Safari's page menu, allow Murmator to work on the website, then reload the page." = "В меню страницы Safari разрешите Murmator работать на сайте, затем обновите страницу.";
+"One-time setup" = "Первая настройка";
+"The page stays visible. Translations appear gradually; progress and languages are in the page header." = "Страница остаётся видимой. Перевод появляется постепенно; прогресс и выбор языков находятся вверху страницы.";
+"Language packs are shared with the app and download when needed." = "Языковые пакеты общие с приложением и скачиваются при необходимости.";
+
+"Start from Safari’s page menu → Murmator. Allow website access if asked." = "Запустите Murmator из меню страницы Safari. Разрешите доступ к сайту, если появится запрос.";

@@ -1,0 +1,16 @@
+appId: app.bshk.murmur.uitesthost
+name: A real word-diff presentation highlights a controlled correction
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      correctionFixture: true
+- tapOn:
+    id: skip-setup
+- tapOn:
+    id: record-note
+- assertVisible: send the revenu slide
+- takeScreenshot: draft-dimmed
+- assertVisible: Send the revenue slide
+- takeScreenshot: correction-highlight

@@ -1,0 +1,6 @@
+appId: app.bshk.murmur.uitesthost
+---
+- assertVisible: Cancel
+- assertNotVisible:
+    id: PopoverDismissRegion
+- tapOn: Cancel

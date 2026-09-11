@@ -1,0 +1,7 @@
+appId: app.bshk.murmur.uitesthost
+---
+- runFlow: languages.yaml
+- runFlow: priority.yaml
+- runFlow: inline-translation.yaml
+- runFlow: surfaces.yaml
+- runFlow: keyboard.yaml

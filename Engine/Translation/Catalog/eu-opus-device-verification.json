@@ -1,0 +1,53 @@
+{
+  "directions" : [
+    {
+      "from" : "en",
+      "input" : "I will send the documents tomorrow.",
+      "output" : "Ich schicke die Dokumente morgen.",
+      "preview" : "Ich werde die Dokumente morgen schicken.",
+      "residentAfterUnload" : 0,
+      "to" : "de"
+    },
+    {
+      "from" : "de",
+      "input" : "Ich schicke die Dokumente morgen.",
+      "output" : "Je vous envoie les documents demain.",
+      "preview" : "Je vais envoyer les documents demain.",
+      "residentAfterUnload" : 0,
+      "to" : "fr"
+    },
+    {
+      "from" : "en",
+      "input" : "I will send the documents tomorrow.",
+      "output" : "Amanhã vou enviar os documentos.",
+      "preview" : "Vou enviar os documentos amanhã.",
+      "residentAfterUnload" : 0,
+      "to" : "pt"
+    },
+    {
+      "from" : "en",
+      "input" : "I will send the documents tomorrow.",
+      "output" : "Poslat ću dokumente sutra.",
+      "preview" : "Poslat ću dokumente sutra.",
+      "residentAfterUnload" : 0,
+      "to" : "hr"
+    },
+    {
+      "from" : "en",
+      "input" : "I will send the documents tomorrow.",
+      "output" : "I se tibgħat id-dokumenti għada.",
+      "preview" : "I se tibgħat id-dokumenti għada.",
+      "residentAfterUnload" : 0,
+      "to" : "mt"
+    },
+    {
+      "from" : "mt",
+      "input" : "Nibgħat id-dokumenti għada.",
+      "output" : "Seol mé doiciméid amárach.",
+      "preview" : "Seol mé doiciméid amárach.",
+      "residentAfterUnload" : 0,
+      "to" : "ga"
+    }
+  ],
+  "passed" : true
+}

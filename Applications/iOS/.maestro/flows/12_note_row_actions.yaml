@@ -1,0 +1,71 @@
+appId: app.bshk.murmur.uitesthost
+name: Note swipe edit, context menu and confirmed deletion
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(en)"
+      listActionsFixture: true
+- tapOn:
+    id: skip-setup
+- swipe:
+    from:
+      id: note-11111111-1111-1111-1111-111111111111
+    direction: RIGHT
+- assertVisible:
+    id: swipe-note-edit
+- takeScreenshot: note-swipe-leading
+- tapOn:
+    id: swipe-note-edit
+- assertVisible:
+    id: note-editor
+- tapOn:
+    id: note-editor
+- eraseText
+- inputText: Edited from swipe
+- tapOn:
+    id: save-note
+- assertVisible: Edited from swipe
+- tapOn: Notes
+- longPressOn:
+    id: note-11111111-1111-1111-1111-111111111111
+- assertVisible:
+    id: menu-note-copy
+- assertVisible:
+    id: menu-note-share
+- takeScreenshot: note-context-menu
+- tapOn:
+    id: menu-note-delete
+- assertVisible: Delete this note?
+- assertNotVisible:
+    id: PopoverDismissRegion
+- takeScreenshot: note-modal-confirmation
+- runFlow: ../partials/cancel_confirmation.yaml
+- assertNotVisible: Delete this note?
+- assertVisible:
+    id: note-11111111-1111-1111-1111-111111111111
+- swipe:
+    from:
+      id: note-11111111-1111-1111-1111-111111111111
+    direction: LEFT
+- assertVisible:
+    id: swipe-note-delete
+- assertNotVisible: Delete this note?
+- takeScreenshot: note-swipe-trailing
+- tapOn:
+    id: swipe-note-delete
+- tapOn:
+    id: confirm-note-delete
+- assertNotVisible:
+    id: note-11111111-1111-1111-1111-111111111111
+- assertVisible:
+    id: note-22222222-2222-2222-2222-222222222222
+- longPressOn:
+    id: note-33333333-3333-3333-3333-333333333333
+- assertVisible:
+    id: menu-note-edit
+    enabled: false
+- assertVisible:
+    id: menu-note-delete
+    enabled: false
+- takeScreenshot: partial-note-protected

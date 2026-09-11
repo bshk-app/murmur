@@ -1,0 +1,23 @@
+appId: app.bshk.murmur.uitesthost
+name: V2 dark Russian review screens
+---
+- launchApp:
+    clearState: true
+    arguments:
+      AppleLanguages: "(ru)"
+      AppleLocale: ru_RU
+      appearance: dark
+      uiFixture: true
+- assertVisible:
+    id: onboarding-mascot
+- takeScreenshot: v2-dark-welcome-ru
+- tapOn:
+    id: skip-setup
+- assertVisible:
+    id: record-note
+- takeScreenshot: v2-dark-notes-ru
+- tapOn:
+    id: settings
+- takeScreenshot: v2-dark-settings-ru
+- tapOn: Языки и офлайн
+- takeScreenshot: v2-dark-languages-ru

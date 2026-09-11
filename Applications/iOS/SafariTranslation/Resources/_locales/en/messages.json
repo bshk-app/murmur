@@ -1,0 +1,65 @@
+{
+  "extensionName": {
+    "message": "Murmator"
+  },
+  "extensionDescription": {
+    "message": "Translate pages progressively on your device."
+  },
+  "source": {
+    "message": "From"
+  },
+  "target": {
+    "message": "To"
+  },
+  "close": {
+    "message": "Close and restore original"
+  },
+  "original": {
+    "message": "Original"
+  },
+  "translation": {
+    "message": "Translation"
+  },
+  "stop": {
+    "message": "Stop"
+  },
+  "retry": {
+    "message": "Try again"
+  },
+  "pageProgress": {
+    "message": "Page translation progress"
+  },
+  "preparing": {
+    "message": "Preparing…"
+  },
+  "translating": {
+    "message": "$1% translated"
+  },
+  "translated": {
+    "message": "Translated into $1"
+  },
+  "stopped": {
+    "message": "Stopped"
+  },
+  "empty": {
+    "message": "No text to translate"
+  },
+  "unsupported": {
+    "message": "Choose supported languages"
+  },
+  "setupRequired": {
+    "message": "Open Murmator once to finish setup, then try again."
+  },
+  "failed": {
+    "message": "Translation failed. Try again."
+  },
+  "busy": {
+    "message": "Another translation is finishing…"
+  },
+  "preparingModel": {
+    "message": "Preparing language model…"
+  },
+  "partial": {
+    "message": "Some changed or oversized text was skipped."
+  }
+}

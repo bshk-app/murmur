@@ -1,0 +1,16 @@
+appId: app.bshk.murmur.ios
+---
+- openLink: murmur://languages
+- scrollUntilVisible:
+    centerElement: true
+    element:
+      id: prepare-translation:fi-sv
+    direction: DOWN
+- takeScreenshot: after/download-before-start
+- tapOn:
+    id: prepare-translation:fi-sv
+    waitToSettleTimeoutMs: 0
+- assertVisible:
+    id: preparation-stage
+- takeScreenshot: after/download-started
+- pressKey: Home
