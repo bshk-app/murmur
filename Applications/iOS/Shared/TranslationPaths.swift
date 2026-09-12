@@ -18,17 +18,12 @@ enum TranslationPaths {
             return .init(pairs: [.init(source: "en", target: "fi"), .init(source: "fi", target: "en"), .init(source: "fi", target: "ru"), .init(source: "ru", target: "en")])
         }
         #endif
-        let fm = FileManager.default
-        let directories = (try? fm.contentsOfDirectory(at: models, includingPropertiesForKeys: nil)) ?? []
-        let pairs = directories.compactMap { directory -> LanguagePair? in
-            let name = directory.lastPathComponent
-            guard name.hasPrefix("ct2-"), name.count == 8,
-                  fm.fileExists(atPath: directory.appendingPathComponent("model.bin").path),
-                  fm.fileExists(atPath: directory.appendingPathComponent("config.json").path) else { return nil }
-            let code = String(name.dropFirst(4))
-            return LanguagePair(source: String(code.prefix(2)), target: String(code.suffix(2)))
+        let catalog = TranslationProfileCatalog.current
+        let installed = catalog.registeredModels.filter { binding in
+            let directory = models.appendingPathComponent(binding.directoryName)
+            return (try? TranslationModelIdentity.cached(directory: directory)) == binding.modelID
         }
-        return .init(pairs: Set(pairs))
+        return .init(installedModels: installed, catalog: catalog)
     }
 }
 

@@ -16,7 +16,8 @@ import AppIntents
             Group {
                 #if DEBUG
                 #if !MURMUR_UI_HOST
-                if ProcessInfo.processInfo.arguments.contains("--keyboard-stream-replay") { KeyboardStreamReplayView() }
+                if ProcessInfo.processInfo.arguments.contains("--quality-qualification-probe") { QualityQualificationProbe() }
+                else if ProcessInfo.processInfo.arguments.contains("--keyboard-stream-replay") { KeyboardStreamReplayView() }
                 else if ProcessInfo.processInfo.arguments.contains("--storage-probe") { StorageProbe() }
                 else if ProcessInfo.processInfo.arguments.contains("--text-translation-probe") { TextTranslationProbe() }
                 else if ProcessInfo.processInfo.arguments.contains("--audio-import-probe") { AudioImportProbe() }

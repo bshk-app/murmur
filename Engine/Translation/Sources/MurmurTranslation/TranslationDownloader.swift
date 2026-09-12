@@ -39,6 +39,31 @@ public actor TranslationDownloader {
         TranslationQualityDigests.all[pair.source + pair.target] != nil
     }
 
+    /// Incrementally share already-installed pinned duplicates in this pair's
+    /// groups. Requires an opted-in coordinated writable store. Busy is safe to
+    /// ignore during preparation: consolidation is not needed for model use.
+    /// Returns logical bytes consolidated, not measured filesystem reclamation.
+    public static func consolidateQualityArtifacts(for pair: LanguagePair, in root: URL) throws -> Int64 {
+        guard let pinned = TranslationQualityDigests.all[pair.source + pair.target] else { return 0 }
+        guard let access = try ModelFileAccess.acquire(in: root, writing: true) else { return 0 }
+        defer { withExtendedLifetime(access) {} }
+        var bytes: Int64 = 0
+        for file in pinned.files where file.name != "target_tag.txt" {
+            try Task.checkCancellation()
+            let directories = TranslationQualityDigests.all.keys.sorted().compactMap { key -> URL? in
+                guard let peer = TranslationQualityDigests.all[key],
+                      peer.files.contains(where: { $0.name == file.name && $0.sha256 == file.sha256 && $0.bytes == file.bytes }) else { return nil }
+                let directory = root.appendingPathComponent("ct2-" + key)
+                guard peer.files.allSatisfy({ FileManager.default.fileExists(atPath: directory.appendingPathComponent($0.name).path) }) else { return nil }
+                return directory
+            }
+            guard directories.count > 1 else { continue }
+            bytes += try SharedQualityArtifacts.consolidate(name: file.name, sha256: file.sha256,
+                                                            bytes: file.bytes, directories: directories)
+        }
+        return bytes
+    }
+
     /// Progress for one direction, in bytes actually transferred.
     public struct Progress: Sendable {
         /// Received over total compressed bytes for all three files (0…1).
@@ -247,6 +272,26 @@ public actor TranslationDownloader {
         }
     }
 
+    /// Qualified additional assets use the same verified transactional installer
+    /// as baseline pairs. Asset admission does not promote a profile.
+    @discardableResult
+    public static func download(binding: TranslationModelBinding, asset: QualityModelAsset, into root: URL,
+        fetcher: @escaping Fetch = TranslationDownloader.streamingFetch,
+        freeSpace: @escaping FreeSpace = TranslationDownloader.realFreeSpace,
+        onProgress: @escaping @MainActor @Sendable (Progress) -> Void = { _ in }) async throws -> URL {
+        guard asset.matches(binding) else { throw QualityModelAsset.Invalid.binding }
+        let downloader = TranslationDownloader(source: asset.source, kind: .quality, root: root,
+            fetcher: fetcher, freeSpace: freeSpace, onProgress: onProgress)
+        let key = "\(root.standardizedFileURL.path)|\(asset.directoryName)"
+        let directory = try await awaitShared(key: key) { try await downloader.run(pair: binding.pair, asset: asset) }
+        // A caller with another identity at the same path must never inherit a
+        // joined task's success for different bytes.
+        let access = try ModelFileAccess.acquire(in: root, writing: false)
+        defer { withExtendedLifetime(access) {} }
+        guard try asset.isInstalled(in: directory) else { throw QualityModelAsset.Invalid.identity }
+        return directory
+    }
+
     /// Holds one in-flight download per `(root, direction)`, and keeps it alive
     /// exactly as long as somebody is waiting on it.
     ///
@@ -401,13 +446,15 @@ public actor TranslationDownloader {
         ]
     }
 
-    private func run(pair: LanguagePair) async throws -> URL {
+    private func run(pair: LanguagePair, asset: QualityModelAsset? = nil) async throws -> URL {
         let access = try ModelFileAccess.acquire(in: root, writing: true)
         defer { withExtendedLifetime(access) {} }
-        let directory = root.appendingPathComponent(kind.directoryName(for: pair))
-        if Self.isInstalled(pair: pair, in: root, kind: kind) { return directory }
+        let directory = root.appendingPathComponent(asset?.directoryName ?? kind.directoryName(for: pair))
+        if let asset {
+            if try asset.isInstalled(in: directory) { return directory }
+        } else if Self.isInstalled(pair: pair, in: root, kind: kind) { return directory }
 
-        let items = try Self.artifacts(for: pair, kind: kind)
+        let items = try asset?.files.map { Artifact(remoteName: $0.name, localName: $0.name, sha256: $0.sha256, downloadBytes: $0.bytes) } ?? Self.artifacts(for: pair, kind: kind)
 
         // Everything is assembled in a private staging directory and published
         // with a single move. Writing files straight into place would let a
@@ -422,7 +469,6 @@ public actor TranslationDownloader {
         // otherwise every interrupted download would strand up to 43 MB.
         let staging = root.appendingPathComponent(".staging-\(UUID().uuidString)")
         let stagingName = staging.lastPathComponent
-        let needed = Self.spaceNeeded(for: items, kind: kind)
         // The quality tier's write phase is serialized (see the slot's own
         // doc comment for why); the fast tier's files are tiny enough that
         // two running at once is not worth the same treatment. Acquired
@@ -449,6 +495,22 @@ public actor TranslationDownloader {
         // throwing before claiming, or the quality slot never having been
         // acquired here) - removing an absent dictionary key is a no-op.
         do {
+            var shared: [String: URL] = [:]
+            if kind == .quality {
+                for item in items {
+                    let peers = TranslationQualityDigests.all.keys.sorted().filter { key in
+                        ("ct2-" + key) != (asset?.directoryName ?? kind.directoryName(for: pair)) && TranslationQualityDigests.all[key]!.files.contains {
+                            $0.name == item.localName && $0.sha256 == item.sha256
+                        }
+                    }.map { root.appendingPathComponent("ct2-" + $0) }
+                    if let file = try SharedQualityArtifacts.reusableFile(name: item.localName,
+                        sha256: item.sha256, bytes: item.downloadBytes, directories: peers) {
+                        shared[item.localName] = file
+                    }
+                }
+            }
+            let fetched = items.filter { shared[$0.localName] == nil }
+            let needed = Self.spaceNeeded(for: fetched, kind: kind)
             // Swept *before* the space check, not after. Stranded staging
             // directories are exactly what fills the disk, so checking first
             // would let old debris refuse the very retry that would clear it
@@ -474,7 +536,7 @@ public actor TranslationDownloader {
             try await StagingRegistry.shared.checkSpaceAndClaim(
                 stagingName, needing: needed, available: freeSpace(root))
 
-            progress.totalBytes = Int64(items.reduce(0) { $0 + $1.downloadBytes })
+            progress.totalBytes = Int64(fetched.reduce(0) { $0 + $1.downloadBytes })
             await report()
 
             try FileManager.default.createDirectory(at: staging,
@@ -482,7 +544,11 @@ public actor TranslationDownloader {
             defer { try? FileManager.default.removeItem(at: staging) }
 
             for artifact in items {
-                try await fetch(artifact, pair: pair, into: staging)
+                if let sharedFile = shared[artifact.localName] {
+                    try SharedQualityArtifacts.link(sharedFile, into: staging.appendingPathComponent(artifact.localName))
+                } else {
+                    try await fetch(artifact, pair: pair, into: staging)
+                }
             }
             // Only the fast tier needs a config synthesised: ct2-opus-mt-converter
             // already wrote config.json, and it is downloaded and digest-checked
@@ -491,8 +557,17 @@ public actor TranslationDownloader {
                 try Self.writeConfig(for: pair, into: staging)
             }
 
-            _ = try? FileManager.default.removeItem(at: directory)
-            try FileManager.default.moveItem(at: staging, to: directory)
+            if let asset {
+                for file in asset.files {
+                    let attributes = try FileManager.default.attributesOfItem(atPath: staging.appendingPathComponent(file.name).path)
+                    guard (attributes[.size] as? NSNumber)?.intValue == file.bytes else { throw QualityModelAsset.Invalid.files }
+                }
+                guard try TranslationModelIdentity.compute(directory: staging) == asset.assetID else { throw QualityModelAsset.Invalid.identity }
+            }
+            try Task.checkCancellation()
+            try SharedQualityArtifacts.publish(staging: staging, destination: directory)
+            progress.fraction = 1
+            await report()
 
             await StagingRegistry.shared.release(stagingName)
             if kind == .quality {

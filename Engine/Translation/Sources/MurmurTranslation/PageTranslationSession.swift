@@ -6,7 +6,11 @@ public actor PageTranslationSession: TextTranslationEngine {
     private let root: URL
     private let inner: TextTranslationSession
     private var access: ModelFileAccess?
-    public init(modelsRoot: URL) { root = modelsRoot; inner = TextTranslationSession(modelsRoot: modelsRoot) }
+    public init(modelsRoot: URL, profileCatalog: TranslationProfileCatalog = .current,
+                device: TranslationDeviceClass = .current, assetRegistry: QualityModelAssetRegistry = .current) {
+        root = modelsRoot
+        inner = TextTranslationSession(modelsRoot: modelsRoot, scenario: .page, profileCatalog: profileCatalog, device: device, assetRegistry: assetRegistry)
+    }
     public func prepare(from: String, to: String, onProgress: @escaping @MainActor @Sendable (Double) -> Void) async throws {
         try await inner.prepare(from: from, to: to, onProgress: onProgress)
         try Task.checkCancellation()

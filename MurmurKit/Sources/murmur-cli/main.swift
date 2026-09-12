@@ -9,6 +9,10 @@ import MurmurKit
 //                               → benchmark one lane, to see which one costs what
 
 let args = CommandLine.arguments
+if args.contains("--memory-probe") {
+    try await MemoryProbe.run(arguments: args)
+    exit(0)
+}
 let models = SpeechModels()
 let session = DictationSession(models: models)
 

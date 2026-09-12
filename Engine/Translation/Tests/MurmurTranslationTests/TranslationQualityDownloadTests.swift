@@ -1,6 +1,6 @@
 @testable import MurmurTranslation
 import XCTest
-@testable import MurmurKit
+@testable import MurmurCore
 
 /// The quality tier reuses the fast tier's download machinery through `Kind`.
 /// These cover the places where the two genuinely differ, because that is

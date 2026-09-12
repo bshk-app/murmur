@@ -105,6 +105,12 @@ public actor ModelStorage {
                     let from = String(code.prefix(2)), to = String(code.suffix(2))
                     guard from != to, LanguagePair.qualityLanguages.contains(from), LanguagePair.qualityLanguages.contains(to) else { continue }
                     result.append(.init(location: .init(id: (legacy ? "legacy-translation/" : "translation/") + name, root: translations, directory: child, title: prefix == "ct2-" ? "Translation" : "Live translation preview", detail: detail), kind: prefix == "ct2-" ? .translationQuality : .translationPreview, source: from, target: to))
+                } else if name.range(of: #"^opus-[0-9a-f]{64}$"#, options: .regularExpression) != nil {
+                    // Content-addressed assets remain manageable even after a
+                    // rollout is disabled or a newer profile replaces them.
+                    result.append(.init(location: .init(id: (legacy ? "legacy-translation/" : "translation/") + name,
+                        root: translations, directory: child, title: "Translation",
+                        detail: "Shared model used by one or more translation directions."), kind: .translationQuality))
                 } else if name.hasPrefix(".staging-"), UUID(uuidString: String(name.dropFirst(9))) != nil {
                     result.append(.init(location: .init(id: (legacy ? "legacy-incomplete/" : "incomplete/") + name, root: translations, directory: child, title: "Unfinished model download", detail: "Temporary files from a model download."), kind: .incomplete))
                 }

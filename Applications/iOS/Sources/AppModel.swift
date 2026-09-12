@@ -165,6 +165,9 @@ import MurmurTranslation
         let catalog = TranslationService(modelsRoot: StoragePaths.translation)
         let affected = languageLibrary.translations.filter { pack in
             if item.kind == .incomplete { return true }
+            if item.kind == .translationQuality, item.id.hasPrefix("translation/") {
+                return catalog.usesQualityDirectoryInAnyScenario(String(item.id.dropFirst("translation/".count)), from: pack.source, to: pack.target)
+            }
             let pair = LanguagePair(source: item.source ?? "", target: item.target ?? "")
             return catalog.usesDownloadedModel(pair, from: pack.source, to: pack.target, quality: item.kind == .translationQuality)
         }.map { "translation:" + $0.id }
@@ -186,6 +189,7 @@ import MurmurTranslation
                 source = next; recommendModel()
                 UserDefaults.standard.set(source, forKey: "speechLanguage")
                 UserDefaults.standard.set(speechModel.rawValue, forKey: "speechModel")
+                UserDefaults.standard.set(speechModelSelectionIsExplicit, forKey: "speechModelSelectionIsExplicit")
                 UserDefaults.standard.set(mode.rawValue, forKey: "speechMode")
             }
             storageInventory = try await modelStorage.inventory()
@@ -201,7 +205,10 @@ import MurmurTranslation
             let remaining = languageLibrary.translations.filter { $0.id != pack.id }.map { LanguagePair(source: $0.source, target: $0.target) }
             let catalog = TranslationService(modelsRoot: StoragePaths.translation)
             let unused = LanguageDownloadRemoval.translation(inventory.items, removing: .init(source: pack.source, target: pack.target), remaining: remaining) { item, pair in
-                catalog.usesDownloadedModel(.init(source: item.source ?? "", target: item.target ?? ""), from: pair.source, to: pair.target, quality: item.kind == .translationQuality)
+                if item.kind == .translationQuality, item.id.hasPrefix("translation/") {
+                    return catalog.usesQualityDirectoryInAnyScenario(String(item.id.dropFirst("translation/".count)), from: pair.source, to: pair.target)
+                }
+                return catalog.usesDownloadedModel(.init(source: item.source ?? "", target: item.target ?? ""), from: pair.source, to: pair.target, quality: item.kind == .translationQuality)
             }
             languageLibrary.invalidatePrepared(["translation:" + pack.id])
             for item in unused { try await modelStorage.remove(id: item.id) }
@@ -257,7 +264,26 @@ import MurmurTranslation
     }
     var target = UserDefaults.standard.string(forKey: "targetLanguage") ?? "en"
     var mode = DictationMode(rawValue: UserDefaults.standard.string(forKey: "speechMode") ?? "hybrid") ?? .hybrid
-    var speechModel = SpeechModelChoice(rawValue: UserDefaults.standard.string(forKey: "speechModel") ?? "gigaam") ?? .gigaam
+    // Legacy saved recommendations remain automatic; explicit new choices win.
+    var speechModelSelectionIsExplicit = SpeechRecognitionProfile.selectionIsExplicit(
+        savedFlag: UserDefaults.standard.object(forKey: "speechModelSelectionIsExplicit") as? Bool,
+        savedModel: UserDefaults.standard.string(forKey: "speechModel").flatMap(SpeechModelChoice.init(rawValue:)),
+        language: UserDefaults.standard.string(forKey: "speechLanguage") ?? "ru")
+    var speechModel = SpeechModelChoice(rawValue: UserDefaults.standard.string(forKey: "speechModel") ?? "gigaam") ?? .gigaam {
+        didSet { speechModelSelectionIsExplicit = true }
+    }
+    @ObservationIgnored var qualifiedSpeechOverrides: [QualifiedSpeechOverride] = []
+    @ObservationIgnored var enableQualifiedSpeechProfiles = false
+    var speechRecognitionProfile: SpeechRecognitionProfile? {
+        try? SpeechRecognitionProfile.resolve(language: source, mode: mode,
+            explicitChoice: speechModelSelectionIsExplicit ? speechModel : nil,
+            qualifiedOverrides: qualifiedSpeechOverrides,
+            enableQualifiedOverrides: enableQualifiedSpeechProfiles)
+    }
+    private var speechConfigurationKey: String {
+        speechRecognitionProfile?.configurationID ?? "unsupported:\(mode.rawValue):\(speechModel.rawValue):\(source)"
+    }
+    @ObservationIgnored private(set) var speechQualificationTelemetry: SpeechQualificationSnapshot?
     @ObservationIgnored private var speech: SpeechSession?
     @ObservationIgnored private var configurationKey = ""
     @ObservationIgnored private var operation = UUID()
@@ -394,13 +420,16 @@ import MurmurTranslation
         UserDefaults.standard.set(target, forKey: "targetLanguage")
         UserDefaults.standard.set(mode.rawValue, forKey: "speechMode")
         UserDefaults.standard.set(speechModel.rawValue, forKey: "speechModel")
+        UserDefaults.standard.set(speechModelSelectionIsExplicit, forKey: "speechModelSelectionIsExplicit")
         modelReady = false
         publishWidgetState()
     }
 
     func recommendModel() {
         mode = mode.effective(for: source)
-        speechModel = source == "ru" ? .gigaam : source == "ar" ? .cohereArabic : SpeechModelChoice.parakeet.supports(source) ? .parakeet : .whisper
+        guard !speechModelSelectionIsExplicit || !speechModel.supports(source) else { return }
+        speechModel = SpeechRecognitionProfile.baselineModel(language: source)
+        speechModelSelectionIsExplicit = false
     }
 
     func requestMicrophonePermission() async {
@@ -414,17 +443,19 @@ import MurmurTranslation
         guard !busy else { return }
         let preparationToken = trackPreparation("speech:" + code)
         defer { finishPreparation(preparationToken) }
-        let previous = (source, mode, speechModel)
+        let previous = (source, mode, speechModel, speechModelSelectionIsExplicit)
         let id = "speech:" + code
         activePreparationID = id; preparationErrors[id] = nil
         defer {
             source = previous.0; mode = previous.1; speechModel = previous.2
-            modelReady = configurationKey == "\(mode.rawValue):\(speechModel.rawValue):\(source)"
+            speechModelSelectionIsExplicit = previous.3
+            modelReady = configurationKey == speechConfigurationKey
             activePreparationID = nil
         }
         languageLibrary.addSpeech(code)
         source = code
-        speechModel = code == "ru" ? .gigaam : code == "ar" ? .cohereArabic : SpeechModelChoice.parakeet.supports(code) ? .parakeet : .whisper
+        speechModel = SpeechRecognitionProfile.baselineModel(language: code)
+        speechModelSelectionIsExplicit = false
         mode = DictationMode.hybrid.effective(for: code)
         await prepareModels()
         if let error { preparationErrors[id] = error; self.error = nil }
@@ -542,10 +573,10 @@ import MurmurTranslation
     private func prepareImpl(token: UUID, translating: Bool) async throws {
         await textTranslator.unload()
         mode = mode.effective(for: source)
-        guard speechModel.supports(source) else {
+        guard let recognitionProfile = speechRecognitionProfile else {
             throw NSError(domain: "MurMur", code: 1, userInfo: [NSLocalizedDescriptionKey: L10n.text("This language is unavailable in the selected mode.")])
         }
-        let key = "\(mode.rawValue):\(speechModel.rawValue):\(source)"
+        let key = speechConfigurationKey
         let needsSpeech = key != configurationKey || speech == nil
         preparationStepCount = max(1, (needsSpeech ? (mode == .hybrid ? 3 : 2) : 0) + (translating && source != target ? 2 : 0))
         preparationStepIndex = 0
@@ -555,8 +586,7 @@ import MurmurTranslation
             if let speech { await speech.close() }
             speech = nil; modelReady = false
             let cap = min(Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.45), 3_500_000_000)
-            let session = SpeechSession(quantization: "int4", ane: true, memoryLimit: cap, corrector: speechModel,
-                independent: mode == .hybrid && speechModel.usesGPU, modelsRoot: StoragePaths.models)
+            let session = SpeechSession(profile: recognitionProfile, memoryLimit: cap, modelsRoot: StoragePaths.models)
             detail = L10n.text("Preparing dictation…")
             if mode != .fast {
                 preparationStepIndex = step; progress = nil
@@ -607,7 +637,7 @@ import MurmurTranslation
         guard !busy else { return }
         recommendModel()
         operation = UUID(); let token = operation
-        let needsConfirmation = !modelReady || configurationKey != "\(mode.rawValue):\(speechModel.rawValue):\(source)" || translating
+        let needsConfirmation = !modelReady || configurationKey != speechConfigurationKey || translating
         showRecorder = true; recordedDuration = 0
         error = nil; isTranslation = translating && source != target; phase = .preparing
         detail = L10n.text("Microphone access")
@@ -676,6 +706,12 @@ import MurmurTranslation
     }
 
     private func wire(_ speech: SpeechSession, token: UUID) {
+        if enableQualifiedSpeechProfiles {
+            speech.onQualificationTelemetry = { [weak self] snapshot in Task { @MainActor in
+                guard let self, self.operation == token else { return }
+                self.speechQualificationTelemetry = snapshot
+            } }
+        }
         speech.onRecordingError = { [weak self] message in Task { @MainActor in
             guard let self, self.operation == token else { return }
             await self.interrupted()

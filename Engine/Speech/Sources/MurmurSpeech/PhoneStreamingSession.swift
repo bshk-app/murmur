@@ -157,6 +157,7 @@ private actor PhoneStreamingEngine {
     private var onSnapshot: (@Sendable (CaptionSnapshot, Int, Int, Int) -> Void)?
     private var onError: (@Sendable (String) -> Void)?
     private var onModelEvent: (@Sendable (SpeechEvent) -> Void)?
+    private var onQueueDepth: (@Sendable (Int) -> Void)?
 
     init(ane: Bool, quantization: String, choice: SpeechModelChoice, independent: Bool, modelsRoot: URL) {
         self.choice = choice
@@ -221,6 +222,7 @@ private actor PhoneStreamingEngine {
 
     func begin(mode: DictationMode, language: String?, onError: @escaping @Sendable (String) -> Void,
                onModelEvent: @escaping @Sendable (SpeechEvent) -> Void,
+               onQueueDepth: (@Sendable (Int) -> Void)? = nil,
                onSnapshot: @escaping @Sendable (CaptionSnapshot, Int, Int, Int) -> Void) {
         for job in jobs.values { job.cancel() }
         jobs.removeAll()
@@ -234,6 +236,7 @@ private actor PhoneStreamingEngine {
         self.onSnapshot = onSnapshot
         self.onError = onError
         self.onModelEvent = onModelEvent
+        self.onQueueDepth = onQueueDepth
         self.language = language
         guard let vad else { return }
         Device.withDefaultDevice(.gpu) { vad.reset() }
@@ -353,6 +356,7 @@ private actor PhoneStreamingEngine {
     }
 
     private func emit() {
+        onQueueDepth?(jobs.count)
         guard let policy, let resources else { return }
         onModelEvent?(.parallelProgress(liveFramesDuringCorrection: liveFramesDuringCorrection, maxLiveStepSeconds: maxLiveStepSeconds))
         if let draft = resources.live?.text, !draft.isEmpty, draft != resources.lastDraft {
@@ -414,6 +418,9 @@ public final class SpeechSession: @unchecked Sendable {
     public var onSnapshot: (@Sendable (CaptionSnapshot, Int, Int, Int) -> Void)?
     public var onError: (@Sendable (String) -> Void)?
     public var onModelEvent: (@Sendable (SpeechEvent) -> Void)?
+    public var onQualificationTelemetry: (@Sendable (SpeechQualificationSnapshot) -> Void)?
+    public private(set) var recognitionProfile: SpeechRecognitionProfile?
+    private let qualificationTelemetry = SpeechQualificationTelemetry()
     public var onCapture: ((Int, Double, Float, String?) -> Void)?
     public var onRecordingError: (@Sendable (String) -> Void)?
     private let recording = RecordingAudioSink()
@@ -429,6 +436,19 @@ public final class SpeechSession: @unchecked Sendable {
         engine = PhoneStreamingEngine(ane: ane, quantization: quantization, choice: corrector, independent: independent, modelsRoot: modelsRoot)
     }
 
+    public convenience init(profile: SpeechRecognitionProfile, quantization: String = "int4", ane: Bool = true,
+                            memoryLimit: Int, modelsRoot: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
+        self.init(quantization: quantization, ane: ane, memoryLimit: memoryLimit, corrector: profile.model,
+                  independent: profile.independentCorrector, modelsRoot: modelsRoot)
+        recognitionProfile = profile
+    }
+
+    public func qualificationSnapshot() -> SpeechQualificationSnapshot { qualificationTelemetry.snapshot() }
+    private func publishQualificationTelemetry() {
+        guard let callback = onQualificationTelemetry else { return }
+        callback(qualificationTelemetry.snapshot())
+    }
+
     public func load(mode: DictationMode, onPreparation: @escaping @MainActor @Sendable (String) -> Void = { _ in }, onProgress: @escaping @MainActor @Sendable (Progress) -> Void = { _ in }) async throws {
         try await engine.load(mode, onPreparation: onPreparation, onProgress: onProgress)
     }
@@ -436,19 +456,30 @@ public final class SpeechSession: @unchecked Sendable {
     public static func requestMicrophoneAccess(_ callback: @escaping (Bool) -> Void) { MicCapture.requestPermission(callback) }
 
     public func warmUp(mode: DictationMode, language: String?) async throws {
-        try await engine.warmUp(mode: mode, language: language)
+        try await engine.warmUp(mode: recognitionProfile?.mode ?? mode, language: recognitionProfile?.language ?? language)
     }
 
     public func start(mode: DictationMode, language: String?, microphoneUID: String?, recordingURL: URL? = nil) async throws {
+        let mode = recognitionProfile?.mode ?? mode
+        let language = recognitionProfile?.language ?? language
+        qualificationTelemetry.reset()
         try recording.begin(url: recordingURL)
         await engine.begin(mode: mode, language: language,
                            onError: { [weak self] in self?.onError?($0) },
-                           onModelEvent: { [weak self] in self?.onModelEvent?($0) }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
+                           onModelEvent: { [weak self] event in
+                               if case .draft = event { self?.qualificationTelemetry.observedPreview() }
+                               if case .correctionFailed = event { self?.qualificationTelemetry.correctionFailed() }
+                               self?.onModelEvent?(event)
+                           }, onQueueDepth: { [weak self] depth in
+                               self?.qualificationTelemetry.pendingCorrections(depth)
+                               self?.publishQualificationTelemetry()
+                           }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
         let stream = AsyncStream<[Float]> { continuation = $0 }
-        consumer = Task { [engine] in
+        consumer = Task { [engine, qualificationTelemetry] in
             for await chunk in stream {
                 if Task.isCancelled { break }
                 await engine.step(chunk)
+                qualificationTelemetry.audioQueued(-1)
             }
         }
         mic = MicCapture(inputDeviceUID: microphoneUID)
@@ -460,6 +491,7 @@ public final class SpeechSession: @unchecked Sendable {
             guard let self else { return }
             do { try self.recording.append(samples) }
             catch { self.onRecordingError?(error.localizedDescription) }
+            self.qualificationTelemetry.audioQueued(1)
             self.continuation?.yield(samples)
         }
         do { try mic.start() }
@@ -467,13 +499,17 @@ public final class SpeechSession: @unchecked Sendable {
     }
 
     public func stop() async -> String {
+        let finalStart = ProcessInfo.processInfo.systemUptime
         let result = mic.stop()
         do { try recording.finish() } catch { onRecordingError?(error.localizedDescription) }
         capturedSeconds = result.durationS
         capturedPeak = result.peakRMS
         continuation?.finish()
         await consumer?.value
-        return await engine.finish()
+        let text = await engine.finish()
+        qualificationTelemetry.finished(since: finalStart)
+        publishQualificationTelemetry()
+        return text
     }
 
     public func cancel() {
@@ -494,10 +530,89 @@ public final class SpeechSession: @unchecked Sendable {
 
     public func snapshot() async -> CaptionSnapshot { await engine.currentSnapshot() }
 
+    /// Qualification-only fixed-rate source. Producer deadlines never wait for
+    /// inference: overload becomes observable audio backlog. This is not a mic.
+    /// Do not run concurrently with capture/replay on the same session.
+    public func replayRealtimeForQualification(_ samples: [Float], mode: DictationMode,
+                                              language: String?) async throws -> SpeechReplayResult {
+        let mode = recognitionProfile?.mode ?? mode
+        let language = recognitionProfile?.language ?? language
+        qualificationTelemetry.reset()
+        await engine.begin(mode: mode, language: language,
+            onError: { [weak self] in self?.onError?($0) },
+            onModelEvent: { [weak self] event in
+                if case .draft = event { self?.qualificationTelemetry.observedPreview() }
+                if case .correctionFailed = event { self?.qualificationTelemetry.correctionFailed() }
+                self?.onModelEvent?(event)
+            }, onQueueDepth: { [weak self] depth in
+                self?.qualificationTelemetry.pendingCorrections(depth)
+                self?.publishQualificationTelemetry()
+            }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
+        let (stream, continuation) = AsyncStream<[Float]>.makeStream()
+        let start = ProcessInfo.processInfo.systemUptime
+        let telemetry = qualificationTelemetry
+        let producer = Task.detached(priority: .userInitiated) { () throws -> Double in
+            defer { continuation.finish() }
+            for offset in stride(from: 0, to: samples.count, by: 1536) {
+                try Task.checkCancellation()
+                let end = min(offset + 1536, samples.count)
+                let deadline = start + Double(end) / 16_000
+                let delay = deadline - ProcessInfo.processInfo.systemUptime
+                if delay > 0 { try await Task.sleep(for: .seconds(delay)) }
+                try Task.checkCancellation()
+                telemetry.inputScheduleLag(max(0, ProcessInfo.processInfo.systemUptime - deadline))
+                telemetry.audioQueued(1)
+                continuation.yield(Array(samples[offset..<end]))
+            }
+            return ProcessInfo.processInfo.systemUptime
+        }
+        do {
+            return try await withTaskCancellationHandler {
+                var compute = 0.0
+                for await chunk in stream {
+                    try Task.checkCancellation()
+                    let tick = ProcessInfo.processInfo.systemUptime
+                    await engine.step(chunk)
+                    compute += ProcessInfo.processInfo.systemUptime - tick
+                    telemetry.audioQueued(-1)
+                }
+                let inputEnded = try await producer.value
+                try Task.checkCancellation()
+                let finalTick = ProcessInfo.processInfo.systemUptime
+                let text = await engine.finish()
+                compute += ProcessInfo.processInfo.systemUptime - finalTick
+                try Task.checkCancellation()
+                telemetry.finished(since: inputEnded)
+                publishQualificationTelemetry()
+                return SpeechReplayResult(text: text, audioSeconds: Double(samples.count) / 16_000,
+                    computeSeconds: compute, wallSeconds: ProcessInfo.processInfo.systemUptime - start)
+            } onCancel: {
+                producer.cancel()
+                continuation.finish()
+                Task { await self.engine.cancel() }
+            }
+        } catch {
+            producer.cancel(); continuation.finish()
+            _ = try? await producer.value
+            await engine.cancel()
+            throw error
+        }
+    }
+
     public func transcribeOffline(_ samples: [Float], mode: DictationMode, language: String?, onAudio: ([Float]) -> Void = { _ in }) async -> SpeechReplayResult {
+        let mode = recognitionProfile?.mode ?? mode
+        let language = recognitionProfile?.language ?? language
+        qualificationTelemetry.reset()
         await engine.begin(mode: mode, language: language,
                            onError: { [weak self] in self?.onError?($0) },
-                           onModelEvent: { [weak self] in self?.onModelEvent?($0) }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
+                           onModelEvent: { [weak self] event in
+                               if case .draft = event { self?.qualificationTelemetry.observedPreview() }
+                               if case .correctionFailed = event { self?.qualificationTelemetry.correctionFailed() }
+                               self?.onModelEvent?(event)
+                           }, onQueueDepth: { [weak self] depth in
+                               self?.qualificationTelemetry.pendingCorrections(depth)
+                               self?.publishQualificationTelemetry()
+                           }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
         let start = Date()
         var compute = 0.0
         for offset in stride(from: 0, to: samples.count, by: 1536) {
@@ -511,7 +626,10 @@ public final class SpeechSession: @unchecked Sendable {
             if elapsed < 0.096 { try? await Task.sleep(for: .seconds(0.096 - elapsed)) }
         }
         let finalStart = Date()
+        let monotonicFinalStart = ProcessInfo.processInfo.systemUptime
         let text = await engine.finish()
+        qualificationTelemetry.finished(since: monotonicFinalStart)
+        publishQualificationTelemetry()
         compute += Date().timeIntervalSince(finalStart)
         return SpeechReplayResult(text: text, audioSeconds: Double(samples.count) / 16000,
                              computeSeconds: compute, wallSeconds: Date().timeIntervalSince(start))

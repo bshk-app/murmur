@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "status": "candidates_not_qualified",
+  "target_device": "iPhone16,1",
+  "priority_languages": [
+    "ru",
+    "en",
+    "fi",
+    "de",
+    "fr"
+  ],
+  "translation": "resolved OPUS profile; use identical selected profile for all ASR arms",
+  "candidates": [
+    {
+      "id": "gigaam-coreml",
+      "languages": [
+        "ru"
+      ],
+      "repo": "maxhlv/gigaam-v3-coreml",
+      "revision": "db44a79c2244cb9eb8178e383bd1ee92ec7fea25",
+      "role": "final",
+      "runtime": "existing app CoreML"
+    },
+    {
+      "id": "parakeet-coreml",
+      "languages": [
+        "ru",
+        "en",
+        "fi",
+        "de",
+        "fr"
+      ],
+      "repo": "FluidInference/parakeet-tdt-0.6b-v3-coreml",
+      "revision": "7dd20fe6b1797d35f5e3307e8b1732d9a178edfe",
+      "role": "final",
+      "runtime": "existing app CoreML",
+      "variants": [
+        "Encoder.mlmodelc",
+        "EncoderInt4.mlmodelc"
+      ]
+    },
+    {
+      "id": "whisper-mlx",
+      "languages": [
+        "ru",
+        "en",
+        "fi",
+        "de",
+        "fr"
+      ],
+      "repo": "mlx-community/whisper-large-v3-turbo-asr-4bit",
+      "revision": "321a6ead9f6e0646bc8188a54d2a470e275c6b76",
+      "role": "final",
+      "runtime": "existing app MLX; compare separately with WhisperKit asset profile"
+    },
+    {
+      "id": "canary-coreml-probe",
+      "languages": [
+        "ru",
+        "en",
+        "fi",
+        "de",
+        "fr"
+      ],
+      "repo": "FluidInference/canary-1b-v2-coreml",
+      "revision": "75c1b536fe7ca6b589d2395ed9a43169d71f543b",
+      "role": "experimental-final",
+      "runtime": "app CanaryQualificationRuntime; sequential short clips <=15 seconds only",
+      "requires": [
+        "locally staged compiled snapshot identity",
+        "long-recording merge qualification before concurrent/streaming integration",
+        "paired iPhone process telemetry"
+      ]
+    }
+  ],
+  "preview_policy": "Capture and preserve existing live draft implementation for baseline; compare changes with identical replay stream and OPUS workload.",
+  "default_changes": []
+}

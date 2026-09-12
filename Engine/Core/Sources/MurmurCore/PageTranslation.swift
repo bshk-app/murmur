@@ -62,7 +62,7 @@ public enum PageTranslationProcessor {
                 var grouped: [String]?
                 if content.count > 1 {
                     let packed = markedText(content)
-                    if content.count <= 12, packed.count <= 800, !content.contains(where: { $0.text.contains("__MM") }) {
+                    if content.count <= 12, packed.count <= 800, !content.contains(where: { $0.text.contains("__MM") || $0.text.contains("\n") || $0.text.contains("\r") || $0.text.range(of: #"^\s*(?:[-+*•]|[0-9]+[.)])\s"#, options: .regularExpression) != nil }) {
                         let translated = try await engine.translate(packed, from: from, to: to)
                         try Task.checkCancellation()
                         grouped = unpack(translated, count: content.count)
@@ -73,7 +73,7 @@ public enum PageTranslationProcessor {
                 for run in group.runs {
                     let text: String
                     if !requiresTranslation(run.text) { text = run.text }
-                    else if let grouped { text = grouped[position]; position += 1 }
+                    else if let grouped { text = framing(run.text).leading + grouped[position] + framing(run.text).trailing; position += 1 }
                     else if let previous = cache[run.text] { text = previous }
                     else {
                         text = try await translateRun(run.text, from: from, to: to, engine: engine)
@@ -114,11 +114,16 @@ public enum PageTranslationProcessor {
     private static func requiresTranslation(_ text: String) -> Bool {
         text.unicodeScalars.contains { CharacterSet.letters.contains($0) }
     }
+private static func framing(_ text: String) -> (leading: String, trailing: String) {
+    (String(text.prefix(while: { $0.isWhitespace })),
+     String(text.reversed().prefix(while: { $0.isWhitespace }).reversed()))
+}
     private static func translateRun(_ text: String, from: String, to: String, engine: any TextTranslationEngine) async throws -> String {
         var lines: [String] = []
         for line in text.components(separatedBy: "\n") {
             if !requiresTranslation(line) { lines.append(line); continue }
-            var rest = line.trimmingCharacters(in: .whitespaces)
+            let frame = framing(line)
+            var rest = String(line.dropFirst(frame.leading.count).dropLast(frame.trailing.count))
             var translated: [String] = []
             while !rest.isEmpty {
                 try Task.checkCancellation()
@@ -132,7 +137,7 @@ public enum PageTranslationProcessor {
                 translated.append(output.trimmingCharacters(in: .whitespacesAndNewlines))
                 rest = String(rest[split...]).trimmingCharacters(in: .whitespaces)
             }
-            lines.append(translated.joined(separator: " "))
+            lines.append(frame.leading + translated.joined(separator: " ") + frame.trailing)
         }
         return lines.joined(separator: "\n")
     }

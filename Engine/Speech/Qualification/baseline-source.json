@@ -1,0 +1,37 @@
+{
+  "commit": "c99ed6b2c67283ca1f02da61ad94c9cb70a79279",
+  "evidence_kind": "source_snapshot_only",
+  "measured_device_performance": null,
+  "measured_quality": null,
+  "schema_version": 1,
+  "sources": {
+    "Engine/Core/Sources/MurmurCore/SpeechModelChoice.swift": {
+      "declared_pins": {},
+      "sha256": "126c9f3f5a4a1b9f3517e646ba9772c74f13ce6665bd1575547863072bef92ce"
+    },
+    "Engine/Speech/Sources/MurmurSpeech/GigaAMCorrector.swift": {
+      "declared_pins": {
+        "repo": "maxhlv/gigaam-v3-coreml",
+        "revision": "db44a79c2244cb9eb8178e383bd1ee92ec7fea25"
+      },
+      "sha256": "433e4ef8cc7b50b8e2843ac95da7d7ddae642bdde3607e625500cb3e07aec5c7"
+    },
+    "Engine/Speech/Sources/MurmurSpeech/PhoneIndependentCorrector.swift": {
+      "declared_pins": {},
+      "sha256": "d40fa57820870bd81f4444cda32ae99517579c0f464601711315b135098bd294"
+    },
+    "Engine/Speech/Sources/MurmurSpeech/PhoneMLXCorrector.swift": {
+      "declared_pins": {},
+      "sha256": "b870b63071e7c7ed9e0da200b8fc3fb9675077ac4a5ea6a0c45770c4c5bd2f4b"
+    },
+    "Engine/Speech/Sources/MurmurSpeech/PhoneStreamingSession.swift": {
+      "declared_pins": {
+        "coreMLRepo": "FluidInference/parakeet-tdt-0.6b-v3-coreml",
+        "coreMLRevision": "7dd20fe6b1797d35f5e3307e8b1732d9a178edfe",
+        "nemotronRepository": "mlx-community/nemotron-3.5-asr-streaming-0.6b-8bit"
+      },
+      "sha256": "e3570628edd907c62d0ce552f8db97ee7e94bb6b865afec890331137f91e3177"
+    }
+  },
+  "working_tree_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

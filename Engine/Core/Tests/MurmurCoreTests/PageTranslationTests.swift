@@ -46,15 +46,21 @@ final class PageTranslationTests: XCTestCase {
         } catch PageTranslationError.emptyTranslation {} catch { XCTFail("Unexpected error: \(error)") }
         let unloaded = await engine.didUnload; XCTAssertTrue(unloaded)
     }
-    private func page(_ runs: [PageTextRun]) -> PageTranslationRequest { .init(runId: "test", groups: [.init(id: "g", runs: runs)], totalCharacters: runs.reduce(0) { $0 + $1.text.count }) }
+    private func page(_ runs: [PageTextRun]) -> PageTranslationRequest { .init(runId: "test", groups: [.init(id: "g", runs: runs)], totalCharacters: runs.reduce(0) { $0 + $1.text.utf16.count }) }
     func testInlineGroupingAndWhitespaceReturnEveryRun() async throws {
         let engine = PageEngine()
         let output = try await PageTranslationProcessor.translate(page([.init(id:"a",text:"Hello "),.init(id:"space",text:" "),.init(id:"b",text:"world")]), from:"en",to:"fi",engine:engine) { _ in }
-        XCTAssertEqual(output.translations,[.init(id:"a",text:"Hei"),.init(id:"space",text:" "),.init(id:"b",text:"maailma")])
+        XCTAssertEqual(output.translations,[.init(id:"a",text:"Hei "),.init(id:"space",text:" "),.init(id:"b",text:"maailma")])
         XCTAssertEqual(output.fallbackGroups,0)
         let calls = await engine.calls; XCTAssertEqual(calls.count,1)
         let unloaded = await engine.didUnload; XCTAssertTrue(unloaded)
     }
+func testIndentationTrailingWhitespaceAndCRLFPreserved() async throws {
+    let engine = PageEngine()
+    let source = "  Hello  \r\n\r\n\tworld\n"
+    let output = try await PageTranslationProcessor.translate(page([.init(id: "a", text: source)]), from: "en", to: "fi", engine: engine) { _ in }
+    XCTAssertEqual(output.translations[0].text, "  Hei  \r\n\r\n\tmaailma\n")
+}
     func testDamagedMarkersFallbackWithoutDroppingContent() async throws {
         let engine=PageEngine(preserveMarkers:false)
         let output=try await PageTranslationProcessor.translate(page([.init(id:"a",text:"Hello"),.init(id:"b",text:"world")]),from:"en",to:"fi",engine:engine){_ in}

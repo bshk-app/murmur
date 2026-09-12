@@ -1,7 +1,7 @@
 @testable import MurmurTranslation
 import XCTest
 
-@testable import MurmurKit
+@testable import MurmurCore
 
 /// Model-backed cases skip without the weights; routing and gating never need
 /// them.
