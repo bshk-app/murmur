@@ -703,3 +703,49 @@
 "Skip tour" = "Omitir la presentación";
 
 "Feature example" = "Ejemplo de función";
+
+
+// Canary speech experiment
+"Canary experiment" = "Experimento con Canary";
+
+"Experimental speech recognition" = "Reconocimiento de voz experimental";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Graba tu voz o elige un archivo de audio. Canary lo procesa en fragmentos cortos en este dispositivo.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Puede ser necesario descargar los modelos una vez. Mantén esta pantalla abierta durante el procesamiento; los resultados pueden contener errores.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Las grabaciones y el texto disponible se guardan en Notas. Al cerrar esta pantalla se liberan los modelos de la memoria.";
+
+"Translate speech" = "Traducir voz";
+
+"Canary direct translation" = "Traducción directa con Canary";
+
+"Canary → OPUS" = "Canary → OPUS";
+
+"Canary transcription" = "Transcripción con Canary";
+
+"Preparing Canary…" = "Preparando Canary…";
+
+"Recording…" = "Grabando…";
+
+"Processing speech…" = "Procesando voz…";
+
+"Processing complete" = "Procesamiento completado";
+
+"Could not process this recording" = "No se pudo procesar esta grabación";
+
+"Processed audio" = "Audio procesado";
+
+"Tap Stop recording to process the recording." = "Toca Detener grabación para procesar la grabación.";
+
+"Copy transcript" = "Copiar transcripción";
+
+"Record audio" = "Grabar audio";
+
+"This device does not have enough memory for the current Canary model." = "Este dispositivo no tiene suficiente memoria para el modelo actual de Canary.";
+
+"Processing fell behind. The recording and partial results were saved." = "El procesamiento no pudo seguir el ritmo de la grabación. La grabación y los resultados parciales se han guardado.";
+
+"Used by experimental speech recognition and translation." = "Se usa para el reconocimiento y la traducción de voz experimentales.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "El texto aparece al completar cada fragmento. Detén la grabación para finalizar el último.";

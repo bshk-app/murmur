@@ -703,3 +703,49 @@
 "Skip tour" = "Einführung überspringen";
 
 "Feature example" = "Funktionsbeispiel";
+
+
+// Canary speech experiment
+"Canary experiment" = "Canary-Experiment";
+
+"Experimental speech recognition" = "Experimentelle Spracherkennung";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Nimm Sprache auf oder wähle eine Audiodatei. Canary verarbeitet sie in kurzen Abschnitten auf diesem Gerät.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Modelle müssen eventuell einmalig heruntergeladen werden. Lass diesen Bildschirm während der Verarbeitung geöffnet; Ergebnisse können Fehler enthalten.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Aufnahmen und vorhandener Text werden in Notizen gespeichert. Beim Schließen dieses Bildschirms werden die Modelle aus dem Speicher entladen.";
+
+"Translate speech" = "Sprache übersetzen";
+
+"Canary direct translation" = "Direkte Übersetzung mit Canary";
+
+"Canary → OPUS" = "Canary → OPUS";
+
+"Canary transcription" = "Transkription mit Canary";
+
+"Preparing Canary…" = "Canary wird vorbereitet…";
+
+"Recording…" = "Aufnahme läuft…";
+
+"Processing speech…" = "Sprache wird verarbeitet…";
+
+"Processing complete" = "Verarbeitung abgeschlossen";
+
+"Could not process this recording" = "Diese Aufnahme konnte nicht verarbeitet werden";
+
+"Processed audio" = "Verarbeitetes Audio";
+
+"Tap Stop recording to process the recording." = "Tippe auf „Aufnahme stoppen“, um die Aufnahme zu verarbeiten.";
+
+"Copy transcript" = "Transkript kopieren";
+
+"Record audio" = "Audio aufnehmen";
+
+"This device does not have enough memory for the current Canary model." = "Dieses Gerät hat nicht genügend Arbeitsspeicher für das aktuelle Canary-Modell.";
+
+"Processing fell behind. The recording and partial results were saved." = "Die Verarbeitung konnte mit der Aufnahme nicht Schritt halten. Die Aufnahme und Teilergebnisse wurden gespeichert.";
+
+"Used by experimental speech recognition and translation." = "Wird für die experimentelle Spracherkennung und Übersetzung verwendet.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Text erscheint nach jedem verarbeiteten Abschnitt. Beenden Sie die Aufnahme, um den letzten Abschnitt abzuschließen.";

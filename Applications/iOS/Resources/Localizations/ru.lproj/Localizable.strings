@@ -703,3 +703,49 @@
 "Skip tour" = "Пропустить знакомство";
 
 "Feature example" = "Пример функции";
+
+
+// Canary speech experiment
+"Canary experiment" = "Эксперимент с Canary";
+
+"Experimental speech recognition" = "Экспериментальное распознавание речи";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Запишите речь или выберите аудиофайл. Canary обработает его короткими фрагментами на этом устройстве.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Может потребоваться однократная загрузка моделей. Оставьте этот экран открытым во время обработки; в результатах возможны ошибки.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Записи и полученный текст сохраняются в заметках. При закрытии экрана модели выгружаются из памяти.";
+
+"Translate speech" = "Переводить речь";
+
+"Canary direct translation" = "Прямой перевод Canary";
+
+"Canary → OPUS" = "Canary → OPUS";
+
+"Canary transcription" = "Распознавание Canary";
+
+"Preparing Canary…" = "Подготовка Canary…";
+
+"Recording…" = "Запись…";
+
+"Processing speech…" = "Обработка речи…";
+
+"Processing complete" = "Обработка завершена";
+
+"Could not process this recording" = "Не удалось обработать запись";
+
+"Processed audio" = "Обработано аудио";
+
+"Tap Stop recording to process the recording." = "Нажмите «Остановить запись», чтобы обработать запись.";
+
+"Copy transcript" = "Скопировать расшифровку";
+
+"Record audio" = "Записать аудио";
+
+"This device does not have enough memory for the current Canary model." = "На этом устройстве недостаточно памяти для текущей модели Canary.";
+
+"Processing fell behind. The recording and partial results were saved." = "Обработка не успевала за записью. Аудио и частичные результаты сохранены.";
+
+"Used by experimental speech recognition and translation." = "Используется для экспериментального распознавания и перевода речи.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Текст появляется по мере обработки фрагментов. Остановите запись, чтобы завершить последний фрагмент.";

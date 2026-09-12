@@ -14,27 +14,28 @@ import Foundation
 actor CanaryQualificationDecoder {
 
     private let models: CanaryQualificationModels
-    private let prompt: [Int32]
+    init(models: CanaryQualificationModels) { self.models = models }
 
-    init(models: CanaryQualificationModels, prompt: [Int32] = CanaryQualificationConfig.promptEnTranscribePnc) {
-        self.models = models
-        self.prompt = prompt
-    }
-
-    /// Strict short-window qualification; no stitching of overlapping outputs.
-    func transcribe(audio: [Float]) throws -> String {
-        try CanaryQualificationRuntime.validateAudio(audio)
+    // Synchronous actor-isolated execution keeps windows serialized even when callers overlap.
+    func process(audio: [Float], source: String, target: String?) throws -> CanaryResult {
+        try CanaryRuntime.validateAudio(audio)
         try Task.checkCancellation()
-        return detokenize(try transcribeWindow(audio: audio))
-    }
-
-    /// Run the 4-stage pipeline over a single ≤15 s window; returns generated
-    /// token ids (prompt stripped, EOS excluded).
-    private func transcribeWindow(audio: [Float]) throws -> [Int] {
-        let (mel, melLength) = try runPreprocessor(audio: audio)
-        let (encoder, encoderLength) = try runEncoder(mel: mel, melLength: melLength)
-        let (embeddings, encoderMask) = try makeDecoderContext(encoder: encoder, encoderLength: encoderLength)
-        return try greedyDecode(embeddings: embeddings, encoderMask: encoderMask)
+        let (embeddings, encoderMask) = try autoreleasepool {
+            let (mel, length) = try runPreprocessor(audio: audio)
+            try Task.checkCancellation()
+            let (encoder, encoderLength) = try runEncoder(mel: mel, melLength: length)
+            try Task.checkCancellation()
+            return try makeDecoderContext(encoder: encoder, encoderLength: encoderLength)
+        }
+        let sourceTokens = try greedyDecode(embeddings: embeddings, encoderMask: encoderMask,
+                                            prompt: models.tokenizer.prompt(source: source, target: source))
+        var translation: String?
+        if let target {
+            translation = detokenize(try greedyDecode(embeddings: embeddings, encoderMask: encoderMask,
+                                                       prompt: models.tokenizer.prompt(source: source, target: target)))
+        }
+        try Task.checkCancellation()
+        return CanaryResult(sourceText: detokenize(sourceTokens), translatedText: translation)
     }
 
     // MARK: - Pipeline
@@ -114,13 +115,14 @@ actor CanaryQualificationDecoder {
     }
 
     /// Greedy autoregressive decode: returns generated token ids (prompt stripped).
-    private func greedyDecode(embeddings: MLMultiArray, encoderMask: MLMultiArray) throws -> [Int] {
+    private func greedyDecode(embeddings: MLMultiArray, encoderMask: MLMultiArray, prompt: [Int32]) throws -> [Int] {
         // Use the decoder's actual sequence length (the exported `[1, S]` shape),
         // so a shorter decoder export (e.g. S=128) is picked up automatically.
         let s =
             models.decoder.modelDescription.inputDescriptionsByName["input_ids"]?
             .multiArrayConstraint?.shape.last?.intValue ?? CanaryQualificationConfig.maxDecoderSteps
 
+        guard s > prompt.count, s <= CanaryQualificationConfig.maxDecoderSteps else { throw CanaryRuntime.Failure.decoderLimit }
         let inputIds = try MLMultiArray(shape: [1, s as NSNumber], dataType: .int32)
         let decoderMask = try MLMultiArray(shape: [1, s as NSNumber], dataType: .float32)
         let idptr = inputIds.dataPointer.assumingMemoryBound(to: Int32.self)
@@ -173,14 +175,14 @@ actor CanaryQualificationDecoder {
 
             return argmax(logits)
             }
-            if next == CanaryQualificationConfig.eosId { break }
+            if next == CanaryQualificationConfig.eosId { return generated }
 
             generated.append(next)
             idptr[pos] = Int32(next)
             mkptr[pos] = 1
             pos += 1
         }
-        return generated
+        throw CanaryRuntime.Failure.decoderLimit
     }
 
     private func detokenize(_ tokens: [Int]) -> String {

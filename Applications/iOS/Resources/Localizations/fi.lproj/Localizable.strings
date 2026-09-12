@@ -703,3 +703,49 @@
 "Skip tour" = "Ohita esittely";
 
 "Feature example" = "Esimerkki toiminnosta";
+
+
+// Canary speech experiment
+"Canary experiment" = "Canary-kokeilu";
+
+"Experimental speech recognition" = "Kokeellinen puheentunnistus";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Tallenna puhetta tai valitse äänitiedosto. Canary käsittelee sen lyhyissä osissa tällä laitteella.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Mallit on ehkä ladattava kerran. Pidä tämä näkymä auki käsittelyn ajan; tuloksissa voi olla virheitä.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Tallenteet ja saatavilla oleva teksti tallennetaan muistiinpanoihin. Näkymän sulkeminen vapauttaa mallit muistista.";
+
+"Translate speech" = "Käännä puhe";
+
+"Canary direct translation" = "Canaryn suora käännös";
+
+"Canary → OPUS" = "Canary → OPUS";
+
+"Canary transcription" = "Canaryn litterointi";
+
+"Preparing Canary…" = "Valmistellaan Canarya…";
+
+"Recording…" = "Tallennetaan…";
+
+"Processing speech…" = "Käsitellään puhetta…";
+
+"Processing complete" = "Käsittely valmis";
+
+"Could not process this recording" = "Tallenteen käsittely epäonnistui";
+
+"Processed audio" = "Käsitelty ääni";
+
+"Tap Stop recording to process the recording." = "Käsittele tallenne napauttamalla Lopeta tallennus.";
+
+"Copy transcript" = "Kopioi litterointi";
+
+"Record audio" = "Tallenna ääntä";
+
+"This device does not have enough memory for the current Canary model." = "Tämän laitteen muisti ei riitä nykyiselle Canary-mallille.";
+
+"Processing fell behind. The recording and partial results were saved." = "Käsittely ei pysynyt tallennuksen tahdissa. Tallenne ja osittaiset tulokset tallennettiin.";
+
+"Used by experimental speech recognition and translation." = "Käytetään kokeelliseen puheentunnistukseen ja kääntämiseen.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Teksti ilmestyy osioiden valmistuessa. Lopeta tallennus viimeisen osion viimeistelemiseksi.";

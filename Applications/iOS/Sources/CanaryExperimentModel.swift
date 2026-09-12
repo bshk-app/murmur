@@ -1,0 +1,332 @@
+import AVFoundation
+import UIKit
+import Foundation
+import Observation
+import MurmurCore
+import MurmurSpeech
+import MurmurTranslation
+
+@MainActor @Observable final class CanaryExperimentModel {
+    enum Phase { case idle, preparing, recording, processing, cancelling, finished, failed }
+    var source = "ru" { didSet { if source != oldValue { clearDisplayedResult() } } }
+    var target = "en" { didSet { if target != oldValue { clearDisplayedResult() } } }
+    var translateEnabled = true { didSet { if translateEnabled != oldValue { clearDisplayedResult() } } }
+    private(set) var phase = Phase.idle
+    private(set) var transcript = ""
+    private(set) var translation = ""
+    private(set) var completedBatches = 0
+    private(set) var processedSeconds = 0.0
+    private(set) var totalSeconds: Double?
+    private(set) var recordedSeconds = 0.0
+    private(set) var progress: Double?
+    private(set) var inputName: String?
+    private(set) var hasLoadedModels = false
+    var error: String?
+    var isRecording: Bool { phase == .recording }
+    var activeNoteID: UUID? { operationActive ? note?.id : nil }
+    private var operationActive = false
+    private var closingCount = 0
+    var isBusy: Bool { operationActive || closingCount > 0 }
+    var routeDescription: String {
+        guard translateEnabled, source != target else { return L10n.text("Canary transcription") }
+        return L10n.text(CanaryRuntime.supportsTranslation(source: source, target: target)
+                         ? "Canary direct translation" : "Canary → OPUS")
+    }
+
+    @ObservationIgnored private let processor = CanaryTranscriber()
+    @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
+    @ObservationIgnored private let sink = RecordingAudioSink()
+    @ObservationIgnored private var textEngine: TextTranslationSession?
+    @ObservationIgnored private var work: Task<Void, Never>?
+    @ObservationIgnored private var microphone: MicCapture?
+    @ObservationIgnored private var input: PCMFrameStream?
+    @ObservationIgnored private var generation = UUID()
+    @ObservationIgnored private var idleHeld = false
+    @ObservationIgnored private var captureObservers: [NSObjectProtocol] = []
+    @ObservationIgnored private var note: VoiceNote?
+    @ObservationIgnored private var route: (source: String, target: String?, direct: Bool) = ("ru", nil, false)
+
+    private enum Failure: Error, LocalizedError {
+        case memory, microphone, invalidLanguage, behind
+        var errorDescription: String? {
+            switch self {
+            case .memory: return L10n.text("This device does not have enough memory for the current Canary model.")
+            case .microphone: return L10n.text("Allow microphone access in Settings to record a note.")
+            case .invalidLanguage: return L10n.text("This language is unavailable in the selected mode.")
+            case .behind: return L10n.text("Processing fell behind. The recording and partial results were saved.")
+            }
+        }
+    }
+
+    func startRecording(prepareExclusive: @escaping @MainActor () async throws -> Void) {
+        guard !isBusy else { return }
+        let token = begin()
+        work = Task { [self] in
+            do {
+                try check(token)
+                let allowed = await withCheckedContinuation { reply in
+                    SpeechSession.requestMicrophoneAccess { reply.resume(returning: $0) }
+                }
+                guard allowed else { throw Failure.microphone }
+                try await prepare(token, exclusive: prepareExclusive)
+                let audio = RecordedAudio()
+                let url = try audio.url(in: StoragePaths.recordings)
+                try sink.begin(url: url)
+                try await createNote(audio: audio, name: nil, recording: true, token: token)
+                try check(token)
+                let frames = PCMFrameStream(capacity: 128)
+                let capture = MicCapture(inputDeviceUID: "built-in", allowConcurrentPlayback: true)
+                let writer = sink
+                capture.onChunk = { [weak self] samples in
+                    do { try writer.append(samples); try frames.yield(samples) }
+                    catch {
+                        if error is CancellationError || (error as? PCMFrameStream.StreamError) == .alreadyFinished { return }
+                        frames.finish(throwing: error)
+                        Task { @MainActor in
+                            guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
+                            self.stopCapture()
+                            self.phase = .processing
+                        }
+                    }
+                }
+                capture.onCapture = { [weak self] count, _, _, captureError in
+                    Task { @MainActor in
+                        guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
+                        self.recordedSeconds += Double(count) / 16_000
+                        if let captureError {
+                            frames.finish(throwing: NSError(domain: "Murmur.CanaryCapture", code: 1, userInfo: [NSLocalizedDescriptionKey: captureError]))
+                            self.stopCapture(); self.phase = .processing
+                        }
+                    }
+                }
+                microphone = capture; input = frames
+                observeCaptureInterruptions(token: token)
+                guard UIApplication.shared.applicationState == .active else { throw CancellationError() }
+                try capture.start()
+                phase = .recording
+                holdIdleTimer()
+                try await processor.process(source: route.source, target: route.direct ? route.target : nil,
+                    nextFrame: { try await frames.nextFrame() },
+                    onProgress: { [weak self] samples in await self?.updateProgress(Double(samples) / 16_000, total: nil, token: token) },
+                    onBatch: { [weak self] range, value in try await self?.accept(range, value, token: token) })
+                try check(token)
+                try await finishNote(complete: true)
+                phase = .finished
+            } catch { await failed(error, token: token) }
+            await release(token: token)
+        }
+    }
+
+    func processFile(_ url: URL, prepareExclusive: @escaping @MainActor () async throws -> Void) {
+        guard !isBusy else { return }
+        let token = begin()
+        work = Task { [self] in
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            var pendingCopy: URL?
+            do {
+                try await prepare(token, exclusive: prepareExclusive)
+                let audio = RecordedAudio(filename: url.lastPathComponent, isMicrophoneRecording: false)
+                let destination = try audio.url(in: StoragePaths.recordings)
+                pendingCopy = destination
+                try await Task.detached {
+                    try FileManager.default.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+                    try FileManager.default.copyItem(at: url, to: destination)
+                }.value
+                try check(token)
+                inputName = url.lastPathComponent
+                try await createNote(audio: audio, name: inputName, recording: false, token: token)
+                pendingCopy = nil
+                phase = .processing
+                holdIdleTimer()
+                try await processor.processFile(url: destination, source: route.source, target: route.direct ? route.target : nil,
+                    onProgress: { [weak self] seconds, total in await self?.updateProgress(seconds, total: total, token: token) },
+                    onBatch: { [weak self] range, value in try await self?.accept(range, value, token: token) })
+                try check(token)
+                try await finishNote(complete: true)
+                phase = .finished
+            } catch {
+                if let pendingCopy, note == nil { try? FileManager.default.removeItem(at: pendingCopy.deletingLastPathComponent()) }
+                await failed(error, token: token)
+            }
+            await release(token: token)
+        }
+    }
+
+    func stopRecording() {
+        guard isRecording else { return }
+        phase = .processing
+        stopCapture()
+        input?.finish()
+    }
+    func cancel() {
+        guard operationActive else { return }
+        phase = .cancelling
+        work?.cancel()
+        stopCapture()
+        input?.finish(throwing: CancellationError())
+    }
+    func close() async {
+        closingCount += 1
+        defer { closingCount -= 1 }
+        cancel()
+        await work?.value
+        await processor.close()
+        await textEngine?.unload(); textEngine = nil
+        hasLoadedModels = false
+        restoreIdleTimer()
+    }
+    private func begin() -> UUID {
+        generation = UUID(); operationActive = true; phase = .preparing; error = nil
+        transcript = ""; translation = ""; completedBatches = 0
+        processedSeconds = 0; recordedSeconds = 0; totalSeconds = nil; progress = nil; inputName = nil
+        note = nil
+        let destination = translateEnabled && source != target ? target : nil
+        route = (source, destination, destination.map { CanaryRuntime.supportsTranslation(source: source, target: $0) } ?? false)
+        return generation
+    }
+    private func prepare(_ token: UUID, exclusive: @MainActor () async throws -> Void) async throws {
+        try check(token)
+        guard CanaryRuntime.supportedLanguages.contains(route.source), route.target.map(LanguagePair.qualityLanguages.contains) ?? true else { throw Failure.invalidLanguage }
+        #if os(iOS) && !targetEnvironment(simulator)
+        // Conservative experimental floor: the 4 GiB XS exceeded its process limit.
+        guard ProcessInfo.processInfo.physicalMemory >= 5 * 1_024 * 1_024 * 1_024 else { throw Failure.memory }
+        #endif
+        try check(token)
+        try await exclusive()
+        try check(token)
+        holdIdleTimer()
+        try await processor.prepare { [weak self] value in
+            guard let self, self.generation == token else { return }
+            self.progress = value.totalUnitCount > 0 ? value.fractionCompleted : nil
+        }
+        try check(token)
+        hasLoadedModels = true; progress = nil
+        if let target = route.target, !route.direct {
+            let engine = TextTranslationSession(modelsRoot: StoragePaths.translation)
+            textEngine = engine
+            try await engine.prepare(from: route.source, to: target) { [weak self] value in
+                guard let self, self.generation == token else { return }; self.progress = value
+            }
+            try check(token); progress = nil
+        }
+    }
+    private func createNote(audio: RecordedAudio, name: String?, recording: Bool, token: UUID) async throws {
+        try check(token)
+        var value = VoiceNote(text: "", sourceLanguage: route.source, targetLanguage: route.target,
+                              duration: 0, model: "Canary 1B v2 · experimental")
+        value.audio = audio; value.sourceFileName = name; value.captureClosed = !recording
+        value.transcriptionComplete = false; value.translationIncomplete = route.target != nil
+        value.utterances = []
+        note = value
+        try await repository.save(value)
+        try check(token)
+    }
+    private func accept(_ range: Range<Int>, _ result: CanaryResult, token: UUID) async throws {
+        try check(token)
+        guard var value = note else { throw CocoaError(.fileNoSuchFile) }
+        guard range.lowerBound >= (value.utterances?.last?.endSample ?? 0) else { throw CocoaError(.fileReadCorruptFile) }
+        let utterance = RecordedUtterance(id: UInt64(range.lowerBound), startSample: range.lowerBound,
+            endSample: range.upperBound, text: result.sourceText, translation: result.translatedText, settled: true)
+        value.utterances?.append(utterance)
+        value.text = value.utterances?.map(\.text).joined(separator: "\n") ?? ""
+        value.translation = route.target == nil ? nil : value.utterances?.compactMap(\.translation).joined(separator: "\n")
+        value.duration = max(value.duration, Double(range.upperBound) / 16_000)
+        try await repository.save(value)
+        // Once the database accepted this batch, cancellation must not restore
+        // an older in-memory note and erase the newly persisted source text.
+        note = value
+        try check(token)
+        transcript = value.text; translation = value.translation ?? ""
+        completedBatches += 1
+        if let target = route.target, !route.direct {
+            guard let textEngine else { throw CocoaError(.fileReadCorruptFile) }
+            let translated = try await textEngine.translate(result.sourceText, from: route.source, to: target)
+            try check(token)
+            guard var utterances = value.utterances, let index = utterances.indices.last else { throw CocoaError(.fileReadCorruptFile) }
+            utterances[index].translation = translated
+            value.utterances = utterances
+            value.translation = value.utterances?.compactMap(\.translation).joined(separator: "\n")
+            try await repository.save(value)
+            note = value
+            try check(token)
+            translation = value.translation ?? ""
+        } else if route.target != nil, result.translatedText == nil {
+            throw CocoaError(.coderValueNotFound)
+        }
+    }
+    private func updateProgress(_ seconds: Double, total: Double?, token: UUID) {
+        guard generation == token, !Task.isCancelled else { return }
+        processedSeconds = seconds
+        if let total {
+            totalSeconds = total; recordedSeconds = total
+        }
+        if let totalSeconds, totalSeconds > 0 { progress = min(1, max(0, seconds / totalSeconds)) }
+    }
+    private func stopCapture() {
+        for observer in captureObservers { NotificationCenter.default.removeObserver(observer) }
+        captureObservers = []
+        let capture = microphone; microphone = nil
+        if let capture {
+            recordedSeconds = capture.stop().durationS; totalSeconds = recordedSeconds
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
+        do { try sink.finish() } catch { self.error = error.localizedDescription }
+    }
+    private func observeCaptureInterruptions(token: UUID) {
+        for name in [AVAudioSession.interruptionNotification, AVAudioSession.mediaServicesWereResetNotification] {
+            captureObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
+                if notification.name == AVAudioSession.interruptionNotification,
+                   (notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt) != AVAudioSession.InterruptionType.began.rawValue { return }
+                Task { @MainActor in
+                    guard let self, self.generation == token, self.isRecording else { return }
+                    self.stopRecording()
+                }
+            })
+        }
+    }
+    private func finishNote(complete: Bool) async throws {
+        guard var value = note else { return }
+        value.duration = max(value.duration, max(recordedSeconds, processedSeconds))
+        value.captureClosed = true; value.transcriptionComplete = complete
+        value.translationIncomplete = route.target != nil && !complete
+        try await repository.save(value)
+        note = value
+    }
+    private func failed(_ failure: Error, token: UUID) async {
+        guard generation == token else { return }
+        #if DEBUG
+        NSLog("Canary operation failed: %@", String(describing: failure as NSError))
+        #endif
+        stopCapture()
+        do { try await finishNote(complete: false) } catch { self.error = error.localizedDescription }
+        transcript = note?.text ?? transcript; translation = note?.translation ?? translation
+        completedBatches = note?.utterances?.count ?? completedBatches
+        if failure is CancellationError || Task.isCancelled { phase = .idle }
+        else {
+            error = failure is PCMFrameStream.StreamError ? Failure.behind.localizedDescription : failure.localizedDescription
+            phase = .failed
+        }
+    }
+    private func release(token: UUID) async {
+        stopCapture(); input = nil
+        await processor.close(); await textEngine?.unload(); textEngine = nil
+        if generation == token { hasLoadedModels = false; progress = phase == .finished ? 1 : nil; work = nil; operationActive = false }
+        restoreIdleTimer()
+    }
+    private func check(_ token: UUID) throws {
+        try Task.checkCancellation()
+        guard generation == token else { throw CancellationError() }
+    }
+    private func clearDisplayedResult() {
+        guard !isBusy else { return }
+        transcript = ""; translation = ""; completedBatches = 0
+        processedSeconds = 0; recordedSeconds = 0; totalSeconds = nil; inputName = nil
+        error = nil; phase = .idle
+    }
+    private func holdIdleTimer() { idleHeld = true; UIApplication.shared.isIdleTimerDisabled = true }
+    private func restoreIdleTimer() {
+        guard idleHeld else { return }
+        idleHeld = false; UIApplication.shared.isIdleTimerDisabled = false
+    }
+}
