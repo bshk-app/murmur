@@ -1,5 +1,15 @@
 # European OPUS translation catalog
 
+The baseline now resolves through `TranslationProfileCatalog` for preparation,
+execution and offline availability. Its 52 direction bindings identify 44
+distinct weight/tokenizer assets. New qualified profiles remain disabled until
+the quality and device evidence gate passes; discovery is not qualification.
+
+Run the translation tests with `swift test --package-path Engine/Translation`.
+The generated baseline and complete direct-candidate audit are checked with
+`node Engine/Translation/Scripts/generate-quality-baseline.mjs --check` and
+`node Engine/Translation/Qualification/validate-audit.mjs`.
+
 Verified 2026-09-07. All 24 official EU languages, plus Russian and Ukrainian, have OPUS routes in both directions. There are 52 downloadable direction packs (including the six existing Russian/Finnish packs) and 650 non-identity language combinations. A direct Russian–Finnish model is retained; other non-English combinations use two strict OPUS passes through English. Identity requests return the original text.
 
 The catalog is independent of Mozilla preview availability and speech recognition. Where Mozilla has no stable pack, OPUS supplies the preview as well as the final translation. Current Parakeet speech recognition supports 25 catalog languages; Irish is a translation language, not a newly enabled Irish speech recognizer. The language-pack picker can prepare Irish in both directions; the dictation picker does not falsely offer unsupported Irish recognition.

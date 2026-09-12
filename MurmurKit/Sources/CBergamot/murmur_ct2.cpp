@@ -1,6 +1,7 @@
 #include "murmur_ct2.h"
 
 #include <cstdlib>
+#include <cmath>
 #include <cstring>
 #include <memory>
 #include <string>
@@ -157,8 +158,8 @@ namespace {
 // A group checkpoint such as eng->zle covers several target languages and
 // selects between them from a leading tag token like `>>rus<<`. Without it the
 // model still produces fluent output - in whichever language it guesses - so
-// the tag lives beside the weights rather than being passed per call: a
-// directory either is a tagged model or is not, and that cannot drift.
+// target_tag.txt supplies the legacy default. Profile-aware callers override
+// it per call so a shared weight directory can serve multiple target languages.
 std::string read_target_tag(const std::string &directory) {
   std::ifstream file(join_path(directory, "target_tag.txt"));
   if (!file) return "";
@@ -174,6 +175,16 @@ std::string read_target_tag(const std::string &directory) {
 }  // namespace
 
 MurmurCT2Engine *murmur_ct2_open(const char *model_dir, char **error_out) {
+  return murmur_ct2_open_with_options(model_dir, 0, error_out);
+}
+
+MurmurCT2Engine *murmur_ct2_open_with_options(const char *model_dir,
+                                             int compute_type, char **error_out) {
+  if (error_out) *error_out = nullptr;
+  if (compute_type != 0 && compute_type != 1) {
+    report(error_out, "unsupported compute type");
+    return nullptr;
+  }
   if (model_dir == nullptr) {
     report(error_out, "model directory is null");
     return nullptr;
@@ -196,7 +207,8 @@ MurmurCT2Engine *murmur_ct2_open(const char *model_dir, char **error_out) {
     // int8 on CPU with a single thread in each dimension. The GPU is not an
     // option here rather than an omission: Nemotron and Parakeet hold it under
     // a 60% memory cap, and this engine runs while they are working.
-    ctranslate2::ComputeType compute = ctranslate2::ComputeType::INT8;
+    ctranslate2::ComputeType compute = compute_type == 0
+        ? ctranslate2::ComputeType::INT8 : ctranslate2::ComputeType::FLOAT32;
     engine->translator = std::make_unique<ctranslate2::Translator>(
         dir, ctranslate2::Device::CPU, compute,
         /*device_indices=*/std::vector<int>{0},
@@ -217,13 +229,39 @@ MurmurCT2Engine *murmur_ct2_open(const char *model_dir, char **error_out) {
 
 char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
                            char **error_out) {
+  return murmur_ct2_translate_with_options(engine, utf8, nullptr, nullptr, error_out);
+}
+
+char *murmur_ct2_translate_with_options(MurmurCT2Engine *engine, const char *utf8,
+    const MurmurCT2Options *requested, const char *target_tag, char **error_out) {
+  if (error_out) *error_out = nullptr;
+  const MurmurCT2Options profile = requested ? *requested : MurmurCT2Options{
+      static_cast<int>(kBeamSize), static_cast<int>(kMaxSourcePieces),
+      static_cast<int>(kMaxDecodingLength), 1.0f};
+  if ((profile.beam_size != 1 && profile.beam_size != 4 && profile.beam_size != 6 && profile.beam_size != 8) ||
+      profile.max_source_pieces < 1 || profile.max_source_pieces > 512 ||
+      profile.max_decoding_length < 1 || profile.max_decoding_length > 1024 ||
+      !std::isfinite(profile.length_penalty) || profile.length_penalty < 0 ||
+      profile.length_penalty > 3) {
+    report(error_out, "invalid decoding profile");
+    return nullptr;
+  }
   if (engine == nullptr || utf8 == nullptr) {
     report(error_out, "engine or input is null");
     return nullptr;
   }
-  if (is_blank(utf8)) return copy_c_string("");
   try {
     const std::string input(utf8);
+    const std::string tag = target_tag ? target_tag : engine->target_tag;
+    if (!tag.empty() && (tag.size() < 5 || tag.size() > 64 ||
+        tag.substr(0, 2) != ">>" || tag.substr(tag.size() - 2) != "<<" ||
+        std::any_of(tag.begin(), tag.end(), [](unsigned char c) { return c <= 0x20; }))) {
+      report(error_out, "invalid target language tag");
+      return nullptr;
+    }
+    if (is_blank(utf8)) return copy_c_string("");
+    const size_t source_limit = static_cast<size_t>(profile.max_source_pieces);
+
 
     // Line structure is the user's, not the model's, so it survives the round
     // trip: a dictation pasted back as one run-on paragraph would be a
@@ -248,15 +286,15 @@ char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
         // A sentence with no terminator - run-on dictation - can still be
         // longer than the decoder should ever see, so length bounds it even
         // when punctuation did not.
-        for (size_t at = 0; at < pieces.size(); at += kMaxSourcePieces) {
-          const size_t upto = std::min(at + kMaxSourcePieces, pieces.size());
+        for (size_t at = 0; at < pieces.size(); at += source_limit) {
+          const size_t upto = std::min(at + source_limit, pieces.size());
           std::vector<std::string> chunk(pieces.begin() + at,
                                          pieces.begin() + upto);
           // Prepended per chunk, not per input: every decoder call needs its
           // own tag, and a chunked long sentence would otherwise lose the
           // target language after the first chunk.
-          if (!engine->target_tag.empty()) {
-            chunk.insert(chunk.begin(), engine->target_tag);
+          if (!tag.empty()) {
+            chunk.insert(chunk.begin(), tag);
           }
           batch.push_back(std::move(chunk));
           line_of_chunk.push_back(line_count);
@@ -271,8 +309,9 @@ char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
     if (batch.empty()) return copy_c_string("");
 
     ctranslate2::TranslationOptions options;
-    options.beam_size = kBeamSize;
-    options.max_decoding_length = kMaxDecodingLength;
+    options.beam_size = profile.beam_size;
+    options.max_decoding_length = profile.max_decoding_length;
+    options.length_penalty = profile.length_penalty;
 
     auto results = engine->translator->translate_batch(
         batch, options, low_memory_mode() ? 1 : kMaxBatchSize);
@@ -285,6 +324,15 @@ char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
     for (size_t i = 0; i < results.size(); ++i) {
       if (results[i].hypotheses.empty()) {
         report(error_out, "the decoder returned no hypothesis");
+        return nullptr;
+      }
+      // CT2 terminates on EOS OR the final allowed step. With no target
+      // prefix and return_end_token=false, EOS-completed hypotheses contain
+      // at most cap-1 pieces. A cap-sized hypothesis exhausted the budget;
+      // returning it would silently label truncated/looped output as complete.
+      if (results[i].hypotheses[0].size() >= static_cast<size_t>(profile.max_decoding_length)) {
+        report(error_out, "translation reached decoding limit without EOS (chunk " +
+            std::to_string(i) + ", limit " + std::to_string(profile.max_decoding_length) + ")");
         return nullptr;
       }
       std::string piece;

@@ -47,6 +47,24 @@ MurmurCT2Engine *murmur_ct2_open(const char *model_dir, char **error_out);
 char *murmur_ct2_translate(MurmurCT2Engine *engine, const char *utf8,
                            char **error_out);
 
+/// Bounded decoding options. NULL options preserve the original defaults.
+typedef struct MurmurCT2Options {
+  int beam_size;                 // 1, 4, 6, or 8
+  int max_source_pieces;         // 1...512 (excludes target tag)
+  int max_decoding_length;       // 1...1024
+  float length_penalty;          // finite, 0...3
+} MurmurCT2Options;
+
+/// compute_type: 0 = INT8 (legacy), 1 = FLOAT32. FLOAT32 is a runtime
+/// control; a true unquantized baseline also requires unquantized weights.
+MurmurCT2Engine *murmur_ct2_open_with_options(const char *model_dir,
+                                             int compute_type, char **error_out);
+/// target_tag NULL uses target_tag.txt; "" disables it. An explicit tag
+/// selects a shared model's target for this call only, without mutating it.
+char *murmur_ct2_translate_with_options(MurmurCT2Engine *engine,
+    const char *utf8, const MurmurCT2Options *options,
+    const char *target_tag, char **error_out);
+
 void murmur_ct2_close(MurmurCT2Engine *engine);
 
 void murmur_ct2_string_free(char *value);

@@ -23,10 +23,13 @@ public actor TranslationSession {
     private var onSegments: (@Sendable ([UtteranceTranslation]) -> Void)?
     private var finishing = false
 
-    public init(modelsRoot: URL, qualityModelsRoots: [URL] = []) {
+    public init(modelsRoot: URL, qualityModelsRoots: [URL] = [],
+                profileCatalog: TranslationProfileCatalog = .current, device: TranslationDeviceClass = .current,
+                assetRegistry: QualityModelAssetRegistry = .current) {
         self.modelsRoot = modelsRoot
         fast = TranslationService(modelsRoot: modelsRoot)
-        quality = TranslationService(modelsRoot: modelsRoot, qualityModelsRoots: qualityModelsRoots)
+        quality = TranslationService(modelsRoot: modelsRoot, qualityModelsRoots: qualityModelsRoots,
+                                     profileCatalog: profileCatalog, scenario: .dictation, device: device, assetRegistry: assetRegistry)
     }
     public func prepare(from: String, to: String, priority: ProcessingQuality = .quality, onProgress: @escaping @MainActor @Sendable (TranslationDownloader.Progress) -> Void = { _ in }) async throws {
         if selectedQuality != priority { cancel() }
@@ -47,32 +50,32 @@ public actor TranslationSession {
             try await fast.prepare(from: from, to: to)
             return
         }
-        let fastRoute
- = fast.route(from: from, to: to)
-        guard let qualityRoute = quality.qualityDownloadRoute(from: from, to: to) else {
-            throw TranslationService.Unsupported(source: from, target: to)
-        }
+        let fastRoute = fast.route(from: from, to: to)
         func legs(_ route: LanguagePair.Route) -> [LanguagePair] {
             switch route { case .direct(let p): return [p]; case .pivot(let a, let b): return [a,b] }
         }
         // Validate the strict route before spending time or data on previews.
-        for leg in legs(qualityRoute) where !quality.hasQualityModel(for: leg) && TranslationQualityDigests.all[leg.source+leg.target] == nil {
-            throw TranslationService.QualityUnavailable(pair: leg)
+        try quality.validateQualityPreparation(from: from, to: to)
+        let downloads = fastRoute.map(legs) ?? []
+        let qualityBytes = quality.pendingQualityDownloadBytes(from: from, to: to)
+        let weights = downloads.map { TranslationDownloader.expectedDownloadBytes(for: $0, kind: .fast) ?? 1 }
+        let total = max(1, qualityBytes + weights.reduce(0, +))
+        try await quality.prepareQuality(from: from, to: to) { value in
+            var progress = value
+            progress.totalBytes = total
+            progress.receivedBytes = Int64(Double(qualityBytes) * value.fraction)
+            progress.fraction = Double(progress.receivedBytes) / Double(total)
+            onProgress(progress)
         }
-        let downloads: [(LanguagePair, TranslationDownloader.Kind)] =
-            (fastRoute.map(legs) ?? []).map { ($0, .fast) } +
-            legs(qualityRoute).filter { !quality.hasQualityModel(for: $0) }.map { ($0, .quality) }
-        let weights = downloads.map { TranslationDownloader.expectedDownloadBytes(for: $0.0, kind: $0.1) ?? 1 }
-        let total = max(1, weights.reduce(0, +))
-        var completed: Int64 = 0
+        var completed = qualityBytes
         for (index, download) in downloads.enumerated() {
             try Task.checkCancellation()
             let base = completed, weight = weights[index]
-            _ = try await TranslationDownloader.download(pair: download.0, into: modelsRoot, kind: download.1) { progress in
+            _ = try await TranslationDownloader.download(pair: download, into: modelsRoot, kind: .fast) { progress in
                 var aggregate = progress
                 aggregate.totalBytes = total
-                aggregate.receivedBytes = base + min(weight, progress.receivedBytes)
-                aggregate.fraction = min(1, (Double(base) + Double(weight) * progress.fraction) / Double(total))
+                aggregate.receivedBytes = base + Int64(Double(weight) * progress.fraction)
+                aggregate.fraction = Double(aggregate.receivedBytes) / Double(total)
                 onProgress(aggregate)
             }
             completed += weight
@@ -82,6 +85,9 @@ public actor TranslationSession {
             await onProgress(aggregate)
         }
         if fastRoute != nil { try await fast.prepare(from: from, to: to) }
+        var done = TranslationDownloader.Progress()
+        done.fraction = 1; done.totalBytes = total; done.receivedBytes = total
+        await onProgress(done)
     }
     /// Warm both engines using synthetic punctuation; never publishes this output.
     public func warmUp(from: String, to: String) async throws {
@@ -128,7 +134,7 @@ public actor TranslationSession {
                         if snapshot.confirmed.contains(where: { $0.id == phrase.id && $0.text == phrase.text }) { previews[phrase.id]=(phrase.text,translated) }
                     }
                     let translated = try await preview(value.provisional, from: from, to: to)
-                    guard !Task.isCancelled, generation == token else { return }
+                    guard !Task.isCancelled, generation == token, snapshot.revision == value.revision else { return }
                     draft=translated; render()
                 } catch { if generation == token && !Task.isCancelled { onFailure(error.localizedDescription) } }
             }
@@ -151,7 +157,7 @@ public actor TranslationSession {
     }
     public func finishUtterances(_ utterances: [RecordedUtterance], from: String, to: String,
                                  onSegment: @escaping @Sendable (UtteranceTranslation) async -> Void) async throws {
-        let saved = corrections
+        let saved = pair == LanguagePair(source: from, target: to) ? corrections : [:]
         cancel()
         finishing = true; let token = generation
         defer { if generation == token { finishing = false } }

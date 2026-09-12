@@ -1,0 +1,2752 @@
+[
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+    "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-de-en",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            58100
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 58100,
+        "decoder_vocab_size": 58101,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 58100,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 58101
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            58100
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 58100,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 58100,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "en",
+        "source_lang": "de"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 58100,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          58100
+        ]
+      ],
+      "pad_token_id": 58100,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-de-fi",
+    "revision": "76e6be226c52eea24758e360bca5a1ee3e323fd3",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-de-fi",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            59970
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 59970,
+        "decoder_vocab_size": 59971,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 59970,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 59971
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            59970
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 59970,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 59970,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fi",
+        "source_lang": "de"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 59970,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          59970
+        ]
+      ],
+      "pad_token_id": 59970,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-de-fr",
+    "revision": "2b4fe242d21e50e89d2917fa4d0b3616d157e339",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-de-fr",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61152
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61152,
+        "decoder_vocab_size": 61153,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61152,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61153
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61152
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61152,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61152,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fr",
+        "source_lang": "de"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61152,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          61152
+        ]
+      ],
+      "pad_token_id": 61152,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+    "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "Helsinki-NLP/opus-mt-en-de",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            58100
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 58100,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "gradient_checkpointing": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 58100,
+        "scale_embedding": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.9.0.dev0",
+        "use_cache": true,
+        "vocab_size": 58101
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            58100
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 58100,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 58100,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "de",
+        "source_lang": "en"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 58100,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          58100
+        ]
+      ],
+      "pad_token_id": 58100,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-en-fi",
+    "revision": "2f68f12519005b50f9e1afe6fd57b13add55e156",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-en-fi",
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            65000
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 65000,
+        "decoder_vocab_size": 65001,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 65000,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 65001
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            65000
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 65000,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 65000,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fi",
+        "source_lang": "en"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 65000,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          65000
+        ]
+      ],
+      "pad_token_id": 65000,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-en-fr",
+    "revision": "dd7f6540a7a48a7f4db59e5c0b9c42c8eea67f18",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-en-fr",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            59513
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 59513,
+        "decoder_vocab_size": 59514,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "gradient_checkpointing": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 59513,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 59514
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            59513
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 59513,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 59513,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fr",
+        "source_lang": "en"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 59513,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          59513
+        ]
+      ],
+      "pad_token_id": 59513,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-en-ru",
+    "revision": "bb09c99d180016eac6819df3dae68edb1690fdee",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-en-ru",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            62517
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 62517,
+        "decoder_vocab_size": 62518,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 62517,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 62518
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            62517
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 62517,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 62517,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "ru",
+        "source_lang": "en"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 62517,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          62517
+        ]
+      ],
+      "pad_token_id": 62517,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fi-de",
+    "revision": "659d3bcfde55b88626a8b98d3eb421e83d3ea117",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fi-de",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            59470
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 59470,
+        "decoder_vocab_size": 59471,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 59470,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 59471
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            59470
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 59470,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 59470,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "de",
+        "source_lang": "fi"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 59470,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          59470
+        ]
+      ],
+      "pad_token_id": 59470,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fi-en",
+    "revision": "c4d8fff0f8f00b637f0578666f35cdacef354778",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fi-en",
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            59658
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 59658,
+        "decoder_vocab_size": 59659,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "extra_pos_embeddings": 59659,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 59658,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 59659
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            59658
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 59658,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 59658,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "eng",
+        "source_lang": "fin"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 59658,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          59658
+        ]
+      ],
+      "pad_token_id": 59658,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fi-fr",
+    "revision": "cdca848bb38056a1e7ae665164722c5566eb2302",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fi-fr",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            60064
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 60064,
+        "decoder_vocab_size": 60065,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 60064,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 60065
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            60064
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 60064,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 60064,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fr",
+        "source_lang": "fi"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 60064,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          60064
+        ]
+      ],
+      "pad_token_id": 60064,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fi-ru",
+    "revision": "a54f0b1fd09b4e19984ca820d7e69171ac3666d3",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fi-ru",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            62782
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 62782,
+        "decoder_vocab_size": 62783,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 62782,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 62783
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            62782
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 62782,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 62782,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "ru",
+        "source_lang": "fi"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 62782,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          62782
+        ]
+      ],
+      "pad_token_id": 62782,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fr-de",
+    "revision": "db80d261062d75a60e1d4897f13673313a33d50b",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fr-de",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61152
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61152,
+        "decoder_vocab_size": 61153,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61152,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61153
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61152
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61152,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61152,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "de",
+        "source_lang": "fr"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61152,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          61152
+        ]
+      ],
+      "pad_token_id": 61152,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-fr-en",
+    "revision": "c4aed37b318c763fd177aa449b44e3b783cc6c02",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-fr-en",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            59513
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 59513,
+        "decoder_vocab_size": 59514,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "gradient_checkpointing": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 59513,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 59514
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            59513
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 59513,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 59513,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "en",
+        "source_lang": "fr"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 59513,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          59513
+        ]
+      ],
+      "pad_token_id": 59513,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-ru-en",
+    "revision": "fbd6dc73284f95536648512cc21d57f19191961a",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-ru-en",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            62517
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 62517,
+        "decoder_vocab_size": 62518,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 6,
+        "num_hidden_layers": 6,
+        "pad_token_id": 62517,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 62518
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            62517
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 62517,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 6,
+        "pad_token_id": 62517,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "en",
+        "source_lang": "ru"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 6,
+      "max_length": 512,
+      "decoder_start_token_id": 62517,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          62517
+        ]
+      ],
+      "pad_token_id": 62517,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-ru-fi",
+    "revision": "6c1c381a5e3c93435912bdb98057afdab1cab64e",
+    "configs": {
+      "config.json": {
+        "_name_or_path": "/tmp/Helsinki-NLP/opus-mt-ru-fi",
+        "_num_labels": 3,
+        "activation_dropout": 0,
+        "activation_function": "swish",
+        "add_bias_logits": false,
+        "add_final_layer_norm": false,
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            62782
+          ]
+        ],
+        "bos_token_id": 0,
+        "classif_dropout": 0,
+        "classifier_dropout": 0,
+        "d_model": 512,
+        "decoder_attention_heads": 8,
+        "decoder_ffn_dim": 2048,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 62782,
+        "decoder_vocab_size": 62783,
+        "dropout": 0.1,
+        "encoder_attention_heads": 8,
+        "encoder_ffn_dim": 2048,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1",
+          "2": "LABEL_2"
+        },
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1,
+          "LABEL_2": 2
+        },
+        "max_length": 512,
+        "max_position_embeddings": 512,
+        "model_type": "marian",
+        "normalize_before": false,
+        "normalize_embedding": false,
+        "num_beams": 6,
+        "num_hidden_layers": 6,
+        "pad_token_id": 62782,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "transformers_version": "4.22.0.dev0",
+        "use_cache": true,
+        "vocab_size": 62783
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            62782
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 62782,
+        "eos_token_id": 0,
+        "forced_eos_token_id": 0,
+        "max_length": 512,
+        "num_beams": 6,
+        "pad_token_id": 62782,
+        "renormalize_logits": true,
+        "transformers_version": "4.32.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "target_lang": "fi",
+        "source_lang": "ru"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 6,
+      "max_length": 512,
+      "decoder_start_token_id": 62782,
+      "forced_eos_token_id": 0,
+      "bad_words_ids": [
+        [
+          62782
+        ]
+      ],
+      "pad_token_id": 62782,
+      "eos_token_id": 0
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-de-zle",
+    "revision": "d4db2a2cbaa6c2f1ea57d0ed40924d35767b05f9",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61130
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61130,
+        "decoder_vocab_size": 61131,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 23541,
+        "forced_eos_token_id": 23541,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61130,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61131
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61130
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61130,
+        "eos_token_id": 23541,
+        "forced_eos_token_id": 23541,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61130,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "de",
+        "target_lang": "zle",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807_transformer-big_2022-03-23/de-zle",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61130,
+      "forced_eos_token_id": 23541,
+      "bad_words_ids": [
+        [
+          61130
+        ]
+      ],
+      "pad_token_id": 61130,
+      "eos_token_id": 23541
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fi",
+    "revision": "8e570bbad861fb72104883353cf307ce1fe7b5e0",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            57848
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 57848,
+        "decoder_vocab_size": 57849,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 42657,
+        "forced_eos_token_id": 42657,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 57848,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 57849
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            57848
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 57848,
+        "eos_token_id": 42657,
+        "forced_eos_token_id": 42657,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 57848,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "en",
+        "target_lang": "fi",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-09/en-fi",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 57848,
+      "forced_eos_token_id": 42657,
+      "bad_words_ids": [
+        [
+          57848
+        ]
+      ],
+      "pad_token_id": 57848,
+      "eos_token_id": 42657
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+    "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            53016
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 53016,
+        "decoder_vocab_size": 53017,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 43311,
+        "forced_eos_token_id": 43311,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 53016,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 53017
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            53016
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 53016,
+        "eos_token_id": 43311,
+        "forced_eos_token_id": 43311,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 53016,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "en",
+        "target_lang": "fr",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-09/en-fr",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 53016,
+      "forced_eos_token_id": 43311,
+      "bad_words_ids": [
+        [
+          53016
+        ]
+      ],
+      "pad_token_id": 53016,
+      "eos_token_id": 43311
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+    "revision": "708be1d372fe4c358a352f404e6dc9ca0126ba48",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61576
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61576,
+        "decoder_vocab_size": 61577,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 25539,
+        "forced_eos_token_id": 25539,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61576,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61577
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61576
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61576,
+        "eos_token_id": 25539,
+        "forced_eos_token_id": 25539,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61576,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "en",
+        "target_lang": "zle",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-13/en-zle",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61576,
+      "forced_eos_token_id": 25539,
+      "bad_words_ids": [
+        [
+          61576
+        ]
+      ],
+      "pad_token_id": 61576,
+      "eos_token_id": 25539
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-en",
+    "revision": "956e13710061738d21f677e4ed16a56546511c0f",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            57829
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 57829,
+        "decoder_vocab_size": 57830,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 41756,
+        "forced_eos_token_id": 41756,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 6,
+        "num_hidden_layers": 6,
+        "pad_token_id": 57829,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 57830
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            57829
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 57829,
+        "eos_token_id": 41756,
+        "forced_eos_token_id": 41756,
+        "max_length": 512,
+        "num_beams": 6,
+        "pad_token_id": 57829,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "fi",
+        "target_lang": "en",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt-2021-12-08/fi-en",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 6,
+      "max_length": 512,
+      "decoder_start_token_id": 57829,
+      "forced_eos_token_id": 41756,
+      "bad_words_ids": [
+        [
+          57829
+        ]
+      ],
+      "pad_token_id": 57829,
+      "eos_token_id": 41756
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-zle",
+    "revision": "c391c323183ffce10affddda62215708e776488d",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            60933
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 60933,
+        "decoder_vocab_size": 60934,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 22793,
+        "forced_eos_token_id": 22793,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 60933,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 60934
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            60933
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 60933,
+        "eos_token_id": 22793,
+        "forced_eos_token_id": 22793,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 60933,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "fi",
+        "target_lang": "zle",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-17/fi-zle",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 60933,
+      "forced_eos_token_id": 22793,
+      "bad_words_ids": [
+        [
+          60933
+        ]
+      ],
+      "pad_token_id": 60933,
+      "eos_token_id": 22793
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+    "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            53016
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 53016,
+        "decoder_vocab_size": 53017,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 43311,
+        "forced_eos_token_id": 43311,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 53016,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 53017
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            53016
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 53016,
+        "eos_token_id": 43311,
+        "forced_eos_token_id": 43311,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 53016,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "fr",
+        "target_lang": "en",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-09/fr-en",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 53016,
+      "forced_eos_token_id": 43311,
+      "bad_words_ids": [
+        [
+          53016
+        ]
+      ],
+      "pad_token_id": 53016,
+      "eos_token_id": 43311
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-zle",
+    "revision": "da6e276dbce4e00349f90b7531c4ea8ed34ddb23",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61391
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61391,
+        "decoder_vocab_size": 61392,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 27214,
+        "forced_eos_token_id": 27214,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61391,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61392
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61391
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61391,
+        "eos_token_id": 27214,
+        "forced_eos_token_id": 27214,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61391,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "fr",
+        "target_lang": "zle",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807_transformer-big_2022-03-23/fr-zle",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61391,
+      "forced_eos_token_id": 27214,
+      "bad_words_ids": [
+        [
+          61391
+        ]
+      ],
+      "pad_token_id": 61391,
+      "eos_token_id": 27214
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmw-gmw",
+    "revision": "b162f23f2a033c84b67fa66903b33231bf835097",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            35697
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 35697,
+        "decoder_vocab_size": 35698,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 26162,
+        "forced_eos_token_id": 26162,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 35697,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 35698
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            35697
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 35697,
+        "eos_token_id": 26162,
+        "forced_eos_token_id": 26162,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 35697,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "gmw",
+        "target_lang": "gmw",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807_transformer-big_2022-08-11/gmw-gmw",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 35697,
+      "forced_eos_token_id": 26162,
+      "bad_words_ids": [
+        [
+          35697
+        ]
+      ],
+      "pad_token_id": 35697,
+      "eos_token_id": 26162
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-de",
+    "revision": "b2e247f0c413ca6aa51a32f2f2be8666cf72405e",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61165
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61165,
+        "decoder_vocab_size": 61166,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 23528,
+        "forced_eos_token_id": 23528,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61165,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61166
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61165
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61165,
+        "eos_token_id": 23528,
+        "forced_eos_token_id": 23528,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61165,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "zle",
+        "target_lang": "de",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807_transformer-big_2022-03-19/zle-de",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61165,
+      "forced_eos_token_id": 23528,
+      "bad_words_ids": [
+        [
+          61165
+        ]
+      ],
+      "pad_token_id": 61165,
+      "eos_token_id": 23528
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+    "revision": "09a40f722d6d8b76aaad6fe51a06c914622a13d1",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61016
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61016,
+        "decoder_vocab_size": 61017,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 25565,
+        "forced_eos_token_id": 25565,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61016,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61017
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61016
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61016,
+        "eos_token_id": 25565,
+        "forced_eos_token_id": 25565,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61016,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "zle",
+        "target_lang": "en",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-17/zle-en",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61016,
+      "forced_eos_token_id": 25565,
+      "bad_words_ids": [
+        [
+          61016
+        ]
+      ],
+      "pad_token_id": 61016,
+      "eos_token_id": 25565
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fi",
+    "revision": "9f5a31067a382338a94ad1437495d2afb67bf408",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61259
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61259,
+        "decoder_vocab_size": 61260,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 23070,
+        "forced_eos_token_id": 23070,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61259,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61260
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61259
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61259,
+        "eos_token_id": 23070,
+        "forced_eos_token_id": 23070,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61259,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "zle",
+        "target_lang": "fi",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807+bt_transformer-big_2022-03-07/zle-fi",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61259,
+      "forced_eos_token_id": 23070,
+      "bad_words_ids": [
+        [
+          61259
+        ]
+      ],
+      "pad_token_id": 61259,
+      "eos_token_id": 23070
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  },
+  {
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fr",
+    "revision": "b6816847cbc31c6d952e493169628bc3e6d1d859",
+    "configs": {
+      "config.json": {
+        "activation_dropout": 0,
+        "activation_function": "relu",
+        "architectures": [
+          "MarianMTModel"
+        ],
+        "attention_dropout": 0,
+        "bad_words_ids": [
+          [
+            61428
+          ]
+        ],
+        "bos_token_id": 0,
+        "classifier_dropout": 0,
+        "d_model": 1024,
+        "decoder_attention_heads": 16,
+        "decoder_ffn_dim": 4096,
+        "decoder_layerdrop": 0,
+        "decoder_layers": 6,
+        "decoder_start_token_id": 61428,
+        "decoder_vocab_size": 61429,
+        "dropout": 0.1,
+        "encoder_attention_heads": 16,
+        "encoder_ffn_dim": 4096,
+        "encoder_layerdrop": 0,
+        "encoder_layers": 6,
+        "eos_token_id": 27246,
+        "forced_eos_token_id": 27246,
+        "init_std": 0.02,
+        "is_encoder_decoder": true,
+        "max_length": 512,
+        "max_position_embeddings": 1024,
+        "model_type": "marian",
+        "normalize_embedding": false,
+        "num_beams": 4,
+        "num_hidden_layers": 6,
+        "pad_token_id": 61428,
+        "scale_embedding": true,
+        "share_encoder_decoder_embeddings": true,
+        "static_position_embeddings": true,
+        "torch_dtype": "float16",
+        "transformers_version": "4.34.0.dev0",
+        "use_cache": true,
+        "vocab_size": 61429
+      },
+      "generation_config.json": {
+        "bad_words_ids": [
+          [
+            61428
+          ]
+        ],
+        "bos_token_id": 0,
+        "decoder_start_token_id": 61428,
+        "eos_token_id": 27246,
+        "forced_eos_token_id": 27246,
+        "max_length": 512,
+        "num_beams": 4,
+        "pad_token_id": 61428,
+        "renormalize_logits": true,
+        "transformers_version": "4.34.0.dev0"
+      },
+      "tokenizer_config.json": {
+        "source_lang": "zle",
+        "target_lang": "fr",
+        "unk_token": "<unk>",
+        "eos_token": "</s>",
+        "pad_token": "<pad>",
+        "model_max_length": 512,
+        "sp_model_kwargs": {},
+        "separate_vocabs": false,
+        "special_tokens_map_file": null,
+        "name_or_path": "marian-models/opusTCv20210807_transformer-big_2022-03-23/zle-fr",
+        "tokenizer_class": "MarianTokenizer"
+      }
+    },
+    "generation_controls": {
+      "num_beams": 4,
+      "max_length": 512,
+      "decoder_start_token_id": 61428,
+      "forced_eos_token_id": 27246,
+      "bad_words_ids": [
+        [
+          61428
+        ]
+      ],
+      "pad_token_id": 61428,
+      "eos_token_id": 27246
+    },
+    "default_decode_parity": "not-tested",
+    "note": "HF generation defaults are recorded, not assumed numerically identical to CT2 settings."
+  }
+]

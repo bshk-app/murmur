@@ -1,0 +1,1939 @@
+{
+  "schema_version": 1,
+  "candidate_direction_count": 19,
+  "distinct_candidate_checkpoint_count": 18,
+  "initial_pairs": [
+    "de-fi",
+    "fi-de",
+    "de-fr",
+    "fr-de",
+    "de-ru",
+    "ru-de",
+    "fr-ru",
+    "ru-fr"
+  ],
+  "follow_on_order": [
+    "en-de",
+    "de-en",
+    "fi-fr",
+    "en-ru",
+    "ru-en",
+    "en-fr",
+    "fr-en",
+    "en-fi",
+    "fi-en",
+    "ru-fi",
+    "fi-ru",
+    "fr-fi"
+  ],
+  "rows": [
+    {
+      "pair": "de-en",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+            "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmw-gmw",
+        "revision": "b162f23f2a033c84b67fa66903b33231bf835097",
+        "target_tag": ">>eng<<",
+        "target_tag_evidence": "explicit-label",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opusTCv20210807_transformer-big_2022-08-11.zip",
+        "selection_reason": "Verified2022 tc-big group with explicit en/de labels, distinct from2020 bilingual baseline. Plausible capacity/data upgrade, not a proven quality winner."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+          "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gem-en",
+          "revision": "b716e9fb7b2720631174ac1fcee78a93796233f5",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gem-gem",
+          "revision": "2aa5dfe55764a6de47d132182b853345066806ae",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gmw-en",
+          "revision": "1a841bb4a22236ba44d7bc560fc2718742c1cdff",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gmw-gmw",
+          "revision": "223b99aed15a556cc6b30de0fcdc95bac10b8f91",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-en",
+          "revision": "0e2ead270e622e2ffeca3abec011e4f8f987af14",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-mul-en",
+          "revision": "848eae0c1676cfce9bb791c200e8228e5a6396ff",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-base-gmw-gmw",
+          "revision": "5cf08be4c0031195f25cab7f2185c0d2cdef7dfa",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-base",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmw-gmw",
+          "revision": "b162f23f2a033c84b67fa66903b33231bf835097",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "de-fi",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+            "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fi",
+            "revision": "8e570bbad861fb72104883353cf307ce1fe7b5e0",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-de-fi",
+        "revision": "76e6be226c52eea24758e360bca5a1ee3e323fd3",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/de-fi/opus-2020-01-08.zip",
+        "selection_reason": "Targeted ordinary direct model; compare with stronger EN-pivot legs rather than assuming direct is better."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-de-fi",
+          "revision": "76e6be226c52eea24758e360bca5a1ee3e323fd3",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "de-fr",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+            "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+            "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-de-fr",
+        "revision": "2b4fe242d21e50e89d2917fa4d0b3616d157e339",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/de-fr/opus-2020-01-08.zip",
+        "selection_reason": "Targeted ordinary direct model; compare with stronger EN-pivot legs rather than assuming direct is better."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-de-fr",
+          "revision": "2b4fe242d21e50e89d2917fa4d0b3616d157e339",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "de-ru",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-de-en",
+            "revision": "1a922f3b32a8e809e17a47d4b32142d8105924e5",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+            "revision": "708be1d372fe4c358a352f404e6dc9ca0126ba48",
+            "target_tag": ">>rus<<"
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-de-zle",
+        "revision": "d4db2a2cbaa6c2f1ea57d0ed40924d35767b05f9",
+        "target_tag": ">>rus<<",
+        "target_tag_evidence": "explicit-label",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/deu-zle/opusTCv20210807_transformer-big_2022-03-23.zip",
+        "selection_reason": "Most targeted audited non-Bible tc-big direct group for this direction; test against existing pivot."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-de-zle",
+          "revision": "d4db2a2cbaa6c2f1ea57d0ed40924d35767b05f9",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "en-de",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+            "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmw-gmw",
+        "revision": "b162f23f2a033c84b67fa66903b33231bf835097",
+        "target_tag": ">>deu<<",
+        "target_tag_evidence": "explicit-label",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/gmw-gmw/opusTCv20210807_transformer-big_2022-08-11.zip",
+        "selection_reason": "Verified2022 tc-big group with explicit en/de labels, distinct from2020 bilingual baseline. Plausible capacity/data upgrade, not a proven quality winner."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+          "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-gem",
+          "revision": "98e9b0b3429a63637b197d90fd13d39f51275807",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-gmw",
+          "revision": "015234ec95f014d9d482dc618d559eb6e21d96ac",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-ine",
+          "revision": "3b10842ae12d8d71031b8c362dabbd160fd7b6a5",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-mul",
+          "revision": "07ab277b060b29b7208dc0a198327eeeea92224d",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gem-gem",
+          "revision": "2aa5dfe55764a6de47d132182b853345066806ae",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-gmw-gmw",
+          "revision": "223b99aed15a556cc6b30de0fcdc95bac10b8f91",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-base-gmw-gmw",
+          "revision": "5cf08be4c0031195f25cab7f2185c0d2cdef7dfa",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-base",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmw-gmw",
+          "revision": "b162f23f2a033c84b67fa66903b33231bf835097",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "en-fi",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fi",
+            "revision": "8e570bbad861fb72104883353cf307ce1fe7b5e0",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-en-fi",
+        "revision": "2f68f12519005b50f9e1afe6fd57b13add55e156",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/en-fi/opus+bt-news-2020-03-21.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en_el_es_fi-en_el_es_fi",
+          "revision": "2f3e605139d01e96fb2030ebf3e04ac917f24e9b",
+          "target_tag": ">>fi<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-fi",
+          "revision": "2f68f12519005b50f9e1afe6fd57b13add55e156",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-fiu",
+          "revision": "6f39c233deb97be86091c715e129d8b705416cf0",
+          "target_tag": ">>fin<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-mul",
+          "revision": "07ab277b060b29b7208dc0a198327eeeea92224d",
+          "target_tag": ">>fin<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-urj",
+          "revision": "d662e911a8ed7375eef074aa81005fb477f10802",
+          "target_tag": ">>fin<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fi",
+          "revision": "8e570bbad861fb72104883353cf307ce1fe7b5e0",
+          "target_tag": ">>fin<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "en-fr",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+            "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-en-fr",
+        "revision": "dd7f6540a7a48a7f4db59e5c0b9c42c8eea67f18",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/en-fr/opus-2020-02-26.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-fr",
+          "revision": "dd7f6540a7a48a7f4db59e5c0b9c42c8eea67f18",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-ine",
+          "revision": "3b10842ae12d8d71031b8c362dabbd160fd7b6a5",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-itc",
+          "revision": "478fe0571e73922e9999cbd1139323360298aa1a",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-mul",
+          "revision": "07ab277b060b29b7208dc0a198327eeeea92224d",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-roa",
+          "revision": "8dc4cb24d00dedbe8da98e90c0d750e7244cc4c0",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-ROMANCE",
+          "revision": "f8f3a28e8b6272d0ccc0290b832f699e154ae431",
+          "target_tag": ">>fr<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+          "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "en-ru",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+            "revision": "708be1d372fe4c358a352f404e6dc9ca0126ba48",
+            "target_tag": ">>rus<<"
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-en-ru",
+        "revision": "bb09c99d180016eac6819df3dae68edb1690fdee",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/en-ru/opus-2020-02-11.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-ine",
+          "revision": "3b10842ae12d8d71031b8c362dabbd160fd7b6a5",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-mul",
+          "revision": "07ab277b060b29b7208dc0a198327eeeea92224d",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-ru",
+          "revision": "bb09c99d180016eac6819df3dae68edb1690fdee",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-sla",
+          "revision": "0bc26914f2f82c3dd5b235e420aa2c711a5ed3d8",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en-zle",
+          "revision": "9cfcf67ac58a65f5e4c6a4bc77b0ad2644599c14",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+          "revision": "708be1d372fe4c358a352f404e6dc9ca0126ba48",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fi-de",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-en",
+            "revision": "956e13710061738d21f677e4ed16a56546511c0f",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+            "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fi-de",
+        "revision": "659d3bcfde55b88626a8b98d3eb421e83d3ea117",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/fi-de/opus-2019-12-04.zip",
+        "selection_reason": "Targeted ordinary direct model; compare with stronger EN-pivot legs rather than assuming direct is better."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fi-de",
+          "revision": "659d3bcfde55b88626a8b98d3eb421e83d3ea117",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fi-en",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-en",
+            "revision": "956e13710061738d21f677e4ed16a56546511c0f",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fi-en",
+        "revision": "c4d8fff0f8f00b637f0578666f35cdacef354778",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/fin-eng/opus-2020-08-05.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-en_el_es_fi-en_el_es_fi",
+          "revision": "2f3e605139d01e96fb2030ebf3e04ac917f24e9b",
+          "target_tag": ">>en<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fi-en",
+          "revision": "c4d8fff0f8f00b637f0578666f35cdacef354778",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fiu-en",
+          "revision": "67d52069687b0b0861d01fc1a4700397d96db851",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-mul-en",
+          "revision": "848eae0c1676cfce9bb791c200e8228e5a6396ff",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-en",
+          "revision": "956e13710061738d21f677e4ed16a56546511c0f",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-urj-en",
+          "revision": "dc7c6fdd6b7030c0861e8578b887289bea62a9ef",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fi-fr",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-en",
+            "revision": "956e13710061738d21f677e4ed16a56546511c0f",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+            "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fi-fr",
+        "revision": "cdca848bb38056a1e7ae665164722c5566eb2302",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/fi-fr/opus-2020-02-26.zip",
+        "selection_reason": "Targeted ordinary direct model; compare with stronger EN-pivot legs rather than assuming direct is better."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fi-fr",
+          "revision": "cdca848bb38056a1e7ae665164722c5566eb2302",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fi-ru",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-zle",
+            "revision": "c391c323183ffce10affddda62215708e776488d",
+            "target_tag": ">>rus<<"
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fi-ru",
+        "revision": "a54f0b1fd09b4e19984ca820d7e69171ac3666d3",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/fi-ru/opus-2020-04-12.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fi-ru",
+          "revision": "a54f0b1fd09b4e19984ca820d7e69171ac3666d3",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fi-zle",
+          "revision": "c391c323183ffce10affddda62215708e776488d",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fr-de",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+            "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+            "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fr-de",
+        "revision": "db80d261062d75a60e1d4897f13673313a33d50b",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/fr-de/opus-2020-01-09.zip",
+        "selection_reason": "Targeted ordinary direct model; compare with stronger EN-pivot legs rather than assuming direct is better."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fr-de",
+          "revision": "db80d261062d75a60e1d4897f13673313a33d50b",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fr-en",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+            "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-fr-en",
+        "revision": "c4aed37b318c763fd177aa449b44e3b783cc6c02",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/fr-en/opus-2020-02-26.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fr-en",
+          "revision": "c4aed37b318c763fd177aa449b44e3b783cc6c02",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-en",
+          "revision": "0e2ead270e622e2ffeca3abec011e4f8f987af14",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-itc-en",
+          "revision": "ce67164f0490e7b701825524982d4cc8f5188212",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-mul-en",
+          "revision": "848eae0c1676cfce9bb791c200e8228e5a6396ff",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-roa-en",
+          "revision": "c26705dd23ff67aa0019dbde41e9456c3a0900ef",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ROMANCE-en",
+          "revision": "e9ca9975e3972afd80732f08ce01d3a1339f47f8",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+          "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fr-fi",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+            "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fi",
+            "revision": "8e570bbad861fb72104883353cf307ce1fe7b5e0",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": null,
+      "candidate_skip_reason": "No non-Bible direct candidate in the complete audit; tune the existing EN pivot. Bible-domain models excluded.",
+      "shortlist": [],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "fr-ru",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-en",
+            "revision": "5fa3b3c9fa3bcd65fbf31206c3ec7419c9d9cd7d",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+            "revision": "708be1d372fe4c358a352f404e6dc9ca0126ba48",
+            "target_tag": ">>rus<<"
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-zle",
+        "revision": "da6e276dbce4e00349f90b7531c4ea8ed34ddb23",
+        "target_tag": ">>rus<<",
+        "target_tag_evidence": "explicit-label",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/fra-zle/opusTCv20210807_transformer-big_2022-03-23.zip",
+        "selection_reason": "Most targeted audited non-Bible tc-big direct group for this direction; test against existing pivot."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-fr-ru",
+          "revision": "9e4e5772eccfebe66a3fde8a2d45427064cf6dc9",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-fr-zle",
+          "revision": "da6e276dbce4e00349f90b7531c4ea8ed34ddb23",
+          "target_tag": ">>rus<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "ru-de",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+            "revision": "09a40f722d6d8b76aaad6fe51a06c914622a13d1",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-en-de",
+            "revision": "6183067f769a302e3861815543b9f312c71b0ca4",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-de",
+        "revision": "b2e247f0c413ca6aa51a32f2f2be8666cf72405e",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/zle-deu/opusTCv20210807_transformer-big_2022-03-19.zip",
+        "selection_reason": "Most targeted audited non-Bible tc-big direct group for this direction; test against existing pivot."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>deu<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-de",
+          "revision": "b2e247f0c413ca6aa51a32f2f2be8666cf72405e",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "ru-en",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+            "revision": "09a40f722d6d8b76aaad6fe51a06c914622a13d1",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-ru-en",
+        "revision": "fbd6dc73284f95536648512cc21d57f19191961a",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/ru-en/opus-2020-02-26.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-en",
+          "revision": "0e2ead270e622e2ffeca3abec011e4f8f987af14",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>eng<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-mul-en",
+          "revision": "848eae0c1676cfce9bb791c200e8228e5a6396ff",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ru-en",
+          "revision": "fbd6dc73284f95536648512cc21d57f19191961a",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-sla-en",
+          "revision": "90572be08bdc4c58ecbcd2b22ffe167f73992e4a",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+          "revision": "09a40f722d6d8b76aaad6fe51a06c914622a13d1",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-zle-en",
+          "revision": "5bd80e7c9797a2f4883b5fc491d22a4e8ecebc8b",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "ru-fi",
+      "stage": "follow-on",
+      "baseline_current": {
+        "route": "direct",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fi",
+            "revision": "9f5a31067a382338a94ad1437495d2afb67bf408",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-ru-fi",
+        "revision": "6c1c381a5e3c93435912bdb98057afdab1cab64e",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "apache-2.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/OPUS-MT-models/ru-fi/opus-2020-04-12.zip",
+        "selection_reason": "Targeted ordinary bilingual checkpoint as a distinct control against the existing tc-big baseline; no stronger distinct tc-big was found in this shortlist."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ru-fi",
+          "revision": "6c1c381a5e3c93435912bdb98057afdab1cab64e",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fi",
+          "revision": "9f5a31067a382338a94ad1437495d2afb67bf408",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    },
+    {
+      "pair": "ru-fr",
+      "stage": "initial-eight",
+      "baseline_current": {
+        "route": "pivot-en",
+        "legs": [
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+            "revision": "09a40f722d6d8b76aaad6fe51a06c914622a13d1",
+            "target_tag": ""
+          },
+          {
+            "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-fr",
+            "revision": "6e062862ced6f5622a589ab2aadc2a1d4978db78",
+            "target_tag": ""
+          }
+        ],
+        "quality_status": "not-qualified"
+      },
+      "baseline_tuning": {
+        "beams": [
+          1,
+          4,
+          6,
+          8
+        ],
+        "normalization": "raw baseline; matched-best-beam Sacremoses variant",
+        "selection_split": "dev100",
+        "confirmation_split": "full devtest1012"
+      },
+      "candidate": {
+        "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fr",
+        "revision": "b6816847cbc31c6d952e493169628bc3e6d1d859",
+        "target_tag": "",
+        "target_tag_evidence": "not-required",
+        "license": "cc-by-4.0",
+        "conversion_status": "not-tested",
+        "original_archive": "https://object.pouta.csc.fi/Tatoeba-MT-models/zle-fra/opusTCv20210807_transformer-big_2022-03-23.zip",
+        "selection_reason": "Most targeted audited non-Bible tc-big direct group for this direction; test against existing pivot."
+      },
+      "candidate_skip_reason": null,
+      "shortlist": [
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ine-ine",
+          "revision": "ed7818771d99351feb5066b180a41ef6c2fa303b",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "documented-id-format-and-exact-target-membership",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-ru-fr",
+          "revision": "344bcc7893f318fbeee6d567a9a4e0a6dd49ec62",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "apache-2.0",
+          "conversion_status": "not-tested",
+          "family": "standard",
+          "grouped": false,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-fr",
+          "revision": "b6816847cbc31c6d952e493169628bc3e6d1d859",
+          "target_tag": "",
+          "target_tag_evidence": "not-required",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": true,
+          "deferred_reason": null
+        },
+        {
+          "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-itc",
+          "revision": "cf0e54a394048b8b530f42ceb211f34dd03ae40a",
+          "target_tag": ">>fra<<",
+          "target_tag_evidence": "explicit-label",
+          "license": "cc-by-4.0",
+          "conversion_status": "not-tested",
+          "family": "tc-big",
+          "grouped": true,
+          "selected_for_first_pass": false,
+          "deferred_reason": "Maximum1 distinct candidate initially; baseline checkpoints are controls and broader alternatives remain deferred."
+        }
+      ],
+      "qualification_status": "not-qualified",
+      "native_default_parity": "not-verified",
+      "native_cap_guard_requalification": "required: native rejects selected output at decoding cap; Python legacy study records capped output",
+      "float_policy": "True original-weight float32 dev control for distinct candidates; no float-heldout equivalence claimed without that run."
+    }
+  ]
+}

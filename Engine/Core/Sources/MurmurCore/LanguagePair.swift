@@ -2,7 +2,7 @@ import Foundation
 
 /// A translation direction, and the rules for reaching one with the models
 /// Murmur actually ships.
-public struct LanguagePair: Hashable, Sendable, CustomStringConvertible {
+public struct LanguagePair: Hashable, Codable, Sendable, CustomStringConvertible {
     public let source: String
     public let target: String
 
@@ -37,27 +37,24 @@ extension LanguagePair {
     ]
 
     public static func qualityRoute(from source: String, to target: String) -> Route? {
-        guard source != target, qualityLanguages.contains(source), qualityLanguages.contains(target) else { return nil }
-        if source == "en" || target == "en" { return .direct(.init(source: source, target: target)) }
-        return .pivot(.init(source: source, target: "en"), .init(source: "en", target: target))
+        TranslationProfileCatalog.baseline.resolve(.init(source: source, target: target))?.route
     }
 
     /// How a direction is served.
     public enum Route: Equatable, Sendable {
         /// One model translates the pair outright.
         case direct(LanguagePair)
-        /// Two models composed through English. The registry is English-centric,
-        /// so this is the normal case for a non-English pair rather than a
-        /// fallback: `fi-de` exists only as `fi-en` then `en-de`.
+        /// Two models composed through English. The preview registry is
+        /// English-centric. Quality profiles may also retain a pivot when a
+        /// direct candidate has not demonstrated a quality improvement.
         case pivot(LanguagePair, LanguagePair)
     }
 
     /// Resolves `source -> target` into the models that serve it, or nil when
     /// either side is unsupported.
     ///
-    /// Quality of a pivot is the composition of two models and is measurably
-    /// worse than either leg; a caller that wants to say so to the user can
-    /// match on `.pivot`.
+    /// This is the preview route. Quality selection belongs to the pinned
+    /// profile catalog; direct versus pivot quality must be measured per pair.
     public static func route(from source: String, to target: String) -> Route? {
         guard source != target,
               supportedLanguages.contains(source),

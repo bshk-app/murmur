@@ -1,0 +1,6 @@
+sacremoses==0.1.1
+regex==2026.9.10
+joblib==1.6.0
+click==8.5.0
+tqdm==4.70.1
+cloudpickle==3.1.2

@@ -2,6 +2,22 @@ import XCTest
 @testable import MurmurCore
 
 final class ModelStorageTests: XCTestCase {
+    func testSharedAssetRemainsManageableAfterProfileRollback() async throws {
+        let root = try fixture()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let id = "opus-" + String(repeating: "a", count: 64)
+        try write(root, "TranslationModels/\(id)/model.bin", bytes: 32)
+        let storage = ModelStorage(modelsRoot: root)
+        let before = try await storage.inventory()
+        let item = try XCTUnwrap(before.items.first)
+        XCTAssertEqual(item.id, "translation/" + id)
+        XCTAssertEqual(item.kind, .translationQuality)
+        XCTAssertNil(item.source)
+        let removed = try await storage.remove(id: item.id)
+        XCTAssertTrue(removed)
+        let after = try await storage.inventory()
+        XCTAssertEqual(after.totalBytes, 0)
+    }
     private func fixture() throws -> URL {
         let root=FileManager.default.temporaryDirectory.appendingPathComponent("murmator-storage-"+UUID().uuidString)
         try FileManager.default.createDirectory(at:root,withIntermediateDirectories:true)

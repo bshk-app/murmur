@@ -1,0 +1,2289 @@
+{
+  "schemaVersion": 1,
+  "version": "baseline-284a15b7ea1e0b5a",
+  "status": "baseline",
+  "runtime": "CTranslate2 4.8.2 CPU, one thread",
+  "bindings": [
+    {
+      "pair": {
+        "source": "bg",
+        "target": "en"
+      },
+      "modelID": "opus-85d13547416ddbff956514e4ade3a57a99cb992c3f28ad9b6fd7a8d184713873",
+      "directoryName": "ct2-bgen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "2d84955844296c4aea0e8c9928e4d50d5b932ef24376c03f418be6b851354a30",
+          "bytes": 804402
+        },
+        {
+          "name": "model.bin",
+          "sha256": "00db8927ccf1e9dca0679ccf64a2a2b611fbbc556c403d6a789e618c38dec8f7",
+          "bytes": 248251421
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "feed6183f1216a9e5e5cf4bd245d821c31a618e9251dadb4c74d4b9964e025cb",
+          "bytes": 1014639
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "9dd15fbd9adfd7e68f9484d161c44c8b6f5f9be7f1ce34429959d3b0143bd0fa",
+          "bytes": 2060063
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "cs",
+        "target": "en"
+      },
+      "modelID": "opus-4f913c59f36b98d762224d269dedd6cba9d73c84ee4155916283090c97942e98",
+      "directoryName": "ct2-csen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "b1c603a8ddb42de2558898ca8d1ff49eb9549bc15d5922102c9890a2db4108f5",
+          "bytes": 796116
+        },
+        {
+          "name": "model.bin",
+          "sha256": "e032763c7a83571bbbef85c9700edf81de608887aac0c795915429dc65583553",
+          "bytes": 245451605
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "fa297556cf75acf29f51dea0f1c0ef5225d247450e05307fd44dea6ea3185251",
+          "bytes": 823611
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "57e673dc1b4e956c76804b9a22fae650793bdf3b84c7dc913332a942160d3982",
+          "bytes": 1113177
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "da",
+        "target": "en"
+      },
+      "modelID": "opus-c6f0f644a38a899108db8ff9af10ba0820166950e2e8609611ae1a43f0a486d0",
+      "directoryName": "ct2-daen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c51247265dd2c7773c3be3669b63c5152ce145baeb54a17975145309eb422cf2",
+          "bytes": 795929
+        },
+        {
+          "name": "model.bin",
+          "sha256": "5944ba42a19e78581b6e6758a9574ff17da1c1f0336dc32ef20b2717977b6f2b",
+          "bytes": 242408237
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "20dd2029ff0a4b6dd7b89442035d57fb03e9a9efbbd36543d5aae5e2aa866bad",
+          "bytes": 799747
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "59b42d394fa549ab495dae085774427a7a23514136fe0617b1772e659efb8f30",
+          "bytes": 968355
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "de",
+        "target": "en"
+      },
+      "modelID": "opus-bc9cc3586ab0cb1df0d6d6b6eb3954aebc583d9fcb84fe5d8e42a57df7f060bb",
+      "directoryName": "ct2-deen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "678f2a1177d8389f67b66299762dcc4fc567e89b07e212ba91b0c56daecf47ce",
+          "bytes": 768489
+        },
+        {
+          "name": "model.bin",
+          "sha256": "82e01af45e5357b74cc2e014bc687c1bffdce7ecbeb06158954a668fe761f02b",
+          "bytes": 79125357
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "bbd1f495eea99c8e21ae086d9146e0fa7b096c3dfdd9ba07ab8b631889df5c9b",
+          "bytes": 796845
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "fa4c8d666c582ad39892a2ae5d4ded1b0ddde4b49dc784a7fcbd73940f9fa13e",
+          "bytes": 993828
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "el",
+        "target": "en"
+      },
+      "modelID": "opus-9abfdf4b460b00f403c872cd6b291f0e4fefe5150a571c06fe19ac4463e45423",
+      "directoryName": "ct2-elen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "eb161fb698225d722b251738042d6e27481a66ba96477ab0fb046d8aa937ab2c",
+          "bytes": 798530
+        },
+        {
+          "name": "model.bin",
+          "sha256": "66bc596962b53f56ea1e9412fb1612b6b2b4c405c99dd92709a62dbe3f5d240d",
+          "bytes": 246602285
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "1f78d71e80e2dc22697802dfea24855499c5d482d1c47611f96a96af0b38ea4f",
+          "bytes": 1003051
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "de77938983aa10bc06e52ed06ab217e25e4545b61b04341034c0d3f0b6efcea7",
+          "bytes": 1977376
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "bg"
+      },
+      "modelID": "opus-cc04ae29a40520e433126c6ef059291e75c9e129f514b285fd38ae39ce255d17",
+      "directoryName": "ct2-enbg",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "556cf31670b622f9b1239290d54ebce1c31dbe419ba202534291eb1d881927f5",
+          "bytes": 1014652
+        },
+        {
+          "name": "model.bin",
+          "sha256": "7932af1360b24417868df81d798a87fe0c5163d9693be7257652cc56b842f0c5",
+          "bytes": 248251421
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "2aa5f560397dbe2eff8dbf7934c9f44c1002c1bf04e494529f5377eef2582225",
+          "bytes": 804415
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "b28762d7211e5cfdb7eea8cc91ee00216708714f6124202cbd9eee85651ba30c",
+          "bytes": 2060063
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "cs"
+      },
+      "modelID": "opus-81531923ff7e6558a0d7c02b1bd663e56a32850f62a824f0a17ebe9da0777517",
+      "directoryName": "ct2-encs",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "a2e6d98cdd54d80ad404ad493a7755e723c8d619e998840eba682e3e3fe25e33",
+          "bytes": 829548
+        },
+        {
+          "name": "model.bin",
+          "sha256": "5cb458cb899019870b99c2ec299eb18845ee4a17085b4165b67530a615f58820",
+          "bytes": 81417517
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "8cb772d24cbd559a9e0c5dfd4726e1201b07497af59189f107dd812bff1909e7",
+          "bytes": 788721
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "1ff7170e52f208f4cda455ff52c5f19d67a012404b1818d8f6d69d2364910160",
+          "bytes": 1295006
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "da"
+      },
+      "modelID": "opus-d3cfc3fcc21fe58b69c7029f3001324b833471e3a381ced01a6e8bbb82a2641a",
+      "directoryName": "ct2-enda",
+      "targetTag": ">>dan<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c8b2f0d2cf9308d2fe38257c8ddb0ed93d20fc71057d917028e3ac237a4c5b13",
+          "bytes": 799832
+        },
+        {
+          "name": "model.bin",
+          "sha256": "a82c6e7198d0af956cd44d76f9bf1a20fbc46f4d25b8fce20fac2c6d01a7802c",
+          "bytes": 242307101
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "f0aa2d9fd54985487c0e3e5513a166155f9f26cd78d1ff57515b23df33780ef6",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "05f3dec886e0b8ce55a962aa0f1c747b9606c6068d76e3e840ed9a0d2b64ce57",
+          "bytes": 794427
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "433c35696c89c58227030d6df487d54a3a67eff560bfee3321e59602c3404c15",
+          "bytes": 966761
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "de"
+      },
+      "modelID": "opus-efc1c7f985e0f27278c98fd151a31ee2ae3c0ad1c155de570e4567f1e550314f",
+      "directoryName": "ct2-ende",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "bbd1f495eea99c8e21ae086d9146e0fa7b096c3dfdd9ba07ab8b631889df5c9b",
+          "bytes": 796845
+        },
+        {
+          "name": "model.bin",
+          "sha256": "c0c1424c60a758373719626070f92867067be8f706073211972a607f1aa8c8fc",
+          "bytes": 79125357
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "678f2a1177d8389f67b66299762dcc4fc567e89b07e212ba91b0c56daecf47ce",
+          "bytes": 768489
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "fa4c8d666c582ad39892a2ae5d4ded1b0ddde4b49dc784a7fcbd73940f9fa13e",
+          "bytes": 993828
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "el"
+      },
+      "modelID": "opus-7b19ba7820ea8465592e22af110d3c8119d8931f6c8fe3b0ded4c6de15d26e50",
+      "directoryName": "ct2-enel",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "6274798c1831a98a55cf0c5b6809f8444f4d0bc3ca35f571895280e27bc1ab9b",
+          "bytes": 1003064
+        },
+        {
+          "name": "model.bin",
+          "sha256": "9e3c1f85a1c3f180544d831f626dbe03f74eeb1c78089900d0ddf21fa0c5bd8f",
+          "bytes": 246602285
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "88b64b8dedc045a78ff259f0910ec8970b042f2210ed2575e9a37ea440fb8307",
+          "bytes": 798543
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "de77938983aa10bc06e52ed06ab217e25e4545b61b04341034c0d3f0b6efcea7",
+          "bytes": 1977376
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "es"
+      },
+      "modelID": "opus-561646b296b060fa76c8c0019ebb87d1b9a13194ef9f0b737f46cae78545ca87",
+      "directoryName": "ct2-enes",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c70086dcac73d9c759cca0b5f195a073033906dcd29433d6c5fe74e66b2cc8da",
+          "bytes": 824118
+        },
+        {
+          "name": "model.bin",
+          "sha256": "bd11ca371fb16da7e9a79602d472c16e339af94d8f71a9927a118a781726a11e",
+          "bytes": 242678621
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "b1763341d3a71262ed5aacc3f8287d3c3c2f2ae82295e11d03aea80879c98009",
+          "bytes": 804235
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "4bb5db1d9067fd2d8fe0b1ed843bc338ebcc0d1840ac58acaad25e90495a98c7",
+          "bytes": 1003932
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "et"
+      },
+      "modelID": "opus-217ee12ef2ec47595196275a876fcb1180981b23b38e30db1f19346cef29be96",
+      "directoryName": "ct2-enet",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "e59ffff87fd815b48b6d848a63b6eb06c2ceff1565a7a93045a9db4ad5c207e9",
+          "bytes": 823475
+        },
+        {
+          "name": "model.bin",
+          "sha256": "12023c11bf49be733e362758430567ad830cc1c536229418c90168c09cd42a87",
+          "bytes": 245043965
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "c0280a42a281bf4af6e4dd0dcf9e64d82e7d647de7dbf43a91fae834d98bf90a",
+          "bytes": 794590
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "7ffdd7f98cf42acfa3726298f32efb45c2c69c9609a1263bc5fe4eb3edd5b23b",
+          "bytes": 1042095
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "fi"
+      },
+      "modelID": "opus-f5344379f8e3a6ad3b0fc11f658fbcda05f439db7e1b9f4a137a209df889cc1f",
+      "directoryName": "ct2-enfi",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "435dcf642c54ee6427752a15d884dc0fd180442cf4018b931872f9ee2788d29d",
+          "bytes": 835977
+        },
+        {
+          "name": "model.bin",
+          "sha256": "84e9040b11b5f9c27e03b3962d828e85336f951714404657bbf3b58598ea4774",
+          "bytes": 245590925
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "a4eeca5b2be408db6354e253f879a314dff03a08742530272bd4461336df2417",
+          "bytes": 797685
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "8df45f15f328cf5cf21c2b88155b8251d226b9c12340480e3169d6060f096023",
+          "bytes": 1066159
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "fr"
+      },
+      "modelID": "opus-f673960d046db7e15b891e658b1f066c9374cbd260fab6e79db494b6a753cac9",
+      "directoryName": "ct2-enfr",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "6437b5600d2ae14888939e589773b09bc667c77e81326e20e3f57698a4078593",
+          "bytes": 819955
+        },
+        {
+          "name": "model.bin",
+          "sha256": "628533ef112f7ef5f6eccd79a3f46d1b8311c5559f4a15ab3889600237d5255a",
+          "bytes": 240604301
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "18bb5a422a53a0bd699b005c8086cbd58a85c4be427fd57ca687c958588edcc9",
+          "bytes": 802408
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f3c2304ee3eaec82e2da0de98e602bca4a0f4e108c3b204983ba14ac7bae7603",
+          "bytes": 971990
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "ga"
+      },
+      "modelID": "opus-fc936f13efd4da13211f1bcb1493832a24d2069ca7f4ef64dd6e4a288ed8c519",
+      "directoryName": "ct2-enga",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "33325fac3cb4c1e81d7dad7abdafef5e592f6ef5378264ef34f2283bea14d554",
+          "bytes": 839226
+        },
+        {
+          "name": "model.bin",
+          "sha256": "8cc8008cfbd2018a603dc9b390588596d853341a6d0d90c32bca09552698fbaa",
+          "bytes": 75242275
+        },
+        {
+          "name": "config.json",
+          "sha256": "3e732fbc16f7155d1354f96e746092f95f290d6b0a0cac56e9e4a1dd7ddb13d2",
+          "bytes": 222
+        },
+        {
+          "name": "source.spm",
+          "sha256": "c77ff6c8598b536416ef87a841a58fe440c1eb1cd32085fe137dd4a434d94cdd",
+          "bytes": 803492
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "746cf9ee38f1b3356c5775bb2a4f274709e7517bb00a703545bf1655b3a9a6f8",
+          "bytes": 1083564
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "hr"
+      },
+      "modelID": "opus-d74f0cf22561f90d6646dfe17de4551e2cec3ebf819241219c3e9aa93f0ca6b4",
+      "directoryName": "ct2-enhr",
+      "targetTag": ">>hrv<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "2812eaa3c645a6b9bfc4ea684d5e0ee373ace6edbd8ab2fb1a61e7592397efb8",
+          "bytes": 849610
+        },
+        {
+          "name": "model.bin",
+          "sha256": "d60bf739bed73bf0c62dbd6d41177df2f6749656672f6c7257474ff647921ce4",
+          "bytes": 75760715
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "f9e784ecdd01cda6ef968955ffb73bfdf7e8e6063b7fffeb789c700c9700bd88",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "3e732fbc16f7155d1354f96e746092f95f290d6b0a0cac56e9e4a1dd7ddb13d2",
+          "bytes": 222
+        },
+        {
+          "name": "source.spm",
+          "sha256": "d0e1df7aedc416b6bda4c48b77ba3e08ab00d342f341412eb0173f67fd1273a7",
+          "bytes": 791933
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "7c75f003cde068dfbe15f973052903ffee83709906f16dcb11ed370010de7cdc",
+          "bytes": 1332437
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "hu"
+      },
+      "modelID": "opus-ed885fa624ba552b5e4eac051272c32eeb0c9cda7976de9b4d7b5e1c8979f6db",
+      "directoryName": "ct2-enhu",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "b5d97cc1e75ab4fec33b9dc0490f078329057d0ab37069ea086394c2be10c0ac",
+          "bytes": 834496
+        },
+        {
+          "name": "model.bin",
+          "sha256": "e33313d04fa5ae5a867092292e8a285d8ef3dc3bbe6c31ed4d5631bbdcf43f7d",
+          "bytes": 244686893
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "3850fefdba11c1abc87aacd021530c977b26f095dc6f800a674baa112513208d",
+          "bytes": 794916
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "e624527be481f8ff58c1e41cb4f396ea95778ee6e5f78f86cb7f3c7863a5992e",
+          "bytes": 1113916
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "it"
+      },
+      "modelID": "opus-20abfac414540ca6041754c443f913cb89f8043bad42cee40831883d77f054d8",
+      "directoryName": "ct2-enit",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "cf5ee094f498d8391ff2bbd52c4488c3d53f72175ff9b3e8094bfd45ffc77c59",
+          "bytes": 820134
+        },
+        {
+          "name": "model.bin",
+          "sha256": "52942c3a864b7257946dffac377d8bbdf5ffa3996bced7b7a111dc20d0c199d9",
+          "bytes": 242054261
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "50e828d41b3ea6c89ef4c3312cb74ba3d942f4d313ec19c5115aa535cb5ba286",
+          "bytes": 802852
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f5c68b6df775feff1a2c6035b513810163b4d7009374bd22e952d9aadf992226",
+          "bytes": 969793
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "lt"
+      },
+      "modelID": "opus-492dc33960185674c4938d7681a4f259fd280b24d75549d6736ef76ee96ad4a8",
+      "directoryName": "ct2-enlt",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "80e652327bda51d3169693b50844168ff1f2d34d462ff9e3450bd23ed66a2f17",
+          "bytes": 836803
+        },
+        {
+          "name": "model.bin",
+          "sha256": "92d980b9aef084b0486b81e4fbb3c85a8a81a36f61d61934908472e1d9f4f5ba",
+          "bytes": 246342221
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "7c494c9df0fb537038a2f1fbd7794dd83e859745dae7a9b512c2263338d86177",
+          "bytes": 801213
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "015a42687a14e0523f373096237c9aae36a5e02619f353ad9cde6f744dd7b304",
+          "bytes": 1106722
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "lv"
+      },
+      "modelID": "opus-0e2f547e57eef65c4a022ce5f35bdb6b048ac7004c6cc32d52438426d3b3fcf0",
+      "directoryName": "ct2-enlv",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "25446f415fe316afbf692acf7ef5131a74940dc820e2cbe31300f09ac3c492dc",
+          "bytes": 838711
+        },
+        {
+          "name": "model.bin",
+          "sha256": "991f000df4fcdf81bc850a55767dcb478b2013632320b478fe8912140274e36f",
+          "bytes": 246054293
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "94634cc0b00a2a1e0e2e4317cc0a49d0154d835f7951425e45be15c72ba21417",
+          "bytes": 798014
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "e78a05e115ed552ca0e00a3dbb434a446139c4b860cc7f8028c84265e87f50d4",
+          "bytes": 1136425
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "mt"
+      },
+      "modelID": "opus-bdbfefbe905e429fe5006c94f8a833c15a0f6c7ab1607b2542eac7120f20e137",
+      "directoryName": "ct2-enmt",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "8a175fcce5ecde9617e2c7faca2a994764b06c6b4bac4a4772f4b5b99887d6c6",
+          "bytes": 788883
+        },
+        {
+          "name": "model.bin",
+          "sha256": "2c4030cc4a4e24c69c17b52ebf5010d4a0d2de991b390e8197e551b5358c5196",
+          "bytes": 78054157
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "be66673da0bd5c7ece881b14d8aa7067d564f967ba1db205a589c69ba8c4ce71",
+          "bytes": 788875
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "dce2dc3ee9cf9f889bbfffc9d152dfcbbeb7ac46f82b7459147300fbd0553b76",
+          "bytes": 961526
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "nl"
+      },
+      "modelID": "opus-0cf7d0f23f45bc795dfe0f261558980239c78dcce462d4f0d2351ee64ab838a2",
+      "directoryName": "ct2-ennl",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "f538d23d4b30641cd97c608d2a83890d503aa1286a5560f19ef949404a786e94",
+          "bytes": 813866
+        },
+        {
+          "name": "model.bin",
+          "sha256": "33af608d47983c5f1fb5d5ebe07b5c91e0a255c29001912bd2406068884300e6",
+          "bytes": 83767397
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "d05781fde84b8793191528a7a176e1b17f96265388f602379ee6ae3139f59141",
+          "bytes": 789525
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "78c1ea4f71b7d582051c7250032d2d959e60c5d42078f5d540951153ad836774",
+          "bytes": 1336177
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "pl"
+      },
+      "modelID": "opus-d92a1d8a578fabe15373a803615f66eb5f55e0a789b841b3caa2edf46dc206bf",
+      "directoryName": "ct2-enpl",
+      "targetTag": ">>pol<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "ef8d9b0da062c863241e0d61af5108a53e1fb335c9c7712eeeb4498b2dd55782",
+          "bytes": 815306
+        },
+        {
+          "name": "model.bin",
+          "sha256": "9b5d646c410d152fb2e44dffdb823a5cb9eb1c2012912de26e4394397b47afa5",
+          "bytes": 79099877
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "5306a05ecdef4bc0e63fff74cbdf653c028a0cdc57e0945b107e23b71c469bad",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "3140fe2eddedc897ca27aa2b539b8064f667f82298eb95b2701ee490bde33388",
+          "bytes": 788226
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "0ef0eae2cabf63016cbaf109e053be898e5bf941429f5cfd06cdf35bc6fa1d3e",
+          "bytes": 1093037
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "pt"
+      },
+      "modelID": "opus-02bdae17754f8189e4767b3f9d26d5431e0a6b6a6ee4560ac4f7c2e10f4aab31",
+      "directoryName": "ct2-enpt",
+      "targetTag": ">>por<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "b3cf20ccd4e48a89882cfdba157c05fa1cd71a6b69517dfc80e3a34d387ea91f",
+          "bytes": 824855
+        },
+        {
+          "name": "model.bin",
+          "sha256": "9c9700a23edecabbaccddbf22179d80ecc062c0c085441df74e328693172c017",
+          "bytes": 242419589
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "c8b5af4ae34bc1d02b85c3990260c54e1d82a4d1d6591279032880809951a84e",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "7a7fcf812cf03a5785daa35d4932bbbe69e7e605c0fe56fce5a3f731d6c355aa",
+          "bytes": 802741
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "9dcef92228c074bd608459f25472da586e2d15ca1ff1af0956d17573d35b9d1b",
+          "bytes": 1008431
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "ro"
+      },
+      "modelID": "opus-aca821dbaacf440ff51aa7bcf44fbe5c2bc8503b5a252240a026d73aedc7ef8d",
+      "directoryName": "ct2-enro",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "6fa1ec14839bda5beef82191160d1db6dd88bf7a1da9aed1bb4f152bdad26229",
+          "bytes": 826047
+        },
+        {
+          "name": "model.bin",
+          "sha256": "e4ec92923beb7650ca70f81761c8f24bb9ab4b1d5fa1d7144bef60b21ca13e79",
+          "bytes": 241845797
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "e89c326f5f6887eeecdc46c18174c9ad86a2f429e1e5c8492705ace5b858ebbd",
+          "bytes": 802048
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "bd38a1064b29150296a5f61facfa1ac79f9e6b3def41e7a6eb6ccb523f704429",
+          "bytes": 1000395
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "ru"
+      },
+      "modelID": "opus-94f749975a4f9fc623a0be49c219b12cc0f24e13d50ecbbe4c573924fa3d7870",
+      "directoryName": "ct2-enru",
+      "targetTag": ">>rus<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "model.bin",
+          "sha256": "aef8701dbba8d435ff57476ccfe05ce2ebb9985543f7777514d785bdc0c7c7d7",
+          "bytes": 249438221
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f7eca39e48e45e92fb1ab9689ba7ba0c4310ae268c248db112c0dcba2f2ba32c",
+          "bytes": 2090587
+        },
+        {
+          "name": "source.spm",
+          "sha256": "3612abfe04bf08344ba91115f0e15e228a7a15a621ea856bfd548097dbaeb43c",
+          "bytes": 802747
+        },
+        {
+          "name": "target.spm",
+          "sha256": "22940e744b3a9fd166a04880938fb61f7dfa8ba4b5d2d3f6371a6c4ba8f3b019",
+          "bytes": 1017004
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "a4338a293a6e68cefb04558b99536c9ffec01d4bdb17d7ad9e76f27ec4522366",
+          "bytes": 8
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "sk"
+      },
+      "modelID": "opus-5e352081a8ca4a68c85f6a6292c136fb7cf012c4a66be461426032ed41506dcb",
+      "directoryName": "ct2-ensk",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "532600fd2cbe88ecce896c892ffc7b48f21ca8d821cfd479fdb4b12158c73784",
+          "bytes": 829895
+        },
+        {
+          "name": "model.bin",
+          "sha256": "b35fb9dcc589c99dfcdcac0a8db18a7b915a164f5a311a90644cf319b93b4d38",
+          "bytes": 80125837
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "5c99b71996bd305cc2e602ff498b6232d97c2c8fc650c7797b8a6fcc71b2bc8e",
+          "bytes": 789505
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "eba2f3f9871d539e71680a842b311b67d509cdafe82f6e4a68bc9ef228792a0b",
+          "bytes": 1172107
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "sl"
+      },
+      "modelID": "opus-d74f0cf22561f90d6646dfe17de4551e2cec3ebf819241219c3e9aa93f0ca6b4",
+      "directoryName": "ct2-ensl",
+      "targetTag": ">>slv<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "2812eaa3c645a6b9bfc4ea684d5e0ee373ace6edbd8ab2fb1a61e7592397efb8",
+          "bytes": 849610
+        },
+        {
+          "name": "model.bin",
+          "sha256": "d60bf739bed73bf0c62dbd6d41177df2f6749656672f6c7257474ff647921ce4",
+          "bytes": 75760715
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "e223f6abb9d0c3333528c4f623610ce55875e4838311e9b523058ab2681fc017",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "3e732fbc16f7155d1354f96e746092f95f290d6b0a0cac56e9e4a1dd7ddb13d2",
+          "bytes": 222
+        },
+        {
+          "name": "source.spm",
+          "sha256": "d0e1df7aedc416b6bda4c48b77ba3e08ab00d342f341412eb0173f67fd1273a7",
+          "bytes": 791933
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "7c75f003cde068dfbe15f973052903ffee83709906f16dcb11ed370010de7cdc",
+          "bytes": 1332437
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "sv"
+      },
+      "modelID": "opus-d3cfc3fcc21fe58b69c7029f3001324b833471e3a381ced01a6e8bbb82a2641a",
+      "directoryName": "ct2-ensv",
+      "targetTag": ">>swe<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c8b2f0d2cf9308d2fe38257c8ddb0ed93d20fc71057d917028e3ac237a4c5b13",
+          "bytes": 799832
+        },
+        {
+          "name": "model.bin",
+          "sha256": "a82c6e7198d0af956cd44d76f9bf1a20fbc46f4d25b8fce20fac2c6d01a7802c",
+          "bytes": 242307101
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "27e10f7152fa2fb5ce9cc5b1c91d573cd5f14dcd37513183b9260872fed9f1cc",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "05f3dec886e0b8ce55a962aa0f1c747b9606c6068d76e3e840ed9a0d2b64ce57",
+          "bytes": 794427
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "433c35696c89c58227030d6df487d54a3a67eff560bfee3321e59602c3404c15",
+          "bytes": 966761
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "uk"
+      },
+      "modelID": "opus-94f749975a4f9fc623a0be49c219b12cc0f24e13d50ecbbe4c573924fa3d7870",
+      "directoryName": "ct2-enuk",
+      "targetTag": ">>ukr<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "22940e744b3a9fd166a04880938fb61f7dfa8ba4b5d2d3f6371a6c4ba8f3b019",
+          "bytes": 1017004
+        },
+        {
+          "name": "model.bin",
+          "sha256": "aef8701dbba8d435ff57476ccfe05ce2ebb9985543f7777514d785bdc0c7c7d7",
+          "bytes": 249438221
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "4a9897e0d8e3857289908592b9a1b581c4ad8cdef39e52855b27db431cf69b0d",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "3612abfe04bf08344ba91115f0e15e228a7a15a621ea856bfd548097dbaeb43c",
+          "bytes": 802747
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f7eca39e48e45e92fb1ab9689ba7ba0c4310ae268c248db112c0dcba2f2ba32c",
+          "bytes": 2090587
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "es",
+        "target": "en"
+      },
+      "modelID": "opus-568910e9d68e7fb24c6f52e8c3ba3f0f0bd2dfab6086efeb14402187da5cb3c7",
+      "directoryName": "ct2-esen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "e8ba58a95c4029a5c5a16c43f6784ee30fe197a1766bf2dbacc9f9b255f9361e",
+          "bytes": 802657
+        },
+        {
+          "name": "model.bin",
+          "sha256": "9e0c91c22413fa6189e0bbb2a19736e5f5d5d39c7d52268d588fb09a23aae66c",
+          "bytes": 242371085
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "0a23783d3c79054e9033fa55aaaeeeb6513cf712063ea87b4eeff5014ee49134",
+          "bytes": 820182
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "c6bfcb4a8aa172c7aecda8e0b77e008cab430f9bb68025a2950c3cc6abdb8388",
+          "bytes": 993705
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "et",
+        "target": "en"
+      },
+      "modelID": "opus-be6736368a042490087df2ec8f77c2f287e93a6ae7adca7103d3c22be7cfa2c5",
+      "directoryName": "ct2-eten",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "7a7be560659ccf537b9f699c5d6f02a0ebfb637e0bcfdb894c3a5fa7574234a7",
+          "bytes": 797197
+        },
+        {
+          "name": "model.bin",
+          "sha256": "c0dc397cfcbb1e30f5fc0da8163946d2e50d9939670c5734644699a50827af6b",
+          "bytes": 244209077
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "09179aae4ceeafa81903611e660770d3953f5291ed66974dc28ac6d25ae4cb23",
+          "bytes": 812799
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "ef958ca699ea5ec77c5aa3380a41042ca16c2086e1dbc8552191f46252e41b7e",
+          "bytes": 1017047
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "fi",
+        "target": "en"
+      },
+      "modelID": "opus-47fe4f26ba1ad9fabbb9d54fa4a90e3e46df02342901bf03868398e5b399d60a",
+      "directoryName": "ct2-fien",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "ec7b44af3bba8e0439b9cf203adf29e37921ae6711491d138e219b9f1b69d84c",
+          "bytes": 789795
+        },
+        {
+          "name": "model.bin",
+          "sha256": "d3fdc7f997da9af2774e36a321e5ae6bf777c7915b0f26c0974ce943d24b9e5b",
+          "bytes": 245571317
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "82fcb74f79c5f5b5bf0fe73f7dfb6a646efa50ffb4b2a0cd564a1193c78a032e",
+          "bytes": 831865
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "eb5645d60c69efd7053b1e5d66893a034b28c484c4beccd83cff606df891e2b4",
+          "bytes": 1064424
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "fi",
+        "target": "ru"
+      },
+      "modelID": "opus-e895fae0e51e9f2888d96e31146f8ffc4e0abdd7d98424aff898aa64a62157af",
+      "directoryName": "ct2-firu",
+      "targetTag": ">>rus<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "05f2d644a6e13847b98b46c53bb3488b3edf887a08d694379e1bb54338c78a37",
+          "bytes": 985365
+        },
+        {
+          "name": "model.bin",
+          "sha256": "a1182b1fddb87c2f1888da4214afd54b03bcdefb01d7daf9753d7d5deb77522b",
+          "bytes": 248774645
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "a4338a293a6e68cefb04558b99536c9ffec01d4bdb17d7ad9e76f27ec4522366",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "cc4435dbfab49e483192b62a87ff6854ab849847d6fb358326c96229b0033979",
+          "bytes": 825192
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "2e727d0c3a1b691645b6823a5812d8a40318925d55d3ed38de37583cbcacf66b",
+          "bytes": 2043001
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "fr",
+        "target": "en"
+      },
+      "modelID": "opus-a4cb549e62c7eea70957550c3a9efa5e4883ed663bf6968625ffc7d01525cc28",
+      "directoryName": "ct2-fren",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "69e8272c2d215294ae2e19c6fcef39fc26b386fcf64cd07f376b965740c80592",
+          "bytes": 802408
+        },
+        {
+          "name": "model.bin",
+          "sha256": "e275685c78d91944048354997df696358aa9401e0ccddc5a8d450a4749febde8",
+          "bytes": 240604301
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "622a0fef37ea7c6d7cd4a6530c2279d4688987c5417bba26fba9ae416f8b7758",
+          "bytes": 819955
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f3c2304ee3eaec82e2da0de98e602bca4a0f4e108c3b204983ba14ac7bae7603",
+          "bytes": 971990
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "ga",
+        "target": "en"
+      },
+      "modelID": "opus-72d8a89e13276ed242f3e0cc04e5a7e0047c939b14e6409f3c283baab3b3108f",
+      "directoryName": "ct2-gaen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c77ff6c8598b536416ef87a841a58fe440c1eb1cd32085fe137dd4a434d94cdd",
+          "bytes": 803492
+        },
+        {
+          "name": "model.bin",
+          "sha256": "6ea4728547c32776f13dfee9d6d7f210011cda6254ef45ea31df7c4a14cbe48c",
+          "bytes": 75242275
+        },
+        {
+          "name": "config.json",
+          "sha256": "3e732fbc16f7155d1354f96e746092f95f290d6b0a0cac56e9e4a1dd7ddb13d2",
+          "bytes": 222
+        },
+        {
+          "name": "source.spm",
+          "sha256": "33325fac3cb4c1e81d7dad7abdafef5e592f6ef5378264ef34f2283bea14d554",
+          "bytes": 839226
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "746cf9ee38f1b3356c5775bb2a4f274709e7517bb00a703545bf1655b3a9a6f8",
+          "bytes": 1083564
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "hr",
+        "target": "en"
+      },
+      "modelID": "opus-85b4c6d01db186dd828d8d6137ec48bed92c886579e1002a042d67a1cce2f48b",
+      "directoryName": "ct2-hren",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "216ebb622b4d2842e9d71b1f7917aa1ff65b8687e37c0f66a9cdaa195dc2dbc9",
+          "bytes": 797979
+        },
+        {
+          "name": "model.bin",
+          "sha256": "359c2b67076f0dac55c55ecbeebf739c15a780269fbe244543346f7e1cdfa13b",
+          "bytes": 247690013
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "533310227f43bd2f1f71368fc983ba8cbe2332896967409bb9bc67cf14a0af07",
+          "bytes": 895870
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "0634675fa0249a16b75048c20c4caca90707102f7594bdd6698603eace751c57",
+          "bytes": 1543371
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "hu",
+        "target": "en"
+      },
+      "modelID": "opus-4957a389440b674d209bd1ac799e6edcc0fc7b405f58b5c19e301df57ec2e7eb",
+      "directoryName": "ct2-huen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "3850fefdba11c1abc87aacd021530c977b26f095dc6f800a674baa112513208d",
+          "bytes": 794916
+        },
+        {
+          "name": "model.bin",
+          "sha256": "26b572a0b72a38c3ba6b218a6f87963f16e8e0c2b0e2bfbb408bfe385b8bf5e1",
+          "bytes": 244686893
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "b5d97cc1e75ab4fec33b9dc0490f078329057d0ab37069ea086394c2be10c0ac",
+          "bytes": 834496
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "e624527be481f8ff58c1e41cb4f396ea95778ee6e5f78f86cb7f3c7863a5992e",
+          "bytes": 1113916
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "it",
+        "target": "en"
+      },
+      "modelID": "opus-256c53f2e0d3f12017bad8442a1e32c05dc9633033cff02c458c6c1d8af2a968",
+      "directoryName": "ct2-iten",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "8e6799550a391c7a30ae95869c4692a00352e05fdf1ffcf9b50d96f08b0327bf",
+          "bytes": 802852
+        },
+        {
+          "name": "model.bin",
+          "sha256": "5d5ac086dc29baba1a131c5d0f4a142acb9d6f0ec20d58e943e1759028e793f5",
+          "bytes": 242054261
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "4e900c0f10324efc6ac67a5246cec9b0faf693ea1ea9fa1786a9f3755a59a73a",
+          "bytes": 820134
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "f5c68b6df775feff1a2c6035b513810163b4d7009374bd22e952d9aadf992226",
+          "bytes": 969793
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "lt",
+        "target": "en"
+      },
+      "modelID": "opus-679590fec4d4e82814931ca71f572b5eb026572e1cfcfb57eb8a94cc3599e06d",
+      "directoryName": "ct2-lten",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "7c2211e1f2bb8466b109c65cf5c7daa4f515c33c961b9a06b60488fa334e55d7",
+          "bytes": 801200
+        },
+        {
+          "name": "model.bin",
+          "sha256": "4a5d4d29aca46ace227a34d3b40122902eeb53f0191b468672848c0e7c1df830",
+          "bytes": 246342221
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "b8f47ea6f62f72021654522ef3e88628c1da11ee3963f3c438623d5d883e98c5",
+          "bytes": 836790
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "6ba243fccca7d44bf5a5b12cb3d7aeb6d34104f971e6681eaaa1f263ce89d849",
+          "bytes": 1106722
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "lv",
+        "target": "en"
+      },
+      "modelID": "opus-42dade11c204dfd64200561d73048ab2c254155ed0877f0cb09d4772a005a453",
+      "directoryName": "ct2-lven",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "866671354123313c7afa15d27d76bc943d12113e2fe7519dae9cc7f5f6f07a97",
+          "bytes": 795408
+        },
+        {
+          "name": "model.bin",
+          "sha256": "8df451de2b5956fd951ef59154ef08f68cfc2c93c821f3f72a4dbd8c299db07d",
+          "bytes": 245460893
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "153290d0c57d51a9f248dad5b53ff41e955cc375f155d4b550e903a48e0b964b",
+          "bytes": 835221
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "03cd9209d9f20ca284db97c24a5b88ab70460956fd96a179de1d5ae4b85da7a5",
+          "bytes": 1118186
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "mt",
+        "target": "en"
+      },
+      "modelID": "opus-c4b16877ab0816d1352baf6712f0b337bf9bd3f2a5e6152e30b52760b6e2d447",
+      "directoryName": "ct2-mten",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "be66673da0bd5c7ece881b14d8aa7067d564f967ba1db205a589c69ba8c4ce71",
+          "bytes": 788875
+        },
+        {
+          "name": "model.bin",
+          "sha256": "facc8236324c0d1ae922d2a7216066e8230dedf2ff7791bc3f83e33e6ef9f1f4",
+          "bytes": 78054157
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "8a175fcce5ecde9617e2c7faca2a994764b06c6b4bac4a4772f4b5b99887d6c6",
+          "bytes": 788883
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "dce2dc3ee9cf9f889bbfffc9d152dfcbbeb7ac46f82b7459147300fbd0553b76",
+          "bytes": 961526
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "nl",
+        "target": "en"
+      },
+      "modelID": "opus-62f51013aa3d18913f6e2b5ce84b18e6e41d2170585caa00d2dd26a3530a8158",
+      "directoryName": "ct2-nlen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "d05781fde84b8793191528a7a176e1b17f96265388f602379ee6ae3139f59141",
+          "bytes": 789525
+        },
+        {
+          "name": "model.bin",
+          "sha256": "c0bdf26523f2df48afb45bee720b1890805cab320726270b019fb71f8cee94e7",
+          "bytes": 83767397
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "f538d23d4b30641cd97c608d2a83890d503aa1286a5560f19ef949404a786e94",
+          "bytes": 813866
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "78c1ea4f71b7d582051c7250032d2d959e60c5d42078f5d540951153ad836774",
+          "bytes": 1336177
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "pl",
+        "target": "en"
+      },
+      "modelID": "opus-e31a5283f6fe99d48c827383b96bdaf55bd5d449f3236d62bbd53bd354c15f1c",
+      "directoryName": "ct2-plen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "578a275c6f4a88a733d01da296827a167eaa46c289c113b51446ab1470ec1fa1",
+          "bytes": 796568
+        },
+        {
+          "name": "model.bin",
+          "sha256": "479b002c65b9ec9804123201af16c69644603b1e9e6b0e0c6518222f85cdfd98",
+          "bytes": 245852021
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "0f6c4f92c0339fc552f89bf13f0131bf7f219a02bcfd160492d9e5f23829e80a",
+          "bytes": 820935
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "b1cc4f3e534d86af8533cf27857810f4727c45dc37fb16c9229f834c95b5d5b9",
+          "bytes": 1096687
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "pt",
+        "target": "en"
+      },
+      "modelID": "opus-6ff23600dd4dc0856852d93ec35d29889e0ec89b4681acaf1ec961a835e538db",
+      "directoryName": "ct2-pten",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "121d4e0a20cda2052945d790d335f421f7bea7fa6b0ff7fbc9112eed5f12036f",
+          "bytes": 779494
+        },
+        {
+          "name": "model.bin",
+          "sha256": "8ba1c42c85e229ef3160dcc840b325dba46c1552ce948dd51bffa863279731f4",
+          "bytes": 82713357
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "baeab21ec00d0b490382b82499ef0348235c5a8e75de28aec8290adf62b007c4",
+          "bytes": 800087
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "c48177ccac49fd66ede777976c372d5c0cbae351c5b6676c5ae7957f59e9d646",
+          "bytes": 1146400
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "ro",
+        "target": "en"
+      },
+      "modelID": "opus-6ff23600dd4dc0856852d93ec35d29889e0ec89b4681acaf1ec961a835e538db",
+      "directoryName": "ct2-roen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "121d4e0a20cda2052945d790d335f421f7bea7fa6b0ff7fbc9112eed5f12036f",
+          "bytes": 779494
+        },
+        {
+          "name": "model.bin",
+          "sha256": "8ba1c42c85e229ef3160dcc840b325dba46c1552ce948dd51bffa863279731f4",
+          "bytes": 82713357
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "baeab21ec00d0b490382b82499ef0348235c5a8e75de28aec8290adf62b007c4",
+          "bytes": 800087
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "c48177ccac49fd66ede777976c372d5c0cbae351c5b6676c5ae7957f59e9d646",
+          "bytes": 1146400
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "ru",
+        "target": "en"
+      },
+      "modelID": "opus-d7c2126955c676c4537ea6678d2daad52d48cc896817ac62637ff6bbea0f92ef",
+      "directoryName": "ct2-ruen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "model.bin",
+          "sha256": "a5ad7aca8a5b7d38c312bcc10dcffdfd30b362341f7b9a2335277fc113059e23",
+          "bytes": 248860301
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "b5a35f2050eba451db60ea0f740e8ebabd473f3d1b1ff4e106cd9ec134828309",
+          "bytes": 2076466
+        },
+        {
+          "name": "source.spm",
+          "sha256": "a982dbb9362861151e36b0db1595b324cd1ce09acf46ce1f4d6d624e11c5807f",
+          "bytes": 1016851
+        },
+        {
+          "name": "target.spm",
+          "sha256": "e69faed7f1e60eec38c64cceba35cc4fb05ec6478082f4c8a14b141fd6596e9e",
+          "bytes": 802387
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "ru",
+        "target": "fi"
+      },
+      "modelID": "opus-8776cab1a94467db003d303c6731290eb4176e73d90f4cd3bdb777f91f6a971c",
+      "directoryName": "ct2-rufi",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "dc41cc04b755b4479e1e585bde98f3342065ef81dbf021eb05666ba61c0c6d27",
+          "bytes": 824682
+        },
+        {
+          "name": "model.bin",
+          "sha256": "db43e17d5e7dc933829134cbce4e4daafcfde3f90020c6b9845bece1d8a17069",
+          "bytes": 249111077
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "0a03e2e58a26037120f0b48fb209e238608d79f7092c6e90c7a30a5ba2b29874",
+          "bytes": 997169
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "77d31558f326309aac2f06cdb3c8b0d158e267b9a089d4026560148a3fe52ba9",
+          "bytes": 2073893
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "sk",
+        "target": "en"
+      },
+      "modelID": "opus-4f913c59f36b98d762224d269dedd6cba9d73c84ee4155916283090c97942e98",
+      "directoryName": "ct2-sken",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "b1c603a8ddb42de2558898ca8d1ff49eb9549bc15d5922102c9890a2db4108f5",
+          "bytes": 796116
+        },
+        {
+          "name": "model.bin",
+          "sha256": "e032763c7a83571bbbef85c9700edf81de608887aac0c795915429dc65583553",
+          "bytes": 245451605
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "fa297556cf75acf29f51dea0f1c0ef5225d247450e05307fd44dea6ea3185251",
+          "bytes": 823611
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "57e673dc1b4e956c76804b9a22fae650793bdf3b84c7dc913332a942160d3982",
+          "bytes": 1113177
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "sl",
+        "target": "en"
+      },
+      "modelID": "opus-85b4c6d01db186dd828d8d6137ec48bed92c886579e1002a042d67a1cce2f48b",
+      "directoryName": "ct2-slen",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "216ebb622b4d2842e9d71b1f7917aa1ff65b8687e37c0f66a9cdaa195dc2dbc9",
+          "bytes": 797979
+        },
+        {
+          "name": "model.bin",
+          "sha256": "359c2b67076f0dac55c55ecbeebf739c15a780269fbe244543346f7e1cdfa13b",
+          "bytes": 247690013
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "533310227f43bd2f1f71368fc983ba8cbe2332896967409bb9bc67cf14a0af07",
+          "bytes": 895870
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "0634675fa0249a16b75048c20c4caca90707102f7594bdd6698603eace751c57",
+          "bytes": 1543371
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "sv",
+        "target": "en"
+      },
+      "modelID": "opus-c6f0f644a38a899108db8ff9af10ba0820166950e2e8609611ae1a43f0a486d0",
+      "directoryName": "ct2-sven",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "c51247265dd2c7773c3be3669b63c5152ce145baeb54a17975145309eb422cf2",
+          "bytes": 795929
+        },
+        {
+          "name": "model.bin",
+          "sha256": "5944ba42a19e78581b6e6758a9574ff17da1c1f0336dc32ef20b2717977b6f2b",
+          "bytes": 242408237
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "20dd2029ff0a4b6dd7b89442035d57fb03e9a9efbbd36543d5aae5e2aa866bad",
+          "bytes": 799747
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "59b42d394fa549ab495dae085774427a7a23514136fe0617b1772e659efb8f30",
+          "bytes": 968355
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "uk",
+        "target": "en"
+      },
+      "modelID": "opus-d7c2126955c676c4537ea6678d2daad52d48cc896817ac62637ff6bbea0f92ef",
+      "directoryName": "ct2-uken",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "e69faed7f1e60eec38c64cceba35cc4fb05ec6478082f4c8a14b141fd6596e9e",
+          "bytes": 802387
+        },
+        {
+          "name": "model.bin",
+          "sha256": "a5ad7aca8a5b7d38c312bcc10dcffdfd30b362341f7b9a2335277fc113059e23",
+          "bytes": 248860301
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "a982dbb9362861151e36b0db1595b324cd1ce09acf46ce1f4d6d624e11c5807f",
+          "bytes": 1016851
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "b5a35f2050eba451db60ea0f740e8ebabd473f3d1b1ff4e106cd9ec134828309",
+          "bytes": 2076466
+        }
+      ]
+    }
+  ]
+}

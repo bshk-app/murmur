@@ -29,7 +29,9 @@ final class PreparationAndLanguageTests: XCTestCase {
     }
     func testDownloadedDirectionsArePromotedWithoutInventingReversePacks() {
         let routes = OfflineTranslationRoutes(pairs: [.init(source: "fi", target: "en"), .init(source: "en", target: "ru")])
-        XCTAssertEqual(routes.targets(from: "fi"), ["en", "ru"])
+        // FI→RU selects its registered direct model; two other installed legs
+        // must not silently change the selected quality profile.
+        XCTAssertEqual(routes.targets(from: "fi"), ["en"])
         XCTAssertEqual(routes.targets(from: "ru"), [])
         XCTAssertFalse(routes.sources.contains("de"))
     }

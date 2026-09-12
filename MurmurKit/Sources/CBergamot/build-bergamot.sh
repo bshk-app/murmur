@@ -87,6 +87,8 @@ clang++ -std=c++17 -O2 -arch arm64 -mmacosx-version-min=15.0 -w -c \
 echo "==> privatising the CTranslate2 half"
 cat > "$work/ct2-exports.txt" <<'EXPORTS'
 _murmur_ct2_open
+_murmur_ct2_open_with_options
+_murmur_ct2_translate_with_options
 _murmur_ct2_translate
 _murmur_ct2_close
 _murmur_ct2_string_free

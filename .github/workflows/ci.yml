@@ -26,6 +26,17 @@ jobs:
       - name: Test MurmurKit
         run: cd MurmurKit && swift test
 
+      - name: Test shared core and translation engine
+        run: |
+          swift test --package-path Engine/Core
+          swift test --package-path Engine/Translation
+
+      - name: Verify pinned quality catalogs and release gate
+        run: |
+          node Engine/Translation/Scripts/generate-quality-baseline.mjs --check
+          node Engine/Translation/Qualification/validate-audit.mjs
+          python3 -m unittest discover -s Engine/Speech/Qualification -p 'test_*.py'
+
   release-scripts:
     runs-on: ubuntu-latest
     steps:
