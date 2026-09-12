@@ -28,6 +28,12 @@ extension SpeechAssets {
             addRepo(source.name,id:"speech/additional-"+choice.rawValue,title:choice == .cohereArabic ? "Arabic speech recognition" : choice.title,detail:"A shared component. Deleting it affects every mode that uses it.",markers:[root.appendingPathComponent("murmur-mlx-readiness").appendingPathComponent(source.revision)],invalidatedBy:["imported/ASRModels/"+choice.rawValue])
         }
         let support=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0]
+        if let repo = Repo.ID(rawValue: CanaryAssets.repository) {
+            locations.append(.init(id: "speech/canary", root: URL(fileURLWithPath: home),
+                directory: CanaryAssets.defaultDirectory, title: "Canary experiment",
+                detail: "Used by experimental speech recognition and translation.",
+                additionalDirectories: [cache.repoDirectory(repo: repo, kind: .model)]))
+        }
         let fluid=support.appendingPathComponent("FluidAudio")
         locations.append(.init(id:"speech/detection-files",root:fluid,directory:fluid.appendingPathComponent("Models"),title:"Speech detection for recordings",detail:"Used by audio imports and keyboard dictation."))
         return locations

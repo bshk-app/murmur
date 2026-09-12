@@ -19,7 +19,8 @@ public struct AudioFileBatcher {
     public init(maximumSamples: Int = Self.maximumBatchSamples) {
         precondition(maximumSamples >= Self.frameSamples * 3 && maximumSamples <= Self.maximumBatchSamples)
         policy = SpeechBoundaryPolicy(frameSamples: Self.frameSamples, preRollSamples: Self.frameSamples,
-            endpointSilenceFrames: 3, maxEpochSamples: maximumSamples - Self.frameSamples)
+            endpointSilenceFrames: 3, maxEpochSamples: maximumSamples - Self.frameSamples,
+            hardMaximumSamples: maximumSamples)
     }
 
     public mutating func append(_ samples: [Float], isSpeech: Bool) -> AudioFileBatch? {

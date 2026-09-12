@@ -699,3 +699,49 @@
 "Skip tour" = "Skip tour";
 
 "Feature example" = "Feature example";
+
+
+// Canary speech experiment
+"Canary experiment" = "Canary experiment";
+
+"Experimental speech recognition" = "Experimental speech recognition";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Record speech or choose an audio file. Canary processes it in short sections on this device.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Models may need a one-time download. Keep this screen open while processing; results may contain mistakes.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Recordings and available text are saved in Notes. Closing this screen releases the models.";
+
+"Translate speech" = "Translate speech";
+
+"Canary direct translation" = "Canary direct translation";
+
+"Canary → OPUS" = "Canary → OPUS";
+
+"Canary transcription" = "Canary transcription";
+
+"Preparing Canary…" = "Preparing Canary…";
+
+"Recording…" = "Recording…";
+
+"Processing speech…" = "Processing speech…";
+
+"Processing complete" = "Processing complete";
+
+"Could not process this recording" = "Could not process this recording";
+
+"Processed audio" = "Processed audio";
+
+"Tap Stop recording to process the recording." = "Tap Stop recording to process the recording.";
+
+"Copy transcript" = "Copy transcript";
+
+"Record audio" = "Record audio";
+
+"This device does not have enough memory for the current Canary model." = "This device does not have enough memory for the current Canary model.";
+
+"Processing fell behind. The recording and partial results were saved." = "Processing fell behind. The recording and partial results were saved.";
+
+"Used by experimental speech recognition and translation." = "Used by experimental speech recognition and translation.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Text appears as sections finish. Stop recording to finish the last section.";

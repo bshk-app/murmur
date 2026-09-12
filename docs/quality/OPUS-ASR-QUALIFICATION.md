@@ -145,9 +145,11 @@ The existing external CanaryProbe study has 64 shared short read-speech samples,
 RU/EN/FI, six directions, Mac timing, and no blind human review. It is useful for
 candidate selection but does not pass this release protocol. DE/FR, full FLORES,
 spontaneous/noisy/long speech coverage, all model/decode arms, paired phone runs,
-30-minute stress and bilingual review remain required. Canary now has an explicitly unqualified app short-clip runtime; production
-streaming and long transcript merging remain unavailable. This commit supplies no new scored model-quality results and does
-not claim that any replacement is better.
+30-minute stress and bilingual review remain required. Canary now has a separate,
+explicitly experimental recording/import screen with serial nonoverlapping windows.
+Each model call still has a 15-second limit; the caller handles longer audio.
+[Execution checks](CANARY-BATCHING.md) supply no new scored model-quality results
+and do not establish that any replacement is better.
 
 ## In-app ASR profile and telemetry hooks
 
@@ -164,8 +166,10 @@ choice across launches.
 Use `SpeechRecognitionProfile.candidate(language:mode:runtimeID:)` to construct a
 benchmark-only Parakeet, GigaAM or Whisper candidate. Unsupported language/model
 combinations throw; `canary` remains unavailable through the normal profile
-resolver. The diagnostic runner alone can use CanaryQualificationRuntime for
-explicit sequential clips of at most 15 seconds. `SpeechSession(profile:,
+resolver. The diagnostic runner uses CanaryQualificationRuntime for explicit
+sequential clips of at most 15 seconds. The separate experimental tool uses
+CanaryTranscriber to feed long audio through the same runtime in bounded windows.
+`SpeechSession(profile:,
 memoryLimit:)` uses the profile's model and independent lane setting; its start,
 warm-up and offline replay use the profile's language and mode. Existing callers
 using the original initializer retain their existing behavior.

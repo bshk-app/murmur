@@ -5,14 +5,14 @@ import MurmurCore
 
 /// Decodes and resamples incrementally, including compressed/stereo recordings.
 /// At most one input block and one 4096-sample output block are resident.
-final class AudioFilePCMReader {
+public final class AudioFilePCMReader {
     private let file: AVAudioFile
     private let converter: AVAudioConverter
     private let input: AVAudioPCMBuffer
     private let output: AVAudioPCMBuffer
     private var ended = false
-    let duration: Double
-    init(url: URL) throws {
+    public let duration: Double
+    public init(url: URL) throws {
         file = try AVAudioFile(forReading: url, commonFormat: .pcmFormatFloat32, interleaved: false)
         guard file.length > 0, file.processingFormat.sampleRate > 0,
               let format = AVAudioFormat(commonFormat: .pcmFormatFloat32, sampleRate: 16_000, channels: 1, interleaved: false),
@@ -22,7 +22,7 @@ final class AudioFilePCMReader {
         self.converter = converter; self.input = input; self.output = output
         duration = Double(file.length) / file.processingFormat.sampleRate
     }
-    func next() throws -> [Float]? {
+    public func next() throws -> [Float]? {
         guard !ended else { return nil }
         var conversionError: NSError?, readError: Error?
         output.frameLength = 0
@@ -82,30 +82,19 @@ public actor AudioFileTranscriber {
                         transcribe: ([Float]) async throws -> String,
                         onProgress: (Double, Double) async -> Void = { _, _ in },
                         onSegment: (AudioFileSegment, Double) async throws -> Void) async throws {
-        var batcher = AudioFileBatcher(maximumSamples: maximumSamples)
         var lastProgress = Date.distantPast
-        func recognize(_ batch: AudioFileBatch) async throws {
-            guard batch.range.upperBound > completedThrough else { return }
-            // Resume only at a committed batch boundary. Never silently skip a
-            // fragment if a future VAD change creates incompatible boundaries.
-            guard batch.range.lowerBound >= completedThrough else { throw CocoaError(.fileReadCorruptFile) }
-            try Task.checkCancellation()
-            let text = try await transcribe(batch.samples)
-            try Task.checkCancellation()
-            try await onSegment(.init(startSample: batch.range.lowerBound, endSample: batch.range.upperBound, text: text), reader.duration)
-        }
-        while let audio = try reader.next() {
-            try Task.checkCancellation()
-            let padded = audio.count < VadManager.chunkSize ? audio + Array(repeating: 0, count: VadManager.chunkSize-audio.count) : audio
-            let speech = try await classify(padded)
-            if let batch = batcher.append(audio, isSpeech: speech) { try await recognize(batch) }
-            if Date().timeIntervalSince(lastProgress) >= 0.25 {
-                await onProgress(min(reader.duration, Double(batcher.samplesRead)/16_000), reader.duration)
-                lastProgress = Date()
-            }
-        }
-        if let batch = batcher.finish() { try await recognize(batch) }
-        try Task.checkCancellation()
+        try await AudioBatchProcessor.process(maximumSamples: maximumSamples, completedThrough: completedThrough,
+            nextFrame: { try reader.next() }, classify: classify,
+            onProgress: { samplesRead in
+                if Date().timeIntervalSince(lastProgress) >= 0.25 {
+                    await onProgress(min(reader.duration, Double(samplesRead)/16_000), reader.duration)
+                    lastProgress = Date()
+                }
+            }, onBatch: { batch in
+                let text = try await transcribe(batch.samples)
+                try Task.checkCancellation()
+                try await onSegment(.init(startSample: batch.range.lowerBound, endSample: batch.range.upperBound, text: text), reader.duration)
+            })
         await onProgress(reader.duration, reader.duration)
     }
     public func close() async { await lane.close() }

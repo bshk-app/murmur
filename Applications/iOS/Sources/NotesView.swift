@@ -98,6 +98,14 @@ struct NotesView: View {
     private var utilitySheets: some View {
         navigationContent.tint(MurmurPalette.accent)
         .sheet(isPresented: $model.showAudioImport, onDismiss: { model.audioImports.dismissCompleted(); model.consumeUtilityRoute(); Task { await model.refresh() } }) { AudioImportView(model: model) }
+        #if !MURMUR_UI_HOST
+        .sheet(isPresented: $model.showCanary, onDismiss: { model.consumeUtilityRoute(); Task { await model.refresh() } }) {
+            CanaryExperimentView(model: model.canary, prepareExclusive: { try await model.prepareForCanary() })
+        }
+        .onChange(of: model.canary.isBusy) { _, busy in
+            if !busy { model.consumeUtilityRoute(); Task { await model.refresh() } }
+        }
+        #endif
         .sheet(isPresented: $model.showStorage, onDismiss: { model.consumeUtilityRoute() }) { StorageView(model: model) }
         .sheet(isPresented: $model.showMemory, onDismiss: { model.consumeUtilityRoute() }) { MemoryView(model: model) }
         .sheet(isPresented: $model.showLanguages, onDismiss: { model.consumeUtilityRoute() }) { NavigationStack { LanguageSetupView(model: model, isSheetRoot: true) } }

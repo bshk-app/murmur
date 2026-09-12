@@ -31,9 +31,10 @@ worktree-only `.claude` symlink.
   a preview fallback. Historic Python study results retain the old cap behavior
   and require native requalification before a changed profile is enabled.
 - ASR profiles separate automatic recommendations from explicit selections.
-  Qualified overrides are disabled. The Canary qualification adapter is
-  explicitly limited to short clips; no overlapping-window merge or production
-  Canary default is claimed.
+  Qualified overrides are disabled. Canary is available separately in Settings
+  → Tools → Canary experiment, with recording and file import through bounded,
+  nonoverlapping windows. No production Canary default is claimed. See
+  [CANARY-BATCHING.md](CANARY-BATCHING.md) for behavior and execution checks.
 - A debug device runner records real model outputs, source/profile provenance,
   process footprint, queue depths, input scheduling lag and finalization time.
   Fixed-rate replay has an independent producer, so slow inference cannot hide
