@@ -4,6 +4,33 @@ import XCTest
 @testable import MurmurKit
 
 final class MicCaptureTests: XCTestCase {
+    func test_capture_boundary_flushes_tail_before_closing_recording() {
+        let mic = MicCapture()
+        var recording = true
+        var saved: [Float] = []
+        mic.onChunk = { if recording { saved += $0 } }
+        mic.enqueue([1])
+        mic.flushPending()
+        // This is the legal producer interleaving between the old flush and close.
+        mic.enqueue([2])
+        mic.atCaptureBoundary { recording = false }
+        mic.flushPending()
+        XCTAssertEqual(saved, [1, 2])
+    }
+
+    func test_capture_boundary_discards_idle_tail_before_opening_recording() {
+        let mic = MicCapture()
+        var recording = false
+        var saved: [Float] = []
+        mic.onChunk = { if recording { saved += $0 } }
+        mic.flushPending()
+        mic.enqueue([1])
+        mic.atCaptureBoundary { recording = true }
+        mic.enqueue([2])
+        mic.atCaptureBoundary { recording = false }
+        XCTAssertEqual(saved, [2])
+    }
+
     func test_converter_tail_is_drained_at_stop() throws {
         let inputFormat = try XCTUnwrap(AVAudioFormat(
             commonFormat: .pcmFormatFloat32, sampleRate: 44_100,

@@ -93,7 +93,14 @@ public final class MicCapture: @unchecked Sendable {
             if !pending.isEmpty { onChunk(pending); pending.removeAll(keepingCapacity: true) }
         }
     }
-    public func atCaptureBoundary<T>(_ action: () throws -> T) rethrows -> T { try queue.sync(execute: action) }
+    /// Deliver the tail to the current owner before switching owners, in one
+    /// queue operation. Capture must not enqueue between the flush and action.
+    public func atCaptureBoundary<T>(_ action: () throws -> T) rethrows -> T {
+        try queue.sync {
+            if !pending.isEmpty { onChunk(pending); pending.removeAll(keepingCapacity: true) }
+            return try action()
+        }
+    }
 
     private func ingest(_ buffer: AVAudioPCMBuffer) {
         let rawPeak = buffer.floatChannelData.map { channel in
@@ -117,7 +124,8 @@ public final class MicCapture: @unchecked Sendable {
         enqueue(Array(UnsafeBufferPointer(start: ch[0], count: Int(out.frameLength))))
     }
 
-    private func enqueue(_ chunk: [Float]) {
+    // Internal so capture-boundary tests can replay PCM without opening a microphone.
+    func enqueue(_ chunk: [Float]) {
         guard !chunk.isEmpty else { return }
         var sum: Float = 0
         for value in chunk { sum += value * value }
