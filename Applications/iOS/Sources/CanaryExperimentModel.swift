@@ -28,12 +28,6 @@ import MurmurTranslation
     private var operationActive = false
     private var closingCount = 0
     var isBusy: Bool { operationActive || closingCount > 0 }
-    var routeDescription: String {
-        guard translateEnabled, source != target else { return L10n.text("Speech recognition") }
-        return L10n.text(directTranslationEnabled && DirectSpeechTranslation.supports(source: source, target: target)
-                         ? "Direct translation" : "Translation through text")
-    }
-
     @ObservationIgnored private let session = DirectSpeechSession()
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
     @ObservationIgnored private var textEngine: TextTranslationSession?

@@ -27,11 +27,6 @@ struct RecordingView: View {
                 Button { Task { await model.cancel() } } label: { Image(systemName:"xmark").frame(width:44,height:44).background(palette.card,in:Circle()) }
                     .accessibilityLabel("Close recording")
             }
-            if model.isTranslation {
-                Label(model.voiceTranslationMethod, systemImage: model.voiceTranslationMethod == L10n.text("Direct translation") ? "waveform.and.person.filled" : "text.bubble")
-                    .font(.caption).foregroundStyle(palette.secondary)
-                    .accessibilityIdentifier("voice-translation-method")
-            }
             if model.isTranslation && !model.transcript.isEmpty {
                 Picker("Reading view", selection: $showingOriginal) {
                     Text("Translation").tag(false)

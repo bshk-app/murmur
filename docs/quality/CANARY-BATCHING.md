@@ -11,8 +11,8 @@ shown as **Settings → Tools → Test speech translation**. The general Speech
 setting **Use direct translation where available** is off by default. When on,
 supported English↔X voice recording and keyboard sessions use direct ASR+AST;
 other pairs retain translation through text. The selected route is fixed for an
-utterance, stored internally in note/session metadata, and described to users as
-**Direct translation** or **Translation through text**.
+utterance and stored internally in note/session metadata. Working screens do not
+show an additional route badge; the preference lives only in Settings.
 
 `DirectSpeechTranslation.supportedLanguages` is the authoritative 25-language
 set from the upstream model card. Its exhaustive check compares against an

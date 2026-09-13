@@ -10,7 +10,6 @@ import MurmurCore
     var directTranslationEnabled = false
     var directTranslationSelected: Bool { directTranslationEnabled && source != target && (source == "en" || target == "en") }
     var directTranslationUnavailableOnDevice = false
-    var voiceTranslationMethod: String { L10n.text(directTranslationSelected ? "Direct translation" : "Translation through text") }
     var conversation = RecordingTranscript()
     var liveTranslationSegments: [UtteranceTranslation] = []
     func audioURL(for note: VoiceNote) -> URL? {

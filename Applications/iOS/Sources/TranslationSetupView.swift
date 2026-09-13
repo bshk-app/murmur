@@ -32,11 +32,7 @@ struct TranslationSetupView: View {
                 Image(systemName: "arrow.right").foregroundStyle(p.muted)
                 languagePicker("Translate to", selection: $model.target, codes: LanguagePair.qualityLanguages.sorted())
             }
-            if model.directTranslationSelected {
-                Label("Direct translation", systemImage: "waveform.and.person.filled")
-                    .font(.subheadline.weight(.semibold)).foregroundStyle(p.accentText)
-                    .murmurCard(radius: 16, padding: 15)
-            } else {
+            if !model.directTranslationSelected {
                 SpeechPriorityPicker(model: model).murmurCard(radius: 16, padding: 15)
                 ProcessingQualityPicker(selection: $model.translationQuality, options: ProcessingQuality.translationOptions(from: model.source, to: model.target))
                     .disabled(model.busy).murmurCard(radius: 16, padding: 15)
