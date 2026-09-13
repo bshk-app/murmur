@@ -174,6 +174,11 @@ import MurmurTranslation
         } }
         try input.arm()
         state.microphoneActive = true; publish()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--debug-enable-sync-delay") {
+            try await Task.sleep(for: .seconds(5))
+        }
+        #endif
         try await input.prepare()
         try Task.checkCancellation()
         guard token == operation else { throw CancellationError() }
