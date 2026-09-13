@@ -83,9 +83,29 @@ jobs:
             || { echo "tag $TAG does not match $expected from VERSION"; exit 1; }
 
       - name: Install release tooling
+        env:
+          SPARKLE_VERSION: "2.9.6"
+          SPARKLE_SHA256: "52bf9e88cdd972fc0c81501377a880e90d47031bd8ca5462488f843e2609e192"
         run: |
           brew install bshk-app/tap/zamokctl tuist
-          brew install --cask sparkle
+
+          # Homebrew disabled the `sparkle` cask on 2026-09-01 for failing the
+          # Gatekeeper check, so it can no longer supply generate_appcast.
+          # `zamokctl appcast` still needs that tool, so take it from Sparkle's
+          # own release tarball: pinned to the 2.x the app itself resolves to,
+          # and checksum-verified before anything is unpacked.
+          curl --fail --location --silent --show-error \
+            --output "$RUNNER_TEMP/sparkle.tar.xz" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/${SPARKLE_VERSION}/Sparkle-${SPARKLE_VERSION}.tar.xz"
+          echo "${SPARKLE_SHA256}  $RUNNER_TEMP/sparkle.tar.xz" \
+            | shasum -a 256 --check --status \
+            || { echo "Sparkle ${SPARKLE_VERSION} tarball failed its checksum"; exit 1; }
+          mkdir -p "$RUNNER_TEMP/sparkle"
+          tar -xJf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
+          sparkle_bin="$(dirname "$(find "$RUNNER_TEMP/sparkle" -type f -name generate_appcast -print -quit)")"
+          [[ -x "$sparkle_bin/generate_appcast" ]] \
+            || { echo "generate_appcast is not in the Sparkle ${SPARKLE_VERSION} tarball"; exit 1; }
+          echo "$sparkle_bin" >> "$GITHUB_PATH"
 
       - name: Import the Developer ID
         if: ${{ !inputs.repair }}

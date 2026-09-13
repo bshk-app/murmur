@@ -47,15 +47,6 @@ expected_tag="$(release_tag "$SHORT_VERSION" stable)"
     || die "stable appcast requires tag $expected_tag, got: $TAG"
 verify_github_release_asset "$REPOSITORY" "$TAG" "$DMG"
 
-sparkle_bin="${SPARKLE_BIN:-$(
-    for caskroom in /opt/homebrew/Caskroom/sparkle /usr/local/Caskroom/sparkle; do
-        [[ -d "$caskroom" ]] || continue
-        find "$caskroom" -maxdepth 3 -name sign_update -type f -print
-    done | sort -V | tail -1 | xargs dirname
-)}"
-[[ -x "$sparkle_bin/generate_keys" && -x "$sparkle_bin/sign_update" ]] \
-    || die "Sparkle generate_keys/sign_update tools are missing"
-
 work="$(umask 077; mktemp -d)"
 worktree="$work/feed"
 cleanup() {
@@ -99,8 +90,9 @@ signature="$(
         "$feed"
 )"
 [[ -n "$signature" ]] || die "the new $TAG enclosure has no EdDSA signature"
-"$sparkle_bin/sign_update" --verify --ed-key-file "$work/ed-key" "$DMG" "$signature" \
-    || die "the new $TAG enclosure signature does not verify"
+# Producing that signature is zamokctl's job and checking it is Sparkle's, in
+# the client, at update time. Keeping a second Sparkle lookup here purely to
+# re-verify it bought nothing that zamokctl does not already own.
 
 git -C "$worktree" add appcast.xml
 if git -C "$worktree" diff --cached --quiet -- appcast.xml; then
