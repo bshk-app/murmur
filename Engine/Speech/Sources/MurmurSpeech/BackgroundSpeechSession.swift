@@ -80,7 +80,6 @@ public struct BackgroundSpeechResult: Sendable {
         catch { continuation?.finish(); throw error }
     }
     public func begin(_ id: UUID, recordingURL: URL? = nil) async throws {
-        mic?.flushPending()
         try await withCheckedThrowingContinuation { (reply: CheckedContinuation<Void, Error>) in
             guard let continuation, let mic else { reply.resume(throwing: CancellationError()); return }
             do {
@@ -92,7 +91,6 @@ public struct BackgroundSpeechResult: Sendable {
         }
     }
     public func finish() async throws -> BackgroundSpeechResult {
-        mic?.flushPending()
         try mic?.atCaptureBoundary { try recording.finish() }
         return try await withCheckedThrowingContinuation { reply in
             guard let continuation else { reply.resume(throwing: CancellationError()); return }
@@ -100,7 +98,6 @@ public struct BackgroundSpeechResult: Sendable {
         }
     }
     public func discard() async {
-        mic?.flushPending()
         try? mic?.atCaptureBoundary { try recording.finish() }
         await withCheckedContinuation { reply in
             guard let continuation else { reply.resume(); return }

@@ -127,7 +127,6 @@ private actor DirectUtteranceAccumulator {
         let stream = PCMFrameStream(capacity: 128)
         let gate = self.gate
         capturedSamples = 0
-        microphone.flushPending()
         try microphone.atCaptureBoundary {
             try gate.begin(stream: stream, recordingURL: recordingURL) { [weak self] error in
                 Task { @MainActor in self?.onError?(error.localizedDescription) }
@@ -161,7 +160,6 @@ private actor DirectUtteranceAccumulator {
 
     public func endInput() {
         guard work != nil else { return }
-        microphone?.flushPending()
         capturedSamples = microphone?.atCaptureBoundary { gate.finish() } ?? gate.finish()
     }
 
@@ -190,7 +188,6 @@ private actor DirectUtteranceAccumulator {
 
     public func cancelUtterance() async {
         work?.cancel()
-        microphone?.flushPending()
         _ = microphone?.atCaptureBoundary { gate.finish(throwing: CancellationError()) } ?? gate.finish(throwing: CancellationError())
         _ = try? await work?.value
         work = nil
