@@ -766,3 +766,5 @@
 "Used for direct speech translation and translation testing." = "Käytetään suoraan puhekäännökseen ja käännöksen testaukseen.";
 "Direct translation is unavailable on this device. Translation through text will be used." = "Suora käännös ei ole käytettävissä tällä laitteella. Käännös tehdään tekstin kautta.";
 "Speech translation test" = "Puhekäännöksen testaus";
+
+"Tap to see another animation" = "Näet toisen animaation napauttamalla";

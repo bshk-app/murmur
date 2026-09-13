@@ -53,7 +53,7 @@ struct MurmurMascot: View {
         .frame(maxWidth: .infinity)
         .sensoryFeedback(.impact(weight: .light), trigger: playbackID)
         .accessibilityLabel("Murmator mascot")
-        .accessibilityHint(warming ? "" : "Tap to see another animation")
+        .accessibilityHint(warming ? Text("") : Text("Tap to see another animation"))
         .accessibilityIdentifier("mascot")
         .task(id: playbackID) {
             await returnToIdleAfterReaction()

@@ -766,3 +766,5 @@
 "Used for direct speech translation and translation testing." = "Используется для прямого перевода речи и тестирования перевода.";
 "Direct translation is unavailable on this device. Translation through text will be used." = "Прямой перевод недоступен на этом устройстве. Будет использован перевод через текст.";
 "Speech translation test" = "Тестирование перевода речи";
+
+"Tap to see another animation" = "Нажмите, чтобы увидеть другую анимацию";
