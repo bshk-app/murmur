@@ -103,7 +103,10 @@ struct NotesView: View {
             CanaryExperimentView(model: model.canary, prepareExclusive: { try await model.prepareForCanary() })
         }
         .onChange(of: model.canary.isBusy) { _, busy in
-            if !busy { model.consumeUtilityRoute(); Task { await model.refresh() } }
+            if !busy {
+                if model.pendingUtilityRoute != nil { model.showCanary = false }
+                else { Task { await model.refresh() } }
+            }
         }
         #endif
         .sheet(isPresented: $model.showStorage, onDismiss: { model.consumeUtilityRoute() }) { StorageView(model: model) }

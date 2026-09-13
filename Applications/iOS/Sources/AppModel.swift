@@ -628,6 +628,7 @@ import MurmurTranslation
         await canary.close()
         await textTranslator.unload()
         if usesDirectTranslation && translating {
+            if let directSpeech { await directSpeech.close(); self.directSpeech = nil }
             if let speech { await speech.close() }
             speech = nil; configurationKey = ""; modelReady = false
             await translator.unload(); translationLoaded = false
