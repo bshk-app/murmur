@@ -10,16 +10,9 @@ import MurmurTranslation
     var phase = Phase.idle
     var pendingUtilityRoute: String?
     var showSafariSetup = false
-    var showCanary = false
-    let canary = CanaryExperimentModel()
     func requestUtilityRoute(_ route: String) {
         guard !showRecorder else { error = L10n.text("Finish the current task to free memory."); return }
         pendingUtilityRoute = route
-        if showCanary {
-            if route == "canary" { pendingUtilityRoute = nil; return }
-            if canary.isBusy { return }
-            showCanary = false; return
-        }
         if showSafariSetup {
             if route == "safari-setup" { pendingUtilityRoute = nil; return }
             showSafariSetup = false; return
@@ -37,14 +30,9 @@ import MurmurTranslation
         consumeUtilityRoute()
     }
     func consumeUtilityRoute() {
-        guard let route = pendingUtilityRoute, !textTranslator.isBusy, !managingStorage, !showCanary, !canary.isBusy, !showSafariSetup, !showKeyboardSetup, !showTranslation, !showLanguages, !showMemory, !showStorage, !showAudioImport else { return }
+        guard let route = pendingUtilityRoute, !textTranslator.isBusy, !managingStorage, !showSafariSetup, !showKeyboardSetup, !showTranslation, !showLanguages, !showMemory, !showStorage, !showAudioImport else { return }
         pendingUtilityRoute = nil
         switch route {
-        case "canary":
-            canary.source = CanaryRuntime.supportedLanguages.contains(source) ? source : "en"
-            canary.target = LanguagePair.qualityLanguages.contains(target) ? target : "en"
-            canary.directTranslationEnabled = directTranslationEnabled
-            showCanary = true
         case "audio-import": showAudioImport = true
         case "keyboard": showKeyboardSetup = true; Task { await enableKeyboard() }
         case "settings": showSettings = true
@@ -88,7 +76,7 @@ import MurmurTranslation
         audioImports.start(id)
     }
     func openImport(for note: VoiceNote) { audioImports.selectedID = note.id; requestUtilityRoute("audio-import") }
-    func importMayUpdate(_ note: VoiceNote) -> Bool { canary.activeNoteID == note.id || (note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed }) }
+    func importMayUpdate(_ note: VoiceNote) -> Bool { note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed } }
     var showStorage = false
     var storageInventory = ModelStorageInventory()
     var storageLoading = false
@@ -275,10 +263,7 @@ import MurmurTranslation
         didSet { UserDefaults.standard.set(translationQuality.rawValue, forKey: "voiceTranslationQuality") }
     }
     var directTranslationEnabled = UserDefaults.standard.bool(forKey: "directSpeechTranslationEnabled") {
-        didSet {
-            UserDefaults.standard.set(directTranslationEnabled, forKey: "directSpeechTranslationEnabled")
-            canary.directTranslationEnabled = directTranslationEnabled
-        }
+        didSet { UserDefaults.standard.set(directTranslationEnabled, forKey: "directSpeechTranslationEnabled") }
     }
     var target = UserDefaults.standard.string(forKey: "targetLanguage") ?? "en"
     var mode = DictationMode(rawValue: UserDefaults.standard.string(forKey: "speechMode") ?? "hybrid") ?? .hybrid
@@ -314,9 +299,9 @@ import MurmurTranslation
     @ObservationIgnored private var activity: Activity<RecordingAttributes>?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
     @ObservationIgnored private let translator = TranslationSession(modelsRoot: StoragePaths.translation)
-    var busy: Bool { canary.isBusy || phase != .idle || importing || keyboard.isActive || releasingMemory || audioImports.busy || textTranslator.isBusy || managingStorage || modelWorkCount > 0 || keyboard.hasPendingPreparation }
-    var canReleaseMemory: Bool { !canary.isBusy && phase == .idle && !importing && !preparingAll && !releasingMemory && !audioImports.busy && !textTranslator.isBusy && !managingStorage && modelWorkCount == 0 && !keyboard.hasPendingPreparation && keyboard.state.phase != .recording && keyboard.state.phase != .finalizing && keyboard.state.phase != .preparing }
-    var hasLoadedModels: Bool { canary.hasLoadedModels || textTranslator.modelsLoaded || speech != nil || directSpeech != nil || translationLoaded || keyboard.isActive || audioImports.activeID != nil }
+    var busy: Bool { phase != .idle || importing || keyboard.isActive || releasingMemory || audioImports.busy || textTranslator.isBusy || managingStorage || modelWorkCount > 0 || keyboard.hasPendingPreparation }
+    var canReleaseMemory: Bool { phase == .idle && !importing && !preparingAll && !releasingMemory && !audioImports.busy && !textTranslator.isBusy && !managingStorage && modelWorkCount == 0 && !keyboard.hasPendingPreparation && keyboard.state.phase != .recording && keyboard.state.phase != .finalizing && keyboard.state.phase != .preparing }
+    var hasLoadedModels: Bool { textTranslator.modelsLoaded || speech != nil || directSpeech != nil || translationLoaded || keyboard.isActive || audioImports.activeID != nil }
     var directTranslationSelected: Bool {
         DirectSpeechTranslation.shouldUse(enabled: directTranslationEnabled, source: source,
                                           target: target, deviceEligible: Self.directTranslationDeviceEligible)
@@ -395,19 +380,7 @@ import MurmurTranslation
         releasingMemory = false
         publishWidgetState()
     }
-    func prepareForCanary() async throws {
-        guard phase == .idle, !importing, !audioImports.busy, !textTranslator.isBusy,
-              !managingStorage, !releasingMemory, modelWorkCount == 0,
-              keyboard.state.phase != .recording, keyboard.state.phase != .finalizing else {
-            throw NSError(domain: "Murmur.Canary", code: 1, userInfo: [NSLocalizedDescriptionKey: L10n.text("Finish the current task to free memory.")])
-        }
-        modelWorkCount += 1
-        defer { modelWorkCount -= 1 }
-        await unloadModelOwners(includeCanary: false)
-        try Task.checkCancellation()
-    }
-    private func unloadModelOwners(includeCanary: Bool = true) async {
-        if includeCanary { await canary.close() }
+    private func unloadModelOwners() async {
         await keyboard.end()
         if let speech { await speech.close() }
         if let directSpeech { await directSpeech.close() }
@@ -434,11 +407,11 @@ import MurmurTranslation
         return fallback
     }
     func importMayUpdate(_ note: NoteSummary) -> Bool {
-        canary.activeNoteID == note.id || (note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed })
+        note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed }
     }
     func refresh() async {
         do {
-            if phase == .idle && !canary.isBusy && !keyboard.isActive && !audioImports.busy {
+            if phase == .idle && !keyboard.isActive && !audioImports.busy {
                 for id in try await repository.incompleteRecordingIDs() {
                     guard var note = try await repository.note(id),
                           let audio = note.audio,
@@ -624,7 +597,6 @@ import MurmurTranslation
         try await performModelWork { [self] in try await prepareImpl(token: token, translating: translating) }
     }
     private func prepareImpl(token: UUID, translating: Bool) async throws {
-        await canary.close()
         await textTranslator.unload()
         if usesDirectTranslation && translating {
             if let directSpeech { await directSpeech.close(); self.directSpeech = nil }
@@ -810,10 +782,9 @@ import MurmurTranslation
     }
 
     func enableKeyboard(fromExtension: Bool = false) async {
-        guard !canary.isBusy, phase == .idle, !importing, !preparingAll, !releasingMemory, !audioImports.busy, !textTranslator.isBusy, !managingStorage, modelWorkCount == 0, !keyboard.hasPendingPreparation else { return }
+        guard phase == .idle, !importing, !preparingAll, !releasingMemory, !audioImports.busy, !textTranslator.isBusy, !managingStorage, modelWorkCount == 0, !keyboard.hasPendingPreparation else { return }
         releasingMemory = true
         defer { releasingMemory = false }
-        await canary.close()
         await textTranslator.unload()
         if let speech { await speech.close(); self.speech = nil; configurationKey = ""; modelReady = false }
         if let directSpeech { await directSpeech.close(); self.directSpeech = nil; usesDirectTranslation = false; modelReady = false }
