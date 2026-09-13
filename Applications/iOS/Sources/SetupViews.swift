@@ -41,11 +41,6 @@ struct SettingsView: View {
                             toolRow("Keyboard", symbol: "keyboard") { model.showKeyboardSetup = true }
                             Divider().overlay(p.border)
                             toolRow("Audio imports", symbol: "waveform") { model.requestUtilityRoute("audio-import") }
-                            #if !MURMUR_UI_HOST
-                            Divider().overlay(p.border)
-                            toolRow("Test speech translation", symbol: "waveform.badge.magnifyingglass") { model.requestUtilityRoute("canary") }
-                                .accessibilityIdentifier("open-canary")
-                            #endif
                             if #available(iOS 18.4, *) {
                                 Divider().overlay(p.border)
                                 toolRow("Default translation app", symbol: "character.bubble") {

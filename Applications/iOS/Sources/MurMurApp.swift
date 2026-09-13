@@ -47,7 +47,7 @@ import AppIntents
                             model.requestUtilityRoute("safari-setup")
                             return
                         }
-                        if let route = url.host, ["settings", "languages", "translate", "memory", "release-memory", "canary"].contains(route) { model.requestUtilityRoute(route) }
+                        if let route = url.host, ["settings", "languages", "translate", "memory", "release-memory"].contains(route) { model.requestUtilityRoute(route) }
                     }
                     if url.scheme == "murmur", url.host == "keyboard" {
                         if model.phase == .idle {

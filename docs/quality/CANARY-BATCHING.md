@@ -1,18 +1,17 @@
 # Canary and bounded audio processing
 
-Implemented 2026-09-12. Canary remains experimental and does not replace the
-normal dictation model. Open **Settings → Tools → Canary experiment** (or
-`murmur://canary`) to record or import an audio file. Select source and target
-languages before starting. Models download once, with immutable revision and
-SHA256 checks. Recordings and completed text sections are saved in Notes.
+Implemented 2026-09-12. Canary remains an internal experimental engine and does
+not replace the normal dictation model. Its former standalone test screen and
+deep link were removed on 2026-09-13. Models download once, with immutable
+revision and SHA256 checks. Recordings and completed text sections are saved in
+Notes through the ordinary voice and keyboard flows.
 
-Updated 2026-09-13: the user interface no longer exposes model names. The tool is
-shown as **Settings → Tools → Test speech translation**. The general Speech
-setting **Use direct translation where available** is off by default. When on,
+Updated 2026-09-13: the user interface does not expose model names. The general
+Speech setting **Use direct translation where available** is off by default. When on,
 supported English↔X voice recording and keyboard sessions use direct ASR+AST;
 other pairs retain translation through text. The selected route is fixed for an
 utterance and stored internally in note/session metadata. Working screens do not
-show an additional route badge; the preference lives only in Settings.
+show an additional route badge or test tool; the preference lives only in Settings.
 
 `DirectSpeechTranslation.supportedLanguages` is the authoritative 25-language
 set from the upstream model card. Its exhaustive check compares against an
