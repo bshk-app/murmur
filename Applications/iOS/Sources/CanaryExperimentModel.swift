@@ -256,7 +256,9 @@ import MurmurTranslation
         completedBatches = note?.utterances?.count ?? completedBatches
         if failure is CancellationError || Task.isCancelled { phase = .idle }
         else {
-            error = failure is PCMFrameStream.StreamError ? Failure.behind.localizedDescription : Failure.processing.localizedDescription
+            if let known = failure as? Failure { error = known.localizedDescription }
+            else if failure is PCMFrameStream.StreamError { error = Failure.behind.localizedDescription }
+            else { error = Failure.processing.localizedDescription }
             phase = .failed
         }
     }

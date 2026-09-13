@@ -34,6 +34,7 @@ private final class DirectSpeechInputGate: @unchecked Sendable {
             stream.finish(throwing: error)
             self.stream = nil
             failure?(error)
+            failure = nil
         }
     }
 
@@ -41,7 +42,10 @@ private final class DirectSpeechInputGate: @unchecked Sendable {
         lock.lock(); defer { lock.unlock() }
         let count = samples
         do { try recording.finish() } catch { failure?(error) }
-        if let error { stream?.finish(throwing: error) } else { stream?.finish() }
+        if let error {
+            stream?.finish(throwing: error)
+            if !(error is CancellationError) { failure?(error) }
+        } else { stream?.finish() }
         stream = nil; failure = nil; samples = 0
         return count
     }
@@ -107,19 +111,25 @@ private actor DirectUtteranceAccumulator {
         try gate.begin(stream: stream, recordingURL: recordingURL) { [weak self] error in
             Task { @MainActor in self?.onError?(error.localizedDescription) }
         }
+        let gate = self.gate
         work = Task { [processor] in
             let accumulator = DirectUtteranceAccumulator()
-            try await processor.process(source: source, target: target,
-                nextFrame: { try await stream.nextFrame() },
-                onProgress: { samples in await onProgress(samples) },
-                onBatch: { range, result in
-                    if target != nil, result.translatedText == nil { throw CocoaError(.coderValueNotFound) }
-                    let value = RecordedUtterance(id: UInt64(range.lowerBound), startSample: range.lowerBound,
-                        endSample: range.upperBound, text: result.sourceText, translation: result.translatedText, settled: true)
-                    await accumulator.append(value)
-                    try await onBatch(value)
-                })
-            return await accumulator.result()
+            do {
+                try await processor.process(source: source, target: target,
+                    nextFrame: { try await stream.nextFrame() },
+                    onProgress: { samples in await onProgress(samples) },
+                    onBatch: { range, result in
+                        if target != nil, result.translatedText == nil { throw CocoaError(.coderValueNotFound) }
+                        let value = RecordedUtterance(id: UInt64(range.lowerBound), startSample: range.lowerBound,
+                            endSample: range.upperBound, text: result.sourceText, translation: result.translatedText, settled: true)
+                        await accumulator.append(value)
+                        try await onBatch(value)
+                    })
+                return await accumulator.result()
+            } catch {
+                _ = gate.finish(throwing: error)
+                throw error
+            }
         }
     }
 
