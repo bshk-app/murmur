@@ -38,13 +38,14 @@ private final class DirectSpeechInputGate: @unchecked Sendable {
         }
     }
 
-    func finish(throwing error: Error? = nil) -> Int {
+    func finish(throwing inputError: Error? = nil) -> Int {
         lock.lock(); defer { lock.unlock() }
         let count = samples
-        do { try recording.finish() } catch { failure?(error) }
-        if let error {
-            stream?.finish(throwing: error)
-            if !(error is CancellationError) { failure?(error) }
+        var completionError = inputError
+        do { try recording.finish() } catch { completionError = error }
+        if let completionError {
+            stream?.finish(throwing: completionError)
+            if !(completionError is CancellationError) { failure?(completionError) }
         } else { stream?.finish() }
         stream = nil; failure = nil; samples = 0
         return count
@@ -105,13 +106,16 @@ private actor DirectUtteranceAccumulator {
         if let target, !DirectSpeechTranslation.supports(source: source, target: target) {
             throw CanaryRuntime.Failure.unsupportedTranslation(source, target)
         }
-        guard microphone != nil else { throw CancellationError() }
+        guard let microphone else { throw CancellationError() }
         let stream = PCMFrameStream(capacity: 128)
-        capturedSamples = 0
-        try gate.begin(stream: stream, recordingURL: recordingURL) { [weak self] error in
-            Task { @MainActor in self?.onError?(error.localizedDescription) }
-        }
         let gate = self.gate
+        capturedSamples = 0
+        microphone.flushPending()
+        try microphone.atCaptureBoundary {
+            try gate.begin(stream: stream, recordingURL: recordingURL) { [weak self] error in
+                Task { @MainActor in self?.onError?(error.localizedDescription) }
+            }
+        }
         work = Task { [processor] in
             let accumulator = DirectUtteranceAccumulator()
             do {
