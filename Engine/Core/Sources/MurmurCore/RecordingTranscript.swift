@@ -40,6 +40,21 @@ public struct RecordingTranscript: Sendable {
     public var text: String { (utterances.map(\.text) + [provisional]).filter { !$0.isEmpty }.joined(separator: " ") }
     public var translatedText: String { utterances.compactMap(\.translation).filter { !$0.isEmpty }.joined(separator: " ") }
 
+    /// Appends one final, nonoverlapping section produced by a serial speech
+    /// translator. Repeated text is preserved because it may be real speech.
+    public mutating func appendSettled(_ value: RecordedUtterance) {
+        guard !finished, !value.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+              value.endSample > value.startSample,
+              value.startSample >= (utterances.last?.endSample ?? 0) else { return }
+        var settled = value
+        settled.settled = true
+        utterances.append(settled)
+        settledIDs.insert(settled.id)
+        settledBoundary = settled.endSample
+        revision &+= 1
+        receivedSnapshot = true
+    }
+
     @discardableResult public mutating func apply(_ snapshot: CaptionSnapshot) -> Bool {
         guard !finished, !receivedSnapshot || snapshot.revision > revision || (snapshot.revision == revision && (snapshot.settledThroughSample ?? -1) > settledBoundary) else { return false }
         receivedSnapshot = true; revision = snapshot.revision; provisional = snapshot.provisional

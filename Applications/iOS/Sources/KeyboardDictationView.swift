@@ -34,6 +34,12 @@ struct KeyboardDictationView: View {
                             DesignButton(title: "Prepare dictation") { Task { await onEnable() } }.accessibilityIdentifier("keyboard-enable")
                             DesignButton(title: "Keyboard setup instructions", kind: .link) { help = true }
                         }
+                        if let method = controller.state.translationMethod {
+                            Label(method == .direct ? "Direct translation" : "Translation through text",
+                                  systemImage: method == .direct ? "waveform.and.person.filled" : "text.bubble")
+                                .font(.footnote).foregroundStyle(p.secondary)
+                                .accessibilityIdentifier("keyboard-translation-method")
+                        }
                     }.murmurCard(radius: 18, padding: 16)
                     VStack(spacing: 0) {
                         statusRow("Full Access", value: controller.fullAccessConfirmed ? "Confirmed" : "Check in keyboard", good: controller.fullAccessConfirmed)

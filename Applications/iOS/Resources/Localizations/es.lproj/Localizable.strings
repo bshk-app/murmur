@@ -57,7 +57,7 @@
 "Share" = "Compartir";
 "Translate to" = "Traducir a";
 "While you speak" = "Mientras hablas";
-"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Una vista previa sigue tu voz. OPUS mejora las frases completas y el texto final antes de guardar la nota.";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Una vista previa sigue tu voz. Las frases completas y el texto final se mejoran antes de guardar la nota.";
 "Download the selected language models once to translate offline." = "Descarga una vez los modelos de los idiomas elegidos para traducir sin conexión.";
 "Translation is not available for this language yet. You can still record a note." = "La traducción aún no está disponible para este idioma. Puedes grabar una nota.";
 "Speak & translate" = "Hablar y traducir";
@@ -143,7 +143,7 @@
 "Add speech language" = "Añadir idioma de dictado";
 "Translation languages · optional" = "Idiomas de traducción · opcional";
 "Translate from" = "Traducir de";
-"No downloadable OPUS translation pack is available for this source language yet." = "Aún no hay un paquete OPUS descargable para este idioma de origen.";
+"No downloadable OPUS translation pack is available for this source language yet." = "Aún no hay un paquete de traducción descargable para este idioma de origen.";
 "Add translation language" = "Añadir idioma de traducción";
 "Downloaded" = "Descargado";
 "Prepare again" = "Preparar de nuevo";
@@ -706,11 +706,11 @@
 
 
 // Canary speech experiment
-"Canary experiment" = "Experimento con Canary";
+"Canary experiment" = "Probar traducción de voz";
 
 "Experimental speech recognition" = "Reconocimiento de voz experimental";
 
-"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Graba tu voz o elige un archivo de audio. Canary lo procesa en fragmentos cortos en este dispositivo.";
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Graba tu voz o elige un archivo de audio. Se procesa en fragmentos cortos en este dispositivo.";
 
 "Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Puede ser necesario descargar los modelos una vez. Mantén esta pantalla abierta durante el procesamiento; los resultados pueden contener errores.";
 
@@ -718,13 +718,13 @@
 
 "Translate speech" = "Traducir voz";
 
-"Canary direct translation" = "Traducción directa con Canary";
+"Canary direct translation" = "Traducción directa";
 
-"Canary → OPUS" = "Canary → OPUS";
+"Canary → OPUS" = "Traducción mediante texto";
 
-"Canary transcription" = "Transcripción con Canary";
+"Canary transcription" = "Reconocimiento de voz";
 
-"Preparing Canary…" = "Preparando Canary…";
+"Preparing Canary…" = "Preparando el procesamiento de voz…";
 
 "Recording…" = "Grabando…";
 
@@ -742,10 +742,27 @@
 
 "Record audio" = "Grabar audio";
 
-"This device does not have enough memory for the current Canary model." = "Este dispositivo no tiene suficiente memoria para el modelo actual de Canary.";
+"This device does not have enough memory for the current Canary model." = "Este dispositivo no tiene suficiente memoria para el procesamiento directo de voz.";
 
 "Processing fell behind. The recording and partial results were saved." = "El procesamiento no pudo seguir el ritmo de la grabación. La grabación y los resultados parciales se han guardado.";
 
 "Used by experimental speech recognition and translation." = "Se usa para el reconocimiento y la traducción de voz experimentales.";
 
 "Text appears as sections finish. Stop recording to finish the last section." = "El texto aparece al completar cada fragmento. Detén la grabación para finalizar el último.";
+
+"Test speech translation" = "Probar traducción de voz";
+"Record speech or choose an audio file. It is processed in short sections on this device." = "Graba tu voz o elige un archivo de audio. Se procesa en fragmentos cortos en este dispositivo.";
+"Use direct translation where available" = "Usar traducción directa cuando esté disponible";
+"Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed." = "Traduce la voz directamente en las direcciones compatibles con inglés. El reconocimiento también puede variar. Los resultados aparecen por fragmentos.";
+"Direct translation" = "Traducción directa";
+"Translation through text" = "Traducción mediante texto";
+"Speech recognition" = "Reconocimiento de voz";
+"Preparing direct translation…" = "Preparando la traducción directa…";
+"Preparing speech processing…" = "Preparando el procesamiento de voz…";
+"Direct translation is unavailable. Translation through text will be used." = "La traducción directa no está disponible. Se usará la traducción mediante texto.";
+"This device does not have enough memory for direct speech processing." = "Este dispositivo no tiene suficiente memoria para el procesamiento directo de voz.";
+"The recording could not be processed. Available audio and text were saved." = "No se pudo procesar la grabación. Se guardaron el audio y el texto disponibles.";
+"Direct speech translation" = "Traducción directa de voz";
+"Used for direct speech translation and translation testing." = "Se usa para la traducción directa de voz y las pruebas de traducción.";
+"Direct translation is unavailable on this device. Translation through text will be used." = "La traducción directa no está disponible en este dispositivo. Se usará la traducción mediante texto.";
+"Speech translation test" = "Prueba de traducción de voz";

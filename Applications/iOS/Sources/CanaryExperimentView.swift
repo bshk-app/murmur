@@ -15,12 +15,12 @@ struct CanaryExperimentView: View {
     @State private var copied: String?
     @State private var closing = false
     private var p: MurmurPalette { .init(scheme: scheme) }
-    private var sourceCodes: [String] { AppLanguages.all.map(\.code).filter { CanaryRuntime.supportedLanguages.contains($0) } }
+    private var sourceCodes: [String] { AppLanguages.all.map(\.code).filter { DirectSpeechTranslation.supportedLanguages.contains($0) } }
 
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Canary experiment").font(.headline)
+                Text("Test speech translation").font(.headline)
                 Spacer(minLength: 8)
                 Button("Done") {
                     closing = true
@@ -66,8 +66,8 @@ struct CanaryExperimentView: View {
 
     private var introduction: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Label("Experimental speech recognition", systemImage: "waveform").font(.title2.bold())
-            Text("Record speech or choose an audio file. Canary processes it in short sections on this device.")
+            Label("Speech translation test", systemImage: "waveform").font(.title2.bold())
+            Text("Record speech or choose an audio file. It is processed in short sections on this device.")
                 .font(.body).foregroundStyle(p.secondary)
             Text("Models may need a one-time download. Keep this screen open while processing; results may contain mistakes.")
                 .font(.footnote).foregroundStyle(p.muted)
@@ -99,7 +99,7 @@ struct CanaryExperimentView: View {
     private var phaseTitle: LocalizedStringKey {
         switch model.phase {
         case .idle: "Ready"
-        case .preparing: "Preparing Canary…"
+        case .preparing: "Preparing speech processing…"
         case .recording: "Recording…"
         case .processing: "Processing speech…"
         case .cancelling: "Cancelling…"

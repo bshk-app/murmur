@@ -70,18 +70,19 @@ struct CanaryQualificationModels: Sendable {
     let projection: MLModel
     let tokenizer: CanaryQualificationTokenizer
 
-    static func load(directory: URL) throws -> CanaryQualificationModels {
+    static func load(directory: URL, computeMode: CanaryRuntime.ComputeMode = .foreground) throws -> CanaryQualificationModels {
         func load(_ name: String, _ units: MLComputeUnits) throws -> MLModel {
             let configuration = MLModelConfiguration()
             configuration.computeUnits = units
             return try MLModel(contentsOf: directory.appendingPathComponent(name + ".mlmodelc"), configuration: configuration)
         }
+        let acceleratorUnits: MLComputeUnits = computeMode == .backgroundCPU ? .cpuOnly : .cpuAndGPU
         return try autoreleasepool {
             try CanaryQualificationModels(
                 preprocessor: load("Preprocessor", .cpuOnly),
-                encoder: load("EncoderInt4", .cpuAndGPU),
-                decoder: load("DecoderInt4", .cpuAndGPU),
-                projection: load("Projection", .cpuAndGPU),
+                encoder: load("EncoderInt4", acceleratorUnits),
+                decoder: load("DecoderInt4", acceleratorUnits),
+                projection: load("Projection", acceleratorUnits),
                 tokenizer: CanaryQualificationTokenizer(url: directory.appendingPathComponent("vocab.json")))
         }
     }

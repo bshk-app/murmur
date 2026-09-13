@@ -141,13 +141,33 @@ import CryptoKit
         try checkAssetLinks()
         try await checkCorruptCacheRecovery()
         try checkNestedPublicationSwap()
-        precondition(CanaryQualificationRuntime.supportedLanguages.count == 25)
-        for source in CanaryRuntime.supportedLanguages {
-            for target in CanaryRuntime.supportedLanguages {
+        let officialLanguages: Set<String> = [
+            "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el", "hu", "it",
+            "lv", "lt", "mt", "pl", "pt", "ro", "sk", "sl", "es", "sv", "ru", "uk"
+        ]
+        precondition(DirectSpeechTranslation.supportedLanguages == officialLanguages)
+        var directPairCount = 0
+        for source in officialLanguages {
+            for target in officialLanguages {
                 precondition(CanaryRuntime.supportsTranslation(source: source, target: target)
                     == (source != target && (source == "en" || target == "en")))
+                if DirectSpeechTranslation.supports(source: source, target: target) { directPairCount += 1 }
             }
         }
+        precondition(directPairCount == 48)
+        precondition(DirectSpeechTranslation.supports(source: "ru", target: "en"))
+        precondition(DirectSpeechTranslation.supports(source: "en", target: "ru"))
+        precondition(DirectSpeechTranslation.supports(source: "fi", target: "en"))
+        precondition(DirectSpeechTranslation.supports(source: "en", target: "fi"))
+        precondition(!DirectSpeechTranslation.supports(source: "ru", target: "fi"))
+        precondition(!DirectSpeechTranslation.supports(source: "en", target: "ga"))
+        precondition(!DirectSpeechTranslation.supports(source: "ar", target: "en"))
+        precondition(!DirectSpeechTranslation.supports(source: "nb", target: "en"))
+        precondition(!DirectSpeechTranslation.supports(source: "en", target: "en"))
+        precondition(DirectSpeechTranslation.shouldUse(enabled: true, source: "ru", target: "en", deviceEligible: true))
+        precondition(!DirectSpeechTranslation.shouldUse(enabled: false, source: "ru", target: "en", deviceEligible: true))
+        precondition(!DirectSpeechTranslation.shouldUse(enabled: true, source: "ru", target: "en", deviceEligible: false))
+        precondition(!DirectSpeechTranslation.shouldUse(enabled: true, source: "ru", target: nil, deviceEligible: true))
         precondition(!CanaryRuntime.supportsTranslation(source: "xx", target: "en"))
         // A size-only UI hint cannot authorize model loading: all sparse placeholders
         // have expected sizes, but bounded hash verification must reject their bytes.

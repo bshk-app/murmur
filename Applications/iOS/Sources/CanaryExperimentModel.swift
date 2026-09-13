@@ -11,6 +11,7 @@ import MurmurTranslation
     var source = "ru" { didSet { if source != oldValue { clearDisplayedResult() } } }
     var target = "en" { didSet { if target != oldValue { clearDisplayedResult() } } }
     var translateEnabled = true { didSet { if translateEnabled != oldValue { clearDisplayedResult() } } }
+    var directTranslationEnabled = false { didSet { if directTranslationEnabled != oldValue { clearDisplayedResult() } } }
     private(set) var phase = Phase.idle
     private(set) var transcript = ""
     private(set) var translation = ""
@@ -28,32 +29,29 @@ import MurmurTranslation
     private var closingCount = 0
     var isBusy: Bool { operationActive || closingCount > 0 }
     var routeDescription: String {
-        guard translateEnabled, source != target else { return L10n.text("Canary transcription") }
-        return L10n.text(CanaryRuntime.supportsTranslation(source: source, target: target)
-                         ? "Canary direct translation" : "Canary → OPUS")
+        guard translateEnabled, source != target else { return L10n.text("Speech recognition") }
+        return L10n.text(directTranslationEnabled && DirectSpeechTranslation.supports(source: source, target: target)
+                         ? "Direct translation" : "Translation through text")
     }
 
-    @ObservationIgnored private let processor = CanaryTranscriber()
+    @ObservationIgnored private let session = DirectSpeechSession()
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
-    @ObservationIgnored private let sink = RecordingAudioSink()
     @ObservationIgnored private var textEngine: TextTranslationSession?
     @ObservationIgnored private var work: Task<Void, Never>?
-    @ObservationIgnored private var microphone: MicCapture?
-    @ObservationIgnored private var input: PCMFrameStream?
     @ObservationIgnored private var generation = UUID()
     @ObservationIgnored private var idleHeld = false
-    @ObservationIgnored private var captureObservers: [NSObjectProtocol] = []
     @ObservationIgnored private var note: VoiceNote?
     @ObservationIgnored private var route: (source: String, target: String?, direct: Bool) = ("ru", nil, false)
 
     private enum Failure: Error, LocalizedError {
-        case memory, microphone, invalidLanguage, behind
+        case memory, microphone, invalidLanguage, behind, processing
         var errorDescription: String? {
             switch self {
-            case .memory: return L10n.text("This device does not have enough memory for the current Canary model.")
+            case .memory: return L10n.text("This device does not have enough memory for direct speech processing.")
             case .microphone: return L10n.text("Allow microphone access in Settings to record a note.")
             case .invalidLanguage: return L10n.text("This language is unavailable in the selected mode.")
             case .behind: return L10n.text("Processing fell behind. The recording and partial results were saved.")
+            case .processing: return L10n.text("The recording could not be processed. Available audio and text were saved.")
             }
         }
     }
@@ -71,44 +69,25 @@ import MurmurTranslation
                 try await prepare(token, exclusive: prepareExclusive)
                 let audio = RecordedAudio()
                 let url = try audio.url(in: StoragePaths.recordings)
-                try sink.begin(url: url)
                 try await createNote(audio: audio, name: nil, recording: true, token: token)
                 try check(token)
-                let frames = PCMFrameStream(capacity: 128)
-                let capture = MicCapture(inputDeviceUID: "built-in", allowConcurrentPlayback: true)
-                let writer = sink
-                capture.onChunk = { [weak self] samples in
-                    do { try writer.append(samples); try frames.yield(samples) }
-                    catch {
-                        if error is CancellationError || (error as? PCMFrameStream.StreamError) == .alreadyFinished { return }
-                        frames.finish(throwing: error)
-                        Task { @MainActor in
-                            guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
-                            self.stopCapture()
-                            self.phase = .processing
-                        }
-                    }
-                }
-                capture.onCapture = { [weak self] count, _, _, captureError in
-                    Task { @MainActor in
-                        guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
-                        self.recordedSeconds += Double(count) / 16_000
-                        if let captureError {
-                            frames.finish(throwing: NSError(domain: "Murmur.CanaryCapture", code: 1, userInfo: [NSLocalizedDescriptionKey: captureError]))
-                            self.stopCapture(); self.phase = .processing
-                        }
-                    }
-                }
-                microphone = capture; input = frames
-                observeCaptureInterruptions(token: token)
+                session.onCapture = { [weak self] count, _ in Task { @MainActor in
+                    guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
+                    self.recordedSeconds += Double(count) / 16_000
+                } }
+                session.onError = { [weak self] _ in Task { @MainActor in
+                    guard let self, self.generation == token, self.operationActive, self.isRecording else { return }
+                    self.stopRecording()
+                } }
                 guard UIApplication.shared.applicationState == .active else { throw CancellationError() }
-                try capture.start()
+                try session.arm()
+                try session.begin(source: route.source, target: route.direct ? route.target : nil, recordingURL: url,
+                    onProgress: { [weak self] samples in await self?.updateProgress(Double(samples) / 16_000, total: nil, token: token) },
+                    onBatch: { [weak self] utterance in try await self?.accept(utterance, token: token) })
                 phase = .recording
                 holdIdleTimer()
-                try await processor.process(source: route.source, target: route.direct ? route.target : nil,
-                    nextFrame: { try await frames.nextFrame() },
-                    onProgress: { [weak self] samples in await self?.updateProgress(Double(samples) / 16_000, total: nil, token: token) },
-                    onBatch: { [weak self] range, value in try await self?.accept(range, value, token: token) })
+                let result = try await session.waitForResult()
+                recordedSeconds = result.duration; totalSeconds = result.duration
                 try check(token)
                 try await finishNote(complete: true)
                 phase = .finished
@@ -139,9 +118,9 @@ import MurmurTranslation
                 pendingCopy = nil
                 phase = .processing
                 holdIdleTimer()
-                try await processor.processFile(url: destination, source: route.source, target: route.direct ? route.target : nil,
+                try await session.processFile(url: destination, source: route.source, target: route.direct ? route.target : nil,
                     onProgress: { [weak self] seconds, total in await self?.updateProgress(seconds, total: total, token: token) },
-                    onBatch: { [weak self] range, value in try await self?.accept(range, value, token: token) })
+                    onBatch: { [weak self] utterance in try await self?.accept(utterance, token: token) })
                 try check(token)
                 try await finishNote(complete: true)
                 phase = .finished
@@ -156,22 +135,20 @@ import MurmurTranslation
     func stopRecording() {
         guard isRecording else { return }
         phase = .processing
-        stopCapture()
-        input?.finish()
+        session.endInput()
     }
     func cancel() {
         guard operationActive else { return }
         phase = .cancelling
         work?.cancel()
-        stopCapture()
-        input?.finish(throwing: CancellationError())
+        Task { await session.cancelUtterance() }
     }
     func close() async {
         closingCount += 1
         defer { closingCount -= 1 }
         cancel()
         await work?.value
-        await processor.close()
+        await session.close()
         await textEngine?.unload(); textEngine = nil
         hasLoadedModels = false
         restoreIdleTimer()
@@ -182,7 +159,7 @@ import MurmurTranslation
         processedSeconds = 0; recordedSeconds = 0; totalSeconds = nil; progress = nil; inputName = nil
         note = nil
         let destination = translateEnabled && source != target ? target : nil
-        route = (source, destination, destination.map { CanaryRuntime.supportsTranslation(source: source, target: $0) } ?? false)
+        route = (source, destination, destination.map { directTranslationEnabled && DirectSpeechTranslation.supports(source: source, target: $0) } ?? false)
         return generation
     }
     private func prepare(_ token: UUID, exclusive: @MainActor () async throws -> Void) async throws {
@@ -196,7 +173,7 @@ import MurmurTranslation
         try await exclusive()
         try check(token)
         holdIdleTimer()
-        try await processor.prepare { [weak self] value in
+        try await session.prepare { [weak self] value in
             guard let self, self.generation == token else { return }
             self.progress = value.totalUnitCount > 0 ? value.fractionCompleted : nil
         }
@@ -214,7 +191,7 @@ import MurmurTranslation
     private func createNote(audio: RecordedAudio, name: String?, recording: Bool, token: UUID) async throws {
         try check(token)
         var value = VoiceNote(text: "", sourceLanguage: route.source, targetLanguage: route.target,
-                              duration: 0, model: "Canary 1B v2 · experimental")
+                              duration: 0, model: route.direct ? "direct-speech-translation" : "experimental-speech-recognition")
         value.audio = audio; value.sourceFileName = name; value.captureClosed = !recording
         value.transcriptionComplete = false; value.translationIncomplete = route.target != nil
         value.utterances = []
@@ -222,16 +199,14 @@ import MurmurTranslation
         try await repository.save(value)
         try check(token)
     }
-    private func accept(_ range: Range<Int>, _ result: CanaryResult, token: UUID) async throws {
+    private func accept(_ utterance: RecordedUtterance, token: UUID) async throws {
         try check(token)
         guard var value = note else { throw CocoaError(.fileNoSuchFile) }
-        guard range.lowerBound >= (value.utterances?.last?.endSample ?? 0) else { throw CocoaError(.fileReadCorruptFile) }
-        let utterance = RecordedUtterance(id: UInt64(range.lowerBound), startSample: range.lowerBound,
-            endSample: range.upperBound, text: result.sourceText, translation: result.translatedText, settled: true)
+        guard utterance.startSample >= (value.utterances?.last?.endSample ?? 0) else { throw CocoaError(.fileReadCorruptFile) }
         value.utterances?.append(utterance)
         value.text = value.utterances?.map(\.text).joined(separator: "\n") ?? ""
         value.translation = route.target == nil ? nil : value.utterances?.compactMap(\.translation).joined(separator: "\n")
-        value.duration = max(value.duration, Double(range.upperBound) / 16_000)
+        value.duration = max(value.duration, Double(utterance.endSample) / 16_000)
         try await repository.save(value)
         // Once the database accepted this batch, cancellation must not restore
         // an older in-memory note and erase the newly persisted source text.
@@ -241,7 +216,7 @@ import MurmurTranslation
         completedBatches += 1
         if let target = route.target, !route.direct {
             guard let textEngine else { throw CocoaError(.fileReadCorruptFile) }
-            let translated = try await textEngine.translate(result.sourceText, from: route.source, to: target)
+            let translated = try await textEngine.translate(utterance.text, from: route.source, to: target)
             try check(token)
             guard var utterances = value.utterances, let index = utterances.indices.last else { throw CocoaError(.fileReadCorruptFile) }
             utterances[index].translation = translated
@@ -251,7 +226,7 @@ import MurmurTranslation
             note = value
             try check(token)
             translation = value.translation ?? ""
-        } else if route.target != nil, result.translatedText == nil {
+        } else if route.target != nil, utterance.translation == nil {
             throw CocoaError(.coderValueNotFound)
         }
     }
@@ -262,28 +237,6 @@ import MurmurTranslation
             totalSeconds = total; recordedSeconds = total
         }
         if let totalSeconds, totalSeconds > 0 { progress = min(1, max(0, seconds / totalSeconds)) }
-    }
-    private func stopCapture() {
-        for observer in captureObservers { NotificationCenter.default.removeObserver(observer) }
-        captureObservers = []
-        let capture = microphone; microphone = nil
-        if let capture {
-            recordedSeconds = capture.stop().durationS; totalSeconds = recordedSeconds
-            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-        }
-        do { try sink.finish() } catch { self.error = error.localizedDescription }
-    }
-    private func observeCaptureInterruptions(token: UUID) {
-        for name in [AVAudioSession.interruptionNotification, AVAudioSession.mediaServicesWereResetNotification] {
-            captureObservers.append(NotificationCenter.default.addObserver(forName: name, object: nil, queue: .main) { [weak self] notification in
-                if notification.name == AVAudioSession.interruptionNotification,
-                   (notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt) != AVAudioSession.InterruptionType.began.rawValue { return }
-                Task { @MainActor in
-                    guard let self, self.generation == token, self.isRecording else { return }
-                    self.stopRecording()
-                }
-            })
-        }
     }
     private func finishNote(complete: Bool) async throws {
         guard var value = note else { return }
@@ -298,19 +251,17 @@ import MurmurTranslation
         #if DEBUG
         NSLog("Canary operation failed: %@", String(describing: failure as NSError))
         #endif
-        stopCapture()
         do { try await finishNote(complete: false) } catch { self.error = error.localizedDescription }
         transcript = note?.text ?? transcript; translation = note?.translation ?? translation
         completedBatches = note?.utterances?.count ?? completedBatches
         if failure is CancellationError || Task.isCancelled { phase = .idle }
         else {
-            error = failure is PCMFrameStream.StreamError ? Failure.behind.localizedDescription : failure.localizedDescription
+            error = failure is PCMFrameStream.StreamError ? Failure.behind.localizedDescription : Failure.processing.localizedDescription
             phase = .failed
         }
     }
     private func release(token: UUID) async {
-        stopCapture(); input = nil
-        await processor.close(); await textEngine?.unload(); textEngine = nil
+        await session.close(); await textEngine?.unload(); textEngine = nil
         if generation == token { hasLoadedModels = false; progress = phase == .finished ? 1 : nil; work = nil; operationActive = false }
         restoreIdleTimer()
     }

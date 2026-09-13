@@ -2,6 +2,13 @@ import XCTest
 @testable import MurmurCore
 
 final class KeyboardSessionTests: XCTestCase {
+    func testOldKeyboardStateDecodesWithoutTranslationMethod() throws {
+        let old = """
+        {"sessionID":"00000000-0000-0000-0000-000000000001","phase":"inactive","updatedAt":0,"configuration":{"source":"ru","mode":"fast"},"text":"","translation":"","level":0,"microphoneActive":false}
+        """.data(using: .utf8)!
+        let state = try JSONDecoder().decode(KeyboardSessionState.self, from: old)
+        XCTAssertNil(state.translationMethod)
+    }
     func test_preparation_does_not_request_enable_again() {
         let now = Date()
         var state = KeyboardSessionState(phase: .preparing, configuration: .init(source: "ru", target: "en"))

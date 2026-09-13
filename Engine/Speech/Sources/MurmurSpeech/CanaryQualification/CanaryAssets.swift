@@ -114,8 +114,9 @@ public enum CanaryAssets {
     }
     #if canImport(HuggingFace)
     public static func prepare(at directory: URL = defaultDirectory,
+        computeMode: CanaryRuntime.ComputeMode = .foreground,
         progress: @escaping @MainActor @Sendable (Progress) -> Void = { _ in }) async throws -> URL {
-        try await CanaryAssetInstaller.shared.prepare(at: directory, progress: progress)
+        try await CanaryAssetInstaller.shared.prepare(at: directory, computeMode: computeMode, progress: progress)
     }
     #endif
 }
@@ -124,7 +125,8 @@ public enum CanaryAssets {
 private actor CanaryAssetInstaller {
     static let shared = CanaryAssetInstaller()
     private var installing = Set<URL>()
-    func prepare(at directory: URL, progress: @escaping @MainActor @Sendable (Progress) -> Void) async throws -> URL {
+    func prepare(at directory: URL, computeMode: CanaryRuntime.ComputeMode,
+                 progress: @escaping @MainActor @Sendable (Progress) -> Void) async throws -> URL {
         if CanaryAssets.isReady(at: directory) {
             // A UI marker is only a hint. Verify content before loading even when size is unchanged.
             do { try CanaryAssets.verify(at: directory); return directory }
@@ -162,7 +164,7 @@ private actor CanaryAssetInstaller {
         try CanaryAssets.verify(at: staging)
         // Confirm every compiled model and tokenizer can open before declaring the snapshot ready.
         try autoreleasepool {
-            _ = try CanaryQualificationModels.load(directory: staging)
+            _ = try CanaryQualificationModels.load(directory: staging, computeMode: computeMode)
         }
         try Task.checkCancellation()
         try Data(CanaryAssets.revision.utf8).write(to: staging.appendingPathComponent(".ready"), options: .atomic)

@@ -27,6 +27,13 @@ struct SettingsView: View {
                                 }
                                 SpeechPriorityPicker(model: model)
                             }.padding(15)
+                            Divider().overlay(p.border)
+                            VStack(alignment: .leading, spacing: 6) {
+                                Toggle("Use direct translation where available", isOn: $model.directTranslationEnabled)
+                                    .accessibilityIdentifier("direct-speech-translation-toggle")
+                                Text("Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed.")
+                                    .font(.footnote).foregroundStyle(p.muted)
+                            }.padding(15)
                         }.murmurCard(radius: 16, padding: 0).disabled(model.busy)
                     }
                     section("Tools") {
@@ -36,7 +43,7 @@ struct SettingsView: View {
                             toolRow("Audio imports", symbol: "waveform") { model.requestUtilityRoute("audio-import") }
                             #if !MURMUR_UI_HOST
                             Divider().overlay(p.border)
-                            toolRow("Canary experiment", symbol: "waveform.badge.magnifyingglass") { model.requestUtilityRoute("canary") }
+                            toolRow("Test speech translation", symbol: "waveform.badge.magnifyingglass") { model.requestUtilityRoute("canary") }
                                 .accessibilityIdentifier("open-canary")
                             #endif
                             if #available(iOS 18.4, *) {

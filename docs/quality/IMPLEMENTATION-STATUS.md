@@ -32,9 +32,11 @@ worktree-only `.claude` symlink.
   and require native requalification before a changed profile is enabled.
 - ASR profiles separate automatic recommendations from explicit selections.
   Qualified overrides are disabled. Canary is available separately in Settings
-  → Tools → Canary experiment, with recording and file import through bounded,
+  → Tools → Test speech translation, with recording and file import through bounded,
   nonoverlapping windows. No production Canary default is claimed. See
   [CANARY-BATCHING.md](CANARY-BATCHING.md) for behavior and execution checks.
+  The shipped user-facing setting uses neutral route names, is disabled by
+  default, and applies direct translation only to the verified English↔X matrix.
 - A debug device runner records real model outputs, source/profile provenance,
   process footprint, queue depths, input scheduling lag and finalization time.
   Fixed-rate replay has an independent producer, so slow inference cannot hide

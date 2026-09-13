@@ -57,7 +57,7 @@
 "Share" = "Share";
 "Translate to" = "Translate to";
 "While you speak" = "While you speak";
-"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved.";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "A quick preview follows your voice. Completed phrases and the final text are refined before the note is saved.";
 "Download the selected language models once to translate offline." = "Download the selected language models once to translate offline.";
 "Translation is not available for this language yet. You can still record a note." = "Translation is not available for this language yet. You can still record a note.";
 "Speak & translate" = "Speak & translate";
@@ -143,7 +143,7 @@
 "Add speech language" = "Add speech language";
 "Translation languages · optional" = "Translation languages · optional";
 "Translate from" = "Translate from";
-"No downloadable OPUS translation pack is available for this source language yet." = "No downloadable OPUS translation pack is available for this source language yet.";
+"No downloadable OPUS translation pack is available for this source language yet." = "No downloadable translation pack is available for this source language yet.";
 "Add translation language" = "Add translation language";
 "Downloaded" = "Downloaded";
 "Prepare again" = "Prepare again";
@@ -702,11 +702,11 @@
 
 
 // Canary speech experiment
-"Canary experiment" = "Canary experiment";
+"Canary experiment" = "Test speech translation";
 
 "Experimental speech recognition" = "Experimental speech recognition";
 
-"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Record speech or choose an audio file. Canary processes it in short sections on this device.";
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Record speech or choose an audio file. It is processed in short sections on this device.";
 
 "Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Models may need a one-time download. Keep this screen open while processing; results may contain mistakes.";
 
@@ -714,13 +714,13 @@
 
 "Translate speech" = "Translate speech";
 
-"Canary direct translation" = "Canary direct translation";
+"Canary direct translation" = "Direct translation";
 
-"Canary → OPUS" = "Canary → OPUS";
+"Canary → OPUS" = "Translation through text";
 
-"Canary transcription" = "Canary transcription";
+"Canary transcription" = "Speech recognition";
 
-"Preparing Canary…" = "Preparing Canary…";
+"Preparing Canary…" = "Preparing speech processing…";
 
 "Recording…" = "Recording…";
 
@@ -738,10 +738,27 @@
 
 "Record audio" = "Record audio";
 
-"This device does not have enough memory for the current Canary model." = "This device does not have enough memory for the current Canary model.";
+"This device does not have enough memory for the current Canary model." = "This device does not have enough memory for direct speech processing.";
 
 "Processing fell behind. The recording and partial results were saved." = "Processing fell behind. The recording and partial results were saved.";
 
 "Used by experimental speech recognition and translation." = "Used by experimental speech recognition and translation.";
 
 "Text appears as sections finish. Stop recording to finish the last section." = "Text appears as sections finish. Stop recording to finish the last section.";
+
+"Test speech translation" = "Test speech translation";
+"Record speech or choose an audio file. It is processed in short sections on this device." = "Record speech or choose an audio file. It is processed in short sections on this device.";
+"Use direct translation where available" = "Use direct translation where available";
+"Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed." = "Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed.";
+"Direct translation" = "Direct translation";
+"Translation through text" = "Translation through text";
+"Speech recognition" = "Speech recognition";
+"Preparing direct translation…" = "Preparing direct translation…";
+"Preparing speech processing…" = "Preparing speech processing…";
+"Direct translation is unavailable. Translation through text will be used." = "Direct translation is unavailable. Translation through text will be used.";
+"This device does not have enough memory for direct speech processing." = "This device does not have enough memory for direct speech processing.";
+"The recording could not be processed. Available audio and text were saved." = "The recording could not be processed. Available audio and text were saved.";
+"Direct speech translation" = "Direct speech translation";
+"Used for direct speech translation and translation testing." = "Used for direct speech translation and translation testing.";
+"Direct translation is unavailable on this device. Translation through text will be used." = "Direct translation is unavailable on this device. Translation through text will be used.";
+"Speech translation test" = "Speech translation test";
