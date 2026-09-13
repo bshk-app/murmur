@@ -57,7 +57,7 @@
 "Share" = "Teilen";
 "Translate to" = "Übersetzen in";
 "While you speak" = "Während du sprichst";
-"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Eine schnelle Vorschau folgt deiner Stimme. OPUS verbessert abgeschlossene Sätze und den endgültigen Text vor dem Speichern.";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Eine schnelle Vorschau folgt deiner Stimme. Abgeschlossene Sätze und der endgültige Text werden vor dem Speichern verbessert.";
 "Download the selected language models once to translate offline." = "Lade die gewählten Sprachmodelle einmal für Offline-Übersetzungen.";
 "Translation is not available for this language yet. You can still record a note." = "Für diese Sprache ist noch keine Übersetzung verfügbar. Du kannst trotzdem eine Notiz aufnehmen.";
 "Speak & translate" = "Sprechen und übersetzen";
@@ -143,7 +143,7 @@
 "Add speech language" = "Diktatsprache hinzufügen";
 "Translation languages · optional" = "Übersetzungssprachen · optional";
 "Translate from" = "Übersetzen aus";
-"No downloadable OPUS translation pack is available for this source language yet." = "Für diese Ausgangssprache ist noch kein OPUS-Übersetzungspaket zum Download verfügbar.";
+"No downloadable OPUS translation pack is available for this source language yet." = "Für diese Ausgangssprache ist noch kein Übersetzungspaket zum Download verfügbar.";
 "Add translation language" = "Übersetzungssprache hinzufügen";
 "Downloaded" = "Heruntergeladen";
 "Prepare again" = "Erneut vorbereiten";
@@ -703,3 +703,66 @@
 "Skip tour" = "Einführung überspringen";
 
 "Feature example" = "Funktionsbeispiel";
+
+
+// Canary speech experiment
+"Canary experiment" = "Sprachübersetzung testen";
+
+"Experimental speech recognition" = "Experimentelle Spracherkennung";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Nimm Sprache auf oder wähle eine Audiodatei. Sie wird auf diesem Gerät in kurzen Abschnitten verarbeitet.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Modelle müssen eventuell einmalig heruntergeladen werden. Lass diesen Bildschirm während der Verarbeitung geöffnet; Ergebnisse können Fehler enthalten.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Aufnahmen und vorhandener Text werden in Notizen gespeichert. Beim Schließen dieses Bildschirms werden die Modelle aus dem Speicher entladen.";
+
+"Translate speech" = "Sprache übersetzen";
+
+"Canary direct translation" = "Direkte Übersetzung";
+
+"Canary → OPUS" = "Übersetzung über Text";
+
+"Canary transcription" = "Spracherkennung";
+
+"Preparing Canary…" = "Sprachverarbeitung wird vorbereitet…";
+
+"Recording…" = "Aufnahme läuft…";
+
+"Processing speech…" = "Sprache wird verarbeitet…";
+
+"Processing complete" = "Verarbeitung abgeschlossen";
+
+"Could not process this recording" = "Diese Aufnahme konnte nicht verarbeitet werden";
+
+"Processed audio" = "Verarbeitetes Audio";
+
+"Tap Stop recording to process the recording." = "Tippe auf „Aufnahme stoppen“, um die Aufnahme zu verarbeiten.";
+
+"Copy transcript" = "Transkript kopieren";
+
+"Record audio" = "Audio aufnehmen";
+
+"This device does not have enough memory for the current Canary model." = "Dieses Gerät hat nicht genügend Arbeitsspeicher für direkte Sprachverarbeitung.";
+
+"Processing fell behind. The recording and partial results were saved." = "Die Verarbeitung konnte mit der Aufnahme nicht Schritt halten. Die Aufnahme und Teilergebnisse wurden gespeichert.";
+
+"Used by experimental speech recognition and translation." = "Wird für die experimentelle Spracherkennung und Übersetzung verwendet.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Text erscheint nach jedem verarbeiteten Abschnitt. Beenden Sie die Aufnahme, um den letzten Abschnitt abzuschließen.";
+
+"Test speech translation" = "Sprachübersetzung testen";
+"Record speech or choose an audio file. It is processed in short sections on this device." = "Nimm Sprache auf oder wähle eine Audiodatei. Sie wird auf diesem Gerät in kurzen Abschnitten verarbeitet.";
+"Use direct translation where available" = "Direkte Übersetzung verwenden, wenn verfügbar";
+"Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed." = "Übersetzt Sprache direkt für unterstützte Richtungen mit Englisch. Auch die Erkennung kann abweichen. Ergebnisse erscheinen abschnittsweise.";
+"Direct translation" = "Direkte Übersetzung";
+"Translation through text" = "Übersetzung über Text";
+"Speech recognition" = "Spracherkennung";
+"Preparing direct translation…" = "Direkte Übersetzung wird vorbereitet…";
+"Preparing speech processing…" = "Sprachverarbeitung wird vorbereitet…";
+"Direct translation is unavailable. Translation through text will be used." = "Direkte Übersetzung ist nicht verfügbar. Die Übersetzung erfolgt über Text.";
+"This device does not have enough memory for direct speech processing." = "Dieses Gerät hat nicht genügend Arbeitsspeicher für direkte Sprachverarbeitung.";
+"The recording could not be processed. Available audio and text were saved." = "Die Aufnahme konnte nicht verarbeitet werden. Verfügbares Audio und Text wurden gespeichert.";
+"Direct speech translation" = "Direkte Sprachübersetzung";
+"Used for direct speech translation and translation testing." = "Wird für direkte Sprachübersetzung und Übersetzungstests verwendet.";
+"Direct translation is unavailable on this device. Translation through text will be used." = "Direkte Übersetzung ist auf diesem Gerät nicht verfügbar. Die Übersetzung erfolgt über Text.";
+"Speech translation test" = "Sprachübersetzung testen";

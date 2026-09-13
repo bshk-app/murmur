@@ -7,6 +7,9 @@ import MurmurCore
 @MainActor @Observable final class AppModel {
     enum Phase { case idle, preparing, ready, recording, refining }
     var phase = Phase.idle
+    var directTranslationEnabled = false
+    var directTranslationSelected: Bool { directTranslationEnabled && source != target && (source == "en" || target == "en") }
+    var directTranslationUnavailableOnDevice = false
     var conversation = RecordingTranscript()
     var liveTranslationSegments: [UtteranceTranslation] = []
     func audioURL(for note: VoiceNote) -> URL? {

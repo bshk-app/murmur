@@ -2,6 +2,19 @@ import XCTest
 @testable import MurmurCore
 
 final class RecordingPersistenceTests: XCTestCase {
+    func testDirectSectionsAppendWithoutRemovingRepetitions() {
+        var transcript = RecordingTranscript()
+        transcript.appendSettled(.init(id: 0, startSample: 0, endSample: 16_000,
+                                       text: "Again", translation: "Uudelleen"))
+        transcript.appendSettled(.init(id: 16_000, startSample: 16_000, endSample: 32_000,
+                                       text: "Again", translation: "Uudelleen"))
+        transcript.appendSettled(.init(id: 8_000, startSample: 8_000, endSample: 9_000,
+                                       text: "stale"))
+        XCTAssertEqual(transcript.utterances.count, 2)
+        XCTAssertEqual(transcript.text, "Again Again")
+        XCTAssertEqual(transcript.translatedText, "Uudelleen Uudelleen")
+        XCTAssertTrue(transcript.hasSnapshots)
+    }
     private func segment(_ id: UInt64, _ text: String, start: Int? = nil, end: Int? = nil) -> CaptionSegment {
         .init(id: id, startSample: start ?? Int(id - 1) * 80_000, endSample: end ?? Int(id) * 80_000, text: text, state: .confirmed)
     }

@@ -32,9 +32,15 @@ struct TranslationSetupView: View {
                 Image(systemName: "arrow.right").foregroundStyle(p.muted)
                 languagePicker("Translate to", selection: $model.target, codes: LanguagePair.qualityLanguages.sorted())
             }
-            SpeechPriorityPicker(model: model).murmurCard(radius: 16, padding: 15)
-            ProcessingQualityPicker(selection: $model.translationQuality, options: ProcessingQuality.translationOptions(from: model.source, to: model.target))
-                .disabled(model.busy).murmurCard(radius: 16, padding: 15)
+            if !model.directTranslationSelected {
+                SpeechPriorityPicker(model: model).murmurCard(radius: 16, padding: 15)
+                ProcessingQualityPicker(selection: $model.translationQuality, options: ProcessingQuality.translationOptions(from: model.source, to: model.target))
+                    .disabled(model.busy).murmurCard(radius: 16, padding: 15)
+            }
+            if model.directTranslationUnavailableOnDevice {
+                Label("Direct translation is unavailable on this device. Translation through text will be used.", systemImage: "info.circle")
+                    .font(.footnote).foregroundStyle(p.secondary)
+            }
             if !model.translationOptions.contains(model.target) {
                 Label("Translation is not available for this language yet. You can still record a note.", systemImage: "info.circle").font(.subheadline).foregroundStyle(p.secondary)
             }

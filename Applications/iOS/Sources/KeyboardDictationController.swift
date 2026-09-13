@@ -14,6 +14,8 @@ import MurmurTranslation
     var hasPendingPreparation: Bool { preparationCount > 0 }
     private(set) var detail = ""
     @ObservationIgnored private var speech: BackgroundSpeechSession?
+    @ObservationIgnored private var directSpeech: DirectSpeechSession?
+    @ObservationIgnored private var usesDirectTranslation = false
     @ObservationIgnored private var translator: TranslationSession?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
     private var conversation = RecordingTranscript()
@@ -72,7 +74,13 @@ import MurmurTranslation
     private func performEnable() async {
         guard !Task.isCancelled else { return }
         operation = UUID(); let token = operation
-        isActive = true; state = .init(phase: .preparing, configuration: configuration)
+        usesDirectTranslation = DirectSpeechTranslation.shouldUse(
+            enabled: UserDefaults.standard.bool(forKey: "directSpeechTranslationEnabled"),
+            source: configuration.source, target: configuration.target,
+            deviceEligible: Self.directTranslationDeviceEligible)
+        isActive = true
+        state = .init(phase: .preparing, configuration: configuration,
+                      translationMethod: configuration.target == nil ? nil : usesDirectTranslation ? .direct : .throughText)
         lastUse = Date(); lastHeartbeat = Date(); lastCommandID = nil
         detail = L10n.text("Preparing dictation…")
         do { try KeyboardSessionStore.saveConfiguration(configuration) }
@@ -82,52 +90,35 @@ import MurmurTranslation
             guard await AVAudioApplication.requestRecordPermission() else { throw KeyboardError.microphone }
             guard token == operation else { throw CancellationError() }
             guard UIApplication.shared.applicationState == .active else { throw KeyboardError.needsForeground }
-            let choice: SpeechModelChoice = configuration.source == "ru" && configuration.mode == .fast ? .gigaam : .parakeet
-            let input = BackgroundSpeechSession(choice: choice, mode: configuration.mode, language: configuration.source, modelsRoot: StoragePaths.models)
-            speech = input
-            input.onSnapshot = { [weak self] id, snapshot in Task { @MainActor in
-                guard let self, self.operation == token, self.state.utteranceID == id, self.state.phase == .recording else { return }
-                guard self.conversation.apply(snapshot) else { return }
-                self.state.text = self.conversation.text; self.queueTranslation(self.state.text, token: token, utterance: id); self.publish()
-                if Date().timeIntervalSince(self.lastAudioDraftSave) >= 1 {
-                    self.lastAudioDraftSave = Date()
-                    if let note = self.recordedNote(complete: false) {
-                        do { try await self.repository.saveProgress(note) } catch { self.state.error = L10n.text("Could not save the note") }
-                    }
+            if usesDirectTranslation {
+                detail = L10n.text("Preparing direct translation…"); publish()
+                let input = DirectSpeechSession(computeMode: .backgroundCPU)
+                directSpeech = input
+                input.onCapture = { [weak self] _, peak in Task { @MainActor in
+                    guard let self, self.operation == token else { return }; self.state.level = min(1, peak * 6)
+                } }
+                input.onError = { [weak self] _ in Task { @MainActor in
+                    guard let self, self.operation == token, self.isActive else { return }
+                    await self.end(message: L10n.text("Recording stopped. The captured text was kept."))
+                } }
+                try input.arm()
+                state.microphoneActive = true; publish()
+                do { try await input.prepare() }
+                catch is CancellationError {
+                    await input.close(); directSpeech = nil
+                    throw CancellationError()
+                } catch {
+                    await input.close(); directSpeech = nil; usesDirectTranslation = false
+                    try Task.checkCancellation()
+                    guard token == operation, isActive else { throw CancellationError() }
+                    state.translationMethod = .throughText
+                    state.error = L10n.text("Direct translation is unavailable. Translation through text will be used.")
+                    detail = state.error ?? ""
+                    publish()
+                    try await prepareConventionalInput(token: token)
                 }
-            } }
-            input.onRecordingError = { [weak self] message in Task { @MainActor in
-                guard let self, self.operation == token else { return }
-                await self.end(message: L10n.text("Could not save audio.") + " " + message)
-            } }
-            input.onLevel = { [weak self] peak in Task { @MainActor in
-                guard let self, self.operation == token else { return }; self.state.level = min(1, peak * 6)
-            } }
-            input.onError = { [weak self] _ in Task { @MainActor in
-                guard let self, self.operation == token, self.isActive else { return }
-                await self.end(message: L10n.text("Recording stopped. The captured text was kept."))
-            } }
-            // Enable capture while foregrounded, before any slow model work.
-            // Idle samples are discarded; CPU/ANE preparation can then finish
-            // with the user back in the receiving app.
-            try input.arm()
-            state.microphoneActive = true; publish()
-            #if DEBUG
-            if ProcessInfo.processInfo.arguments.contains("--debug-enable-sync-delay") { try await Task.sleep(for: .seconds(5)) }
-            #endif
-            try await input.prepare()
-            try Task.checkCancellation()
-            guard token == operation else { throw CancellationError() }
-            if let target = configuration.target {
-                detail = L10n.text("Preparing translation…")
-                let session = TranslationSession(modelsRoot: StoragePaths.translation)
-                translator = session
-                try await session.prepare(from: configuration.source, to: target) { [weak self] progress in
-                    self?.detail = "\(L10n.text("Preparing translation…")) · \(Int(progress.fraction * 100))%"
-                    self?.publish()
-                }
-                detail = L10n.text("Preparing…"); publish()
-                try await session.warmUp(from: configuration.source, to: target)
+            } else {
+                try await prepareConventionalInput(token: token)
             }
             guard token == operation else { throw CancellationError() }
             state.phase = .ready; state.microphoneActive = true
@@ -144,12 +135,68 @@ import MurmurTranslation
             let message: String
             if case KeyboardError.microphone = error { message = L10n.text("Allow microphone access in Settings to record a note.") }
             else if case KeyboardError.needsForeground = error { message = L10n.text("Open Murmator to finish preparation.") }
-            else { message = L10n.text("Could not load dictation models.") + " " + error.localizedDescription }
+            else { message = L10n.text("Could not load dictation models.") }
             await end(message: message)
         }
     }
+    private static var directTranslationDeviceEligible: Bool {
+        #if os(iOS) && !targetEnvironment(simulator)
+        ProcessInfo.processInfo.physicalMemory >= 5 * 1_024 * 1_024 * 1_024
+        #else
+        true
+        #endif
+    }
+    private func prepareConventionalInput(token: UUID) async throws {
+        let choice: SpeechModelChoice = configuration.source == "ru" && configuration.mode == .fast ? .gigaam : .parakeet
+        let input = BackgroundSpeechSession(choice: choice, mode: configuration.mode, language: configuration.source, modelsRoot: StoragePaths.models)
+        speech = input
+        input.onSnapshot = { [weak self] id, snapshot in Task { @MainActor in
+            guard let self, self.operation == token, self.state.utteranceID == id, self.state.phase == .recording else { return }
+            guard self.conversation.apply(snapshot) else { return }
+            self.state.text = self.conversation.text; self.queueTranslation(self.state.text, token: token, utterance: id); self.publish()
+            if Date().timeIntervalSince(self.lastAudioDraftSave) >= 1 {
+                self.lastAudioDraftSave = Date()
+                if let note = self.recordedNote(complete: false) {
+                    do { try await self.repository.saveProgress(note) } catch { self.state.error = L10n.text("Could not save the note") }
+                }
+            }
+        } }
+        input.onRecordingError = { [weak self] message in Task { @MainActor in
+            guard let self, self.operation == token else { return }
+            await self.end(message: L10n.text("Could not save audio.") + " " + message)
+        } }
+        input.onLevel = { [weak self] peak in Task { @MainActor in
+            guard let self, self.operation == token else { return }; self.state.level = min(1, peak * 6)
+        } }
+        input.onError = { [weak self] _ in Task { @MainActor in
+            guard let self, self.operation == token, self.isActive else { return }
+            await self.end(message: L10n.text("Recording stopped. The captured text was kept."))
+        } }
+        try input.arm()
+        state.microphoneActive = true; publish()
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("--debug-enable-sync-delay") {
+            try await Task.sleep(for: .seconds(5))
+        }
+        #endif
+        try await input.prepare()
+        try Task.checkCancellation()
+        guard token == operation else { throw CancellationError() }
+        if let target = configuration.target {
+            detail = L10n.text("Preparing translation…")
+            let session = TranslationSession(modelsRoot: StoragePaths.translation)
+            translator = session
+            try await session.prepare(from: configuration.source, to: target) { [weak self] progress in
+                self?.detail = "\(L10n.text("Preparing translation…")) · \(Int(progress.fraction * 100))%"
+                self?.publish()
+            }
+            detail = L10n.text("Preparing…"); publish()
+            try await session.warmUp(from: configuration.source, to: target)
+        }
+    }
     func startUtterance(id: UUID = UUID()) async {
-        guard isActive, state.phase == .ready || state.phase == .result, let speech else { return }
+        guard isActive, state.phase == .ready || state.phase == .result else { return }
+        guard usesDirectTranslation ? directSpeech != nil : speech != nil else { return }
         let token = operation
         state.utteranceID = id; state.text = ""; state.translation = ""; state.error = nil
         translationJob = UUID(); translationTask?.cancel(); translationTask = nil; pendingTranslation = ""; lastTranslated = ""
@@ -159,17 +206,41 @@ import MurmurTranslation
         publish()
         do {
             if let note = recordedNote(complete: false) { try await repository.save(note) }
-            try await speech.begin(id, recordingURL: utteranceAudio?.url(in: StoragePaths.recordings))
+            if usesDirectTranslation, let directSpeech, let target = configuration.target {
+                try directSpeech.begin(source: configuration.source, target: target,
+                    recordingURL: utteranceAudio?.url(in: StoragePaths.recordings),
+                    onBatch: { [weak self] value in
+                        guard let self, self.operation == token, self.state.utteranceID == id,
+                              self.state.phase == .recording || self.state.phase == .finalizing else { throw CancellationError() }
+                        self.conversation.appendSettled(value)
+                        self.state.text = self.conversation.text; self.state.translation = self.conversation.translatedText
+                        self.publish()
+                        if let note = self.recordedNote(complete: false) { try await self.repository.saveProgress(note) }
+                    })
+            } else if let speech {
+                try await speech.begin(id, recordingURL: utteranceAudio?.url(in: StoragePaths.recordings))
+            } else { throw CancellationError() }
         }
         catch { if token == operation { await end(message: L10n.text("Could not start dictation. Check microphone access and language downloads.")) } }
         await activity?.update(.init(state: .init(phase: L10n.text("Listening")), staleDate: nil))
     }
     func stopUtterance() async {
-        guard state.phase == .recording, let speech else { return }
+        guard state.phase == .recording else { return }
         let token = operation, id = state.utteranceID
         state.phase = .finalizing; lastUse = Date(); publish()
         translationTask?.cancel(); translationTask = nil
         do {
+            if usesDirectTranslation, let directSpeech {
+                let result = try await directSpeech.finish()
+                guard operation == token, state.utteranceID == id else { return }
+                state.text = conversation.text; state.translation = conversation.translatedText
+                if state.text.isEmpty { state.error = L10n.text("No speech detected. Hold the microphone and try again.") }
+                if let note = recordedNote(complete: true, duration: result.duration) { try await repository.save(note) }
+                state.phase = .result; state.recordingStartedAt = nil; lastUse = Date(); publish()
+                await activity?.update(.init(state: .init(phase: L10n.text("Keyboard microphone enabled")), staleDate: nil))
+                return
+            }
+            guard let speech else { throw CancellationError() }
             let result = try await speech.finish()
             #if DEBUG
             diagnostic = ["audioSeconds": result.seconds, "speechWindows": result.speechWindows,
@@ -207,7 +278,7 @@ import MurmurTranslation
         let note = recordedNote(complete: false, closed: true)
         state.phase = .ready; state.utteranceID = nil; state.text = ""; state.translation = ""; state.error = nil; state.recordingStartedAt = nil
         translationTask?.cancel(); translationTask = nil; lastUse = Date(); publish()
-        await speech?.discard()
+        if usesDirectTranslation { await directSpeech?.cancelUtterance() } else { await speech?.discard() }
         if let note { try? await repository.save(note) }
     }
     func end(message: String? = nil) async {
@@ -220,14 +291,16 @@ import MurmurTranslation
         translationTask?.cancel(); translationTask = nil
         for observer in observers { NotificationCenter.default.removeObserver(observer) }; observers = []
         let input = speech; speech = nil
+        let directInput = directSpeech; directSpeech = nil
         state.microphoneActive = false; state.phase = message == nil ? .inactive : .failed
         state.error = message; state.recordingStartedAt = nil; publish()
         await input?.close()
+        await directInput?.close()
         if let capturedNote { try? await repository.saveProgress(capturedNote) }
         await translator?.unload(); translator = nil
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         await activity?.end(nil, dismissalPolicy: .immediate); activity = nil
-        isActive = false; ending = false; publish()
+        isActive = false; usesDirectTranslation = false; ending = false; publish()
     }
     private func translated(_ value: UtteranceTranslation, token: UUID) {
         guard token == operation else { return }; conversation.applyTranslations([value])
@@ -238,11 +311,11 @@ import MurmurTranslation
             translation: conversation.translatedText.isEmpty ? nil : conversation.translatedText,
             sourceLanguage: state.configuration.source, targetLanguage: state.configuration.target,
             duration: audio.capturedDuration(in: StoragePaths.recordings) ?? duration ?? utteranceStartedAt.map { max(0, Date().timeIntervalSince($0)) } ?? 0,
-            model: "keyboard · \(state.configuration.mode.rawValue)")
+            model: usesDirectTranslation ? "direct-speech-translation" : "keyboard · \(state.configuration.mode.rawValue)")
         note.audio = audio; note.utterances = conversation.utterances; note.captureRevision = conversation.revision
         note.transcriptionComplete = complete
         note.captureClosed = complete || closed
-        note.translationIncomplete = state.configuration.target != nil && conversation.utterances.contains { $0.translation == nil }
+        note.translationIncomplete = state.configuration.target != nil && (!complete || conversation.utterances.contains { $0.translation == nil })
         if note.text.isEmpty { note.sourceFileName = L10n.text("Audio recording") }
         return note
     }

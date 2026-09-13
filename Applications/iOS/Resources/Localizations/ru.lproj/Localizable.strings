@@ -57,7 +57,7 @@
 "Share" = "Поделиться";
 "Translate to" = "Перевести на";
 "While you speak" = "Пока ты говоришь";
-"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Черновой перевод появляется вслед за речью. OPUS уточняет завершённые фразы и итоговый текст перед сохранением.";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Черновой перевод появляется вслед за речью. Завершённые фразы и итоговый текст уточняются перед сохранением.";
 "Download the selected language models once to translate offline." = "Скачай модели выбранных языков один раз для перевода без интернета.";
 "Translation is not available for this language yet. You can still record a note." = "Перевод для этого языка пока недоступен. Записать заметку можно.";
 "Speak & translate" = "Говорить и переводить";
@@ -143,7 +143,7 @@
 "Add speech language" = "Добавить язык диктовки";
 "Translation languages · optional" = "Языки перевода · необязательно";
 "Translate from" = "Переводить с";
-"No downloadable OPUS translation pack is available for this source language yet." = "Для этого исходного языка пока нет пакета перевода OPUS, доступного для скачивания.";
+"No downloadable OPUS translation pack is available for this source language yet." = "Для этого исходного языка пока нет пакета перевода, доступного для скачивания.";
 "Add translation language" = "Добавить язык перевода";
 "Downloaded" = "Скачано";
 "Prepare again" = "Подготовить повторно";
@@ -703,3 +703,66 @@
 "Skip tour" = "Пропустить знакомство";
 
 "Feature example" = "Пример функции";
+
+
+// Canary speech experiment
+"Canary experiment" = "Тестирование перевода речи";
+
+"Experimental speech recognition" = "Экспериментальное распознавание речи";
+
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Запишите речь или выберите аудиофайл. Он будет обработан короткими фрагментами на этом устройстве.";
+
+"Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Может потребоваться однократная загрузка моделей. Оставьте этот экран открытым во время обработки; в результатах возможны ошибки.";
+
+"Recordings and available text are saved in Notes. Closing this screen releases the models." = "Записи и полученный текст сохраняются в заметках. При закрытии экрана модели выгружаются из памяти.";
+
+"Translate speech" = "Переводить речь";
+
+"Canary direct translation" = "Прямой перевод";
+
+"Canary → OPUS" = "Перевод через текст";
+
+"Canary transcription" = "Распознавание речи";
+
+"Preparing Canary…" = "Подготовка обработки речи…";
+
+"Recording…" = "Запись…";
+
+"Processing speech…" = "Обработка речи…";
+
+"Processing complete" = "Обработка завершена";
+
+"Could not process this recording" = "Не удалось обработать запись";
+
+"Processed audio" = "Обработано аудио";
+
+"Tap Stop recording to process the recording." = "Нажмите «Остановить запись», чтобы обработать запись.";
+
+"Copy transcript" = "Скопировать расшифровку";
+
+"Record audio" = "Записать аудио";
+
+"This device does not have enough memory for the current Canary model." = "На этом устройстве недостаточно памяти для прямой обработки речи.";
+
+"Processing fell behind. The recording and partial results were saved." = "Обработка не успевала за записью. Аудио и частичные результаты сохранены.";
+
+"Used by experimental speech recognition and translation." = "Используется для экспериментального распознавания и перевода речи.";
+
+"Text appears as sections finish. Stop recording to finish the last section." = "Текст появляется по мере обработки фрагментов. Остановите запись, чтобы завершить последний фрагмент.";
+
+"Test speech translation" = "Тестирование перевода речи";
+"Record speech or choose an audio file. It is processed in short sections on this device." = "Запишите речь или выберите аудиофайл. Он будет обработан короткими фрагментами на этом устройстве.";
+"Use direct translation where available" = "Использовать прямой перевод, где возможно";
+"Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed." = "Переводит речь напрямую для поддерживаемых направлений с английским. Распознавание тоже может отличаться. Результаты появляются по мере обработки фрагментов.";
+"Direct translation" = "Прямой перевод";
+"Translation through text" = "Перевод через текст";
+"Speech recognition" = "Распознавание речи";
+"Preparing direct translation…" = "Подготовка прямого перевода…";
+"Preparing speech processing…" = "Подготовка обработки речи…";
+"Direct translation is unavailable. Translation through text will be used." = "Прямой перевод недоступен. Будет использован перевод через текст.";
+"This device does not have enough memory for direct speech processing." = "На этом устройстве недостаточно памяти для прямой обработки речи.";
+"The recording could not be processed. Available audio and text were saved." = "Не удалось обработать запись. Доступные аудио и текст сохранены.";
+"Direct speech translation" = "Прямой перевод речи";
+"Used for direct speech translation and translation testing." = "Используется для прямого перевода речи и тестирования перевода.";
+"Direct translation is unavailable on this device. Translation through text will be used." = "Прямой перевод недоступен на этом устройстве. Будет использован перевод через текст.";
+"Speech translation test" = "Тестирование перевода речи";

@@ -61,6 +61,20 @@ final class AudioFileTranscriberTests: XCTestCase {
         try await AudioFileTranscriber.process(reader: AudioFilePCMReader(url: file), classify: { _ in false },
             transcribe: { _ in XCTFail("Silence must not reach ASR"); return "" }, onSegment: { _, _ in XCTFail("No speech segment expected") })
     }
+    func testCanceledInferenceDoesNotCommitItsResult() async throws {
+        let file = try makeAudio(seconds: 1)
+        defer { try? FileManager.default.removeItem(at: file) }
+        let task = Task {
+            do {
+                try await AudioFileTranscriber.process(reader: AudioFilePCMReader(url: file), classify: { _ in true }, transcribe: { _ in
+                    withUnsafeCurrentTask { $0?.cancel() }
+                    return "late result"
+                }, onSegment: { _, _ in XCTFail("Canceled recognition must not commit") })
+                XCTFail("Cancellation must propagate")
+            } catch is CancellationError {}
+        }
+        try await task.value
+    }
     func testRealVoiceFileUsesVADAndTheAccurateRecognizer() async throws {
         guard let fixture = ProcessInfo.processInfo.environment["MURMUR_AUDIO_FILE_FIXTURE"] else { throw XCTSkip("Explicit voice fixture required") }
         let engine = AudioFileTranscriber(choice: .gigaam, modelsRoot: FileManager.default.temporaryDirectory)

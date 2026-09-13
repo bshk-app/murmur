@@ -18,6 +18,7 @@ public struct SpeechBoundaryPolicy {
     private let preRollSamples: Int
     private let endpointSilenceFrames: Int
     private let maxEpochSamples: Int
+    private let hardMaximumSamples: Int?
 
     private var cursor = 0            // samples consumed, i.e. end of last frame
     private var openStart: Int?       // start of the live segment, pre-roll applied
@@ -32,12 +33,14 @@ public struct SpeechBoundaryPolicy {
         frameSamples: Int,
         preRollSamples: Int,
         endpointSilenceFrames: Int,
-        maxEpochSamples: Int
+        maxEpochSamples: Int,
+        hardMaximumSamples: Int? = nil
     ) {
         self.frameSamples = frameSamples
         self.preRollSamples = preRollSamples
         self.endpointSilenceFrames = endpointSilenceFrames
         self.maxEpochSamples = maxEpochSamples
+        self.hardMaximumSamples = hardMaximumSamples
     }
 
     /// Feed one VAD verdict. Returns a boundary when this frame produced one.
@@ -61,6 +64,14 @@ public struct SpeechBoundaryPolicy {
             lastSpeechEnd = cursor
             silentFrames = 0
             return .opened(startSample: start)
+        }
+
+        // Batch models have a strict input limit, including trailing silence.
+        // The regular speech cap below alone cannot bound an EOF following one
+        // or two silent frames. Preserve the remainder as a continuation.
+        if let limit = hardMaximumSamples, let start = openStart, cursor - start >= limit {
+            if isSpeech { lastSpeechEnd = cursor }
+            return close(at: start + limit, forced: true)
         }
 
         if isSpeech {

@@ -2,6 +2,38 @@ import XCTest
 @testable import MurmurCore
 
 final class AudioFileBatcherTests: XCTestCase {
+    func testCanaryCapIncludesSilenceAtEOF() {
+        var batcher = AudioFileBatcher(maximumSamples: 240_000)
+        var batches: [AudioFileBatch] = []
+        for index in 0..<59 {
+            if let batch = batcher.append(Array(repeating: Float(index), count: 4096), isSpeech: index < 57) {
+                batches.append(batch)
+            }
+            XCTAssertLessThanOrEqual(batcher.bufferedSamples, 240_000)
+        }
+        if let batch = batcher.finish() { batches.append(batch) }
+        var end = 0
+        for batch in batches {
+            XCTAssertLessThanOrEqual(batch.samples.count, 240_000)
+            XCTAssertEqual(batch.range.lowerBound, end)
+            XCTAssertEqual(batch.samples.count, batch.range.count)
+            end = batch.range.upperBound
+        }
+        XCTAssertEqual(end, 59 * 4096)
+    }
+    func testSpeechRemainderAfterHardCapSurvivesFollowingPause() {
+        var batcher = AudioFileBatcher(maximumSamples: 240_000)
+        var ranges: [Range<Int>] = []
+        for index in 0..<62 {
+            let speech = index < 57 || index == 58
+            if let batch = batcher.append(Array(repeating: 1, count: 4096), isSpeech: speech) {
+                ranges.append(batch.range)
+                XCTAssertLessThanOrEqual(batch.samples.count, 240_000)
+            }
+        }
+        if let batch = batcher.finish() { ranges.append(batch.range) }
+        XCTAssertEqual(ranges, [0..<240_000, 240_000..<(59 * 4096)])
+    }
     func testHourWithoutPausesStaysBoundedAndEverySampleAppearsOnce() {
         var batcher = AudioFileBatcher()
         let total = 3_600 * 16_000 + 173
