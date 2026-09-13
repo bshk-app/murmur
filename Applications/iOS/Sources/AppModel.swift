@@ -627,7 +627,7 @@ import MurmurTranslation
     private func prepareImpl(token: UUID, translating: Bool) async throws {
         await canary.close()
         await textTranslator.unload()
-        if usesDirectTranslation {
+        if usesDirectTranslation && translating {
             if let speech { await speech.close() }
             speech = nil; configurationKey = ""; modelReady = false
             await translator.unload(); translationLoaded = false
@@ -734,7 +734,7 @@ import MurmurTranslation
             try await prepare(token: token, translating: isTranslation)
             guard operation == token, UIApplication.shared.applicationState == .active,
                   usesDirectTranslation ? directSpeech != nil : speech != nil else { throw CancellationError() }
-            languageLibrary.markPrepared("speech:" + source)
+            if !usesDirectTranslation { languageLibrary.markPrepared("speech:" + source) }
             if isTranslation && !usesDirectTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
             phase = .ready
             detail = L10n.text("Ready. Tap Start recording when you want to speak.")
