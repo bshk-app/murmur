@@ -93,7 +93,7 @@ public final class MicCapture: @unchecked Sendable {
             if !pending.isEmpty { onChunk(pending); pending.removeAll(keepingCapacity: true) }
         }
     }
-    public func atCaptureBoundary(_ action: () throws -> Void) rethrows { try queue.sync(execute: action) }
+    public func atCaptureBoundary<T>(_ action: () throws -> T) rethrows -> T { try queue.sync(execute: action) }
 
     private func ingest(_ buffer: AVAudioPCMBuffer) {
         let rawPeak = buffer.floatChannelData.map { channel in

@@ -6,6 +6,19 @@ normal dictation model. Open **Settings → Tools → Canary experiment** (or
 languages before starting. Models download once, with immutable revision and
 SHA256 checks. Recordings and completed text sections are saved in Notes.
 
+Updated 2026-09-13: the user interface no longer exposes model names. The tool is
+shown as **Settings → Tools → Test speech translation**. The general Speech
+setting **Use direct translation where available** is off by default. When on,
+supported English↔X voice recording and keyboard sessions use direct ASR+AST;
+other pairs retain translation through text. The selected route is fixed for an
+utterance, stored internally in note/session metadata, and described to users as
+**Direct translation** or **Translation through text**.
+
+`DirectSpeechTranslation.supportedLanguages` is the authoritative 25-language
+set from the upstream model card. Its exhaustive check compares against an
+independent literal set, visits all 625 source/target combinations, verifies 48
+directed English↔X translation pairs and checks every tokenizer language token.
+
 ## Processing behavior
 
 - `AudioBatchProcessor` is shared by ordinary audio-file transcription and

@@ -3,6 +3,7 @@ import CryptoKit
 import MurmurKit
 
 enum CanaryBatchProbe {
+    // Exercises the same file-processing interface used by the in-app comparison tool.
     struct Row: Codable, Sendable {
         let startSample: Int
         let endSample: Int
@@ -35,7 +36,8 @@ enum CanaryBatchProbe {
             try writer.finish()
         }
         let direct = source != target && CanaryRuntime.supportsTranslation(source: source, target: target)
-        let processor = CanaryTranscriber()
+        let cpuOnly = arguments.contains("--cpu-only")
+        let processor = DirectSpeechSession(computeMode: cpuOnly ? .backgroundCPU : .foreground)
         let translation = TextTranslationSession(modelsRoot: URL(fileURLWithPath: option("--translation-models", "/tmp/canary-batch-mt")))
         let results = Results()
         let prepareStart = ProcessInfo.processInfo.systemUptime
@@ -45,12 +47,12 @@ enum CanaryBatchProbe {
         var failure: String?
         do {
             try await processor.processFile(url: input, source: source, target: direct ? target : nil,
-                onBatch: { range, result in
-                    var text = result.translatedText
-                    if source != target && !direct { text = try await translation.translate(result.sourceText, from: source, to: target) }
+                onBatch: { utterance in
+                    var text = utterance.translation
+                    if source != target && !direct { text = try await translation.translate(utterance.text, from: source, to: target) }
                     try Task.checkCancellation()
-                    await results.append(.init(startSample: range.lowerBound, endSample: range.upperBound,
-                                               source: result.sourceText, translation: text))
+                    await results.append(.init(startSample: utterance.startSample, endSample: utterance.endSample,
+                                               source: utterance.text, translation: text))
                 })
         } catch { failure = String(describing: error) }
         let finished = ProcessInfo.processInfo.systemUptime
@@ -65,6 +67,7 @@ enum CanaryBatchProbe {
         let duration = try AudioFilePCMReader(url: input).duration
         var report: [String: Any] = ["schema_version": 1, "evidence_kind": "canary_batch_execution_smoke",
             "host": "Mac", "source_language": source, "target_language": target,
+            "compute_mode": cpuOnly ? "background-cpu-only" : "foreground-cpu-gpu",
             "route": direct ? "canary-direct" : source == target ? "canary-asr" : "canary-asr-opus",
             "audio_seconds": duration, "maximum_window_samples": CanaryRuntime.maxSamples,
             "prepare_seconds": prepared - prepareStart, "processing_seconds": finished - prepared,

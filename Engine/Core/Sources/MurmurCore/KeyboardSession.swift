@@ -1,6 +1,7 @@
 import Foundation
 
 public enum KeyboardRecognitionMode: String, Codable, CaseIterable, Sendable { case fast, accurate }
+public enum VoiceTranslationMethod: String, Codable, Sendable { case direct, throughText }
 
 public struct KeyboardConfiguration: Codable, Equatable, Sendable {
     public var source: String
@@ -29,8 +30,11 @@ public struct KeyboardSessionState: Codable, Equatable, Sendable {
     public var recordingStartedAt: Date?
     public var preparationDetail: String?
     public var microphoneActive: Bool
-    public init(sessionID: UUID = UUID(), phase: Phase = .inactive, configuration: KeyboardConfiguration = .init()) {
+    public var translationMethod: VoiceTranslationMethod?
+    public init(sessionID: UUID = UUID(), phase: Phase = .inactive, configuration: KeyboardConfiguration = .init(),
+                translationMethod: VoiceTranslationMethod? = nil) {
         self.sessionID = sessionID; self.phase = phase; self.configuration = configuration
+        self.translationMethod = translationMethod
         updatedAt = Date(); text = ""; translation = ""; level = 0; microphoneActive = false
     }
     public func isFresh(at now: Date = Date()) -> Bool { now.timeIntervalSince(updatedAt) >= -2 && now.timeIntervalSince(updatedAt) < 4 }

@@ -7,20 +7,24 @@ import MurmurCore
 public actor CanaryTranscriber {
     public enum Failure: Error { case busy, notPrepared }
     private let directory: URL
+    private let computeMode: CanaryRuntime.ComputeMode
     private var runtime: CanaryRuntime?
     private var detector: VadManager?
     private var working = false
     private var generation = UUID()
 
-    public init(modelsDirectory: URL = CanaryAssets.defaultDirectory) { directory = modelsDirectory }
+    public init(modelsDirectory: URL = CanaryAssets.defaultDirectory,
+                computeMode: CanaryRuntime.ComputeMode = .foreground) {
+        directory = modelsDirectory; self.computeMode = computeMode
+    }
 
     public func prepare(progress: @escaping @MainActor @Sendable (Progress) -> Void = { _ in }) async throws {
         guard !working else { throw Failure.busy }
         working = true; defer { working = false }
         let token = generation
-        let root = try await CanaryAssets.prepare(at: directory, progress: progress)
+        let root = try await CanaryAssets.prepare(at: directory, computeMode: computeMode, progress: progress)
         try Task.checkCancellation()
-        let loaded = try await CanaryRuntime(modelsDirectory: root)
+        let loaded = try await CanaryRuntime(modelsDirectory: root, computeMode: computeMode)
         let vad = try await VadManager(config: VadConfig(computeUnits: .cpuOnly))
         try Task.checkCancellation()
         guard token == generation else { throw CancellationError() }

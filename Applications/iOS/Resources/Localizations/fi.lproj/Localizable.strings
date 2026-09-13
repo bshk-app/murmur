@@ -57,7 +57,7 @@
 "Share" = "Jaa";
 "Translate to" = "Käännä kielelle";
 "While you speak" = "Puhuessasi";
-"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Nopea käännösluonnos seuraa puhettasi. OPUS tarkentaa valmiit lauseet ja lopullisen tekstin ennen tallennusta.";
+"A quick preview follows your voice. OPUS then refines completed phrases and the final text before the note is saved." = "Nopea käännösluonnos seuraa puhettasi. Valmiit lauseet ja lopullinen teksti tarkennetaan ennen tallennusta.";
 "Download the selected language models once to translate offline." = "Lataa valittujen kielten mallit kerran, niin voit kääntää ilman verkkoyhteyttä.";
 "Translation is not available for this language yet. You can still record a note." = "Tälle kielelle ei ole vielä käännöstä. Voit silti tallentaa muistiinpanon.";
 "Speak & translate" = "Puhu ja käännä";
@@ -143,7 +143,7 @@
 "Add speech language" = "Lisää sanelukieli";
 "Translation languages · optional" = "Käännöskielet · valinnainen";
 "Translate from" = "Käännä kielestä";
-"No downloadable OPUS translation pack is available for this source language yet." = "Tälle lähdekielelle ei ole vielä ladattavaa OPUS-käännöspakettia.";
+"No downloadable OPUS translation pack is available for this source language yet." = "Tälle lähdekielelle ei ole vielä ladattavaa käännöspakettia.";
 "Add translation language" = "Lisää käännöskieli";
 "Downloaded" = "Ladattu";
 "Prepare again" = "Valmistele uudelleen";
@@ -706,11 +706,11 @@
 
 
 // Canary speech experiment
-"Canary experiment" = "Canary-kokeilu";
+"Canary experiment" = "Puhekäännöksen testaus";
 
 "Experimental speech recognition" = "Kokeellinen puheentunnistus";
 
-"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Tallenna puhetta tai valitse äänitiedosto. Canary käsittelee sen lyhyissä osissa tällä laitteella.";
+"Record speech or choose an audio file. Canary processes it in short sections on this device." = "Tallenna puhetta tai valitse äänitiedosto. Se käsitellään lyhyissä osissa tällä laitteella.";
 
 "Models may need a one-time download. Keep this screen open while processing; results may contain mistakes." = "Mallit on ehkä ladattava kerran. Pidä tämä näkymä auki käsittelyn ajan; tuloksissa voi olla virheitä.";
 
@@ -718,13 +718,13 @@
 
 "Translate speech" = "Käännä puhe";
 
-"Canary direct translation" = "Canaryn suora käännös";
+"Canary direct translation" = "Suora käännös";
 
-"Canary → OPUS" = "Canary → OPUS";
+"Canary → OPUS" = "Käännös tekstin kautta";
 
-"Canary transcription" = "Canaryn litterointi";
+"Canary transcription" = "Puheentunnistus";
 
-"Preparing Canary…" = "Valmistellaan Canarya…";
+"Preparing Canary…" = "Valmistellaan puheenkäsittelyä…";
 
 "Recording…" = "Tallennetaan…";
 
@@ -742,10 +742,27 @@
 
 "Record audio" = "Tallenna ääntä";
 
-"This device does not have enough memory for the current Canary model." = "Tämän laitteen muisti ei riitä nykyiselle Canary-mallille.";
+"This device does not have enough memory for the current Canary model." = "Tämän laitteen muisti ei riitä suoraan puheenkäsittelyyn.";
 
 "Processing fell behind. The recording and partial results were saved." = "Käsittely ei pysynyt tallennuksen tahdissa. Tallenne ja osittaiset tulokset tallennettiin.";
 
 "Used by experimental speech recognition and translation." = "Käytetään kokeelliseen puheentunnistukseen ja kääntämiseen.";
 
 "Text appears as sections finish. Stop recording to finish the last section." = "Teksti ilmestyy osioiden valmistuessa. Lopeta tallennus viimeisen osion viimeistelemiseksi.";
+
+"Test speech translation" = "Puhekäännöksen testaus";
+"Record speech or choose an audio file. It is processed in short sections on this device." = "Tallenna puhetta tai valitse äänitiedosto. Se käsitellään lyhyissä osissa tällä laitteella.";
+"Use direct translation where available" = "Käytä suoraa käännöstä, kun se on saatavilla";
+"Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed." = "Kääntää puheen suoraan tuetuissa englanninkielisissä suunnissa. Myös tunnistus voi erota. Tulokset ilmestyvät osioiden valmistuessa.";
+"Direct translation" = "Suora käännös";
+"Translation through text" = "Käännös tekstin kautta";
+"Speech recognition" = "Puheentunnistus";
+"Preparing direct translation…" = "Valmistellaan suoraa käännöstä…";
+"Preparing speech processing…" = "Valmistellaan puheenkäsittelyä…";
+"Direct translation is unavailable. Translation through text will be used." = "Suora käännös ei ole saatavilla. Käännös tehdään tekstin kautta.";
+"This device does not have enough memory for direct speech processing." = "Tämän laitteen muisti ei riitä suoraan puheenkäsittelyyn.";
+"The recording could not be processed. Available audio and text were saved." = "Tallennetta ei voitu käsitellä. Saatavilla oleva ääni ja teksti tallennettiin.";
+"Direct speech translation" = "Suora puhekäännös";
+"Used for direct speech translation and translation testing." = "Käytetään suoraan puhekäännökseen ja käännöksen testaukseen.";
+"Direct translation is unavailable on this device. Translation through text will be used." = "Suora käännös ei ole käytettävissä tällä laitteella. Käännös tehdään tekstin kautta.";
+"Speech translation test" = "Puhekäännöksen testaus";

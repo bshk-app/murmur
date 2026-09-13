@@ -30,8 +30,8 @@ extension SpeechAssets {
         let support=FileManager.default.urls(for:.applicationSupportDirectory,in:.userDomainMask)[0]
         if let repo = Repo.ID(rawValue: CanaryAssets.repository) {
             locations.append(.init(id: "speech/canary", root: URL(fileURLWithPath: home),
-                directory: CanaryAssets.defaultDirectory, title: "Canary experiment",
-                detail: "Used by experimental speech recognition and translation.",
+                directory: CanaryAssets.defaultDirectory, title: "Direct speech translation",
+                detail: "Used for direct speech translation and translation testing.",
                 additionalDirectories: [cache.repoDirectory(repo: repo, kind: .model)]))
         }
         let fluid=support.appendingPathComponent("FluidAudio")

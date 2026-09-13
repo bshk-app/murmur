@@ -6,10 +6,10 @@ public actor CanaryRuntime {
     public static let sampleRate = 16_000
     public static let maxSamples = 240_000
     // NVIDIA canary-1b-v2 model card, https://huggingface.co/nvidia/canary-1b-v2
-    public static let supportedLanguages: Set<String> = [
-        "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el", "hu", "it",
-        "lv", "lt", "mt", "pl", "pt", "ro", "sk", "sl", "es", "sv", "ru", "uk"
-    ]
+    public static let supportedLanguages = DirectSpeechTranslation.supportedLanguages
+
+    public enum ComputeMode: Sendable { case foreground, backgroundCPU }
+
     public enum Failure: Error, Equatable, LocalizedError {
         case unsupportedLanguage(String), unsupportedTranslation(String, String), emptyAudio, exceedsShortWindow, invalidPCM, decoderLimit
         public var errorDescription: String? {
@@ -25,10 +25,10 @@ public actor CanaryRuntime {
     }
     private let decoder: CanaryQualificationDecoder
 
-    public init(modelsDirectory: URL) async throws {
+    public init(modelsDirectory: URL, computeMode: ComputeMode = .foreground) async throws {
         try Task.checkCancellation()
         let models = try await Task.detached(priority: .userInitiated) {
-            try CanaryQualificationModels.load(directory: modelsDirectory)
+            try CanaryQualificationModels.load(directory: modelsDirectory, computeMode: computeMode)
         }.value
         try Task.checkCancellation()
         decoder = CanaryQualificationDecoder(models: models)
@@ -50,8 +50,7 @@ public actor CanaryRuntime {
     }
 
     public nonisolated static func supportsTranslation(source: String, target: String) -> Bool {
-        supportedLanguages.contains(source) && supportedLanguages.contains(target)
-            && source != target && (source == "en" || target == "en")
+        DirectSpeechTranslation.supports(source: source, target: target)
     }
 
     public nonisolated static func validateLanguage(_ language: String) throws {
@@ -62,6 +61,23 @@ public actor CanaryRuntime {
         guard !audio.isEmpty else { throw Failure.emptyAudio }
         guard audio.count <= maxSamples else { throw Failure.exceedsShortWindow }
         guard audio.allSatisfy({ $0.isFinite && (-1...1).contains($0) }) else { throw Failure.invalidPCM }
+    }
+}
+
+/// The authoritative matrix for the optional direct speech-translation route.
+public enum DirectSpeechTranslation {
+    public static let supportedLanguages: Set<String> = [
+        "bg", "hr", "cs", "da", "nl", "en", "et", "fi", "fr", "de", "el", "hu", "it",
+        "lv", "lt", "mt", "pl", "pt", "ro", "sk", "sl", "es", "sv", "ru", "uk"
+    ]
+
+    public static func supports(source: String, target: String) -> Bool {
+        supportedLanguages.contains(source) && supportedLanguages.contains(target)
+            && source != target && (source == "en" || target == "en")
+    }
+
+    public static func shouldUse(enabled: Bool, source: String, target: String?, deviceEligible: Bool) -> Bool {
+        enabled && deviceEligible && target.map { supports(source: source, target: $0) } == true
     }
 }
 

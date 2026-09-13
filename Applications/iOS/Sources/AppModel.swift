@@ -43,6 +43,7 @@ import MurmurTranslation
         case "canary":
             canary.source = CanaryRuntime.supportedLanguages.contains(source) ? source : "en"
             canary.target = LanguagePair.qualityLanguages.contains(target) ? target : "en"
+            canary.directTranslationEnabled = directTranslationEnabled
             showCanary = true
         case "audio-import": showAudioImport = true
         case "keyboard": showKeyboardSetup = true; Task { await enableKeyboard() }
@@ -64,7 +65,7 @@ import MurmurTranslation
         availableTargets: { TextTranslationSession.availableTargets(from: $0, modelsRoot: StoragePaths.translation) })
     func startTextTranslation() async {
         guard !busy, canReleaseMemory, textTranslator.canTranslate else { return }
-        if speech != nil || translationLoaded || keyboard.isActive { await releaseModels() }
+        if speech != nil || directSpeech != nil || translationLoaded || keyboard.isActive { await releaseModels() }
         guard !busy else { return }
         let pack = TranslationLanguagePack(source: textTranslator.source, target: textTranslator.target)
         if let task = textTranslator.start() {
@@ -273,6 +274,12 @@ import MurmurTranslation
     var translationQuality = ProcessingQuality(rawValue: UserDefaults.standard.string(forKey: "voiceTranslationQuality") ?? "quality") ?? .quality {
         didSet { UserDefaults.standard.set(translationQuality.rawValue, forKey: "voiceTranslationQuality") }
     }
+    var directTranslationEnabled = UserDefaults.standard.bool(forKey: "directSpeechTranslationEnabled") {
+        didSet {
+            UserDefaults.standard.set(directTranslationEnabled, forKey: "directSpeechTranslationEnabled")
+            canary.directTranslationEnabled = directTranslationEnabled
+        }
+    }
     var target = UserDefaults.standard.string(forKey: "targetLanguage") ?? "en"
     var mode = DictationMode(rawValue: UserDefaults.standard.string(forKey: "speechMode") ?? "hybrid") ?? .hybrid
     // Legacy saved recommendations remain automatic; explicit new choices win.
@@ -296,6 +303,8 @@ import MurmurTranslation
     }
     @ObservationIgnored private(set) var speechQualificationTelemetry: SpeechQualificationSnapshot?
     @ObservationIgnored private var speech: SpeechSession?
+    @ObservationIgnored private var directSpeech: DirectSpeechSession?
+    @ObservationIgnored private var usesDirectTranslation = false
     @ObservationIgnored private var configurationKey = ""
     @ObservationIgnored private var operation = UUID()
     @ObservationIgnored private var noteID = UUID()
@@ -307,7 +316,27 @@ import MurmurTranslation
     @ObservationIgnored private let translator = TranslationSession(modelsRoot: StoragePaths.translation)
     var busy: Bool { canary.isBusy || phase != .idle || importing || keyboard.isActive || releasingMemory || audioImports.busy || textTranslator.isBusy || managingStorage || modelWorkCount > 0 || keyboard.hasPendingPreparation }
     var canReleaseMemory: Bool { !canary.isBusy && phase == .idle && !importing && !preparingAll && !releasingMemory && !audioImports.busy && !textTranslator.isBusy && !managingStorage && modelWorkCount == 0 && !keyboard.hasPendingPreparation && keyboard.state.phase != .recording && keyboard.state.phase != .finalizing && keyboard.state.phase != .preparing }
-    var hasLoadedModels: Bool { canary.hasLoadedModels || textTranslator.modelsLoaded || speech != nil || translationLoaded || keyboard.isActive || audioImports.activeID != nil }
+    var hasLoadedModels: Bool { canary.hasLoadedModels || textTranslator.modelsLoaded || speech != nil || directSpeech != nil || translationLoaded || keyboard.isActive || audioImports.activeID != nil }
+    var voiceTranslationMethod: String { L10n.text(usesDirectTranslation ? "Direct translation" : "Translation through text") }
+    var directTranslationSelected: Bool {
+        DirectSpeechTranslation.shouldUse(enabled: directTranslationEnabled, source: source,
+                                          target: target, deviceEligible: Self.directTranslationDeviceEligible)
+    }
+    var directTranslationUnavailableOnDevice: Bool {
+        directTranslationEnabled && DirectSpeechTranslation.supports(source: source, target: target)
+            && !Self.directTranslationDeviceEligible
+    }
+
+    private var directTranslationAvailable: Bool {
+        isTranslation && directTranslationSelected
+    }
+    private static var directTranslationDeviceEligible: Bool {
+        #if os(iOS) && !targetEnvironment(simulator)
+        ProcessInfo.processInfo.physicalMemory >= 5 * 1_024 * 1_024 * 1_024
+        #else
+        true
+        #endif
+    }
 
     func refreshMemoryState() async { translationLoaded = await translator.residentModelCount > 0 }
     func translateNote(_ note: VoiceNote, to target: String, onProgress: @escaping @MainActor (Double?) -> Void) async throws {
@@ -382,6 +411,8 @@ import MurmurTranslation
         if includeCanary { await canary.close() }
         await keyboard.end()
         if let speech { await speech.close() }
+        if let directSpeech { await directSpeech.close() }
+        directSpeech = nil; usesDirectTranslation = false
         speech = nil; configurationKey = ""; modelReady = false
         await translator.unload(); translationLoaded = false
         await textTranslator.unload()
@@ -596,6 +627,34 @@ import MurmurTranslation
     private func prepareImpl(token: UUID, translating: Bool) async throws {
         await canary.close()
         await textTranslator.unload()
+        if usesDirectTranslation {
+            if let speech { await speech.close() }
+            speech = nil; configurationKey = ""; modelReady = false
+            await translator.unload(); translationLoaded = false
+            let session = DirectSpeechSession()
+            directSpeech = session
+            preparationStepCount = 1; preparationStepIndex = 0
+            preparationModel = L10n.text("Preparing direct translation…")
+            detail = preparationModel; progress = nil
+            do {
+                try await session.prepare { [weak self] value in
+                    guard self?.operation == token else { return }
+                    self?.progress = value
+                }
+                guard operation == token else { await session.close(); throw CancellationError() }
+                modelReady = true; progress = nil
+                return
+            } catch is CancellationError {
+                await session.close(); directSpeech = nil
+                throw CancellationError()
+            } catch {
+                await session.close(); directSpeech = nil; usesDirectTranslation = false
+                self.error = L10n.text("Direct translation is unavailable. Translation through text will be used.")
+                try await prepareImpl(token: token, translating: translating)
+                return
+            }
+        }
+        if let directSpeech { await directSpeech.close(); self.directSpeech = nil }
         mode = mode.effective(for: source)
         guard let recognitionProfile = speechRecognitionProfile else {
             throw NSError(domain: "MurMur", code: 1, userInfo: [NSLocalizedDescriptionKey: L10n.text("This language is unavailable in the selected mode.")])
@@ -664,6 +723,7 @@ import MurmurTranslation
         let needsConfirmation = !modelReady || configurationKey != speechConfigurationKey || translating
         showRecorder = true; recordedDuration = 0
         error = nil; isTranslation = translating && source != target; phase = .preparing
+        usesDirectTranslation = directTranslationAvailable
         detail = L10n.text("Microphone access")
         let allowed = await withCheckedContinuation { continuation in
             SpeechSession.requestMicrophoneAccess { continuation.resume(returning:$0) }
@@ -672,9 +732,10 @@ import MurmurTranslation
         guard allowed else { phase = .idle; showRecorder = false; error = L10n.text("Allow microphone access in Settings to record a note."); return }
         do {
             try await prepare(token: token, translating: isTranslation)
-            guard operation == token, UIApplication.shared.applicationState == .active, speech != nil else { throw CancellationError() }
+            guard operation == token, UIApplication.shared.applicationState == .active,
+                  usesDirectTranslation ? directSpeech != nil : speech != nil else { throw CancellationError() }
             languageLibrary.markPrepared("speech:" + source)
-            if isTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
+            if isTranslation && !usesDirectTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
             phase = .ready
             detail = L10n.text("Ready. Tap Start recording when you want to speak.")
             if !needsConfirmation { await confirmRecording() }
@@ -684,7 +745,8 @@ import MurmurTranslation
     }
 
     func confirmRecording() async {
-        guard phase == .ready, UIApplication.shared.applicationState == .active, let speech else { return }
+        guard phase == .ready, UIApplication.shared.applicationState == .active else { return }
+        guard usesDirectTranslation ? directSpeech != nil : speech != nil else { return }
         let token = operation
         phase = .preparing
         do {
@@ -698,20 +760,53 @@ import MurmurTranslation
             try await repository.save(makeNote(duration: 0))
             await translator.cancel()
             guard operation == token, phase == .preparing, UIApplication.shared.applicationState == .active else { throw CancellationError() }
-            wire(speech, token: token)
-            try await speech.start(mode: mode, language: source, microphoneUID: "built-in", recordingURL: recordingAudio?.url(in: StoragePaths.recordings))
-            guard operation == token, phase == .preparing, UIApplication.shared.applicationState == .active else { await speech.close(); throw CancellationError() }
-            phase = .recording; detail = mode == .hybrid ? L10n.text("Draft first, refined a beat later") : L10n.text("Listening on this iPhone")
+            if usesDirectTranslation, let directSpeech {
+                directSpeech.onCapture = { [weak self] frames, peak in Task { @MainActor in
+                    guard let self, self.operation == token, self.phase == .recording else { return }
+                    self.capturedFrames += frames
+                    self.levels.append(CGFloat(min(1, max(0.05, peak * 6))))
+                    self.levels = Array(self.levels.suffix(24))
+                } }
+                directSpeech.onError = { [weak self] _ in Task { @MainActor in
+                    guard let self, self.operation == token, self.phase == .recording else { return }
+                    await self.interrupted()
+                } }
+                try directSpeech.arm()
+                try directSpeech.begin(source: source, target: target,
+                    recordingURL: recordingAudio?.url(in: StoragePaths.recordings),
+                    onBatch: { [weak self] value in
+                        guard let self else { throw CancellationError() }
+                        try await self.acceptDirectUtterance(value, token: token)
+                    })
+            } else if let speech {
+                wire(speech, token: token)
+                try await speech.start(mode: mode, language: source, microphoneUID: "built-in", recordingURL: recordingAudio?.url(in: StoragePaths.recordings))
+            } else { throw CancellationError() }
+            guard operation == token, phase == .preparing, UIApplication.shared.applicationState == .active else {
+                await directSpeech?.close(); if let speech { await speech.close() }; throw CancellationError()
+            }
+            phase = .recording
+            detail = usesDirectTranslation ? L10n.text("Direct translation") : mode == .hybrid ? L10n.text("Draft first, refined a beat later") : L10n.text("Listening on this iPhone")
             if ActivityAuthorizationInfo().areActivitiesEnabled {
                 activity = try? Activity.request(attributes: RecordingAttributes(startedAt: startedAt),
                     content: ActivityContent(state: RecordingAttributes.ContentState(phase: L10n.text("Listening")), staleDate: nil))
             }
         } catch {
             if operation == token {
+                if usesDirectTranslation { await directSpeech?.close(); directSpeech = nil; modelReady = false }
                 phase = .idle; showRecorder = false
                 self.error = error is CancellationError ? nil : L10n.text("Could not start dictation. Check microphone access and language downloads.")
             }
         }
+    }
+
+    private func acceptDirectUtterance(_ value: RecordedUtterance, token: UUID) async throws {
+        guard operation == token, phase == .recording || phase == .refining else { throw CancellationError() }
+        conversation.appendSettled(value)
+        transcript = conversation.text; translation = conversation.translatedText
+        let seconds = Double(value.endSample) / 16_000
+        try await repository.save(makeNote(duration: max(duration, seconds)))
+        guard operation == token else { throw CancellationError() }
     }
 
     func enableKeyboard(fromExtension: Bool = false) async {
@@ -721,6 +816,7 @@ import MurmurTranslation
         await canary.close()
         await textTranslator.unload()
         if let speech { await speech.close(); self.speech = nil; configurationKey = ""; modelReady = false }
+        if let directSpeech { await directSpeech.close(); self.directSpeech = nil; usesDirectTranslation = false; modelReady = false }
         await translator.unload(); translationLoaded = false
         if fromExtension { await keyboard.activateFromKeyboard() } else { await keyboard.enable() }
     }
@@ -794,11 +890,30 @@ import MurmurTranslation
     }
 
     func stop() async {
-        guard phase == .recording, let speech else { return }
+        guard phase == .recording else { return }
         recordedDuration = duration
         phase = .refining; detail = L10n.text("Refining your note…")
         let token = operation
         await activity?.update(ActivityContent(state: RecordingAttributes.ContentState(phase: L10n.text("Refining")), staleDate: nil))
+        if usesDirectTranslation, let directSpeech {
+            do {
+                let result = try await directSpeech.finish()
+                guard operation == token else { return }
+                directSpeech.disarm()
+                recordedDuration = result.duration; capturedFrames = Int(result.duration * 16_000)
+                sourceFinalized = true
+                transcript = conversation.text; translation = conversation.translatedText
+                await saveResult(duration: result.duration)
+            } catch {
+                guard operation == token else { return }
+                directSpeech.disarm()
+                self.error = L10n.text("Translation could not be completed. Your original text is kept.")
+                sourceFinalized = false
+                await saveResult(duration: recordedDuration, complete: false)
+            }
+            return
+        }
+        guard let speech else { return }
         let final = await speech.stop()
         guard operation == token else { return }
         conversation.apply(await speech.snapshot())
@@ -825,17 +940,17 @@ import MurmurTranslation
         var note = VoiceNote(id: noteID, createdAt: startedAt, text: conversation.text,
             translation: isTranslation && !conversation.translatedText.isEmpty ? conversation.translatedText : nil,
             sourceLanguage: source, targetLanguage: isTranslation ? target : nil,
-            duration: duration, model: "\(mode.rawValue) · \(speechModel.title)")
+            duration: duration, model: usesDirectTranslation ? "direct-speech-translation" : "\(mode.rawValue) · \(speechModel.title)")
         note.audio = recordingAudio; note.utterances = conversation.utterances
         note.captureRevision = conversation.revision; note.transcriptionComplete = complete
         note.captureClosed = captureClosed || complete
-        note.translationIncomplete = isTranslation && conversation.utterances.contains { $0.translation == nil }
+        note.translationIncomplete = isTranslation && (!complete || conversation.utterances.contains { $0.translation == nil })
         if note.text.isEmpty { note.sourceFileName = L10n.text("Audio recording") }
         return note
     }
-    private func saveResult(duration: Double) async {
+    private func saveResult(duration: Double, complete: Bool = true) async {
         if recordingAudio != nil || !conversation.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            let note = makeNote(duration: duration, complete: true)
+            let note = makeNote(duration: duration, complete: complete, captureClosed: true)
             do {
                 try await repository.save(note)
                 if let latest = StoragePaths.latest { try? Data(note.shareText.utf8).write(to: latest, options: [.atomic,.completeFileProtection]) }
@@ -866,12 +981,13 @@ import MurmurTranslation
         if !keepDraft && !hadRecording { try? FileManager.default.removeItem(at: StoragePaths.draft) }
         await translator.cancel()
         if let speech { await speech.close() }
+        if let directSpeech { await directSpeech.close() }
         if hadRecording {
             conversation.finish(fallback: transcript, endSample: Int(capturedDuration * 16_000))
             do { try await repository.save(makeNote(duration: capturedDuration, complete: sourceFinalized, captureClosed: true)); await noteList.reload(preservingCount: true) }
             catch { self.error = error.localizedDescription }
         }
-        speech = nil; configurationKey = ""; modelReady = false
+        speech = nil; directSpeech = nil; configurationKey = ""; modelReady = false; usesDirectTranslation = false
         await activity?.end(nil, dismissalPolicy: .immediate); activity = nil
         phase = .idle; showRecorder = false; progress = nil; warmingModels = false
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
