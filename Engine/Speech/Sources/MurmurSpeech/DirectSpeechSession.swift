@@ -50,6 +50,19 @@ private final class DirectSpeechInputGate: @unchecked Sendable {
         stream = nil; failure = nil; samples = 0
         return count
     }
+
+    func fail(_ inputError: Error) -> Bool {
+        lock.lock()
+        guard let stream else { lock.unlock(); return false }
+        var completionError = inputError
+        do { try recording.finish() } catch { completionError = error }
+        stream.finish(throwing: completionError)
+        let callback = failure
+        self.stream = nil; failure = nil; samples = 0
+        lock.unlock()
+        callback?(completionError)
+        return true
+    }
 }
 
 private actor DirectUtteranceAccumulator {
@@ -89,7 +102,11 @@ private actor DirectUtteranceAccumulator {
             Task { @MainActor in
                 guard let self else { return }
                 self.onCapture?(count, peak)
-                if let error { self.onError?(error) }
+                if let message = error {
+                    let failure = NSError(domain: "Murmur.DirectSpeechCapture", code: 1,
+                                          userInfo: [NSLocalizedDescriptionKey: message])
+                    if !gate.fail(failure) { self.onError?(message) }
+                }
             }
         }
         try capture.start()
