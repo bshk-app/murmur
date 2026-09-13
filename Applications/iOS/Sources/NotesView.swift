@@ -54,13 +54,13 @@ struct NotesView: View {
                         ProgressView().frame(maxWidth: .infinity).padding()
                     } else if model.noteList.items.isEmpty && model.noteList.query.isEmpty && model.noteList.error == nil {
                         VStack(spacing: 16) {
-                            MurmurMascot().accessibilityHidden(true)
+                            MurmurMascot()
                             Text("No notes yet").font(.system(size: 20, weight: .semibold)).multilineTextAlignment(.center)
                             Text("Tap the mic and say the first one.").font(.system(size: 14)).lineSpacing(5).foregroundStyle(palette.secondary).multilineTextAlignment(.center).frame(maxWidth: 260)
                         }.frame(maxWidth:.infinity).padding(.top,26)
                     } else if model.noteList.items.isEmpty && model.noteList.error == nil {
                         VStack(spacing: 14) {
-                            MurmurMascot().accessibilityHidden(true)
+                            MurmurMascot()
                             Text("No matches").font(.system(size: 20, weight: .semibold))
                             Text(query).font(.system(size: 14)).foregroundStyle(palette.secondary)
                             Button("Clear search") { query = "" }.buttonStyle(.bordered)

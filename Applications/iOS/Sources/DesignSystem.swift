@@ -106,26 +106,6 @@ enum AppLanguages {
     static func name(_ code: String) -> String { Locale.current.localizedString(forLanguageCode: code)?.localizedCapitalized ?? code.uppercased() }
 }
 
-struct MurmurMascot: View {
-    var warming = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var expanded = false
-    var body: some View {
-        ZStack {
-            Circle().fill(MurmurPalette.accent.opacity(warming ? 0 : 0.14))
-                .frame(width: warming ? 70 : 132, height: warming ? 70 : 132)
-            if !warming {
-                Circle().stroke(MurmurPalette.accent.opacity(reduceMotion ? 0.2 : expanded ? 0 : 0.5), lineWidth: 1.5)
-                    .frame(width: 132, height: 132).scaleEffect(reduceMotion ? 1 : expanded ? 1.4 : 1)
-                    .onAppear { if !reduceMotion { withAnimation(.easeOut(duration: 2.4).repeatForever(autoreverses: false)) { expanded = true } } }
-            }
-            if warming { Circle().stroke(MurmurPalette.accent.opacity(0.25), lineWidth: 2).frame(width: 70, height: 70) }
-            Image("Mascot").resizable().scaledToFit().frame(width: warming ? 40 : 86, height: warming ? 40 : 86)
-        }.frame(height: 132).frame(maxWidth: .infinity)
-            .accessibilityElement(children: .ignore).accessibilityLabel("Murmator mascot")
-    }
-}
-
 struct PackStatusBadge: View {
     let title: LocalizedStringKey
     var ready = false
