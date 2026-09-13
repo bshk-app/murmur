@@ -766,3 +766,5 @@
 "Used for direct speech translation and translation testing." = "Utilisé pour la traduction vocale directe et les tests de traduction.";
 "Direct translation is unavailable on this device. Translation through text will be used." = "La traduction directe n’est pas disponible sur cet appareil. La traduction via le texte sera utilisée.";
 "Speech translation test" = "Test de traduction vocale";
+
+"Tap to see another animation" = "Touchez pour voir une autre animation";
