@@ -317,7 +317,6 @@ import MurmurTranslation
     var busy: Bool { canary.isBusy || phase != .idle || importing || keyboard.isActive || releasingMemory || audioImports.busy || textTranslator.isBusy || managingStorage || modelWorkCount > 0 || keyboard.hasPendingPreparation }
     var canReleaseMemory: Bool { !canary.isBusy && phase == .idle && !importing && !preparingAll && !releasingMemory && !audioImports.busy && !textTranslator.isBusy && !managingStorage && modelWorkCount == 0 && !keyboard.hasPendingPreparation && keyboard.state.phase != .recording && keyboard.state.phase != .finalizing && keyboard.state.phase != .preparing }
     var hasLoadedModels: Bool { canary.hasLoadedModels || textTranslator.modelsLoaded || speech != nil || directSpeech != nil || translationLoaded || keyboard.isActive || audioImports.activeID != nil }
-    var voiceTranslationMethod: String { L10n.text(usesDirectTranslation ? "Direct translation" : "Translation through text") }
     var directTranslationSelected: Bool {
         DirectSpeechTranslation.shouldUse(enabled: directTranslationEnabled, source: source,
                                           target: target, deviceEligible: Self.directTranslationDeviceEligible)

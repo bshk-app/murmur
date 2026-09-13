@@ -84,8 +84,6 @@ struct CanaryExperimentView: View {
                 }
             }
             Toggle("Translate speech", isOn: $model.translateEnabled).accessibilityIdentifier("canary-translate-toggle")
-            Label(model.routeDescription, systemImage: model.translateEnabled ? "character.bubble" : "text.alignleft")
-                .font(.footnote.weight(.semibold)).foregroundStyle(p.accentText).accessibilityIdentifier("canary-route")
         }.disabled(model.isBusy || closing).murmurCard(radius: 15, padding: 14)
     }
 
