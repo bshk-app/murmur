@@ -21,7 +21,7 @@ import MurmurCore
         if let i = jobs.firstIndex(where: { $0.id == id }) { jobs[i].language = code }
     }
     func start(_ id: UUID) { error = L10n.text("Speech engines are tested on a physical iPhone. This simulator only tests the interface.") }
-    func pause() {
+    func pause(userInitiated: Bool = true) {
         guard ProcessInfo.processInfo.arguments.contains(where: { $0.trimmingCharacters(in: CharacterSet(charactersIn: "-")) == "listActionsFixture" }),
               let id = activeID, let i = jobs.firstIndex(where: { $0.id == id }) else { return }
         jobs[i].status = .paused; activeID = nil; preparing = false; pausing = false

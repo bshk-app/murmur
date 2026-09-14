@@ -13,6 +13,7 @@ import MurmurSpeech
     var receiveError: String?
     var receivingFilename: String?
     @ObservationIgnored private var queueSuspended = true
+    @ObservationIgnored private var pauseIntent = AudioImportPauseIntent()
     var fraction: Double = 0
     @ObservationIgnored private var work: Task<Void, Never>?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
@@ -58,7 +59,8 @@ import MurmurSpeech
         guard UIApplication.shared.applicationState == .active, !receiving, let i = jobs.firstIndex(where: { $0.id == id }), jobs[i].status != .completed || jobs[i].text.isEmpty else { return }
         if activeID != nil {
             guard activeID != id, jobs[i].status != .queued else { return }
-            var queued = jobs[i]; queued.status = .queued; queued.queuedAt = Date()
+            // Queueing is as deliberate as starting, so it re-arms the same way.
+            var queued = jobs[i]; queued.status = .queued; queued.queuedAt = Date(); queued.autoStart = true
             do { try queued.save(); jobs[i] = queued } catch { self.error = error.localizedDescription }
             return
         }
@@ -67,7 +69,9 @@ import MurmurSpeech
         queueSuspended = false; jobs[i].queuedAt = nil
         let job = jobs[i]
         activeID = id; pausing = false; preparing = true; fraction = job.duration > 0 ? Double(job.completedThrough)/16_000/job.duration : 0
-        jobs[i].status = .processing; jobs[i].error = nil
+        // Starting deliberately re-arms the automatic resume a pause turned off.
+        pauseIntent.started()
+        jobs[i].status = .processing; jobs[i].error = nil; jobs[i].autoStart = true
         do { try jobs[i].save() } catch { self.error = error.localizedDescription; jobs[i] = previous; activeID = nil; preparing = false; return }
         work = Task {
             let engine = AudioFileTranscriber(choice: SpeechModelChoice(rawValue: job.model) ?? .parakeet, modelsRoot: StoragePaths.models)
@@ -96,7 +100,16 @@ import MurmurSpeech
         start(next)
     }
     private func ready() { preparing = false }
-    func pause() { queueSuspended = true; guard activeID != nil else { return }; pausing = true; work?.cancel() }
+    /// Leaving the app pauses the same way a tap does, but only a tap means the
+    /// user wants it stopped. A watch recording resumes by itself otherwise.
+    /// The reason is recorded here and written in `finish`, after any checkpoint
+    /// that was already in flight when the tap arrived.
+    func pause(userInitiated: Bool = true) {
+        queueSuspended = true
+        guard activeID != nil else { return }
+        pauseIntent.paused(userInitiated: userInitiated)
+        pausing = true; work?.cancel()
+    }
     private func progress(_ id: UUID, seconds: Double, total: Double) {
         guard let i = jobs.firstIndex(where: { $0.id == id }) else { return }
         jobs[i].duration = total
@@ -114,6 +127,8 @@ import MurmurSpeech
     private func finish(_ id: UUID, status: AudioImportJob.Status, message: String? = nil) async throws {
         guard let i = jobs.firstIndex(where: { $0.id == id }) else { return }
         var next = jobs[i]; next.status = status; next.error = message
+        // Decided last, so a checkpoint that raced the tap cannot undo it.
+        if status == .paused { next.autoStart = pauseIntent.resumesAutomatically }
         try await saveNote(next); try next.save()
         if let current = jobs.firstIndex(where: { $0.id == id }) { jobs[current] = next }
         if status == .completed { fraction = 1 }
