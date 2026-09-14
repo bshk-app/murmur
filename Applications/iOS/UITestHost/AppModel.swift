@@ -136,6 +136,8 @@ import MurmurCore
     func refreshMemoryState() async {}
     func releaseModels() async {}
     func publishWidgetState() {}
+    func publishWatchContext() {}
+    func receiveWatchRecordings() async {}
     var showRecorder = false
     var showKeyboardSetup = false
     var keyboardActivationRequested = false

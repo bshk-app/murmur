@@ -37,7 +37,9 @@ struct NotesView: View {
                             .onSubmit { searchFocused = false }
                         if !query.isEmpty { Button { query = "" } label: { Image(systemName: "xmark.circle.fill") }.accessibilityLabel("Clear search") }
                     }.padding(12).background(palette.card,in:RoundedRectangle(cornerRadius:12))
-                    if let job = model.audioImports.jobs.first(where: { $0.id == model.audioImports.activeID }) ?? model.audioImports.jobs.first(where: { $0.status == .paused || $0.status == .queued }) {
+                    // A watch recording that cannot start yet has no other affordance
+                    // here, so it stays on the banner until the user acts on it.
+                    if let job = model.audioImports.jobs.first(where: { $0.id == model.audioImports.activeID }) ?? model.audioImports.jobs.first(where: { $0.status == .paused || $0.status == .queued || ($0.status == .pending && $0.origin == .watch) }) {
                         Button { model.audioImports.selectedID = job.id; model.requestUtilityRoute("audio-import") } label: {
                             ImportStatusBanner(job: job)
                         }.buttonStyle(.plain).accessibilityIdentifier("audio-imports")
@@ -133,9 +135,9 @@ struct NotesView: View {
         .onChange(of:onboardingComplete) { _,_ in consumeRecordingRequest() }
         .onChange(of:scenePhase) { _,phase in
             if phase != .active { Task { await model.pauseLanguagePreparation() } }
-            if phase == .background { model.audioImports.pause(); model.textTranslator.cancel() }
+            if phase == .background { model.audioImports.pause(userInitiated: false); model.textTranslator.cancel() }
             if phase == .active {
-                Task { await model.resumeLanguagePreparation(); await model.refresh() }
+                Task { await model.resumeLanguagePreparation(); await model.refresh(); await model.receiveWatchRecordings() }
                 consumeRecordingRequest()
                 if model.keyboardActivationRequested { Task { await model.consumeKeyboardActivation() } }
             }
@@ -170,6 +172,8 @@ struct NotesView: View {
             }
             await model.refresh(); model.publishWidgetState(); consumeRecordingRequest()
             await model.resumeLanguagePreparation()
+            // A launch may be the system delivering a watch recording in the background.
+            await model.receiveWatchRecordings()
             }
     private var dock: some View {
         VStack(spacing:14) {
@@ -205,17 +209,29 @@ private struct ImportStatusBanner: View {
     let job: AudioImportJob
     @Environment(\.colorScheme) private var scheme
     private var p: MurmurPalette { .init(scheme: scheme) }
+    /// A recording that has never started knows neither its length nor its progress.
+    private var waiting: Bool { job.status == .pending }
+    private var tag: LocalizedStringKey {
+        switch job.status {
+        case .pending: return "Received from Apple Watch"
+        case .paused: return "Paused"
+        case .queued: return "Waiting"
+        default: return "Transcribing audio…"
+        }
+    }
     var body: some View {
                             HStack(spacing: 10) {
                                 Image(systemName: job.status == .paused ? "pause" : "waveform").frame(width: 34, height: 34).background(MurmurPalette.accent.opacity(0.13), in: Circle())
                                 VStack(alignment: .leading, spacing: 5) {
                                     Text(job.filename).font(.subheadline.weight(.semibold)).lineLimit(1)
-                                    ProgressView(value: job.savedFraction ?? 0).tint(MurmurPalette.accent)
-                                    Text("\(AudioImportJob.time(job.processedSeconds)) \(L10n.text("of")) \(AudioImportJob.time(job.duration))").font(.caption).monospacedDigit().foregroundStyle(p.secondary)
+                                    if !waiting {
+                                        ProgressView(value: job.savedFraction ?? 0).tint(MurmurPalette.accent)
+                                        Text("\(AudioImportJob.time(job.processedSeconds)) \(L10n.text("of")) \(AudioImportJob.time(job.duration))").font(.caption).monospacedDigit().foregroundStyle(p.secondary)
+                                    }
                                 }
                                 Spacer(minLength: 0)
                                 VStack(alignment: .trailing, spacing: 6) {
-                                    StatusTag(title: job.status == .paused ? "Paused" : job.status == .queued ? "Waiting" : "Transcribing audio…", tone: job.status == .queued ? .neutral : .accent)
+                                    StatusTag(title: tag, tone: job.status == .queued || waiting ? .neutral : .accent)
                                     Text("Open").font(.caption.weight(.semibold))
                                 }
                             }.padding(12).background(MurmurPalette.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 14))

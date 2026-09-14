@@ -76,6 +76,53 @@ import MurmurTranslation
         audioImports.start(id)
     }
     func openImport(for note: VoiceNote) { audioImports.selectedID = note.id; requestUtilityRoute("audio-import") }
+    @ObservationIgnored private let watch = WatchSessionBridge()
+    @ObservationIgnored private var drainingWatch = false
+    init() {
+        watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
+        watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
+        watch.activate()
+    }
+    /// Tells the watch which language the phone would recognise, and whether it can.
+    func publishWatchContext() {
+        watch.publish(languageName: AppLanguages.name(source), speechReady: languageLibrary.isPrepared("speech:" + source))
+    }
+    /// Hands every recording the watch delivered to the import, then transcribes
+    /// what it may. Safe to call in the background: only the start is gated on
+    /// being in front, and a recording the import refuses keeps its staged file
+    /// for the next call.
+    func receiveWatchRecordings() async {
+        guard !drainingWatch else { return }
+        drainingWatch = true
+        defer { drainingWatch = false }
+        await watch.requestNotificationAuthorizationIfNeeded()
+        var attempted: Set<URL> = []
+        while let url = WatchSessionBridge.stagedRecordings().first(where: { !attempted.contains($0) }) {
+            attempted.insert(url)
+            await receiveAudio(url)
+            await startWatchImport()
+        }
+        await startWatchImport()
+    }
+    /// Chains the recordings: the first one starts, the rest join its queue.
+    private func startWatchImport() async {
+        var attempted: Set<UUID> = []
+        while let id = watchImportCandidate(excluding: attempted) {
+            attempted.insert(id)
+            await startAudioImport(id)
+        }
+    }
+    private func watchImportCandidate(excluding attempted: Set<UUID>) -> UUID? {
+        let candidates = audioImports.jobs
+            .filter { $0.origin == .watch && !attempted.contains($0.id) && ($0.status == .pending || $0.status == .queued || $0.status == .paused) }
+            .map { WatchImportPolicy.Candidate(id: $0.id, createdAt: $0.createdAt, queued: $0.status == .queued,
+                                               autoStart: $0.autoStart ?? true,
+                                               prepared: languageLibrary.isPrepared("speech:" + $0.language)) }
+        return WatchImportPolicy.next(activeID: audioImports.activeID, receiving: audioImports.receiving,
+                                      foreground: UIApplication.shared.applicationState == .active,
+                                      keyboardActive: keyboard.isActive, memoryReleasable: canReleaseMemory,
+                                      candidates: candidates)
+    }
     func importMayUpdate(_ note: VoiceNote) -> Bool { note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed } }
     var showStorage = false
     var storageInventory = ModelStorageInventory()
@@ -392,6 +439,8 @@ import MurmurTranslation
     func publishWidgetState() {
         let status = phase == .preparing || keyboard.state.phase == .preparing || audioImports.preparing || textTranslator.isBusy ? "Preparing…" : hasLoadedModels ? "Ready" : "Inactive"
         MurMurWidgetState(source: source, target: target, status: status).save()
+        // The watch mirrors the same language and readiness this broadcast carries.
+        publishWatchContext()
     }
     var duration: Double { phase == .recording ? Double(capturedFrames) / 16_000 : recordedDuration }
 
@@ -579,7 +628,7 @@ import MurmurTranslation
         phase = .preparing; operation = UUID(); let token = operation
         do {
             try await prepare(token: token, translating: false)
-            if operation == token { languageLibrary.markPrepared("speech:" + source) }
+            if operation == token { languageLibrary.markPrepared("speech:" + source); publishWatchContext() }
         }
         catch { if operation == token { self.error = L10n.text("Could not prepare this language. Please try again.") } }
         if operation == token { phase = .idle; progress = nil; warmingModels = false }
@@ -706,7 +755,7 @@ import MurmurTranslation
             try await prepare(token: token, translating: isTranslation)
             guard operation == token, UIApplication.shared.applicationState == .active,
                   usesDirectTranslation ? directSpeech != nil : speech != nil else { throw CancellationError() }
-            if !usesDirectTranslation { languageLibrary.markPrepared("speech:" + source) }
+            if !usesDirectTranslation { languageLibrary.markPrepared("speech:" + source); publishWatchContext() }
             if isTranslation && !usesDirectTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
             phase = .ready
             detail = L10n.text("Ready. Tap Start recording when you want to speak.")
