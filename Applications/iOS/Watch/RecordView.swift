@@ -32,12 +32,31 @@ struct RecordView: View {
                 if sync.pending > 0 {
                     Text("Sending to iPhone…").font(.caption2).foregroundStyle(.secondary)
                 }
+                if let transcript = sync.transcript {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Transcript").font(.caption2).textCase(.uppercase).foregroundStyle(.secondary)
+                        Text(transcript).font(.footnote)
+                    }.frame(maxWidth: .infinity, alignment: .leading)
+                }
                 if let message = recorder.error ?? sync.error {
                     Text(message).font(.caption2).foregroundStyle(.red).multilineTextAlignment(.center)
                 }
             }
             .padding(.horizontal, 4)
         }
+        .task { consumeRecordingRequest() }
+        .onReceive(NotificationCenter.default.publisher(for: .murmatorWatchRecordRequested)) { _ in
+            consumeRecordingRequest()
+        }
+    }
+
+    /// The face and the Action Button ask for a recording before this view exists,
+    /// so the request is picked up on arrival as well as while already open.
+    private func consumeRecordingRequest() {
+        // Consumed first on purpose. A request raised mid-recording is spent here
+        // rather than left armed to start an unasked-for recording days later.
+        guard WatchRecordingRequest.consume(), !recorder.recording else { return }
+        Task { await recorder.start() }
     }
 
     private var elapsed: String {
