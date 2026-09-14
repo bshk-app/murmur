@@ -1,0 +1,12 @@
+--- TargetArch.cmake
++++ TargetArch.cmake
+@@ -61,6 +61,10 @@
+ 
+ function(target_architecture output_var)
++    if(CMAKE_SYSTEM_NAME STREQUAL "iOS")
++        set(${output_var} "arm" PARENT_SCOPE)
++        return()
++    endif()
+     if(APPLE AND CMAKE_OSX_ARCHITECTURES)
+         # On OS X we use CMAKE_OSX_ARCHITECTURES *if* it was set
+         # First let's normalize the order of the values

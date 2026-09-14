@@ -22,7 +22,7 @@ The minimal vendored MLX Audio source contains the tested checkpoint fixes; see 
 
 `TranslationSession.prepare` checks both preview and quality routes. Completed phrases receive OPUS results asynchronously; `finish` requests strict OPUS translation of the final text. Missing quality assets produce an error, not a silent preview fallback.
 
-`Translation/Artifacts/MurmurMT.xcframework` contains arm64 macOS and physical-iOS static libraries. There is currently **no simulator slice**. Native sources remain in `../MurmurKit/Sources/CBergamot`; the existing desktop `build-bergamot.sh` and `../Prototypes/iOS/build-translation.sh` build their platform archives. This native build-source migration is still outstanding; consuming the checked-in package artifact requires neither script nor the lab app. Keep the upstream native licenses with distributed artifacts.
+`Translation/Artifacts/MurmurMT.xcframework` contains arm64 macOS and physical-iOS static libraries. There is currently **no simulator slice**. Native sources remain in `../MurmurKit/Sources/CBergamot`; the existing desktop `build-bergamot.sh` and `Translation/Patches/build-translation.sh` build their platform archives. This native build-source migration is still outstanding; consuming the checked-in package artifact requires neither script nor the lab app. Keep the upstream native licenses with distributed artifacts.
 
 ## Checks
 

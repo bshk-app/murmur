@@ -12,7 +12,7 @@ const bergamot = path.join(repo, 'Prototypes/iOS/build/bergamot-source');
 const resources = path.join(app, 'Resources');
 const sourceZip = path.join(resources, 'BergamotSource.zip');
 const integrations = [
-    'Prototypes/iOS/build-translation.sh', 'Prototypes/iOS/patches/target-arch-ios.patch',
+    'Engine/Translation/Patches/build-translation.sh', 'Engine/Translation/Patches/target-arch-ios.patch',
     'Engine/Translation/Patches/ct2-mapped-weights.patch',
     'MurmurKit/Sources/CBergamot/murmur_mt.cpp', 'MurmurKit/Sources/CBergamot/murmur_ct2.cpp',
     'MurmurKit/Sources/CBergamot/include/murmur_mt.h', 'MurmurKit/Sources/CBergamot/include/murmur_ct2.h',
@@ -20,24 +20,21 @@ const integrations = [
 ];
 
 // --check re-offers no sources; it only asserts the committed archive still matches the repository files it
-// embeds, which is the drift a source change can introduce without touching the archive. Prototypes/ holds
-// the native build tree and is untracked, so only those entries may be absent from a checkout; every other
-// integration source is required, or a rename would let a stale archive pass unnoticed.
+// embeds, which is the drift a source change can introduce without touching the archive. Every integration
+// source is tracked, so a missing one is a rename that would otherwise let a stale archive pass unnoticed.
 if (process.argv.includes('--check')) {
     const extracted = fs.mkdtempSync(path.join(os.tmpdir(), 'murmator-source-check-'));
     execFileSync('/usr/bin/ditto', ['-x', '-k', sourceZip, extracted]);
-    const stale = [], absent = [];
+    const stale = [];
     for (const file of integrations) {
         const archived = path.join(extracted, 'BergamotSource/integration', file);
         if (!fs.existsSync(archived)) throw Error(`Missing from ${path.relative(repo, sourceZip)}: ${file}`);
         const working = path.join(repo, file);
-        if (fs.existsSync(working)) {
-            if (!fs.readFileSync(archived).equals(fs.readFileSync(working))) stale.push(file);
-        } else if (file.startsWith('Prototypes/')) absent.push(file);
-        else throw Error(`Offered integration source is gone from the repository: ${file}`);
+        if (!fs.existsSync(working)) throw Error(`Offered integration source is gone from the repository: ${file}`);
+        if (!fs.readFileSync(archived).equals(fs.readFileSync(working))) stale.push(file);
     }
     if (stale.length) throw Error(`Stale ${path.relative(repo, sourceZip)} — rerun prepare-legal-resources.mjs: ${stale.join(', ')}`);
-    console.log(`Archive matches ${integrations.length - absent.length} integration sources${absent.length ? `; ${absent.length} absent from this checkout: ${absent.join(', ')}` : ''}.`);
+    console.log(`Archive matches ${integrations.length} integration sources.`);
     process.exit(0);
 }
 const sections = [];

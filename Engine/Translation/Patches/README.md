@@ -1,6 +1,6 @@
 # iOS extension memory mode
 
-`ct2-mapped-weights.patch` applies to CTranslate2 commit `d44d2d069eb88c7b7804da864c10c201501cb4a9`. `Prototypes/iOS/build-translation.sh` stages an isolated source copy, applies this patch and updates the iOS slice of `Artifacts/MurmurMT.xcframework`. The original CTranslate2 checkout and the macOS slice are left unchanged.
+`ct2-mapped-weights.patch` applies to CTranslate2 commit `d44d2d069eb88c7b7804da864c10c201501cb4a9`. `build-translation.sh` stages an isolated source copy, applies this patch and updates the iOS slice of `Artifacts/MurmurMT.xcframework`. The original CTranslate2 checkout and the macOS slice are left unchanged.
 
 The mode is enabled only when `CT2_MMAP_WEIGHTS=1`, which the translation extension sets before creating the engine. The containing app retains the ordinary loader.
 
