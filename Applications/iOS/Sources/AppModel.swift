@@ -38,7 +38,9 @@ import MurmurTranslation
         case "settings": showSettings = true
         case "safari-setup": showSafariSetup = true
         case "languages": showLanguages = true
-        case "record": Task { await keyboard.stopAndEnd(); await start() }
+        // Widgets, Siri and the Action Button all land here. Each is an explicit
+        // "record now", so the warm-up ends in capture, not in a button to tap.
+        case "record": Task { await keyboard.stopAndEnd(); await start(immediately: true) }
         case "translate": Task { await keyboard.stopAndEnd(); showTranslation = true }
         case "storage": showStorage = true
         case "memory": showMemory = true
@@ -748,7 +750,10 @@ import MurmurTranslation
         progress = nil; translationFraction = nil
     }
 
-    func start(translating: Bool = false) async {
+    /// `immediately` skips the "Ready, tap Start" pause after a cold warm-up. The
+    /// in-app button keeps it, because a person watching the screen benefits from
+    /// knowing when the microphone opened; a shortcut or button press does not.
+    func start(translating: Bool = false, immediately: Bool = false) async {
         guard !busy else { return }
         recommendModel()
         operation = UUID(); let token = operation
@@ -770,7 +775,7 @@ import MurmurTranslation
             if isTranslation && !usesDirectTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
             phase = .ready
             detail = L10n.text("Ready. Tap Start recording when you want to speak.")
-            if !needsConfirmation { await confirmRecording() }
+            if !needsConfirmation || immediately { await confirmRecording() }
         } catch {
             if operation == token { phase = .idle; showRecorder = false; self.error = error is CancellationError ? nil : L10n.text("Could not start dictation. Check microphone access and language downloads.") }
         }
