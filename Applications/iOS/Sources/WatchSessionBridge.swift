@@ -37,6 +37,15 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         try? session.updateApplicationContext([WatchHandoff.languageName: languageName, WatchHandoff.speechReady: speechReady])
     }
 
+    /// Reports a finished transcript back to the wrist that spoke it. Queued
+    /// rather than pushed as state: it belongs to one recording, and a later one
+    /// must not erase it before it arrives.
+    func send(transcript: String, for recording: String) {
+        guard let session, session.activationState == .activated else { return }
+        session.transferUserInfo([WatchHandoff.transcript: String(transcript.prefix(WatchHandoff.transcriptLimit)),
+                                  WatchHandoff.recordingName: recording])
+    }
+
     /// Offered once a watch is involved, because until then nothing would notify.
     @MainActor func requestNotificationAuthorizationIfNeeded(hasRecordings: Bool) async {
         let center = UNUserNotificationCenter.current()

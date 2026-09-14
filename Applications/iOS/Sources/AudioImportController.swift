@@ -18,6 +18,9 @@ import MurmurSpeech
     @ObservationIgnored private var work: Task<Void, Never>?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
     var busy: Bool { activeID != nil || receiving }
+    /// Announced for a finished transcript, so a recording that came from
+    /// somewhere else can be told how it ended.
+    @ObservationIgnored var onFinished: (@MainActor (AudioImportJob) -> Void)?
     init() { reload() }
     func reload() {
         guard !busy else { return }
@@ -131,7 +134,7 @@ import MurmurSpeech
         if status == .paused { next.autoStart = pauseIntent.resumesAutomatically }
         try await saveNote(next); try next.save()
         if let current = jobs.firstIndex(where: { $0.id == id }) { jobs[current] = next }
-        if status == .completed { fraction = 1 }
+        if status == .completed { fraction = 1; onFinished?(next) }
     }
     private func saveNote(_ job: AudioImportJob) async throws {
         guard job.audio != nil || !job.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }

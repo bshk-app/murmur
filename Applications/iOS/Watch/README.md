@@ -28,6 +28,34 @@ The watch deletes its outbox copy only when the system confirms the transfer. Fi
 left there after a failed transfer or a kill are queued again on the next launch and
 whenever the phone comes back in range.
 
+## Starting without opening the app
+
+Finding the app before speaking costs more than reaching for the phone, so there
+are two ways past it, both ending in the same request flag:
+
+- **A complication** on the watch face. Tapping it opens the app at
+  `murmur://record`, and `RecordView` starts recording on arrival. It opens the
+  app rather than running an embedded button, because a quick tap on a small
+  complication is exactly the case where watchOS launches the app instead of the
+  button, and a quick tap is what this exists for.
+- **The Action Button and Shortcuts**, through `StartWatchRecordingIntent`. Bind
+  it in the Shortcuts app on the phone.
+
+A request raised while a recording is already running is consumed and ignored, so
+it cannot fire days later.
+
+## The answer coming back
+
+When the phone finishes transcribing a watch recording it sends the text back
+with `transferUserInfo`, queued rather than pushed as state so a later recording
+cannot erase an answer still in flight. The watch stores it on disk before showing
+it: delivery can happen while the app is not running, and watchOS may end that
+process before anyone looks.
+
+The wrist tap on arrival only plays while the app is in front. That is a bonus,
+not the delivery: the transcript is kept either way, and the phone's own
+notification covers the case where the watch app is closed.
+
 ## What the phone shows
 
 A recording that arrives while the app is not in front raises one local notification;

@@ -81,7 +81,14 @@ import MurmurTranslation
     init() {
         watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
         watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
+        audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
         watch.activate()
+    }
+    /// A recording made on the wrist answers back there, so the watch confirms the
+    /// note exists without the user reaching for the phone.
+    private func reportTranscriptToWatch(_ job: AudioImportJob) {
+        guard job.origin == .watch, !job.text.isEmpty else { return }
+        watch.send(transcript: job.text, for: job.filename)
     }
     /// Tells the watch which language the phone would recognise, and whether it can.
     func publishWatchContext() {

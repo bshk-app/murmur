@@ -5,6 +5,11 @@ import Foundation
 enum WatchHandoff {
     static let languageName = "languageName"
     static let speechReady = "speechReady"
+    static let transcript = "transcript"
+    static let recordingName = "recordingName"
+    /// The watch shows a glance, not a document, and the payload carrying it has
+    /// a size limit of its own.
+    static let transcriptLimit = 2_000
     /// Recording names are the note titles on the phone, so they stay human
     /// readable, sortable and free of path separators.
     static func recordingName(startedAt: Date, timeZone: TimeZone = .current) -> String {
