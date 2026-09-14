@@ -37,6 +37,9 @@ jobs:
           node Engine/Translation/Qualification/validate-audit.mjs
           python3 -m unittest discover -s Engine/Speech/Qualification -p 'test_*.py'
 
+      - name: Verify the offered Bergamot source archive
+        run: node Applications/iOS/scripts/prepare-legal-resources.mjs --check
+
   release-scripts:
     runs-on: ubuntu-latest
     steps:

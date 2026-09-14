@@ -10,6 +10,36 @@ const checkouts = process.env.MURMATOR_PACKAGE_CHECKOUTS ?? path.join(app, 'buil
 const native = path.join(repo, 'Engine/Translation/NativeLicenses');
 const bergamot = path.join(repo, 'Prototypes/iOS/build/bergamot-source');
 const resources = path.join(app, 'Resources');
+const sourceZip = path.join(resources, 'BergamotSource.zip');
+const integrations = [
+    'Prototypes/iOS/build-translation.sh', 'Prototypes/iOS/patches/target-arch-ios.patch',
+    'Engine/Translation/Patches/ct2-mapped-weights.patch',
+    'MurmurKit/Sources/CBergamot/murmur_mt.cpp', 'MurmurKit/Sources/CBergamot/murmur_ct2.cpp',
+    'MurmurKit/Sources/CBergamot/include/murmur_mt.h', 'MurmurKit/Sources/CBergamot/include/murmur_ct2.h',
+    'MurmurKit/Sources/CBergamot/include/module.modulemap', 'LICENSE',
+];
+
+// --check re-offers no sources; it only asserts the committed archive still matches the repository files it
+// embeds, which is the drift a source change can introduce without touching the archive. Prototypes/ holds
+// the native build tree and is untracked, so only those entries may be absent from a checkout; every other
+// integration source is required, or a rename would let a stale archive pass unnoticed.
+if (process.argv.includes('--check')) {
+    const extracted = fs.mkdtempSync(path.join(os.tmpdir(), 'murmator-source-check-'));
+    execFileSync('/usr/bin/ditto', ['-x', '-k', sourceZip, extracted]);
+    const stale = [], absent = [];
+    for (const file of integrations) {
+        const archived = path.join(extracted, 'BergamotSource/integration', file);
+        if (!fs.existsSync(archived)) throw Error(`Missing from ${path.relative(repo, sourceZip)}: ${file}`);
+        const working = path.join(repo, file);
+        if (fs.existsSync(working)) {
+            if (!fs.readFileSync(archived).equals(fs.readFileSync(working))) stale.push(file);
+        } else if (file.startsWith('Prototypes/')) absent.push(file);
+        else throw Error(`Offered integration source is gone from the repository: ${file}`);
+    }
+    if (stale.length) throw Error(`Stale ${path.relative(repo, sourceZip)} — rerun prepare-legal-resources.mjs: ${stale.join(', ')}`);
+    console.log(`Archive matches ${integrations.length - absent.length} integration sources${absent.length ? `; ${absent.length} absent from this checkout: ${absent.join(', ')}` : ''}.`);
+    process.exit(0);
+}
 const sections = [];
 function add(title, file) {
     if (!fs.statSync(file).isFile()) throw Error(`Missing license: ${file}`);
@@ -59,13 +89,6 @@ for (const file of tracked) {
     const destination = path.join(sourceRoot, 'bergamot', file);
     fs.mkdirSync(path.dirname(destination), {recursive: true}); fs.copyFileSync(source, destination); sourceFiles++;
 }
-const integrations = [
-    'Prototypes/iOS/build-translation.sh', 'Prototypes/iOS/patches/target-arch-ios.patch',
-    'Engine/Translation/Patches/ct2-mapped-weights.patch',
-    'MurmurKit/Sources/CBergamot/murmur_mt.cpp', 'MurmurKit/Sources/CBergamot/murmur_ct2.cpp',
-    'MurmurKit/Sources/CBergamot/include/murmur_mt.h', 'MurmurKit/Sources/CBergamot/include/murmur_ct2.h',
-    'MurmurKit/Sources/CBergamot/include/module.modulemap', 'LICENSE',
-];
 for (const file of integrations) {
     const destination = path.join(sourceRoot, 'integration', file);
     fs.mkdirSync(path.dirname(destination), {recursive: true}); fs.copyFileSync(path.join(repo, file), destination);
@@ -73,7 +96,6 @@ for (const file of integrations) {
 const revision = execFileSync('git', ['-C', bergamot, 'rev-parse', 'HEAD'], {encoding: 'utf8'}).trim();
 const submodules = execFileSync('git', ['-C', bergamot, 'submodule', 'status', '--recursive'], {encoding: 'utf8'});
 fs.writeFileSync(path.join(sourceRoot, 'README.txt'), `Bergamot source accompanying Murmator for iOS\n\nUpstream: https://github.com/browsermt/bergamot-translator\nRevision: ${revision}\nLicense: MPL-2.0 (bergamot/LICENSE)\n\nThe bergamot directory contains the tracked source form from the source tree used for the native iOS build. Git submodules are separate dependencies. Obtain them using the recorded revisions and the .gitmodules files. The integration directory contains the Murmator C interfaces, iOS build script and architecture patch; it is covered by integration/LICENSE.\n\nSet BERG_SOURCE and CT2_SOURCE in the included build script to local checkouts. CTranslate2: https://github.com/OpenNMT/CTranslate2 at d44d2d069eb88c7b7804da864c10c201501cb4a9. PCRE2: https://github.com/PCRE2Project/pcre2 at tag pcre2-10.48.\n\nBergamot dependency revisions:\n${submodules}\n`);
-const sourceZip = path.join(resources, 'BergamotSource.zip');
 execFileSync('/usr/bin/ditto', ['-c','-k','--sequesterRsrc','--keepParent',sourceRoot,sourceZip]);
 const sha256 = file => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 fs.mkdirSync(path.join(app, 'Release'), {recursive:true});
