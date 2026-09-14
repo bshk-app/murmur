@@ -3,6 +3,7 @@ import MurmurCore
 
 struct AudioImportJob: Identifiable, Codable {
     enum Status: String, Codable { case pending, queued, processing, paused, completed, failed }
+    enum Origin: String, Codable { case watch }
     var id = UUID()
     var createdAt = Date()
     var filename: String
@@ -10,6 +11,13 @@ struct AudioImportJob: Identifiable, Codable {
     var language: String
     var model: String
     var status = Status.pending
+    /// Absent for files the user handed over. Jobs written before the watch
+    /// existed decode with both of these nil, which reads as "not from a watch,
+    /// may start on its own".
+    var origin: Origin?
+    /// Cleared when the user pauses deliberately, so returning to the app does
+    /// not restart what they stopped.
+    var autoStart: Bool?
     var segments: [AudioFileSegment] = []
     var duration: Double = 0
     var error: String?
@@ -56,13 +64,17 @@ struct AudioImportJob: Identifiable, Codable {
             try? JSONDecoder().decode(Self.self, from: Data(contentsOf: $0.appendingPathComponent("job.json")))
         }.filter { try !$0.retireIfCompleted() }.sorted { $0.createdAt > $1.createdAt }
     }
-    /// The source belongs to Voice Memos/Files. Only a coordinated private copy
-    /// is retained, and its security scope remains open until the copy finishes.
+    /// The source belongs to Voice Memos/Files, or to the watch staging folder.
+    /// Only a coordinated private copy is retained, and its security scope remains
+    /// open until the copy finishes.
     static func receive(_ url: URL, language: String, model: String) throws -> Self {
         let access = url.startAccessingSecurityScopedResource()
         defer { if access { url.stopAccessingSecurityScopedResource() } }
         let ext = url.pathExtension.isEmpty ? "audio" : url.pathExtension
+        let sourceDirectory = url.deletingLastPathComponent().standardizedFileURL
+        let fromWatch = sourceDirectory == StoragePaths.watchInbox.standardizedFileURL
         var job = Self(filename: url.lastPathComponent, storedFilename: "source." + ext, language: language, model: model)
+        job.origin = fromWatch ? .watch : nil
         job.audio = RecordedAudio(recordingID: job.id, filename: "original." + ext, isMicrophoneRecording: false)
         try FileManager.default.createDirectory(at: job.directory, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: job.audioURL.deletingLastPathComponent(), withIntermediateDirectories: true)
@@ -77,11 +89,13 @@ struct AudioImportJob: Identifiable, Codable {
             }
             if let error = coordinationError ?? copyError as NSError? { throw error }
             try job.save()
-            // Open-In may supply a system copy in this app's Documents/Inbox.
-            // Consume only that copy after our durable job exists; external
-            // provider files and the Voice Memos original are never removed.
+            // Open-In may supply a system copy in this app's Documents/Inbox, and
+            // the watch bridge stages its own copy. Consume either only after our
+            // durable job exists; external provider files and the Voice Memos
+            // original are never removed. A crash before this leaves the staged
+            // file for the next sweep instead of losing the recording.
             let inbox = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Inbox").standardizedFileURL
-            if url.deletingLastPathComponent().standardizedFileURL == inbox {
+            if sourceDirectory == inbox || fromWatch {
                 try FileManager.default.removeItem(at: url)
             }
             return job
