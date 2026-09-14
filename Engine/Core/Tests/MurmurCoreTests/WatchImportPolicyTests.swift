@@ -64,4 +64,28 @@ final class WatchImportPolicyTests: XCTestCase {
         XCTAssertNil(WatchImportPolicy.next(activeID: nil, receiving: false, foreground: true, keyboardActive: false,
                                             memoryReleasable: true, candidates: []))
     }
+
+    func testNotificationsAreOfferedOnceAWatchIsInPlay() {
+        XCTAssertTrue(WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: true, hasRecordings: false,
+                                                                    foreground: true, undecided: true))
+    }
+
+    /// A side-loaded watch app never reports as installed, but a recording that
+    /// arrived is proof enough that notifications are worth offering.
+    func testARecordingCountsEvenWhenTheWatchAppLooksAbsent() {
+        XCTAssertTrue(WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: false, hasRecordings: true,
+                                                                    foreground: true, undecided: true))
+    }
+
+    func testNothingIsAskedBeforeAWatchIsInvolved() {
+        XCTAssertFalse(WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: false, hasRecordings: false,
+                                                                     foreground: true, undecided: true))
+    }
+
+    func testTheBackgroundCannotAskAndADecisionIsNotReopened() {
+        XCTAssertFalse(WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: true, hasRecordings: true,
+                                                                     foreground: false, undecided: true))
+        XCTAssertFalse(WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: true, hasRecordings: true,
+                                                                     foreground: true, undecided: false))
+    }
 }

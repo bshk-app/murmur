@@ -1,4 +1,5 @@
 import Foundation
+import MurmurCore
 import UIKit
 import UserNotifications
 import WatchConnectivity
@@ -36,11 +37,14 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         try? session.updateApplicationContext([WatchHandoff.languageName: languageName, WatchHandoff.speechReady: speechReady])
     }
 
-    /// Asked for once the watch app exists, because until then nothing would notify.
-    @MainActor func requestNotificationAuthorizationIfNeeded() async {
-        guard isWatchAppInstalled, UIApplication.shared.applicationState == .active else { return }
+    /// Offered once a watch is involved, because until then nothing would notify.
+    @MainActor func requestNotificationAuthorizationIfNeeded(hasRecordings: Bool) async {
         let center = UNUserNotificationCenter.current()
-        guard await center.notificationSettings().authorizationStatus == .notDetermined else { return }
+        let undecided = await center.notificationSettings().authorizationStatus == .notDetermined
+        guard WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: isWatchAppInstalled,
+                                                            hasRecordings: hasRecordings,
+                                                            foreground: UIApplication.shared.applicationState == .active,
+                                                            undecided: undecided) else { return }
         _ = try? await center.requestAuthorization(options: [.alert, .sound])
     }
 

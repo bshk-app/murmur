@@ -95,7 +95,11 @@ import MurmurTranslation
         guard !drainingWatch else { return }
         drainingWatch = true
         defer { drainingWatch = false }
-        await watch.requestNotificationAuthorizationIfNeeded()
+        // A recording already in hand justifies the offer even when the watch app
+        // does not report itself as installed.
+        let hasRecordings = !WatchSessionBridge.stagedRecordings().isEmpty
+            || audioImports.jobs.contains { $0.origin == .watch }
+        await watch.requestNotificationAuthorizationIfNeeded(hasRecordings: hasRecordings)
         var attempted: Set<URL> = []
         while let url = WatchSessionBridge.stagedRecordings().first(where: { !attempted.contains($0) }) {
             attempted.insert(url)

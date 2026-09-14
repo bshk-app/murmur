@@ -27,4 +27,15 @@ public enum WatchImportPolicy {
             .filter { $0.autoStart && $0.prepared && $0.id != activeID && (activeID == nil || !$0.queued) }
             .min { $0.createdAt < $1.createdAt }?.id
     }
+
+    /// Whether to offer notifications for arriving recordings. Asking before a
+    /// watch is involved would be noise, and the background cannot ask at all.
+    /// A recording that already arrived counts on its own: a watch app installed
+    /// outside the phone's Watch app never reports itself as installed, and
+    /// without this the offer would never be made and every arrival would pass
+    /// silently.
+    public static func shouldAskAboutNotifications(watchAppInstalled: Bool, hasRecordings: Bool,
+                                                   foreground: Bool, undecided: Bool) -> Bool {
+        (watchAppInstalled || hasRecordings) && foreground && undecided
+    }
 }
