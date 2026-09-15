@@ -100,8 +100,11 @@ identifier. Maestro cannot drive a watchOS simulator, so there is no flow covera
 Nothing below can be checked without an iPhone and a paired watch, and none of it is
 claimed to work:
 
-- WatchConnectivity delivery latency, and the background launch of the phone app,
-  including after the user force-quits it
+- WatchConnectivity delivery latency and the background launch of the phone app.
+  A force-quit phone app is not relaunched for a transfer at all: swiping it out
+  of the app switcher tells iOS to leave it stopped, and the recording waits in
+  the watch's outbox until someone opens the app. Do not force-quit while testing
+  background delivery; lock the screen or switch apps instead.
 - delivery and notification while the phone is locked
 - recording continuing with the wrist down under `UIBackgroundModes: [audio]`
 - a call or Siri finalising the partial recording

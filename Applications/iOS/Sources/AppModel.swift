@@ -102,14 +102,10 @@ import MurmurTranslation
     /// being in front, and a recording the import refuses keeps its staged file
     /// for the next call.
     func receiveWatchRecordings() async {
+        await requestWatchNotifications()
         guard !drainingWatch else { return }
         drainingWatch = true
         defer { drainingWatch = false }
-        // A recording already in hand justifies the offer even when the watch app
-        // does not report itself as installed.
-        let hasRecordings = !WatchSessionBridge.stagedRecordings().isEmpty
-            || audioImports.jobs.contains { $0.origin == .watch }
-        await watch.requestNotificationAuthorizationIfNeeded(hasRecordings: hasRecordings)
         var attempted: Set<URL> = []
         while let url = WatchSessionBridge.stagedRecordings().first(where: { !attempted.contains($0) }) {
             attempted.insert(url)
@@ -118,6 +114,19 @@ import MurmurTranslation
         }
         await startWatchImport()
     }
+    /// Asked outside the drain guard on purpose. A cold launch drains twice, once
+    /// from the notes screen appearing and once from the scene becoming active,
+    /// and the first runs before the app counts as in front. Inside the guard the
+    /// second call returned early, so the question was never put and a watch could
+    /// deliver for days in silence.
+    private func requestWatchNotifications() async {
+        // A recording already in hand justifies the offer even when the watch app
+        // does not report itself as installed.
+        let hasRecordings = !WatchSessionBridge.stagedRecordings().isEmpty
+            || audioImports.jobs.contains { $0.origin == .watch }
+        await watch.requestNotificationAuthorizationIfNeeded(hasRecordings: hasRecordings)
+    }
+
     /// Chains the recordings: the first one starts, the rest join its queue.
     private func startWatchImport() async {
         var attempted: Set<UUID> = []
