@@ -11,6 +11,29 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.4.0](https://github.com/bshk-app/murmur/compare/murmur-v0.3.1...murmur-v0.4.0) (2026-09-05)
+
+
+### Added
+
+* **captions:** translate a talk as it is spoken ([010449e](https://github.com/bshk-app/murmur/commit/010449e423699c3a0b892778af7c4c0da74814e0))
+* **dictation:** describe the session as a protocol ([c24ce43](https://github.com/bshk-app/murmur/commit/c24ce43e3002477f0aedc5113914b17709302eef))
+* **engine:** make the engine configurable and report what the mic heard ([ffc19fe](https://github.com/bshk-app/murmur/commit/ffc19fe637b6f121b5a280fc9b4998ddaf03abb1))
+* **hud:** show the translation under what you said ([3eee4b0](https://github.com/bshk-app/murmur/commit/3eee4b0992c6651b81cc9d1e6206ce1a2af8ceda))
+* **translation:** a quality tier that translates the finished text ([d196202](https://github.com/bshk-app/murmur/commit/d1962021a9eac255e13e2502f591e4f851dd9aea))
+* **translation:** dictate in one language, paste in another ([a415bd6](https://github.com/bshk-app/murmur/commit/a415bd6d4e057caa1f5921251d8ad421b00933d9))
+
+
+### Fixed
+
+* **analytics:** report the lane that ran, not the one that was requested ([7f04e8c](https://github.com/bshk-app/murmur/commit/7f04e8cbeaff12ad694cb66e48cb5b76d32ba901))
+* **translation:** translate what you actually said, not what the menu says now ([27caa14](https://github.com/bshk-app/murmur/commit/27caa144061c8ad67555f9273db1b1daff417a95))
+
+
+### Changed
+
+* **dictation:** hold the session through the protocol ([ae1b066](https://github.com/bshk-app/murmur/commit/ae1b0660ff21b2ff3e6bc84f96662a8d5f5f9c32))
+
 ## [0.3.1](https://github.com/bshk-app/murmur/compare/murmur-v0.3.0...murmur-v0.3.1) (2026-08-25)
 
 
