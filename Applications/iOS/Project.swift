@@ -48,7 +48,7 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
             "NSExtension": ["NSExtensionPointIdentifier": "com.apple.widgetkit-extension"]]),
         sources: ["WatchWidgets/**"],
-        resources: ["Resources/Localizations/**", "Resources/PrivacyInfo.xcprivacy"],
+        resources: ["Watch/Resources/**", "Resources/Localizations/**", "Resources/PrivacyInfo.xcprivacy"],
         settings: .settings(base: ["SWIFT_VERSION": "5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE": "Automatic", "APPLICATION_EXTENSION_API_ONLY": "YES"])),
     .target(name:"MurMurWidgets", destinations:[.iPhone,.iPad], product:.appExtension,
         bundleId:"app.bshk.murmur.ios.widgets", deploymentTargets:.iOS("18.0"),

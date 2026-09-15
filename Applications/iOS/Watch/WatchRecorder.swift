@@ -7,6 +7,12 @@ import Observation
 /// stops at a finished m4a and the phone does the rest.
 @MainActor @Observable final class WatchRecorder {
     private(set) var recording = false
+    /// How long the last recording ran. Shown while it travels, so the length of
+    /// what was sent is not a mystery.
+    private(set) var lastDuration: TimeInterval = 0
+    /// Only a refused microphone blocks the button. A session that failed to
+    /// activate is worth showing and worth retrying, so it must not latch.
+    private(set) var permissionDenied = false
     var error: String?
     /// A call or Siri ends the recording where it stands. What reached the disk is
     /// still a note worth keeping, so it is handed over rather than discarded.
@@ -25,7 +31,9 @@ import Observation
         starting = true
         defer { starting = false }
         error = nil
-        guard await AVAudioApplication.requestRecordPermission() else {
+        let granted = await AVAudioApplication.requestRecordPermission()
+        permissionDenied = !granted
+        guard granted else {
             error = L10n.text("Allow microphone access in Settings to record a note.")
             return
         }
@@ -52,6 +60,7 @@ import Observation
     func stop() -> URL? {
         guard let recorder else { return nil }
         let url = recorder.url
+        lastDuration = recorder.currentTime
         recorder.stop()
         self.recorder = nil
         recording = false

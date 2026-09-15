@@ -12,18 +12,23 @@ import WatchKit
     private(set) var pending = 0
     /// The phone's answer for the last recording sent from here.
     private(set) var transcript: String?
+    /// Whether an answer has ever arrived. Before the first one there is room on
+    /// the screen to say where the audio went.
+    private(set) var hasEverReceived = false
     var error: String?
 
     static var outbox: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("Outbox")
     }
     private static let transcriptKey = "lastWatchTranscript"
+    private static let everReceivedKey = "watchTranscriptEverReceived"
 
     override init() {
         super.init()
         // A transcript can arrive while the app is not running. watchOS may end
         // that process before anyone looks, so the answer is kept on disk.
         transcript = UserDefaults.standard.string(forKey: Self.transcriptKey)
+        hasEverReceived = UserDefaults.standard.bool(forKey: Self.everReceivedKey)
         WCSession.default.delegate = self
         WCSession.default.activate()
     }
@@ -67,7 +72,9 @@ import WatchKit
     private func received(_ text: String?) {
         guard let text, !text.isEmpty else { return }
         UserDefaults.standard.set(text, forKey: Self.transcriptKey)
+        UserDefaults.standard.set(true, forKey: Self.everReceivedKey)
         transcript = text
+        hasEverReceived = true
         // Only lands while the app is in front. Backgrounded delivery still keeps
         // the transcript; the tap is a bonus, not the delivery mechanism.
         WKInterfaceDevice.current().play(.success)

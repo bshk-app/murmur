@@ -15,14 +15,47 @@ struct MurmatorComplicationProvider: TimelineProvider {
     }
 }
 
+private enum ComplicationPalette {
+    /// The ring is the brand at a glance; at complication sizes a filled shape
+    /// would read as a blob, so the accent lives in the stroke.
+    static let ring = Color(red: 0.878, green: 0.478, blue: 0.184).opacity(0.55)
+    static let mark = Color.white.opacity(0.95)
+    static let plate = Color.white.opacity(0.07)
+}
+
+private struct ComplicationMark: View {
+    var size: CGFloat
+    var body: some View {
+        Image("MascotMark")
+            .resizable().scaledToFit()
+            .frame(width: size, height: size)
+            .foregroundStyle(ComplicationPalette.mark)
+    }
+}
+
 struct MurmatorComplicationView: View {
     @Environment(\.widgetFamily) private var family
     var body: some View {
         Group {
-            if family == .accessoryRectangular {
-                Label("Record a note", systemImage: "mic.fill")
-            } else {
-                Image(systemName: "mic.fill")
+            switch family {
+            case .accessoryRectangular:
+                HStack(spacing: 11) {
+                    ComplicationMark(size: 26)
+                    Text("Record a note")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(ComplicationPalette.mark)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                }
+                .padding(.vertical, 11).padding(.horizontal, 12)
+                .background(ComplicationPalette.plate, in: RoundedRectangle(cornerRadius: 14))
+            case .accessoryCorner:
+                ComplicationMark(size: 20)
+                    .widgetLabel { Text("Record a note") }
+            default:
+                ComplicationMark(size: 22)
+                    .padding(6)
+                    .background(Circle().strokeBorder(ComplicationPalette.ring, lineWidth: 3))
             }
         }
         // A tap on the face opens the app, which is the one behaviour every

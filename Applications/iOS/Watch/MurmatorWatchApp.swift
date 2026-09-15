@@ -25,11 +25,15 @@ struct MurmatorWatchShortcuts: AppShortcutsProvider {
 
     var body: some Scene {
         WindowGroup {
-            RecordView(recorder: recorder, sync: sync)
-                .onOpenURL { url in
-                    // The complication's tap arrives here, on the face's own terms.
-                    if url.host == "record" { WatchRecordingRequest.raise() }
-                }
+            // The language sits in the title bar beside the system clock, so the
+            // watch draws the time and the app never has a second one to keep in sync.
+            NavigationStack {
+                RecordView(recorder: recorder, sync: sync)
+            }
+            .onOpenURL { url in
+                // The complication's tap arrives here, on the face's own terms.
+                if url.host == "record" { WatchRecordingRequest.raise() }
+            }
         }
     }
 }
