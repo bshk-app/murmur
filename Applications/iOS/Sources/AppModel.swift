@@ -85,6 +85,7 @@ import MurmurTranslation
         watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
         watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
         audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
+        audioImports.onTiming = { [weak self] audio, decode, load in self?.learnSpeechTimings(audio, decode, load) }
         watch.activate()
     }
     /// A recording made on the wrist answers back there, so the watch confirms the
@@ -108,13 +109,83 @@ import MurmurTranslation
         drainingWatch = true
         defer { drainingWatch = false }
         var attempted: Set<URL> = []
+        var arrived = false
         while let url = WatchSessionBridge.stagedRecordings().first(where: { !attempted.contains($0) }) {
             attempted.insert(url)
             await receiveAudio(url)
-            await startWatchImport()
+            arrived = true
+            if UIApplication.shared.applicationState == .active { await startWatchImport() }
         }
-        await startWatchImport()
+        guard UIApplication.shared.applicationState != .active else {
+            await startWatchImport()
+            return
+        }
+        // One banner, not two: either the note is being transcribed now and the
+        // finish will say so, or it waits and the arrival says that instead.
+        if !startWatchImportInBackground(), arrived { watch.announceArrival() }
     }
+    /// What this phone has measured about its own speed. Persisted because the
+    /// decision below happens seconds after a cold launch, with nothing else to
+    /// go on.
+    private var speechTimings: SpeechTimings {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: "speechTimings"),
+                  let value = try? JSONDecoder().decode(SpeechTimings.self, from: data) else { return SpeechTimings() }
+            return value
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) { UserDefaults.standard.set(data, forKey: "speechTimings") }
+        }
+    }
+
+    private func learnSpeechTimings(_ audioSeconds: Double, _ decodeSeconds: Double, _ loadSeconds: Double) {
+        var timings = speechTimings
+        timings.record(audioSeconds: audioSeconds, decodeSeconds: decodeSeconds, loadSeconds: loadSeconds)
+        speechTimings = timings
+        WatchDiagnostics.note("timings learned",
+                              String(format: "audio=%.1fs decode=%.1fs load=%.1fs rtf=%.2f load~%.1fs",
+                                     audioSeconds, decodeSeconds, loadSeconds, timings.realTimeFactor, timings.modelLoadSeconds))
+    }
+
+    /// A recording that arrived while the phone slept is transcribed there and
+    /// then when the estimate says it will finish inside the grace period. Being
+    /// cut off is survivable but wastes a model load, so anything longer waits and
+    /// the arrival banner says so.
+    private func startWatchImportInBackground() -> Bool {
+        guard audioImports.activeID == nil, !audioImports.receiving, !keyboard.isActive, canReleaseMemory else { return false }
+        let waiting = audioImports.jobs.filter {
+            $0.origin == .watch && ($0.autoStart ?? true) && ($0.status == .pending || $0.status == .paused)
+                && languageLibrary.isPrepared("speech:" + $0.language)
+        }
+        guard let job = waiting.min(by: { $0.createdAt < $1.createdAt }) else { return false }
+        let budget = audioImports.claimBackgroundBudget()
+        let timings = speechTimings
+        let estimate = BackgroundTranscriptionPolicy.Estimate(
+            audioSeconds: Self.audioSeconds(of: job),
+            realTimeFactor: timings.realTimeFactor,
+            modelLoadSeconds: timings.modelLoadSeconds)
+        guard BackgroundTranscriptionPolicy.fitsInBackground(estimate, budgetSeconds: budget) else {
+            WatchDiagnostics.note("too long for the background",
+                                  String(format: "audio=%.1fs estimate=%.1fs budget=%.0fs",
+                                         estimate.audioSeconds, estimate.seconds, budget))
+            audioImports.releaseUnusedBudget()
+            return false
+        }
+        WatchDiagnostics.note("transcribing in the background",
+                              String(format: "audio=%.1fs estimate=%.1fs budget=%.0fs",
+                                     estimate.audioSeconds, estimate.seconds, budget))
+        audioImports.start(job.id, allowBackground: true)
+        return audioImports.activeID == job.id
+    }
+
+    /// Read from the file's header rather than decoded: the job only learns its
+    /// own length once transcription runs, which is the decision being made here.
+    private static func audioSeconds(of job: AudioImportJob) -> Double {
+        if job.duration > 0 { return job.duration }
+        guard let file = try? AVAudioFile(forReading: job.audioURL) else { return 0 }
+        return Double(file.length) / file.fileFormat.sampleRate
+    }
+
     /// Asked outside the drain guard on purpose. A cold launch drains twice, once
     /// from the notes screen appearing and once from the scene becoming active,
     /// and the first runs before the app counts as in front. Inside the guard the

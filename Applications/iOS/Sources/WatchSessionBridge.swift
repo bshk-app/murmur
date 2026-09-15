@@ -62,7 +62,7 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         WatchDiagnostics.note("permission now", await WatchDiagnostics.notificationStatus())
     }
 
-    @MainActor private func announce() {
+    @MainActor func announceArrival() {
         let content = UNMutableNotificationContent()
         content.title = L10n.text("Recording from Apple Watch received")
         content.body = L10n.text("Transcription starts when you open Murmator.")
@@ -130,7 +130,8 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         }
         Task { @MainActor in
             WatchDiagnostics.note("recording staged", destination.lastPathComponent + " " + WatchDiagnostics.state())
-            if UIApplication.shared.applicationState != .active { self.announce() }
+            // Which banner to post depends on whether the note is short enough to
+            // transcribe now, and only the model knows that.
             await self.onRecordingStaged?()
         }
     }

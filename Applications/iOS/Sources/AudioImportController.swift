@@ -15,6 +15,10 @@ import MurmurSpeech
     @ObservationIgnored private var queueSuspended = true
     @ObservationIgnored private var pauseIntent = AudioImportPauseIntent()
     @ObservationIgnored private var backgroundGrace: UIBackgroundTaskIdentifier = .invalid
+    @ObservationIgnored private var runStartedAt: Date?
+    @ObservationIgnored private var runReadyAt: Date?
+    /// Reported for every finished run so the phone can learn its own speed.
+    @ObservationIgnored var onTiming: (@MainActor (_ audioSeconds: Double, _ decodeSeconds: Double, _ loadSeconds: Double) -> Void)?
     var fraction: Double = 0
     @ObservationIgnored private var work: Task<Void, Never>?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
@@ -59,8 +63,12 @@ import MurmurSpeech
         if !current.supports(language) { jobs[i].model = (language == "ar" ? SpeechModelChoice.cohereArabic : .parakeet).rawValue }
         do { try jobs[i].save() } catch { self.error = error.localizedDescription }
     }
-    func start(_ id: UUID) {
-        guard UIApplication.shared.applicationState == .active, !receiving, let i = jobs.firstIndex(where: { $0.id == id }), jobs[i].status != .completed || jobs[i].text.isEmpty else { return }
+    /// `allowBackground` is for a recording that arrived while the phone slept and
+    /// is short enough to finish before the grace period runs out. Everything else
+    /// still waits for someone to be looking at the screen.
+    func start(_ id: UUID, allowBackground: Bool = false) {
+        guard allowBackground || UIApplication.shared.applicationState == .active else { return }
+        guard !receiving, let i = jobs.firstIndex(where: { $0.id == id }), jobs[i].status != .completed || jobs[i].text.isEmpty else { return }
         if activeID != nil {
             guard activeID != id, jobs[i].status != .queued else { return }
             // Queueing is as deliberate as starting, so it re-arms the same way.
@@ -75,6 +83,7 @@ import MurmurSpeech
         activeID = id; pausing = false; preparing = true; fraction = job.duration > 0 ? Double(job.completedThrough)/16_000/job.duration : 0
         // Starting deliberately re-arms the automatic resume a pause turned off.
         pauseIntent.started()
+        runStartedAt = Date(); runReadyAt = nil
         jobs[i].status = .processing; jobs[i].error = nil; jobs[i].autoStart = true
         do { try jobs[i].save() } catch { self.error = error.localizedDescription; jobs[i] = previous; activeID = nil; preparing = false; return }
         WatchDiagnostics.note("import start", "model=\(job.model) " + WatchDiagnostics.state())
@@ -107,17 +116,25 @@ import MurmurSpeech
         start(next)
     }
     private func ready() {
+        runReadyAt = Date()
         WatchDiagnostics.note("models loaded, decoding starts", WatchDiagnostics.state())
         preparing = false
     }
-    /// Leaving the app no longer stops the work where it stands. A note from the
-    /// watch is usually seconds from done, and iOS grants long enough to finish it
-    /// and say so. The import pauses only when that runs out, which reads to the
-    /// rest of the app exactly like leaving used to.
-    func continueInBackground() {
-        WatchDiagnostics.note("left the app", "active=\(activeID != nil) " + WatchDiagnostics.state())
-        guard activeID != nil, backgroundGrace == .invalid else { pause(userInitiated: false); return }
-        queueSuspended = true
+
+    /// The budget only becomes real once the assertion is held, so it is claimed
+    /// before the estimate is weighed, and handed straight back if the answer is no.
+    func claimBackgroundBudget() -> Double {
+        guard activeID == nil else { return 0 }
+        beginGrace()
+        return UIApplication.shared.backgroundTimeRemaining
+    }
+
+    func releaseUnusedBudget() {
+        if activeID == nil { releaseBackgroundGrace() }
+    }
+
+    private func beginGrace() {
+        guard backgroundGrace == .invalid else { return }
         backgroundGrace = UIApplication.shared.beginBackgroundTask(withName: "Audio import") { [weak self] in
             WatchDiagnostics.note("grace expired, pausing")
             // Called on the main thread, and the assertion has to be given back
@@ -127,6 +144,16 @@ import MurmurSpeech
                 self?.releaseBackgroundGrace()
             }
         }
+    }
+    /// Leaving the app no longer stops the work where it stands. A note from the
+    /// watch is usually seconds from done, and iOS grants long enough to finish it
+    /// and say so. The import pauses only when that runs out, which reads to the
+    /// rest of the app exactly like leaving used to.
+    func continueInBackground() {
+        WatchDiagnostics.note("left the app", "active=\(activeID != nil) " + WatchDiagnostics.state())
+        guard activeID != nil, backgroundGrace == .invalid else { pause(userInitiated: false); return }
+        queueSuspended = true
+        beginGrace()
     }
 
     /// An import that survived the trip was never really suspended, so the queue
@@ -177,7 +204,13 @@ import MurmurSpeech
         try await saveNote(next); try next.save()
         if let current = jobs.firstIndex(where: { $0.id == id }) { jobs[current] = next }
         WatchDiagnostics.note("import finished", "status=\(status.rawValue) " + WatchDiagnostics.state())
-        if status == .completed { fraction = 1; onFinished?(next) }
+        if status == .completed {
+            fraction = 1
+            if let runStartedAt, let runReadyAt {
+                onTiming?(next.duration, Date().timeIntervalSince(runReadyAt), runReadyAt.timeIntervalSince(runStartedAt))
+            }
+            onFinished?(next)
+        }
     }
     private func saveNote(_ job: AudioImportJob) async throws {
         guard job.audio != nil || !job.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
