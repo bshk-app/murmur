@@ -11,6 +11,35 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.5.0](https://github.com/bshk-app/murmur/compare/murmur-v0.4.0...murmur-v0.5.0) (2026-09-15)
+
+
+### Added
+
+* integrate qualified translation profiles and bound model verification memory ([552a43c](https://github.com/bshk-app/murmur/commit/552a43cc401986d8c9ebe84252417c04c1272fcf))
+* **ios:** animate mascot reactions on tap ([e44cf9d](https://github.com/bshk-app/murmur/commit/e44cf9de03ea09ad699538248666f3e942d1a636))
+* **speech:** add bounded batching and experimental Canary recording ([6a2050f](https://github.com/bshk-app/murmur/commit/6a2050f97f3a7177ea2cc3c25aea65b6b531a270))
+* **speech:** add optional direct voice translation ([b8f5e6c](https://github.com/bshk-app/murmur/commit/b8f5e6c703c120cbde1e253e071ed5f49f76adcb))
+* **watch:** record voice notes on Apple Watch and get the text back ([30f072d](https://github.com/bshk-app/murmur/commit/30f072de655578923cac4b7e63d9a49b4683d7a9))
+
+
+### Fixed
+
+* **ios:** Buttons and labels on a note now match the rest of the app ([b89f95b](https://github.com/bshk-app/murmur/commit/b89f95b1d49ae28e547b3952272ea5f7a9ca96a7))
+* **ios:** ship the current Bergamot sources in the source offer ([2655455](https://github.com/bshk-app/murmur/commit/2655455503d3930d10ea3283293ef5c38a2f2e2e))
+* **ios:** track the build inputs the source offer ships ([708d2e9](https://github.com/bshk-app/murmur/commit/708d2e96fdae331f9a852d85f74aeed01ace833e))
+* **speech:** fail recordings on capture conversion errors ([d1f1347](https://github.com/bshk-app/murmur/commit/d1f1347dbdc4fb94a5aedf357623d11a51bca98e))
+* **speech:** isolate direct route readiness ([ee32d8f](https://github.com/bshk-app/murmur/commit/ee32d8f854a22c57db559bfeb95ce0859a192f4a))
+* **speech:** preserve capture boundaries and finalization errors ([e903148](https://github.com/bshk-app/murmur/commit/e903148bd81cb11b956744658f30843c018c59f7))
+* **speech:** release direct sessions and deferred routes ([e9ea324](https://github.com/bshk-app/murmur/commit/e9ea32491429f5c5f3ebfd5099de3dbcbe3df965))
+* **speech:** surface direct session failures promptly ([fa4c785](https://github.com/bshk-app/murmur/commit/fa4c785f893879559eb2788e4e5169cd6e2aa4fe))
+* **ui:** remove translation route badges ([17c193a](https://github.com/bshk-app/murmur/commit/17c193ac051dce3ada9d51b3e494e40628cc5859))
+
+
+### Changed
+
+* **ui:** remove standalone speech translation test ([ff18361](https://github.com/bshk-app/murmur/commit/ff18361189ecff8deea57063ebf0b9d02fc0ae31))
+
 ## [0.4.0](https://github.com/bshk-app/murmur/compare/murmur-v0.3.1...murmur-v0.4.0) (2026-09-05)
 
 
