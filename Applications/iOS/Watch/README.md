@@ -28,6 +28,33 @@ The watch deletes its outbox copy only when the system confirms the transfer. Fi
 left there after a failed transfer or a kill are queued again on the next launch and
 whenever the phone comes back in range.
 
+## Why the watch also sends a message
+
+`transferFile` does not wake the iPhone app. Measured on device: recordings made at
+14:24 and 14:25 were delivered at 14:54:40, in the same tenth of a second the app was
+launched. Half an hour queued, then everything at once on activation. Without a
+running app there is nobody to post a notification, so the arrival banner could never
+fire.
+
+A message from the watch is the one thing that does wake the counterpart, so `send`
+fires one alongside the transfer whose only purpose is to get the phone running.
+
+Two conditions that are easy to get wrong, and both silently cost the whole feature:
+
+- **Do not guard the message on `isReachable`.** It reports false negatives often
+  enough that the guard skipped the wake outright and the behaviour was
+  indistinguishable from not sending at all. An unreachable message fails harmlessly
+  and the file waits in the outbox regardless.
+- **The phone app must declare a background mode that makes it eligible for
+  Background App Refresh.** With only `audio` declared it never appeared in
+  Settings → General → Background App Refresh, could not be enabled there, and was
+  never woken. `fetch` is declared for this reason alone.
+
+With both in place the sequence is `woken by the watch` → `recording staged` →
+`posting arrival banner`, all at `app=background`. The budget at that point is about
+fourteen seconds, which is enough to stage a file and post a banner but not enough
+for a cold model load, so transcription still waits for the app to come to the front.
+
 ## Starting without opening the app
 
 Finding the app before speaking costs more than reaching for the phone, so there
