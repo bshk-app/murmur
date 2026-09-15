@@ -103,6 +103,15 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
     /// recordings from the new watch would never arrive.
     func sessionDidDeactivate(_ session: WCSession) { session.activate() }
 
+    /// The watch sends this purely to wake us. Arriving at all is the whole point;
+    /// the queued file follows on its own.
+    func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
+        Task { @MainActor in
+            WatchDiagnostics.note("woken by the watch", WatchDiagnostics.state())
+            await self.onRecordingStaged?()
+        }
+    }
+
     func session(_ session: WCSession, didReceive file: WCSessionFile) {
         // The system deletes file.fileURL as soon as this returns, so the move
         // cannot wait for the main actor or for the import to accept the recording.

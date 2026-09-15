@@ -5,6 +5,8 @@ import Foundation
 enum WatchHandoff {
     static let languageName = "languageName"
     static let speechReady = "speechReady"
+    /// Carried by the message whose only job is to rouse the phone.
+    static let wake = "wake"
     static let transcript = "transcript"
     static let recordingName = "recordingName"
     /// The watch shows a glance, not a document, and the payload carrying it has

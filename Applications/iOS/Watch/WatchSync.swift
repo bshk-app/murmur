@@ -45,6 +45,7 @@ import WatchKit
             if FileManager.default.fileExists(atPath: destination.path) { try FileManager.default.removeItem(at: destination) }
             try FileManager.default.moveItem(at: url, to: destination)
             transfer(destination)
+            wakePhone()
         } catch { self.error = error.localizedDescription }
     }
 
@@ -73,6 +74,16 @@ import WatchKit
         let waiting = (try? FileManager.default.contentsOfDirectory(at: Self.outbox, includingPropertiesForKeys: nil)) ?? []
         for url in waiting where !outstanding.contains(url.standardizedFileURL) { transfer(url) }
         pending = WCSession.default.outstandingFileTransfers.count
+    }
+
+    /// Queuing a file does not rouse the phone: iOS delivers queued transfers when
+    /// it chooses, which in practice is when someone opens the app, so a recording
+    /// can sit unseen for half an hour. A message does wake the counterpart, so one
+    /// is sent alongside for no reason other than to get the phone running long
+    /// enough to accept the file. Best effort: out of range, the file still waits.
+    private func wakePhone() {
+        guard WCSession.default.isReachable else { return }
+        WCSession.default.sendMessage([WatchHandoff.wake: true], replyHandler: nil, errorHandler: { _ in })
     }
 
     private func transfer(_ url: URL) {
