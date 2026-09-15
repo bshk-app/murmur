@@ -67,6 +67,21 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "watch-recording", content: content, trigger: nil))
     }
 
+    /// Says the note is ready, and nothing more. The recording's own name is the
+    /// body: keeping the transcript off the lock screen is the whole point of
+    /// recognising it on the device. Silent while the app is in front, where the
+    /// note simply appears.
+    @MainActor func announceCompletion(recording: String) {
+        guard UIApplication.shared.applicationState != .active else { return }
+        let content = UNMutableNotificationContent()
+        content.title = L10n.text("Transcription saved")
+        content.body = recording
+        content.sound = .default
+        // Its own identifier, so finishing never overwrites an arrival the person
+        // has not read yet.
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "watch-transcript", content: content, trigger: nil))
+    }
+
     func session(_ session: WCSession, activationDidCompleteWith state: WCSessionActivationState, error: Error?) {
         Task { @MainActor in self.onSessionReady?() }
     }

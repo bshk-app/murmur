@@ -91,6 +91,7 @@ import MurmurTranslation
     private func reportTranscriptToWatch(_ job: AudioImportJob) {
         guard job.origin == .watch, !job.text.isEmpty else { return }
         watch.send(transcript: job.text, for: job.filename)
+        watch.announceCompletion(recording: job.filename)
     }
     /// Tells the watch which language the phone would recognise, and whether it can.
     func publishWatchContext() {
