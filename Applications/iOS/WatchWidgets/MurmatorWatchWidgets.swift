@@ -15,47 +15,30 @@ struct MurmatorComplicationProvider: TimelineProvider {
     }
 }
 
-private enum ComplicationPalette {
-    /// The ring is the brand at a glance; at complication sizes a filled shape
-    /// would read as a blob, so the accent lives in the stroke.
-    static let ring = Color(red: 0.878, green: 0.478, blue: 0.184).opacity(0.55)
-    static let mark = Color.white.opacity(0.95)
-    static let plate = Color.white.opacity(0.07)
-}
-
-private struct ComplicationMark: View {
-    var size: CGFloat
-    var body: some View {
-        Image("MascotMark")
-            .resizable().scaledToFit()
-            .frame(width: size, height: size)
-            .foregroundStyle(ComplicationPalette.mark)
-    }
-}
-
+/// A watch face renders a complication as a mask, not as artwork: colours are the
+/// face's to choose and anything filled collapses into a solid shape. The mascot
+/// is a filled disc, so it reads as a blob here and stays inside the app. A
+/// symbol is what this rendering mode is built for, and it survives every face.
 struct MurmatorComplicationView: View {
     @Environment(\.widgetFamily) private var family
     var body: some View {
         Group {
             switch family {
             case .accessoryRectangular:
-                HStack(spacing: 11) {
-                    ComplicationMark(size: 26)
-                    Text("Record a note")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(ComplicationPalette.mark)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                }
-                .padding(.vertical, 11).padding(.horizontal, 12)
-                .background(ComplicationPalette.plate, in: RoundedRectangle(cornerRadius: 14))
+                Label("Record a note", systemImage: "mic.fill")
+                    .font(.system(size: 15, weight: .medium))
+                    .frame(maxWidth: .infinity, alignment: .leading)
             case .accessoryCorner:
-                ComplicationMark(size: 20)
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 20))
                     .widgetLabel { Text("Record a note") }
             default:
-                ComplicationMark(size: 22)
-                    .padding(6)
-                    .background(Circle().strokeBorder(ComplicationPalette.ring, lineWidth: 3))
+                // The ring is the brand at a glance; the face tints it with the
+                // rest of the complication rather than taking our accent.
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 22))
+                    .padding(7)
+                    .background(Circle().strokeBorder(lineWidth: 3).opacity(0.55))
             }
         }
         // A tap on the face opens the app, which is the one behaviour every
