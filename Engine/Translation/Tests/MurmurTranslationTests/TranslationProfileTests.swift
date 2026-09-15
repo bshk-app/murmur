@@ -16,9 +16,9 @@ final class TranslationProfileTests: XCTestCase {
                 count += 1
             }
         }
-        XCTAssertEqual(count, 650)
-        XCTAssertEqual(TranslationProfileCatalog.baseline.bindings.count, 52)
-        XCTAssertEqual(Set(TranslationProfileCatalog.baseline.bindings.values.map(\.modelID)).count, 44)
+        XCTAssertEqual(count, 1056)
+        XCTAssertEqual(TranslationProfileCatalog.baseline.bindings.count, 66)
+        XCTAssertEqual(Set(TranslationProfileCatalog.baseline.bindings.values.map(\.modelID)).count, 45)
     }
 
     func testUnqualifiedInstalledDirectoryCannotChangeSelectedRoute() throws {

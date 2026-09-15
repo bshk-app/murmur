@@ -260,6 +260,13 @@ final class TranslationServiceTests: XCTestCase {
         }
     }
 
+    func test_whisper_only_languages_run_without_live_draft() {
+        for language in SpeechModelChoice.whisperLanguages {
+            XCTAssertFalse(DictationMode.allowsLiveDraft(language: language), language)
+            XCTAssertEqual(DictationMode.available(for: language), [.accurate])
+        }
+    }
+
     func test_region_qualified_codes_gate_the_same_as_their_base() {
         XCTAssertFalse(DictationMode.allowsLiveDraft(language: "zh-Hans"))
         XCTAssertFalse(DictationMode.allowsLiveDraft(language: "ja-JP"))

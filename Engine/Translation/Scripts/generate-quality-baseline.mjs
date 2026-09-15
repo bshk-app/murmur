@@ -25,7 +25,7 @@ for (const name of sources) {
       decoding: {beamSize: 1, maxSourcePieces: 200, maxDecodingLength: 512, lengthPenalty: 1, computeType: 'int8'}, files});
   }
 }
-if (bindings.length !== 52 || new Set(bindings.map(b => b.directoryName)).size !== 52) throw Error('Expected 52 unique baseline directions');
+if (bindings.length !== 66 || new Set(bindings.map(b => b.directoryName)).size !== 66) throw Error('Expected 66 unique baseline directions');
 bindings.sort((a,b) => a.directoryName.localeCompare(b.directoryName));
 const version = 'baseline-' + hash(JSON.stringify(bindings)).slice(0,16);
 const rows = bindings.map(b => `        .init(pair: .init(source: "${b.pair.source}", target: "${b.pair.target}"), modelID: "${b.modelID}", directoryName: "${b.directoryName}", targetTag: "${b.targetTag}")`);

@@ -31,6 +31,27 @@ final class EuropeanTranslationTests: XCTestCase {
         XCTAssertFalse(SpeechModelChoice.parakeet.supports("ga"))
     }
 
+    func testLanguagesOutsideParakeetUseWhisperAndTheirOwnTargetTags() throws {
+        let tags = ["be": ">>bel<<", "bs": ">>bos_Latn<<", "ca": ">>cat<<", "is": ">>isl<<",
+                    "mk": ">>mkd<<", "nb": ">>nob<<", "sr": ">>srp_Cyrl<<"]
+        XCTAssertEqual(Set(tags.keys), SpeechModelChoice.whisperLanguages)
+        let catalog = TranslationProfileCatalog.baseline
+        for (language, tag) in tags {
+            XCTAssertTrue(LanguagePair.qualityLanguages.contains(language), language)
+            XCTAssertFalse(SpeechModelChoice.parakeet.supports(language), language)
+            XCTAssertEqual(SpeechRecognitionProfile.baselineModel(language: language), .whisper, language)
+            XCTAssertFalse(KeyboardConfiguration(source: language, target: "en").isValid, language)
+            XCTAssertEqual(try XCTUnwrap(catalog.bindings[.init(source: "en", target: language)]).targetTag, tag)
+            XCTAssertEqual(try XCTUnwrap(catalog.bindings[.init(source: language, target: "en")]).targetTag, "")
+        }
+        // Catalan into English is the Spanish checkpoint, so it downloads nothing new.
+        XCTAssertEqual(catalog.bindings[.init(source: "ca", target: "en")]?.modelID,
+                       catalog.bindings[.init(source: "es", target: "en")]?.modelID)
+        XCTAssertEqual(SpeechModelChoice.whisperLanguageCode("nb"), "no")
+        XCTAssertEqual(SpeechModelChoice.whisperLanguageCode("ca"), "ca")
+        XCTAssertNil(SpeechModelChoice.whisperLanguageCode(nil))
+    }
+
     func testEveryConvertedDirectionRunsThroughTheNativeSwiftEngine() async throws {
         guard let path = ProcessInfo.processInfo.environment["MURMUR_EU_NATIVE_ROOT"],
               let manifest = ProcessInfo.processInfo.environment["MURMUR_EU_SOURCES"] else { throw XCTSkip("Local converted OPUS packs required") }

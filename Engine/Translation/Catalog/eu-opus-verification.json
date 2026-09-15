@@ -366,5 +366,117 @@
     "input": "Я надішлю документи завтра.",
     "output": "I'll send the papers tomorrow.",
     "bytes": 252756226
+  },
+  {
+    "pair": "enca",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa",
+    "source_sha256": "a5f01f26b1f22cc840b9f94e98a4fe2b517fca85296f7f802771272fbfcd659e",
+    "input": "I will send the documents tomorrow.",
+    "output": "Demà enviaré els documents.",
+    "bytes": 244914254
+  },
+  {
+    "pair": "caen",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-cat_oci_spa-en",
+    "source_sha256": "a2d13b90c2d59fdd6b5db723fea7aaf32f1a5ef25d7119806c94df753e70f17f",
+    "input": "Enviaré els documents demà.",
+    "output": "I'll send the documents tomorrow.",
+    "bytes": 244987850
+  },
+  {
+    "pair": "ennb",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-gmq",
+    "source_sha256": "1151a50df1c5df610b832622a23be8d8bc2f734d95e803d7ddaf28355012f440",
+    "input": "I will send the documents tomorrow.",
+    "output": "Jeg sender dokumentene i morgen.",
+    "bytes": 244868350
+  },
+  {
+    "pair": "nben",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmq-en",
+    "source_sha256": "9db146c6273f943acc6a435c749e89aca25de18f17ad6026227d925b6d79fede",
+    "input": "Jeg sender dokumentene i morgen.",
+    "output": "I'll send you the documents tomorrow.",
+    "bytes": 244972489
+  },
+  {
+    "pair": "enis",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-gmq",
+    "source_sha256": "1151a50df1c5df610b832622a23be8d8bc2f734d95e803d7ddaf28355012f440",
+    "input": "I will send the documents tomorrow.",
+    "output": "Ég sendi skjölin á morgun.",
+    "bytes": 244868350
+  },
+  {
+    "pair": "isen",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmq-en",
+    "source_sha256": "9db146c6273f943acc6a435c749e89aca25de18f17ad6026227d925b6d79fede",
+    "input": "Ég sendi skjölin á morgun.",
+    "output": "I'll send you the papers tomorrow.",
+    "bytes": 244972489
+  },
+  {
+    "pair": "ensr",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_sha256": "b2ac522e84b2f2e84d5b7ac2f285a65df352d2afeb5734518e057f2b41b4fc00",
+    "input": "I will send the documents tomorrow.",
+    "output": "Сутра ћу послати документе.",
+    "bytes": 78734930
+  },
+  {
+    "pair": "sren",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_sha256": "b49a4557958a46708e61d0545f6c983cb0b77577da9ea9bec220c6213d4b6c8c",
+    "input": "Послаћу документе сутра.",
+    "output": "I'll send the documents tomorrow.",
+    "bytes": 250927454
+  },
+  {
+    "pair": "enbs",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_sha256": "b2ac522e84b2f2e84d5b7ac2f285a65df352d2afeb5734518e057f2b41b4fc00",
+    "input": "I will send the documents tomorrow.",
+    "output": "Poslaću dokumente sutra.",
+    "bytes": 78734930
+  },
+  {
+    "pair": "bsen",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_sha256": "b49a4557958a46708e61d0545f6c983cb0b77577da9ea9bec220c6213d4b6c8c",
+    "input": "Poslat ću dokumente sutra.",
+    "output": "I'll send the documents tomorrow.",
+    "bytes": 250927454
+  },
+  {
+    "pair": "enmk",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_sha256": "b2ac522e84b2f2e84d5b7ac2f285a65df352d2afeb5734518e057f2b41b4fc00",
+    "input": "I will send the documents tomorrow.",
+    "output": "Утре ќе ги испратам документите.",
+    "bytes": 78734925
+  },
+  {
+    "pair": "mken",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_sha256": "b49a4557958a46708e61d0545f6c983cb0b77577da9ea9bec220c6213d4b6c8c",
+    "input": "Ќе ги испратам документите утре.",
+    "output": "I'll send the papers tomorrow.",
+    "bytes": 250927454
+  },
+  {
+    "pair": "enbe",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+    "source_sha256": "10cb109270a1c96c7a43434f3ebc6d7eac73401d1ef204136e3ea5b198435679",
+    "input": "I will send the documents tomorrow.",
+    "output": "Заўтра дакументы буду высылаць.",
+    "bytes": 253348788
+  },
+  {
+    "pair": "been",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+    "source_sha256": "fdbb033dacabfb410887ba667c0727f1ddcf5d7f6c23fd5f22cecd1ff2123f3e",
+    "input": "Я дашлю дакументы заўтра.",
+    "output": "I'll send the papers tomorrow.",
+    "bytes": 252756226
   }
 ]

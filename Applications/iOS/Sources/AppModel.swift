@@ -1005,7 +1005,7 @@ import MurmurTranslation
         guard canReleaseMemory, !busy else { return }
         await releaseModels()
         do {
-            let choice = speechModel.supports(note.sourceLanguage) ? speechModel : (note.sourceLanguage == "ar" ? .cohereArabic : .parakeet)
+            let choice = SpeechRecognitionProfile.model(speechModel, for: note.sourceLanguage)
             try audioImports.retranscribe(note, model: choice)
             showAudioImport = true
             await startAudioImport(note.id)

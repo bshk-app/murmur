@@ -68,7 +68,7 @@ final class PhoneMLXCorrector {
         try Task.checkCancellation()
         return Device.withDefaultDevice(.gpu) {
             let parameters = STTGenerateParameters(maxTokens: 448, temperature: 0,
-                topP: 1, topK: 0, verbose: false, language: language, chunkDuration: 30, minChunkDuration: 0.1)
+                topP: 1, topK: 0, verbose: false, language: SpeechModelChoice.whisperLanguageCode(language), chunkDuration: 30, minChunkDuration: 0.1)
             let result = model.generate(audio: MLXArray(samples), generationParameters: parameters)
             return result.text
         }

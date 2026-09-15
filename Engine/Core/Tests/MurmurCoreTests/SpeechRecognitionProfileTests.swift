@@ -42,4 +42,13 @@ final class SpeechRecognitionProfileTests: XCTestCase {
         XCTAssertNil(candidate.finalStage)
         XCTAssertNil(candidate.evidenceSHA256)
     }
+
+    func testUnsupportedChosenModelFallsBackToTheLanguageBaseline() {
+        for language in SpeechModelChoice.whisperLanguages {
+            XCTAssertEqual(SpeechRecognitionProfile.model(.parakeet, for: language), .whisper, language)
+        }
+        XCTAssertEqual(SpeechRecognitionProfile.model(.parakeet, for: "ar"), .cohereArabic)
+        XCTAssertEqual(SpeechRecognitionProfile.model(.whisper, for: "de"), .whisper)
+        XCTAssertEqual(SpeechRecognitionProfile.model(.parakeet, for: "de"), .parakeet)
+    }
 }

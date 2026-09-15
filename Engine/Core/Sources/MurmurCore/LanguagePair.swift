@@ -29,11 +29,13 @@ extension LanguagePair {
         "hu", "it", "nl", "pl", "pt", "ru", "sl", "uk",
     ]
 
-    /// All official EU languages, plus the existing Russian and Ukrainian.
+    /// All official EU languages, plus Russian and Ukrainian, plus languages the
+    /// same OPUS checkpoints already carry (Catalan has its own en→ca model).
     /// Independent of the smaller Mozilla preview-model catalog.
     public static let qualityLanguages: Set<String> = [
         "bg", "cs", "da", "de", "el", "en", "es", "et", "fi", "fr", "ga", "hr", "hu",
         "it", "lt", "lv", "mt", "nl", "pl", "pt", "ro", "sk", "sl", "sv", "ru", "uk",
+        "be", "bs", "ca", "is", "mk", "nb", "sr",
     ]
 
     public static func qualityRoute(from source: String, to target: String) -> Route? {

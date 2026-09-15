@@ -12,7 +12,13 @@ public enum SpeechModelChoice: String, CaseIterable {
         case .whisper: return "Whisper large-v3 turbo"
         }
     }
-    public static let parakeetLanguages = LanguagePair.qualityLanguages.subtracting(["ga"])
+    /// Translation languages Parakeet does not recognize; Whisper transcribes them.
+    public static let whisperLanguages: Set<String> = ["be", "bs", "ca", "is", "mk", "nb", "sr"]
+    public static let parakeetLanguages = LanguagePair.qualityLanguages.subtracting(whisperLanguages.union(["ga"]))
+    /// Whisper names Norwegian `no`; iOS names written Norwegian Bokmål `nb`.
+    public static func whisperLanguageCode(_ language: String?) -> String? {
+        language == "nb" ? "no" : language
+    }
     public static func languages(forStorageID id: String, selected: [String]) -> [String] {
         selected.filter { code in
             switch id {

@@ -279,6 +279,76 @@ https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zle-en
 License: cc-by-4.0
 Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zle-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
 
+enca: Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-cat+oci+spa/opusTCv20210807+bt_transformer-big_2022-03-13.zip
+
+caen: Helsinki-NLP/opus-mt-tc-big-cat_oci_spa-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-cat_oci_spa-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/cat+oci+spa-eng/opusTCv20210807+bt_transformer-big_2022-03-13.zip
+
+ennb: Helsinki-NLP/opus-mt-tc-big-en-gmq
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-gmq
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
+nben: Helsinki-NLP/opus-mt-tc-big-gmq-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-gmq-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/gmq-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip
+
+enis: Helsinki-NLP/opus-mt-tc-big-en-gmq
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-gmq
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
+isen: Helsinki-NLP/opus-mt-tc-big-gmq-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-gmq-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/gmq-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip
+
+ensr: Helsinki-NLP/opus-mt-en-zls
+https://huggingface.co/Helsinki-NLP/opus-mt-en-zls
+License: apache-2.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip
+
+sren: Helsinki-NLP/opus-mt-tc-big-zls-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zls-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
+enbs: Helsinki-NLP/opus-mt-en-zls
+https://huggingface.co/Helsinki-NLP/opus-mt-en-zls
+License: apache-2.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip
+
+bsen: Helsinki-NLP/opus-mt-tc-big-zls-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zls-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
+enmk: Helsinki-NLP/opus-mt-en-zls
+https://huggingface.co/Helsinki-NLP/opus-mt-en-zls
+License: apache-2.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip
+
+mken: Helsinki-NLP/opus-mt-tc-big-zls-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zls-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
+enbe: Helsinki-NLP/opus-mt-tc-big-en-zle
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-zle
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zle/opusTCv20210807+bt_transformer-big_2022-03-13.zip
+
+been: Helsinki-NLP/opus-mt-tc-big-zle-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zle-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zle-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
+
 fien: Helsinki-NLP/opus-mt-tc-big-fi-en
 https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-fi-en
 License: CC-BY-4.0

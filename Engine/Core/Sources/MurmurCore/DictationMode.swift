@@ -19,9 +19,11 @@ extension DictationMode {
     ///
     /// Written as language codes without regions: the picker offers `zh` and
     /// `zh-Hans` for one prompt id, and both must gate the same way.
-    public static let languagesWithoutLiveDraft: Set<String> = [
+    /// Whisper-only languages join them: Nemotron's preview was never measured on
+    /// them, so they get the batch transcript without a draft.
+    public static let languagesWithoutLiveDraft: Set<String> = Set([
         "ar", "ja", "ko", "zh", "vi",
-    ]
+    ]).union(SpeechModelChoice.whisperLanguages)
 
     /// Whether this language may run the fast lane at all.
     public static func allowsLiveDraft(language: String?) -> Bool {

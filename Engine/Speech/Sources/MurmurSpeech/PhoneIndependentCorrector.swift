@@ -53,7 +53,7 @@ actor PhoneIndependentCorrector {
             await onExecutionStarted()
             if let whisper {
                 let results = try await whisper.transcribe(audioArray: samples,
-                    decodeOptions: DecodingOptions(verbose: false, task: .transcribe, language: language,
+                    decodeOptions: DecodingOptions(verbose: false, task: .transcribe, language: SpeechModelChoice.whisperLanguageCode(language),
                                                    temperatureFallbackCount: 0, withoutTimestamps: true))
                 return results.map(\.text).joined(separator: " ").trimmingCharacters(in: .whitespacesAndNewlines)
             }

@@ -10,8 +10,12 @@ const rows = [
 ['mt','en-mt','mt-en'],['nl','en-nl','nl-en'],['pl','en-zlw','tc-big-zlw-en','>>pol<<'],
 ['pt','tc-big-en-pt','ROMANCE-en','>>por<<'],['ro','tc-big-en-ro','ROMANCE-en'],
 ['sk','en-sk','tc-big-ces_slk-en'],['sl','en-zls','tc-big-zls-en','>>slv<<'],
-['sv','tc-big-en-gmq','tc-big-gmq-en','>>swe<<'],['uk','tc-big-en-zle','tc-big-zle-en','>>ukr<<']];
-const samples = {bg:'Ще изпратя документите утре.',cs:'Pošlu dokumenty zítra.',da:'Jeg sender dokumenterne i morgen.',de:'Ich schicke die Dokumente morgen.',el:'Θα στείλω τα έγγραφα αύριο.',es:'Enviaré los documentos mañana.',et:'Saadan dokumendid homme.',fr:'Je vous enverrai les documents demain.',ga:'Seolfaidh mé na doiciméid amárach.',hr:'Poslat ću dokumente sutra.',hu:'Holnap elküldöm a dokumentumokat.',it:'Invierò i documenti domani.',lt:'Dokumentus atsiųsiu rytoj.',lv:'Es nosūtīšu dokumentus rīt.',mt:'Nibgħat id-dokumenti għada.',nl:'Ik stuur de documenten morgen.',pl:'Wyślę dokumenty jutro.',pt:'Vou enviar os documentos amanhã.',ro:'Voi trimite documentele mâine.',sk:'Pošlem dokumenty zajtra.',sl:'Dokumente bom poslal jutri.',sv:'Jag skickar dokumenten i morgon.',uk:'Я надішлю документи завтра.'};
+['sv','tc-big-en-gmq','tc-big-gmq-en','>>swe<<'],['uk','tc-big-en-zle','tc-big-zle-en','>>ukr<<'],
+['ca','tc-big-en-cat_oci_spa','tc-big-cat_oci_spa-en','>>cat<<'],['nb','tc-big-en-gmq','tc-big-gmq-en','>>nob<<'],
+['is','tc-big-en-gmq','tc-big-gmq-en','>>isl<<'],['sr','en-zls','tc-big-zls-en','>>srp_Cyrl<<'],
+['bs','en-zls','tc-big-zls-en','>>bos_Latn<<'],['mk','en-zls','tc-big-zls-en','>>mkd<<'],
+['be','tc-big-en-zle','tc-big-zle-en','>>bel<<']];
+const samples = {bg:'Ще изпратя документите утре.',cs:'Pošlu dokumenty zítra.',da:'Jeg sender dokumenterne i morgen.',de:'Ich schicke die Dokumente morgen.',el:'Θα στείλω τα έγγραφα αύριο.',es:'Enviaré los documentos mañana.',et:'Saadan dokumendid homme.',fr:'Je vous enverrai les documents demain.',ga:'Seolfaidh mé na doiciméid amárach.',hr:'Poslat ću dokumente sutra.',hu:'Holnap elküldöm a dokumentumokat.',it:'Invierò i documenti domani.',lt:'Dokumentus atsiųsiu rytoj.',lv:'Es nosūtīšu dokumentus rīt.',mt:'Nibgħat id-dokumenti għada.',nl:'Ik stuur de documenten morgen.',pl:'Wyślę dokumenty jutro.',pt:'Vou enviar os documentos amanhã.',ro:'Voi trimite documentele mâine.',sk:'Pošlem dokumenty zajtra.',sl:'Dokumente bom poslal jutri.',sv:'Jag skickar dokumenten i morgon.',uk:'Я надішлю документи завтра.',ca:'Enviaré els documents demà.',nb:'Jeg sender dokumentene i morgen.',is:'Ég sendi skjölin á morgun.',sr:'Послаћу документе сутра.',bs:'Poslat ću dokumente sutra.',mk:'Ќе ги испратам документите утре.',be:'Я дашлю дакументы заўтра.'};
 const prior = fs.existsSync('Engine/Translation/Catalog/eu-opus-sources.json') ? JSON.parse(fs.readFileSync('Engine/Translation/Catalog/eu-opus-sources.json')) : [];
 const cards = new Map(), output=[];
 for (const [lang, forward, reverse, tag=''] of rows) {

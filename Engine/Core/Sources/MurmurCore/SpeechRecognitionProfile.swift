@@ -53,6 +53,10 @@ public struct SpeechRecognitionProfile {
         if language == "ar" { return .cohereArabic }
         return SpeechModelChoice.parakeet.supports(language) ? .parakeet : .whisper
     }
+    /// Keeps a chosen model that can recognize the language, else falls back to its baseline.
+    public static func model(_ current: SpeechModelChoice, for language: String) -> SpeechModelChoice {
+        current.supports(language) ? current : baselineModel(language: language)
+    }
     /// Old versions persisted recommendations and user selections in one field.
     /// A saved recommendation stays automatic; a non-default choice is retained.
     public static func selectionIsExplicit(savedFlag: Bool?, savedModel: SpeechModelChoice?, language: String) -> Bool {

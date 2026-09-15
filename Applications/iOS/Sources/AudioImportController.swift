@@ -51,7 +51,7 @@ import MurmurSpeech
         guard let i = jobs.firstIndex(where: { $0.id == id }), (jobs[i].segments.isEmpty || jobs[i].status == .completed && jobs[i].text.isEmpty), activeID != id else { return }
         jobs[i].language = language
         let current = SpeechModelChoice(rawValue: jobs[i].model) ?? .parakeet
-        if !current.supports(language) { jobs[i].model = (language == "ar" ? SpeechModelChoice.cohereArabic : .parakeet).rawValue }
+        jobs[i].model = SpeechRecognitionProfile.model(current, for: language).rawValue
         do { try jobs[i].save() } catch { self.error = error.localizedDescription }
     }
     func start(_ id: UUID) {

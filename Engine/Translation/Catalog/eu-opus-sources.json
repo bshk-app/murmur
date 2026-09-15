@@ -508,5 +508,159 @@
     "model_card_license": "cc-by-4.0",
     "sample_input": "Я надішлю документи завтра.",
     "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enca",
+    "from": "en",
+    "to": "ca",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-cat_oci_spa",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-cat+oci+spa/opusTCv20210807+bt_transformer-big_2022-03-13.zip",
+    "target_tag": ">>cat<<",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Enviaré els documents demà."
+  },
+  {
+    "pair": "caen",
+    "from": "ca",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-cat_oci_spa-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/cat+oci+spa-eng/opusTCv20210807+bt_transformer-big_2022-03-13.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Enviaré els documents demà.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "ennb",
+    "from": "en",
+    "to": "nb",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-gmq",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": ">>nob<<",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Jeg sender dokumentene i morgen."
+  },
+  {
+    "pair": "nben",
+    "from": "nb",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmq-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/gmq-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Jeg sender dokumentene i morgen.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enis",
+    "from": "en",
+    "to": "is",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-gmq",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-gmq/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": ">>isl<<",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Ég sendi skjölin á morgun."
+  },
+  {
+    "pair": "isen",
+    "from": "is",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-gmq-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/gmq-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Ég sendi skjölin á morgun.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "ensr",
+    "from": "en",
+    "to": "sr",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip",
+    "target_tag": ">>srp_Cyrl<<",
+    "model_card_license": "apache-2.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Послаћу документе сутра."
+  },
+  {
+    "pair": "sren",
+    "from": "sr",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Послаћу документе сутра.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enbs",
+    "from": "en",
+    "to": "bs",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip",
+    "target_tag": ">>bos_Latn<<",
+    "model_card_license": "apache-2.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Poslat ću dokumente sutra."
+  },
+  {
+    "pair": "bsen",
+    "from": "bs",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Poslat ću dokumente sutra.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enmk",
+    "from": "en",
+    "to": "mk",
+    "checkpoint": "Helsinki-NLP/opus-mt-en-zls",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zls/opus2m-2020-08-02.zip",
+    "target_tag": ">>mkd<<",
+    "model_card_license": "apache-2.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Ќе ги испратам документите утре."
+  },
+  {
+    "pair": "mken",
+    "from": "mk",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zls-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/zls-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Ќе ги испратам документите утре.",
+    "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enbe",
+    "from": "en",
+    "to": "be",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-zle",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-zle/opusTCv20210807+bt_transformer-big_2022-03-13.zip",
+    "target_tag": ">>bel<<",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "Я дашлю дакументы заўтра."
+  },
+  {
+    "pair": "been",
+    "from": "be",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-zle-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/zle-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "Я дашлю дакументы заўтра.",
+    "sample_reference": "I will send the documents tomorrow."
   }
 ]

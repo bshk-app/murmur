@@ -99,7 +99,7 @@ struct NoteBadge: View {
 }
 enum AppLanguages {
     static var all: [(code: String, name: String)] {
-        (SpeechModelChoice.parakeetLanguages.union(["ar"])).sorted().map { code in
+        (SpeechModelChoice.parakeetLanguages.union(SpeechModelChoice.whisperLanguages).union(["ar"])).sorted().map { code in
             (code, Locale.current.localizedString(forLanguageCode: code)?.localizedCapitalized ?? code.uppercased())
         }
     }
