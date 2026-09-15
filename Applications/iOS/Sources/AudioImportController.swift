@@ -14,6 +14,7 @@ import MurmurSpeech
     var receivingFilename: String?
     @ObservationIgnored private var queueSuspended = true
     @ObservationIgnored private var pauseIntent = AudioImportPauseIntent()
+    @ObservationIgnored private var backgroundGrace: UIBackgroundTaskIdentifier = .invalid
     var fraction: Double = 0
     @ObservationIgnored private var work: Task<Void, Never>?
     @ObservationIgnored private let repository = NoteRepository(directory: StoragePaths.notes)
@@ -94,6 +95,7 @@ import MurmurSpeech
             }
             await engine.close()
             activeID = nil; work = nil; pausing = false; preparing = false
+            releaseBackgroundGrace()
             startNextQueued()
         }
     }
@@ -103,6 +105,38 @@ import MurmurSpeech
         start(next)
     }
     private func ready() { preparing = false }
+    /// Leaving the app no longer stops the work where it stands. A note from the
+    /// watch is usually seconds from done, and iOS grants long enough to finish it
+    /// and say so. The import pauses only when that runs out, which reads to the
+    /// rest of the app exactly like leaving used to.
+    func continueInBackground() {
+        guard activeID != nil, backgroundGrace == .invalid else { pause(userInitiated: false); return }
+        queueSuspended = true
+        backgroundGrace = UIApplication.shared.beginBackgroundTask(withName: "Audio import") { [weak self] in
+            // Called on the main thread, and the assertion has to be given back
+            // before this returns or the system kills the app outright.
+            MainActor.assumeIsolated {
+                self?.pause(userInitiated: false)
+                self?.releaseBackgroundGrace()
+            }
+        }
+    }
+
+    /// An import that survived the trip was never really suspended, so the queue
+    /// behind it must not stay blocked. Only an expiry leaves it suspended, and
+    /// that path does not come through here.
+    func returnedToForeground() {
+        if activeID != nil { queueSuspended = false }
+        releaseBackgroundGrace()
+    }
+
+    /// Held only while the app is away; in front there is nothing to extend.
+    private func releaseBackgroundGrace() {
+        guard backgroundGrace != .invalid else { return }
+        UIApplication.shared.endBackgroundTask(backgroundGrace)
+        backgroundGrace = .invalid
+    }
+
     /// Leaving the app pauses the same way a tap does, but only a tap means the
     /// user wants it stopped. A watch recording resumes by itself otherwise.
     /// The reason is recorded here and written in `finish`, after any checkpoint
