@@ -768,3 +768,14 @@
 "Speech translation test" = "Test de traduction vocale";
 
 "Tap to see another animation" = "Touchez pour voir une autre animation";
+"Stop and send" = "Arrêter et envoyer";
+"Sending to iPhone…" = "Envoi vers l’iPhone…";
+"Prepare this language on iPhone first" = "Préparez d’abord cette langue sur l’iPhone";
+"From Apple Watch" = "Depuis l’Apple Watch";
+"Received from Apple Watch" = "Reçu de l’Apple Watch";
+"Recording from Apple Watch received" = "Enregistrement de l’Apple Watch reçu";
+"Transcription starts when you open Murmator." = "La transcription démarre à l’ouverture de Murmator.";
+"Start a recording on Apple Watch and send it to iPhone." = "Enregistrez sur l’Apple Watch et envoyez vers l’iPhone.";
+"Record on Apple Watch" = "Enregistrer sur l’Apple Watch";
+"Start a recording from the watch face." = "Lancez un enregistrement depuis le cadran.";
+"Local mode" = "Mode local";

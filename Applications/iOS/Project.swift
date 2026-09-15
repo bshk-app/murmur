@@ -14,15 +14,50 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             "com.apple.developer.translation-ui-provider.network-access": true,
             "NSMicrophoneUsageDescription": "Murmator records and transcribes your voice on this device.",
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
-            "NSSupportsLiveActivities": true, "UIBackgroundModes": ["audio"], "UILaunchScreen": [:],
+            "NSSupportsLiveActivities": true,
+            // "audio" covers dictation. "fetch" is what makes the app eligible for
+            // Background App Refresh, and without that iOS never wakes it to take a
+            // recording from the watch: the files queue until someone opens the app.
+            // "processing" lets the scheduler hand us minutes when the phone is
+            // idle, which is the only window a cold model load fits into.
+            "UIBackgroundModes": ["audio", "fetch", "processing"],
+            "BGTaskSchedulerPermittedIdentifiers": ["app.bshk.murmur.ios.transcribe"],
+            "UILaunchScreen": [:],
             "CFBundleURLTypes": [["CFBundleURLName": "app.bshk.murmur.ios", "CFBundleURLSchemes": ["murmur"]]],
             "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
             "UIFileSharingEnabled": true, "LSSupportsOpeningDocumentsInPlace": false,
             "CFBundleDocumentTypes": [["CFBundleTypeName": "Audio recording", "CFBundleTypeRole": "Viewer", "LSHandlerRank": "Alternate", "LSItemContentTypes": ["public.audio"]]]
         ]), sources: ["Sources/**", "Shared/**", "PageTranslation/PageL10n.swift"], resources: ["Resources/**", "PageTranslation/Resources/Localizations/**"],
         entitlements: .file(path: "MurMur.entitlements"),
-        dependencies: [.package(product:"MurmurCore"), .package(product:"MurmurSpeech"), .package(product:"MurmurTranslation"), .target(name:"MurMurWidgets"), .target(name:"MurMurKeyboard"), .target(name:"MurMurTranslationProvider"), .target(name:"MurMurPageTranslation")],
+        dependencies: [.package(product:"MurmurCore"), .package(product:"MurmurSpeech"), .package(product:"MurmurTranslation"), .target(name:"MurMurWidgets"), .target(name:"MurMurKeyboard"), .target(name:"MurMurTranslationProvider"), .target(name:"MurMurPageTranslation"), .target(name:"MurmatorWatch")],
         settings: .settings(base: ["SWIFT_VERSION":"5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE":"Automatic", "ASSETCATALOG_COMPILER_APPICON_NAME":"AppIcon"])),
+    // Records on the wrist and hands the file to the phone over WatchConnectivity.
+    // Deliberately free of the Engine packages: they build for macOS/iOS only, and
+    // recognition stays on the phone.
+    .target(name: "MurmatorWatch", destinations: [.appleWatch], product: .app,
+        bundleId: "app.bshk.murmur.ios.watchkitapp", deploymentTargets: .watchOS("11.0"),
+        infoPlist: .extendingDefault(with: [
+            "CFBundleDisplayName": "Murmator", "CFBundleShortVersionString": .string(releaseVersion), "CFBundleVersion": .string(releaseBuild),
+            "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
+            "WKApplication": true, "WKCompanionAppBundleIdentifier": "app.bshk.murmur.ios",
+            "NSMicrophoneUsageDescription": "Murmator records and transcribes your voice on this device.",
+            "UIBackgroundModes": ["audio"],
+            "CFBundleURLTypes": [["CFBundleURLName": "app.bshk.murmur.ios.watchkitapp", "CFBundleURLSchemes": ["murmur"]]]]),
+        sources: ["Watch/**", "Shared/Localization.swift", "Shared/WatchHandoff.swift"],
+        resources: ["Watch/Resources/**", "Resources/Localizations/**", "Resources/PrivacyInfo.xcprivacy"],
+        dependencies: [.target(name: "MurmatorWatchWidgets")],
+        settings: .settings(base: ["SWIFT_VERSION": "5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE": "Automatic", "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon"])),
+    // One complication offering one action. It shares the intent with the app so
+    // the face, the Action Button and Shortcuts all enter the same way.
+    .target(name: "MurmatorWatchWidgets", destinations: [.appleWatch], product: .appExtension,
+        bundleId: "app.bshk.murmur.ios.watchkitapp.complication", deploymentTargets: .watchOS("11.0"),
+        infoPlist: .extendingDefault(with: [
+            "CFBundleDisplayName": "Murmator", "CFBundleShortVersionString": .string(releaseVersion), "CFBundleVersion": .string(releaseBuild),
+            "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
+            "NSExtension": ["NSExtensionPointIdentifier": "com.apple.widgetkit-extension"]]),
+        sources: ["WatchWidgets/**"],
+        resources: ["Watch/Resources/**", "Resources/Localizations/**", "Resources/PrivacyInfo.xcprivacy"],
+        settings: .settings(base: ["SWIFT_VERSION": "5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE": "Automatic", "APPLICATION_EXTENSION_API_ONLY": "YES"])),
     .target(name:"MurMurWidgets", destinations:[.iPhone,.iPad], product:.appExtension,
         bundleId:"app.bshk.murmur.ios.widgets", deploymentTargets:.iOS("18.0"),
         infoPlist:.extendingDefault(with:["CFBundleDisplayName":"Murmator", "CFBundleShortVersionString":.string(releaseVersion), "CFBundleVersion":.string(releaseBuild), "NSExtension":["NSExtensionPointIdentifier":"com.apple.widgetkit-extension"]]),

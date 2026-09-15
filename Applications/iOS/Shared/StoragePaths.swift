@@ -7,6 +7,9 @@ enum StoragePaths {
     static var notes: URL { (shared ?? support).appendingPathComponent("NoteLibrary") }
     static var recordings: URL { notes.appendingPathComponent("Recordings") }
     static var models: URL { support.appendingPathComponent("Models") }
+    /// Recordings the watch delivered, held until the import owns a durable copy.
+    /// App-private on purpose: nothing outside this process should see them.
+    static var watchInbox: URL { support.appendingPathComponent("WatchInbox") }
     static var translation: URL { TranslationPaths.models }
     static var draft: URL { notes.appendingPathComponent("draft.json") }
     static var latest: URL? { notes.appendingPathComponent("latest-transcript.txt") }

@@ -768,3 +768,14 @@
 "Speech translation test" = "Puhekäännöksen testaus";
 
 "Tap to see another animation" = "Näet toisen animaation napauttamalla";
+"Stop and send" = "Lopeta ja lähetä";
+"Sending to iPhone…" = "Lähetetään iPhoneen…";
+"Prepare this language on iPhone first" = "Valmistele tämä kieli ensin iPhonessa";
+"From Apple Watch" = "Apple Watchista";
+"Received from Apple Watch" = "Vastaanotettu Apple Watchista";
+"Recording from Apple Watch received" = "Tallenne Apple Watchista vastaanotettu";
+"Transcription starts when you open Murmator." = "Litterointi alkaa, kun avaat Murmatorin.";
+"Start a recording on Apple Watch and send it to iPhone." = "Tallenna Apple Watchilla ja lähetä iPhoneen.";
+"Record on Apple Watch" = "Tallenna Apple Watchilla";
+"Start a recording from the watch face." = "Aloita tallennus kellotaulusta.";
+"Local mode" = "Paikallinen tila";

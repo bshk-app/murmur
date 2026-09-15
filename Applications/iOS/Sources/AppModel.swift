@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import BackgroundTasks
 import ActivityKit
 import MurmurCore
 import MurmurSpeech
@@ -38,7 +39,9 @@ import MurmurTranslation
         case "settings": showSettings = true
         case "safari-setup": showSafariSetup = true
         case "languages": showLanguages = true
-        case "record": Task { await keyboard.stopAndEnd(); await start() }
+        // Widgets, Siri and the Action Button all land here. Each is an explicit
+        // "record now", so the warm-up ends in capture, not in a button to tap.
+        case "record": Task { await keyboard.stopAndEnd(); await start(immediately: true) }
         case "translate": Task { await keyboard.stopAndEnd(); showTranslation = true }
         case "storage": showStorage = true
         case "memory": showMemory = true
@@ -76,6 +79,194 @@ import MurmurTranslation
         audioImports.start(id)
     }
     func openImport(for note: VoiceNote) { audioImports.selectedID = note.id; requestUtilityRoute("audio-import") }
+    @ObservationIgnored private let watch = WatchSessionBridge()
+    @ObservationIgnored private var drainingWatch = false
+    init() {
+        watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
+        watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
+        audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
+        audioImports.onTiming = { [weak self] audio, decode, load in self?.learnSpeechTimings(audio, decode, load) }
+        registerTranscriptionTask()
+        watch.activate()
+    }
+    /// A recording made on the wrist answers back there, so the watch confirms the
+    /// note exists without the user reaching for the phone.
+    private func reportTranscriptToWatch(_ job: AudioImportJob) {
+        guard job.origin == .watch, !job.text.isEmpty else { return }
+        watch.send(transcript: job.text, for: job.filename)
+        watch.announceCompletion(recording: job.filename)
+    }
+    /// Tells the watch which language the phone would recognise, and whether it can.
+    func publishWatchContext() {
+        watch.publish(languageName: AppLanguages.name(source), speechReady: languageLibrary.isPrepared("speech:" + source))
+    }
+    /// Hands every recording the watch delivered to the import, then transcribes
+    /// what it may. Safe to call in the background: only the start is gated on
+    /// being in front, and a recording the import refuses keeps its staged file
+    /// for the next call.
+    func receiveWatchRecordings() async {
+        await requestWatchNotifications()
+        guard !drainingWatch else { return }
+        drainingWatch = true
+        defer { drainingWatch = false }
+        var attempted: Set<URL> = []
+        var arrived = false
+        while let url = WatchSessionBridge.stagedRecordings().first(where: { !attempted.contains($0) }) {
+            attempted.insert(url)
+            await receiveAudio(url)
+            arrived = true
+            if UIApplication.shared.applicationState == .active { await startWatchImport() }
+        }
+        guard UIApplication.shared.applicationState != .active else {
+            await startWatchImport()
+            return
+        }
+        // One banner, not two: either the note is being transcribed now and the
+        // finish will say so, or it waits and the arrival says that instead.
+        if !startWatchImportInBackground(), arrived {
+            watch.announceArrival()
+            // Too long for the wake, so ask the scheduler for a wider window.
+            scheduleTranscriptionTask()
+        }
+    }
+    // MARK: - Transcribing while the phone is put away
+
+    /// A wake from the watch grants about fifteen seconds, and a cold model load
+    /// alone takes fourteen of them. The scheduler is the only window wide enough,
+    /// at the price of running on the system's timetable rather than ours.
+    static let transcriptionTaskID = "app.bshk.murmur.ios.transcribe"
+
+    private func registerTranscriptionTask() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.transcriptionTaskID, using: nil) { [weak self] task in
+            Task { @MainActor in await self?.runScheduledTranscription(task) }
+        }
+    }
+
+    /// Asked for whenever a recording is left waiting. Submitting the same
+    /// identifier twice replaces the pending request rather than queueing another.
+    func scheduleTranscriptionTask() {
+        guard waitingWatchNote() != nil else { return }
+        let request = BGProcessingTaskRequest(identifier: Self.transcriptionTaskID)
+        request.requiresNetworkConnectivity = false
+        request.requiresExternalPower = false
+        // Refused when the system has had enough of us; the next foreground pass
+        // simply asks again.
+        try? BGTaskScheduler.shared.submit(request)
+    }
+
+    @MainActor private func runScheduledTranscription(_ task: BGTask) async {
+        // Chained first: expiry can cut this short at any point, and the next slot
+        // has to be asked for while we still can.
+        scheduleTranscriptionTask()
+        task.expirationHandler = {
+            Task { @MainActor [weak self] in self?.audioImports.pause(userInitiated: false) }
+        }
+        var transcribed = false
+        while let job = waitingWatchNote() {
+            guard audioImports.activeID == nil, !audioImports.receiving, !keyboard.isActive, canReleaseMemory else { break }
+            await releaseModels()
+            audioImports.start(job.id, allowBackground: true)
+            guard audioImports.activeID == job.id else { break }
+            await audioImports.waitForCompletion()
+            transcribed = true
+        }
+        task.setTaskCompleted(success: transcribed)
+    }
+
+    /// The oldest watch recording that could run if something were willing to run it.
+    private func waitingWatchNote() -> AudioImportJob? {
+        audioImports.jobs
+            .filter { $0.origin == .watch && ($0.autoStart ?? true)
+                      && ($0.status == .pending || $0.status == .paused)
+                      && languageLibrary.isPrepared("speech:" + $0.language) }
+            .min { $0.createdAt < $1.createdAt }
+    }
+
+    /// What this phone has measured about its own speed. Persisted because the
+    /// decision below happens seconds after a cold launch, with nothing else to
+    /// go on.
+    private var speechTimings: SpeechTimings {
+        get {
+            guard let data = UserDefaults.standard.data(forKey: "speechTimings"),
+                  let value = try? JSONDecoder().decode(SpeechTimings.self, from: data) else { return SpeechTimings() }
+            return value
+        }
+        set {
+            if let data = try? JSONEncoder().encode(newValue) { UserDefaults.standard.set(data, forKey: "speechTimings") }
+        }
+    }
+
+    private func learnSpeechTimings(_ audioSeconds: Double, _ decodeSeconds: Double, _ loadSeconds: Double) {
+        var timings = speechTimings
+        timings.record(audioSeconds: audioSeconds, decodeSeconds: decodeSeconds, loadSeconds: loadSeconds)
+        speechTimings = timings
+    }
+
+    /// A recording that arrived while the phone slept is transcribed there and
+    /// then when the estimate says it will finish inside the grace period. Being
+    /// cut off is survivable but wastes a model load, so anything longer waits and
+    /// the arrival banner says so.
+    private func startWatchImportInBackground() -> Bool {
+        guard audioImports.activeID == nil, !audioImports.receiving, !keyboard.isActive, canReleaseMemory else { return false }
+        let waiting = audioImports.jobs.filter {
+            $0.origin == .watch && ($0.autoStart ?? true) && ($0.status == .pending || $0.status == .paused)
+                && languageLibrary.isPrepared("speech:" + $0.language)
+        }
+        guard let job = waiting.min(by: { $0.createdAt < $1.createdAt }) else { return false }
+        let budget = audioImports.claimBackgroundBudget()
+        let timings = speechTimings
+        let estimate = BackgroundTranscriptionPolicy.Estimate(
+            audioSeconds: Self.audioSeconds(of: job),
+            realTimeFactor: timings.realTimeFactor,
+            modelLoadSeconds: timings.modelLoadSeconds)
+        guard BackgroundTranscriptionPolicy.fitsInBackground(estimate, budgetSeconds: budget) else {
+            audioImports.releaseUnusedBudget()
+            return false
+        }
+        audioImports.start(job.id, allowBackground: true)
+        return audioImports.activeID == job.id
+    }
+
+    /// Read from the file's header rather than decoded: the job only learns its
+    /// own length once transcription runs, which is the decision being made here.
+    private static func audioSeconds(of job: AudioImportJob) -> Double {
+        if job.duration > 0 { return job.duration }
+        guard let file = try? AVAudioFile(forReading: job.audioURL) else { return 0 }
+        return Double(file.length) / file.fileFormat.sampleRate
+    }
+
+    /// Asked outside the drain guard on purpose. A cold launch drains twice, once
+    /// from the notes screen appearing and once from the scene becoming active,
+    /// and the first runs before the app counts as in front. Inside the guard the
+    /// second call returned early, so the question was never put and a watch could
+    /// deliver for days in silence.
+    private func requestWatchNotifications() async {
+        // A recording already in hand justifies the offer even when the watch app
+        // does not report itself as installed.
+        let hasRecordings = !WatchSessionBridge.stagedRecordings().isEmpty
+            || audioImports.jobs.contains { $0.origin == .watch }
+        await watch.requestNotificationAuthorizationIfNeeded(hasRecordings: hasRecordings)
+    }
+
+    /// Chains the recordings: the first one starts, the rest join its queue.
+    private func startWatchImport() async {
+        var attempted: Set<UUID> = []
+        while let id = watchImportCandidate(excluding: attempted) {
+            attempted.insert(id)
+            await startAudioImport(id)
+        }
+    }
+    private func watchImportCandidate(excluding attempted: Set<UUID>) -> UUID? {
+        let candidates = audioImports.jobs
+            .filter { $0.origin == .watch && !attempted.contains($0.id) && ($0.status == .pending || $0.status == .queued || $0.status == .paused) }
+            .map { WatchImportPolicy.Candidate(id: $0.id, createdAt: $0.createdAt, queued: $0.status == .queued,
+                                               autoStart: $0.autoStart ?? true,
+                                               prepared: languageLibrary.isPrepared("speech:" + $0.language)) }
+        return WatchImportPolicy.next(activeID: audioImports.activeID, receiving: audioImports.receiving,
+                                      foreground: UIApplication.shared.applicationState == .active,
+                                      keyboardActive: keyboard.isActive, memoryReleasable: canReleaseMemory,
+                                      candidates: candidates)
+    }
     func importMayUpdate(_ note: VoiceNote) -> Bool { note.transcriptionComplete == false && audioImports.jobs.contains { $0.id == note.id && $0.status != .completed } }
     var showStorage = false
     var storageInventory = ModelStorageInventory()
@@ -392,6 +583,8 @@ import MurmurTranslation
     func publishWidgetState() {
         let status = phase == .preparing || keyboard.state.phase == .preparing || audioImports.preparing || textTranslator.isBusy ? "Preparing…" : hasLoadedModels ? "Ready" : "Inactive"
         MurMurWidgetState(source: source, target: target, status: status).save()
+        // The watch mirrors the same language and readiness this broadcast carries.
+        publishWatchContext()
     }
     var duration: Double { phase == .recording ? Double(capturedFrames) / 16_000 : recordedDuration }
 
@@ -579,7 +772,7 @@ import MurmurTranslation
         phase = .preparing; operation = UUID(); let token = operation
         do {
             try await prepare(token: token, translating: false)
-            if operation == token { languageLibrary.markPrepared("speech:" + source) }
+            if operation == token { languageLibrary.markPrepared("speech:" + source); publishWatchContext() }
         }
         catch { if operation == token { self.error = L10n.text("Could not prepare this language. Please try again.") } }
         if operation == token { phase = .idle; progress = nil; warmingModels = false }
@@ -688,7 +881,10 @@ import MurmurTranslation
         progress = nil; translationFraction = nil
     }
 
-    func start(translating: Bool = false) async {
+    /// `immediately` skips the "Ready, tap Start" pause after a cold warm-up. The
+    /// in-app button keeps it, because a person watching the screen benefits from
+    /// knowing when the microphone opened; a shortcut or button press does not.
+    func start(translating: Bool = false, immediately: Bool = false) async {
         guard !busy else { return }
         recommendModel()
         operation = UUID(); let token = operation
@@ -706,11 +902,11 @@ import MurmurTranslation
             try await prepare(token: token, translating: isTranslation)
             guard operation == token, UIApplication.shared.applicationState == .active,
                   usesDirectTranslation ? directSpeech != nil : speech != nil else { throw CancellationError() }
-            if !usesDirectTranslation { languageLibrary.markPrepared("speech:" + source) }
+            if !usesDirectTranslation { languageLibrary.markPrepared("speech:" + source); publishWatchContext() }
             if isTranslation && !usesDirectTranslation { languageLibrary.markPrepared("translation:" + source + "-" + target) }
             phase = .ready
             detail = L10n.text("Ready. Tap Start recording when you want to speak.")
-            if !needsConfirmation { await confirmRecording() }
+            if !needsConfirmation || immediately { await confirmRecording() }
         } catch {
             if operation == token { phase = .idle; showRecorder = false; self.error = error is CancellationError ? nil : L10n.text("Could not start dictation. Check microphone access and language downloads.") }
         }
