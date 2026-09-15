@@ -48,9 +48,27 @@ import WatchKit
         } catch { self.error = error.localizedDescription }
     }
 
+#if DEBUG
+    @ObservationIgnored private var capturing = false
+    /// Stands in for the phone while a simulator screenshot is taken.
+    func seedForCapture(languageName: String, speechReady: Bool = true, pending: Int = 0,
+                        hasEverReceived: Bool = false, transcript: String? = nil) {
+        capturing = true
+        self.languageName = languageName
+        self.speechReady = speechReady
+        self.pending = pending
+        self.hasEverReceived = hasEverReceived
+        self.transcript = transcript
+    }
+#endif
+
     /// Anything left in the outbox was never confirmed: a transfer that failed, or
     /// a recording the app was killed before handing over.
     private func resend() {
+#if DEBUG
+        // Activation would otherwise reset a seeded transfer count to zero.
+        if capturing { return }
+#endif
         let outstanding = Set(WCSession.default.outstandingFileTransfers.map { $0.file.fileURL.standardizedFileURL })
         let waiting = (try? FileManager.default.contentsOfDirectory(at: Self.outbox, includingPropertiesForKeys: nil)) ?? []
         for url in waiting where !outstanding.contains(url.standardizedFileURL) { transfer(url) }

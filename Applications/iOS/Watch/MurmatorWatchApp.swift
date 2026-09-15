@@ -19,17 +19,16 @@ struct MurmatorWatchShortcuts: AppShortcutsProvider {
         let recorder = WatchRecorder()
         // An interrupted recording takes the same route as a stopped one.
         recorder.onInterrupted = { url in sync.send(url) }
+#if DEBUG
+        WatchCaptureFixture.apply(recorder: recorder, sync: sync)
+#endif
         _sync = State(initialValue: sync)
         _recorder = State(initialValue: recorder)
     }
 
     var body: some Scene {
         WindowGroup {
-            // The language sits in the title bar beside the system clock, so the
-            // watch draws the time and the app never has a second one to keep in sync.
-            NavigationStack {
-                RecordView(recorder: recorder, sync: sync)
-            }
+            RecordView(recorder: recorder, sync: sync)
             .onOpenURL { url in
                 // The complication's tap arrives here, on the face's own terms.
                 if url.host == "record" { WatchRecordingRequest.raise() }

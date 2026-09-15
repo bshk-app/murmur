@@ -21,7 +21,24 @@ import Observation
     @ObservationIgnored private var interruption: (any NSObjectProtocol)?
     @ObservationIgnored private var starting = false
 
-    var elapsed: TimeInterval { recorder?.currentTime ?? 0 }
+    var elapsed: TimeInterval {
+#if DEBUG
+        if let capturedElapsed { return capturedElapsed }
+#endif
+        return recorder?.currentTime ?? 0
+    }
+
+#if DEBUG
+    @ObservationIgnored private var capturedElapsed: TimeInterval?
+    /// Stands in for the microphone while a simulator screenshot is taken.
+    func seedForCapture(recording: Bool, elapsed: TimeInterval, denied: Bool = false) {
+        capturedElapsed = recording ? elapsed : nil
+        lastDuration = elapsed
+        self.recording = recording
+        permissionDenied = denied
+        error = denied ? L10n.text("Allow microphone access in Settings to record a note.") : nil
+    }
+#endif
 
     func start() async {
         // Permission and session activation both suspend, and the button still

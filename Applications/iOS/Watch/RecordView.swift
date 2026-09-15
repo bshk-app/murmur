@@ -21,13 +21,30 @@ struct RecordView: View {
     }
 
     var body: some View {
-        content
-            .containerBackground(dimmed ? Color.black : WatchPalette.background, for: .navigation)
-            .navigationTitle { Text(sync.languageName ?? "").foregroundStyle(WatchPalette.accentText) }
+        VStack(spacing: 0) {
+            header
+            content
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(dimmed ? Color.black : WatchPalette.background)
+        .ignoresSafeArea(edges: .bottom)
             .task { consumeRecordingRequest() }
             .onReceive(NotificationCenter.default.publisher(for: .murmatorWatchRecordRequested)) { _ in
                 consumeRecordingRequest()
             }
+    }
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            Text(sync.languageName ?? "")
+                .font(.system(size: metrics.wide ? 14 : 13, weight: .semibold))
+                .foregroundStyle(dimmed ? WatchPalette.muted : WatchPalette.accentText)
+                .lineLimit(1)
+                .truncationMode(.tail)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 16)
+        .frame(height: metrics.wide ? 26 : 24)
     }
 
     @ViewBuilder private var content: some View {
@@ -64,7 +81,7 @@ struct RecordView: View {
             Text(elapsed(recorder.lastDuration))
                 .font(.system(size: metrics.sentTimer, weight: .medium, design: .monospaced))
                 .foregroundStyle(WatchPalette.muted)
-        case .ready where !sync.hasEverReceived:
+        case .ready where showsIntroduction:
             VStack(spacing: 12) {
                 // The mark is drawn dark for paper. Inverting keeps its internal
                 // drawing, which a single-colour template would flatten to a blob.
@@ -73,13 +90,14 @@ struct RecordView: View {
                     .frame(width: metrics.mascot, height: metrics.mascot)
                     .colorInvert()
                     .opacity(0.46)
-                Text("Audio stayed on this iPhone. Only the text is saved.")
+                Text("Local mode")
                     .font(.system(size: metrics.hint))
                     .foregroundStyle(WatchPalette.muted)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 18)
+            .padding(.vertical, 10)
         default:
             Color.clear
         }
@@ -100,6 +118,7 @@ struct RecordView: View {
         text.font(.system(size: metrics.hint))
             .foregroundStyle(colour)
             .multilineTextAlignment(.center)
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.horizontal, metrics.hintSide)
             .padding(.bottom, metrics.bottom)
     }
@@ -119,7 +138,7 @@ struct RecordView: View {
                 Text("Record").font(.system(size: metrics.recordLabel, weight: .semibold))
             }
             .frame(maxWidth: .infinity)
-            .frame(height: hasHint ? metrics.shortButton : metrics.tallButton)
+            .frame(height: compactAction ? metrics.shortButton : metrics.tallButton)
             .foregroundStyle(WatchPalette.onAccent)
             .background(WatchPalette.accent, in: RoundedRectangle(cornerRadius: metrics.radius))
         }
@@ -218,6 +237,11 @@ struct RecordView: View {
     // MARK: - Hints
 
     private var microphoneDenied: Bool { recorder.permissionDenied }
+    /// Shown until the first answer arrives, in the space the action band leaves.
+    private var showsIntroduction: Bool { stage == .ready && !sync.hasEverReceived }
+    /// The tall button only fits when the content band is empty. Anything else up
+    /// there gets the same room a hint does, or it ends up pinned to the button.
+    private var compactAction: Bool { hasHint || showsIntroduction }
     private var hasHint: Bool {
         recorder.error != nil || sync.error != nil || (stage == .ready && !sync.speechReady)
     }
