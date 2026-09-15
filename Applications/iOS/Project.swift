@@ -14,7 +14,11 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             "com.apple.developer.translation-ui-provider.network-access": true,
             "NSMicrophoneUsageDescription": "Murmator records and transcribes your voice on this device.",
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
-            "NSSupportsLiveActivities": true, "UIBackgroundModes": ["audio"], "UILaunchScreen": [:],
+            "NSSupportsLiveActivities": true,
+            // "audio" covers dictation. "fetch" is what makes the app eligible for
+            // Background App Refresh, and without that iOS never wakes it to take a
+            // recording from the watch: the files queue until someone opens the app.
+            "UIBackgroundModes": ["audio", "fetch"], "UILaunchScreen": [:],
             "CFBundleURLTypes": [["CFBundleURLName": "app.bshk.murmur.ios", "CFBundleURLSchemes": ["murmur"]]],
             "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
             "UIFileSharingEnabled": true, "LSSupportsOpeningDocumentsInPlace": false,
