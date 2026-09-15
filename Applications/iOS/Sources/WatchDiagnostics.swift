@@ -3,18 +3,27 @@ import OSLog
 import UIKit
 import UserNotifications
 
-/// Timing for the watch handover. Written to the unified log and to stdout, so a
-/// Mac can read it live over `devicectl device process launch --console` as well
-/// as afterwards. One call per event and no state of its own: it must not change
-/// what it measures.
+/// Timing for the watch handover, appended to a file inside the app container.
+/// A file rather than a console stream on purpose: the interesting events happen
+/// while the phone is locked and the app is being woken and suspended, which is
+/// exactly when an attached console drops. The file survives all of that and can
+/// be pulled afterwards with `devicectl device copy from`.
 enum WatchDiagnostics {
     private static let logger = Logger(subsystem: "app.bshk.murmur.ios", category: "watch")
-    private static let launched = Date()
+    private static let lock = NSLock()
+    private static let clock: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "HH:mm:ss.SSS"
+        return formatter
+    }()
+
+    static var file: URL { StoragePaths.support.appendingPathComponent("watch-diagnostics.log") }
 
     static func note(_ event: String, _ detail: String = "") {
-        let line = String(format: "[watch +%.1fs] %@ %@", Date().timeIntervalSince(launched), event, detail)
+        let line = "\(clock.string(from: Date())) \(event) \(detail)"
         logger.info("\(line, privacy: .public)")
-        print(line)
+        append(line)
     }
 
     /// The two numbers that decide whether background work can finish at all:
@@ -41,5 +50,25 @@ enum WatchDiagnostics {
         case .ephemeral: return "ephemeral"
         @unknown default: return "unknown"
         }
+    }
+
+    /// Callers arrive from the Watch Connectivity queue as well as the main actor,
+    /// so the appends are serialised rather than interleaved mid-line.
+    private static func append(_ line: String) {
+        guard let data = (line + "\n").data(using: .utf8) else { return }
+        lock.lock()
+        defer { lock.unlock() }
+        let manager = FileManager.default
+        if let handle = try? FileHandle(forWritingTo: file) {
+            defer { try? handle.close() }
+            _ = try? handle.seekToEnd()
+            try? handle.write(contentsOf: data)
+            return
+        }
+        try? manager.createDirectory(at: StoragePaths.support, withIntermediateDirectories: true)
+        try? data.write(to: file, options: .atomic)
+        // Written while the phone is locked, so it must not be sealed until unlock.
+        try? manager.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
+                                   ofItemAtPath: file.path)
     }
 }

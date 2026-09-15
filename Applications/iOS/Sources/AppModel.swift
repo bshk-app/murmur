@@ -81,6 +81,7 @@ import MurmurTranslation
     @ObservationIgnored private let watch = WatchSessionBridge()
     @ObservationIgnored private var drainingWatch = false
     init() {
+        WatchDiagnostics.note("--- app launched ---")
         watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
         watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
         audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
