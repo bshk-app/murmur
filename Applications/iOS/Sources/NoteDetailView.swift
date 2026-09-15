@@ -19,6 +19,8 @@ struct NoteDetailView: View {
     @State private var translationError: String?
     @State private var showingVersions = false
     @FocusState private var editorFocused: Bool
+    /// --mur-text-body: the reader and the editor show the transcript at the same size.
+    private static let bodySize: CGFloat = 17
     private var palette: MurmurPalette { .init(scheme: scheme) }
     private var current: VoiceNote { model.currentNote(note) }
     private var selectedText: String { (showingOriginal ? NoteContent.original : .translation).text(in: current) }
@@ -37,9 +39,7 @@ struct NoteDetailView: View {
                     Color.clear.frame(height: 1).id("note-start")
                     HStack(spacing: 7) {
                         NoteBadge(text: current.targetLanguage.map { "\(current.sourceLanguage.uppercased()) → \($0.uppercased())" } ?? current.sourceLanguage.uppercased())
-                        Text(AudioImportJob.time(current.duration))
-                            .font(.system(size: 11, weight: .medium)).padding(.horizontal, 8).padding(.vertical, 5)
-                            .background(palette.card, in: RoundedRectangle(cornerRadius: 6)).foregroundStyle(palette.secondary)
+                        StatusTag(value: AudioImportJob.time(current.duration))
                     }
                     if let audio = model.audioURL(for: current) {
                         RecordingAudioControls(url: audio, duration: current.duration, disabled: model.busy) {
@@ -60,7 +60,7 @@ struct NoteDetailView: View {
                                 Text("Completed text is saved. Finish transcription before editing this note.").font(.footnote).foregroundStyle(palette.secondary)
                                 DesignButton(title: "Continue transcription") { model.openImport(for: current) }
                             }
-                        }.padding(15).background(MurmurPalette.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 16))
+                        }.padding(15).background(MurmurPalette.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 15))
                     }
                     if editing {
                         VStack(alignment: .leading, spacing: 10) {
@@ -68,17 +68,17 @@ struct NoteDetailView: View {
                             TextEditor(text: $edited).font(.body).scrollContentBackground(.hidden)
                                 .frame(height: 300).focused($editorFocused).accessibilityIdentifier("note-editor")
                                 .onAppear { editorFocused = true }
-                        }.murmurCard(radius: 16, padding: 14)
-                            .overlay(RoundedRectangle(cornerRadius: 16).stroke(MurmurPalette.accent.opacity(0.45)))
+                        }.murmurCard()
+                            .overlay(RoundedRectangle(cornerRadius: 15).stroke(MurmurPalette.accent.opacity(0.45)))
                     } else if showingOriginal || current.translation?.isEmpty != false {
                         if let utterances = current.utterances, !utterances.isEmpty {
                             VStack(alignment: .leading, spacing: 16) {
                                 ForEach(utterances) { entry in
-                                    UtteranceRow(utterance: entry, translated: false, identifier: entry.id == utterances.first?.id ? "note-text" : "note-text-utterance-\(entry.id)")
+                                    UtteranceRow(utterance: entry, translated: false, size: Self.bodySize, identifier: entry.id == utterances.first?.id ? "note-text" : "note-text-utterance-\(entry.id)")
                                 }
                             }
                         } else {
-                        TranscriptText(text: current.text, size: 21, identifier: "note-text")
+                        TranscriptText(text: current.text, size: Self.bodySize, identifier: "note-text")
                         }
                     }
                     if let translation = current.translation, !translation.isEmpty, !showingOriginal || editing {
@@ -87,17 +87,17 @@ struct NoteDetailView: View {
                         if let utterances = current.utterances, !utterances.isEmpty, utterances.allSatisfy({ $0.translation != nil || $0.translationFailed == true }) {
                             VStack(alignment: .leading, spacing: 16) {
                                 ForEach(utterances) { entry in
-                                    UtteranceRow(utterance: entry, translated: true, identifier: entry.id == utterances.first?.id ? "note-translation" : "note-translation-utterance-\(entry.id)")
+                                    UtteranceRow(utterance: entry, translated: true, size: Self.bodySize, identifier: entry.id == utterances.first?.id ? "note-translation" : "note-translation-utterance-\(entry.id)")
                                 }
                             }
-                        } else { TranscriptText(text: translation, identifier: "note-translation").foregroundStyle(palette.ink) }
+                        } else { TranscriptText(text: translation, size: Self.bodySize, identifier: "note-translation").foregroundStyle(palette.ink) }
                         if current.translationIncomplete == true { Text("Translation incomplete").font(.footnote).foregroundStyle(.secondary) }
                         if current.translationNeedsUpdate == true || editing && edited != current.text {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Translation may not match the edited text.").font(.system(size: 13, weight: .semibold))
                             }.frame(maxWidth: .infinity, alignment: .leading).padding(13)
-                                .background(Color(hex: 0xd6603c).opacity(0.1), in: RoundedRectangle(cornerRadius: 14))
-                                .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color(hex: 0xd6603c).opacity(0.35)))
+                                .background(Color(hex: 0xd6603c).opacity(0.1), in: RoundedRectangle(cornerRadius: 15))
+                                .overlay(RoundedRectangle(cornerRadius: 15).stroke(Color(hex: 0xd6603c).opacity(0.35)))
                         }
                     }
                     Color.clear.frame(height: 1).id("note-end")
@@ -139,8 +139,8 @@ struct NoteDetailView: View {
                     } else {
                         PrimaryButton(title: "Share") { sharing = true }.accessibilityIdentifier("share-note")
                         HStack(spacing: 9) {
-                            secondaryButton(copied ? "Copied" : "Copy") { copy() }.accessibilityIdentifier("copy-note")
-                            secondaryButton("Edit") { beginEditing() }.disabled(model.importMayUpdate(current) || translationTask != nil).accessibilityIdentifier("edit-note")
+                            DesignButton(title: copied ? "Copied" : "Copy", kind: .secondary) { copy() }.accessibilityIdentifier("copy-note")
+                            DesignButton(title: "Edit", kind: .secondary) { beginEditing() }.disabled(model.importMayUpdate(current) || translationTask != nil).accessibilityIdentifier("edit-note")
                             Menu {
                                 Picker("Translation", selection: $model.translationQuality) {
                                     ForEach(ProcessingQuality.translationOptions(from: current.sourceLanguage, to: current.targetLanguage ?? (current.sourceLanguage == "en" ? "ru" : "en")), id: \.self) { quality in
@@ -149,8 +149,7 @@ struct NoteDetailView: View {
                                 }
                                 LanguageMenuChoices(codes: model.translationTargets(from: current.sourceLanguage), preferred: TranslationPaths.offlineRoutes.targets(from: current.sourceLanguage), select: translate)
                             } label: {
-                                Text("Translate").font(.system(size: 15, weight: .medium)).frame(maxWidth: .infinity).padding(.vertical, 15)
-                                    .background(palette.card2, in: RoundedRectangle(cornerRadius: 14))
+                                Text("Translate").designButtonSurface(.secondary)
                             }.accessibilityIdentifier("translate-note").disabled(model.busy || model.importMayUpdate(current) || translationTask != nil)
                         }
                     }
@@ -190,11 +189,6 @@ struct NoteDetailView: View {
         if updated.text != edited && updated.translation != nil { updated.translationNeedsUpdate = true }
         updated.text = edited; model.error = nil
         Task { await model.saveEdit(updated); if model.error == nil { editing = false } }
-    }
-    private func secondaryButton(_ title: LocalizedStringKey, action: @escaping () -> Void) -> some View {
-        Button(action: action) { Text(title).font(.system(size: 15, weight: .medium)).frame(maxWidth: .infinity).padding(.vertical, 15)
-            .background(palette.card2, in: RoundedRectangle(cornerRadius: 14)).overlay(RoundedRectangle(cornerRadius: 14).stroke(palette.border)) }
-            .buttonStyle(.plain)
     }
 }
 

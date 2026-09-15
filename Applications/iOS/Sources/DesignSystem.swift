@@ -39,15 +39,38 @@ struct PrimaryButton: View {
 
 enum DesignTone { case neutral, accent, success, error }
 struct StatusTag: View {
-    let title: LocalizedStringKey
+    private let label: Text
     var tone = DesignTone.neutral
     @Environment(\.colorScheme) private var scheme
     @ScaledMetric(relativeTo: .caption) private var size = 11.5
+    init(title: LocalizedStringKey, tone: DesignTone = .neutral) { label = Text(title); self.tone = tone }
+    /// For values the app formats itself — durations, counts — which must not go through the strings table.
+    init(value: String, tone: DesignTone = .neutral) { label = Text(value); self.tone = tone }
     private var color: Color {
         let p = MurmurPalette(scheme: scheme)
         switch tone { case .neutral: return p.secondary; case .accent: return p.accentText; case .success: return scheme == .dark ? Color(hex: 0x8dcca1) : Color(hex: 0x1f6640); case .error: return scheme == .dark ? Color(hex: 0xf0a194) : Color(hex: 0xa52a17) }
     }
-    var body: some View { Text(title).font(.system(size: size, weight: .semibold)).fixedSize(horizontal: false, vertical: true).padding(.horizontal, 8).padding(.vertical, 4).foregroundStyle(color).background(color.opacity(0.13), in: RoundedRectangle(cornerRadius: 6)) }
+    var body: some View { label.font(.system(size: size, weight: .semibold)).fixedSize(horizontal: false, vertical: true).padding(.horizontal, 9).padding(.vertical, 4).foregroundStyle(color).background(color.opacity(0.13), in: RoundedRectangle(cornerRadius: 6)) }
+}
+/// The button chrome on its own, so controls that cannot be a Button — a Menu label — still look like one.
+struct DesignButtonSurface: ViewModifier {
+    var kind = DesignButton.Kind.primary
+    @Environment(\.colorScheme) private var scheme
+    @Environment(\.isEnabled) private var enabled
+    @ScaledMetric(relativeTo: .body) private var size = 15.0
+    func body(content: Content) -> some View {
+        let p = MurmurPalette(scheme: scheme)
+        let destructiveText = Color(hex: scheme == .dark ? 0xf0a194 : 0xc0341f)
+        content
+            .font(.system(size: size, weight: .semibold)).multilineTextAlignment(.center)
+            .padding(.horizontal, 16).padding(.vertical, 13).frame(maxWidth: .infinity, minHeight: kind == .link ? 44 : 48)
+            .foregroundStyle(!enabled ? p.muted : kind == .primary ? Color(hex: 0x241f1c) : kind == .destructive ? destructiveText : kind == .link ? p.accentText : p.ink)
+            .background(enabled && kind == .primary ? MurmurPalette.accent : kind == .link || kind == .destructive ? .clear : p.card2, in: RoundedRectangle(cornerRadius: 13))
+            .overlay(RoundedRectangle(cornerRadius: 13).stroke(kind == .destructive ? destructiveText.opacity(0.32) : kind == .secondary || !enabled ? p.border : .clear))
+    }
+}
+extension View {
+    func designButtonSurface(_ kind: DesignButton.Kind = .primary) -> some View { modifier(DesignButtonSurface(kind: kind)) }
 }
 struct DesignButton: View {
     enum Kind { case primary, secondary, destructive, link }
@@ -55,19 +78,10 @@ struct DesignButton: View {
     var symbol: String? = nil
     var kind = Kind.primary
     let action: () -> Void
-    @Environment(\.colorScheme) private var scheme
-    @Environment(\.isEnabled) private var enabled
-    @ScaledMetric(relativeTo: .body) private var size = 15.0
     var body: some View {
-        let p = MurmurPalette(scheme: scheme)
-        let destructiveText = Color(hex: scheme == .dark ? 0xf0a194 : 0xc0341f)
         Button(action: action) {
             HStack(spacing: 9) { if let symbol { Image(systemName: symbol) }; Text(title).fixedSize(horizontal: false, vertical: true) }
-                .font(.system(size: size, weight: .semibold)).multilineTextAlignment(.center)
-                .padding(.horizontal, 16).padding(.vertical, 13).frame(maxWidth: .infinity, minHeight: kind == .link ? 44 : 48)
-                .foregroundStyle(!enabled ? p.muted : kind == .primary ? Color(hex: 0x241f1c) : kind == .destructive ? destructiveText : kind == .link ? p.accentText : p.ink)
-                .background(enabled && kind == .primary ? MurmurPalette.accent : kind == .link || kind == .destructive ? .clear : p.card2, in: RoundedRectangle(cornerRadius: 13))
-                .overlay(RoundedRectangle(cornerRadius: 13).stroke(kind == .destructive ? destructiveText.opacity(0.32) : kind == .secondary || !enabled ? p.border : .clear))
+                .designButtonSurface(kind)
         }.buttonStyle(.plain)
     }
 }
@@ -95,7 +109,8 @@ struct ProgressTrack: View {
 }
 struct NoteBadge: View {
     let text: String
-    var body: some View { Text(text).font(.caption.weight(.medium)).foregroundStyle(MurmurPalette.accent).padding(.horizontal, 8).padding(.vertical, 5).background(MurmurPalette.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 6)) }
+    @ScaledMetric(relativeTo: .caption) private var size = 11.5
+    var body: some View { Text(text).font(.system(size: size, weight: .medium)).tracking(size * 0.05).foregroundStyle(MurmurPalette.accent).padding(.horizontal, 9).padding(.vertical, 5).background(MurmurPalette.accent.opacity(0.12), in: RoundedRectangle(cornerRadius: 6)) }
 }
 enum AppLanguages {
     static var all: [(code: String, name: String)] {

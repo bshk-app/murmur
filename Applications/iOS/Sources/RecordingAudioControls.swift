@@ -53,7 +53,7 @@ struct RecordingAudioControls: View {
                 Text(AudioImportJob.time(playback.position)).font(.caption.monospacedDigit())
                 ShareLink(item: url) { Image(systemName: "square.and.arrow.up").frame(width: 44, height: 44) }.accessibilityLabel("Share recording")
             }
-            Button("Transcribe again") { playback.stop(); retranscribe() }.frame(minHeight: 44).accessibilityIdentifier("retranscribe-recording")
+            DesignButton(title: "Transcribe again", kind: .link) { playback.stop(); retranscribe() }.accessibilityIdentifier("retranscribe-recording")
             if let error = playback.error { Text(error).font(.footnote).foregroundStyle(.red) }
         }.disabled(disabled).onDisappear { playback.stop() }.onChange(of: disabled) { if disabled { playback.stop() } }
     }
