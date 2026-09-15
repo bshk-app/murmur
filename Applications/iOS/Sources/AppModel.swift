@@ -82,7 +82,6 @@ import MurmurTranslation
     @ObservationIgnored private let watch = WatchSessionBridge()
     @ObservationIgnored private var drainingWatch = false
     init() {
-        WatchDiagnostics.note("--- app launched ---")
         watch.onSessionReady = { [weak self] in self?.publishWatchContext() }
         watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
         audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
@@ -150,21 +149,16 @@ import MurmurTranslation
         let request = BGProcessingTaskRequest(identifier: Self.transcriptionTaskID)
         request.requiresNetworkConnectivity = false
         request.requiresExternalPower = false
-        do {
-            try BGTaskScheduler.shared.submit(request)
-            WatchDiagnostics.note("scheduled a transcription task")
-        } catch {
-            WatchDiagnostics.note("could not schedule", error.localizedDescription)
-        }
+        // Refused when the system has had enough of us; the next foreground pass
+        // simply asks again.
+        try? BGTaskScheduler.shared.submit(request)
     }
 
     @MainActor private func runScheduledTranscription(_ task: BGTask) async {
-        WatchDiagnostics.note("scheduled task started", WatchDiagnostics.state())
         // Chained first: expiry can cut this short at any point, and the next slot
         // has to be asked for while we still can.
         scheduleTranscriptionTask()
         task.expirationHandler = {
-            WatchDiagnostics.note("scheduled task expired")
             Task { @MainActor [weak self] in self?.audioImports.pause(userInitiated: false) }
         }
         var transcribed = false
@@ -176,7 +170,6 @@ import MurmurTranslation
             await audioImports.waitForCompletion()
             transcribed = true
         }
-        WatchDiagnostics.note("scheduled task finished", "transcribed=\(transcribed) " + WatchDiagnostics.state())
         task.setTaskCompleted(success: transcribed)
     }
 
@@ -207,9 +200,6 @@ import MurmurTranslation
         var timings = speechTimings
         timings.record(audioSeconds: audioSeconds, decodeSeconds: decodeSeconds, loadSeconds: loadSeconds)
         speechTimings = timings
-        WatchDiagnostics.note("timings learned",
-                              String(format: "audio=%.1fs decode=%.1fs load=%.1fs rtf=%.2f load~%.1fs",
-                                     audioSeconds, decodeSeconds, loadSeconds, timings.realTimeFactor, timings.modelLoadSeconds))
     }
 
     /// A recording that arrived while the phone slept is transcribed there and
@@ -230,15 +220,9 @@ import MurmurTranslation
             realTimeFactor: timings.realTimeFactor,
             modelLoadSeconds: timings.modelLoadSeconds)
         guard BackgroundTranscriptionPolicy.fitsInBackground(estimate, budgetSeconds: budget) else {
-            WatchDiagnostics.note("too long for the background",
-                                  String(format: "audio=%.1fs estimate=%.1fs budget=%.0fs",
-                                         estimate.audioSeconds, estimate.seconds, budget))
             audioImports.releaseUnusedBudget()
             return false
         }
-        WatchDiagnostics.note("transcribing in the background",
-                              String(format: "audio=%.1fs estimate=%.1fs budget=%.0fs",
-                                     estimate.audioSeconds, estimate.seconds, budget))
         audioImports.start(job.id, allowBackground: true)
         return audioImports.activeID == job.id
     }
