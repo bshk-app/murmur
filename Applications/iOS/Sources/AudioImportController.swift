@@ -77,6 +77,7 @@ import MurmurSpeech
         pauseIntent.started()
         jobs[i].status = .processing; jobs[i].error = nil; jobs[i].autoStart = true
         do { try jobs[i].save() } catch { self.error = error.localizedDescription; jobs[i] = previous; activeID = nil; preparing = false; return }
+        WatchDiagnostics.note("import start", "model=\(job.model) " + WatchDiagnostics.state())
         work = Task {
             let engine = AudioFileTranscriber(choice: SpeechModelChoice(rawValue: job.model) ?? .parakeet, modelsRoot: StoragePaths.models)
             do {
@@ -94,6 +95,7 @@ import MurmurSpeech
                 try? await finish(id, status: status, message: status == .failed ? error.localizedDescription : nil)
             }
             await engine.close()
+            WatchDiagnostics.note("import work ended", WatchDiagnostics.state())
             activeID = nil; work = nil; pausing = false; preparing = false
             releaseBackgroundGrace()
             startNextQueued()
@@ -104,15 +106,20 @@ import MurmurSpeech
         guard let next = AudioImportQueuePolicy.next(activeID: activeID, receiving: receiving, suspended: queueSuspended, foreground: UIApplication.shared.applicationState == .active, waiting: waiting) else { return }
         start(next)
     }
-    private func ready() { preparing = false }
+    private func ready() {
+        WatchDiagnostics.note("models loaded, decoding starts", WatchDiagnostics.state())
+        preparing = false
+    }
     /// Leaving the app no longer stops the work where it stands. A note from the
     /// watch is usually seconds from done, and iOS grants long enough to finish it
     /// and say so. The import pauses only when that runs out, which reads to the
     /// rest of the app exactly like leaving used to.
     func continueInBackground() {
+        WatchDiagnostics.note("left the app", "active=\(activeID != nil) " + WatchDiagnostics.state())
         guard activeID != nil, backgroundGrace == .invalid else { pause(userInitiated: false); return }
         queueSuspended = true
         backgroundGrace = UIApplication.shared.beginBackgroundTask(withName: "Audio import") { [weak self] in
+            WatchDiagnostics.note("grace expired, pausing")
             // Called on the main thread, and the assertion has to be given back
             // before this returns or the system kills the app outright.
             MainActor.assumeIsolated {
@@ -126,6 +133,7 @@ import MurmurSpeech
     /// behind it must not stay blocked. Only an expiry leaves it suspended, and
     /// that path does not come through here.
     func returnedToForeground() {
+        WatchDiagnostics.note("back in the app", "active=\(activeID != nil) " + WatchDiagnostics.state())
         if activeID != nil { queueSuspended = false }
         releaseBackgroundGrace()
     }
@@ -168,6 +176,7 @@ import MurmurSpeech
         if status == .paused { next.autoStart = pauseIntent.resumesAutomatically }
         try await saveNote(next); try next.save()
         if let current = jobs.firstIndex(where: { $0.id == id }) { jobs[current] = next }
+        WatchDiagnostics.note("import finished", "status=\(status.rawValue) " + WatchDiagnostics.state())
         if status == .completed { fraction = 1; onFinished?(next) }
     }
     private func saveNote(_ job: AudioImportJob) async throws {

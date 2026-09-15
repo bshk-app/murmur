@@ -50,11 +50,16 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
     @MainActor func requestNotificationAuthorizationIfNeeded(hasRecordings: Bool) async {
         let center = UNUserNotificationCenter.current()
         let undecided = await center.notificationSettings().authorizationStatus == .notDetermined
+        WatchDiagnostics.note("permission check",
+                              "status=\(await WatchDiagnostics.notificationStatus()) watchApp=\(isWatchAppInstalled) "
+                                  + "recordings=\(hasRecordings) \(WatchDiagnostics.state())")
         guard WatchImportPolicy.shouldAskAboutNotifications(watchAppInstalled: isWatchAppInstalled,
                                                             hasRecordings: hasRecordings,
                                                             foreground: UIApplication.shared.applicationState == .active,
                                                             undecided: undecided) else { return }
+        WatchDiagnostics.note("asking for notification permission")
         _ = try? await center.requestAuthorization(options: [.alert, .sound])
+        WatchDiagnostics.note("permission now", await WatchDiagnostics.notificationStatus())
     }
 
     @MainActor private func announce() {
@@ -64,6 +69,7 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
         content.sound = .default
         // One identifier on purpose: a burst of recordings replaces one banner
         // instead of stacking a column of them.
+        WatchDiagnostics.note("posting arrival banner", WatchDiagnostics.state())
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "watch-recording", content: content, trigger: nil))
     }
 
@@ -72,6 +78,7 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
     /// recognising it on the device. Silent while the app is in front, where the
     /// note simply appears.
     @MainActor func announceCompletion(recording: String) {
+        WatchDiagnostics.note("transcript finished", WatchDiagnostics.state())
         guard UIApplication.shared.applicationState != .active else { return }
         let content = UNMutableNotificationContent()
         content.title = L10n.text("Transcription saved")
@@ -108,8 +115,12 @@ final class WatchSessionBridge: NSObject, WCSessionDelegate {
             // reads this file runs long after the screen locks again.
             try FileManager.default.setAttributes([.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication],
                                                   ofItemAtPath: destination.path)
-        } catch { return }
+        } catch {
+            WatchDiagnostics.note("staging failed", error.localizedDescription)
+            return
+        }
         Task { @MainActor in
+            WatchDiagnostics.note("recording staged", destination.lastPathComponent + " " + WatchDiagnostics.state())
             if UIApplication.shared.applicationState != .active { self.announce() }
             await self.onRecordingStaged?()
         }
