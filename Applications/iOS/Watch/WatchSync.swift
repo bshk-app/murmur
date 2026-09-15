@@ -74,15 +74,19 @@ import WatchKit
         let waiting = (try? FileManager.default.contentsOfDirectory(at: Self.outbox, includingPropertiesForKeys: nil)) ?? []
         for url in waiting where !outstanding.contains(url.standardizedFileURL) { transfer(url) }
         pending = WCSession.default.outstandingFileTransfers.count
+        if pending > 0 { wakePhone() }
     }
 
     /// Queuing a file does not rouse the phone: iOS delivers queued transfers when
     /// it chooses, which in practice is when someone opens the app, so a recording
-    /// can sit unseen for half an hour. A message does wake the counterpart, so one
-    /// is sent alongside for no reason other than to get the phone running long
-    /// enough to accept the file. Best effort: out of range, the file still waits.
+    /// can sit unseen for half an hour. A message from the watch is the one thing
+    /// that does wake the counterpart, so one is sent for no reason other than to
+    /// get the phone running long enough to accept the file.
+    ///
+    /// Deliberately not guarded on `isReachable`: it reports false negatives often
+    /// enough that the guard was skipping the wake outright. A refused message
+    /// costs nothing, and the file waits in the outbox either way.
     private func wakePhone() {
-        guard WCSession.default.isReachable else { return }
         WCSession.default.sendMessage([WatchHandoff.wake: true], replyHandler: nil, errorHandler: { _ in })
     }
 
