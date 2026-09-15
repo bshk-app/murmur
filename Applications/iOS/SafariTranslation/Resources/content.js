@@ -127,9 +127,18 @@
         }
     }
     function flushMutations(state) { if (state.observer) inspectMutations(state, state.observer.takeRecords()); }
+    // Translated text reads in the target script's direction; an RTL page turned
+    // into an LTR language must stop right-aligning it.
+    function writeDirection(state, original) {
+        const root = document.documentElement;
+        const value = original ? state.originalDirection
+            : /^(ar|fa|he|ur)(-|$)/i.test(state.target) ? 'rtl' : state.originalDirection === 'rtl' ? 'ltr' : state.originalDirection;
+        if (value === null) root.removeAttribute('dir'); else root.setAttribute('dir', value);
+    }
     function writeGroup(state, group, original) {
         if (!matches(group)) { group.changed = true; return false; }
         group.runs.forEach(run => { run.expected = original ? run.original : run.translated; run.node.nodeValue = run.expected; });
+        writeDirection(state, original);
         // All external mutations were drained before this synchronous write.
         state.observer?.takeRecords();
         return true;
@@ -137,6 +146,8 @@
     function restore(state) {
         flushMutations(state);
         state.groups.filter(group => group.complete).forEach(group => writeGroup(state, group, true));
+        writeDirection(state, true);
+        state.observer?.takeRecords();
     }
     function stop(state) {
         state.running = false; state.generation++;
@@ -300,7 +311,7 @@
         if (active) { stop(active); restore(active); active.observer?.disconnect(); active.host.remove(); }
         const snapshot = collect();
         configRequest.sample = snapshot.groups.flatMap(group => group.runs.map(run => run.original)).join(' ').slice(0, 1500);
-        const state = { ...snapshot, config: { ready: false }, source: '', target: '', generation: 0, runId: `${Date.now()}-${++sequence}`, completedCharacters: 0, skipped: 0, phase: 'preparing', originalView: false, running: false };
+        const state = { ...snapshot, config: { ready: false }, source: '', target: '', generation: 0, runId: `${Date.now()}-${++sequence}`, completedCharacters: 0, skipped: 0, phase: 'preparing', originalView: false, running: false, originalDirection: document.documentElement.getAttribute('dir') };
         active = state; makeHeader(state); render(state);
         state.observer = new MutationObserver(records => inspectMutations(state, records));
         state.observer.observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ['hidden', 'inert', 'aria-hidden', 'translate', 'contenteditable', 'class', 'style'] });

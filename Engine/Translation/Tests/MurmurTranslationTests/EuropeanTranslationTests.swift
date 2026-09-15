@@ -52,6 +52,17 @@ final class EuropeanTranslationTests: XCTestCase {
         XCTAssertNil(SpeechModelChoice.whisperLanguageCode(nil))
     }
 
+    func testArabicTranslatesWithItsOwnOPUSPacksButKeepsItsSpeechModel() throws {
+        let catalog = TranslationProfileCatalog.baseline
+        XCTAssertTrue(LanguagePair.qualityLanguages.contains("ar"))
+        XCTAssertEqual(try XCTUnwrap(catalog.bindings[.init(source: "en", target: "ar")]).targetTag, ">>ara<<")
+        XCTAssertEqual(try XCTUnwrap(catalog.bindings[.init(source: "ar", target: "en")]).targetTag, "")
+        XCTAssertFalse(SpeechModelChoice.parakeet.supports("ar"))
+        XCTAssertEqual(SpeechRecognitionProfile.baselineModel(language: "ar"), .cohereArabic)
+        XCTAssertFalse(KeyboardConfiguration(source: "ar", target: "en").isValid)
+        XCTAssertTrue(KeyboardConfiguration(source: "en", target: "ar").isValid)
+    }
+
     func testEveryConvertedDirectionRunsThroughTheNativeSwiftEngine() async throws {
         guard let path = ProcessInfo.processInfo.environment["MURMUR_EU_NATIVE_ROOT"],
               let manifest = ProcessInfo.processInfo.environment["MURMUR_EU_SOURCES"] else { throw XCTSkip("Local converted OPUS packs required") }

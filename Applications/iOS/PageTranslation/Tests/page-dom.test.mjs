@@ -317,3 +317,26 @@ test('no readable body is a valid empty payload', () => {
     assert.equal(payload.totalCharacters, 0);
     assert.equal(payload.truncated, false);
 });
+
+test('Arabic output reads right to left; toggle and close restore direction', () => {
+    const fixture = page('<p>Hello</p>');
+    const root = fixture.document.documentElement;
+    fixture.finalize(fixture.run(), undefined, { target: 'ar' });
+    assert.equal(root.getAttribute('dir'), 'rtl');
+    fixture.click('murmator-toggle');
+    assert.equal(root.hasAttribute('dir'), false);
+    fixture.click('murmator-toggle');
+    assert.equal(root.getAttribute('dir'), 'rtl');
+    fixture.click('murmator-close');
+    assert.equal(root.hasAttribute('dir'), false);
+});
+
+test('RTL page translated into an LTR language is laid out left to right until closed', () => {
+    const fixture = page('<p>Hello</p>', 'ar');
+    const root = fixture.document.documentElement;
+    root.setAttribute('dir', 'rtl');
+    fixture.finalize(fixture.run(), undefined, { source: 'ar', target: 'en' });
+    assert.equal(root.getAttribute('dir'), 'ltr');
+    fixture.click('murmator-close');
+    assert.equal(root.getAttribute('dir'), 'rtl');
+});

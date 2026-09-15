@@ -2,7 +2,8 @@
 // Baseline compatibility is not a claim of quality qualification.
 extension TranslationProfileCatalog {
     public static let baseline = try! TranslationProfileCatalog(
-        version: "baseline-236537a9bf115a59", bindings: [
+        version: "baseline-34ad01b1bb7d7cb4", bindings: [
+        .init(pair: .init(source: "ar", target: "en"), modelID: "opus-8ab6b096a82cc45235f2769bde389665d3f280e6ab05e2a13a8afeaf16dba4e9", directoryName: "ct2-aren", targetTag: ""),
         .init(pair: .init(source: "be", target: "en"), modelID: "opus-d7c2126955c676c4537ea6678d2daad52d48cc896817ac62637ff6bbea0f92ef", directoryName: "ct2-been", targetTag: ""),
         .init(pair: .init(source: "bg", target: "en"), modelID: "opus-85d13547416ddbff956514e4ade3a57a99cb992c3f28ad9b6fd7a8d184713873", directoryName: "ct2-bgen", targetTag: ""),
         .init(pair: .init(source: "bs", target: "en"), modelID: "opus-85b4c6d01db186dd828d8d6137ec48bed92c886579e1002a042d67a1cce2f48b", directoryName: "ct2-bsen", targetTag: ""),
@@ -11,6 +12,7 @@ extension TranslationProfileCatalog {
         .init(pair: .init(source: "da", target: "en"), modelID: "opus-c6f0f644a38a899108db8ff9af10ba0820166950e2e8609611ae1a43f0a486d0", directoryName: "ct2-daen", targetTag: ""),
         .init(pair: .init(source: "de", target: "en"), modelID: "opus-bc9cc3586ab0cb1df0d6d6b6eb3954aebc583d9fcb84fe5d8e42a57df7f060bb", directoryName: "ct2-deen", targetTag: ""),
         .init(pair: .init(source: "el", target: "en"), modelID: "opus-9abfdf4b460b00f403c872cd6b291f0e4fefe5150a571c06fe19ac4463e45423", directoryName: "ct2-elen", targetTag: ""),
+        .init(pair: .init(source: "en", target: "ar"), modelID: "opus-75577a0d8bfa1f500db3425f05bccc222f04ef5a1d61129d972c18a8763d86ff", directoryName: "ct2-enar", targetTag: ">>ara<<"),
         .init(pair: .init(source: "en", target: "be"), modelID: "opus-94f749975a4f9fc623a0be49c219b12cc0f24e13d50ecbbe4c573924fa3d7870", directoryName: "ct2-enbe", targetTag: ">>bel<<"),
         .init(pair: .init(source: "en", target: "bg"), modelID: "opus-cc04ae29a40520e433126c6ef059291e75c9e129f514b285fd38ae39ce255d17", directoryName: "ct2-enbg", targetTag: ""),
         .init(pair: .init(source: "en", target: "bs"), modelID: "opus-d74f0cf22561f90d6646dfe17de4551e2cec3ebf819241219c3e9aa93f0ca6b4", directoryName: "ct2-enbs", targetTag: ">>bos_Latn<<"),

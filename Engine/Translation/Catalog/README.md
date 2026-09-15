@@ -1,7 +1,7 @@
 # European OPUS translation catalog
 
 The baseline now resolves through `TranslationProfileCatalog` for preparation,
-execution and offline availability. Its 66 direction bindings identify 45
+execution and offline availability. Its 68 direction bindings identify 47
 distinct weight/tokenizer assets. New qualified profiles remain disabled until
 the quality and device evidence gate passes; discovery is not qualification.
 
@@ -10,11 +10,13 @@ The generated baseline and complete direct-candidate audit are checked with
 `node Engine/Translation/Scripts/generate-quality-baseline.mjs --check` and
 `node Engine/Translation/Qualification/validate-audit.mjs`.
 
-Verified 2026-09-07. All 24 official EU languages, plus Russian and Ukrainian, have OPUS routes in both directions. There are 66 downloadable direction packs (including the six existing Russian/Finnish packs) and 1056 non-identity language combinations. A direct Russian–Finnish model is retained; other non-English combinations use two strict OPUS passes through English. Identity requests return the original text.
+Verified 2026-09-07. All 24 official EU languages, plus Russian and Ukrainian, have OPUS routes in both directions. There are 68 downloadable direction packs (including the six existing Russian/Finnish packs) and 1122 non-identity language combinations. A direct Russian–Finnish model is retained; other non-English combinations use two strict OPUS passes through English. Identity requests return the original text.
 
 The catalog is independent of Mozilla preview availability and speech recognition. Where Mozilla has no stable pack, OPUS supplies the preview as well as the final translation. Current Parakeet speech recognition supports 25 catalog languages; Irish is a translation language, not a newly enabled Irish speech recognizer.
 
-Added 2026-09-15: Catalan, Norwegian Bokmål, Icelandic, Serbian (Cyrillic), Bosnian, Macedonian and Belarusian. The same multilingual OPUS checkpoints already carry them, so only en → ca adds new weights; the other 13 folders reuse existing weights with their own target tag. Parakeet does not recognize these languages: dictation transcribes them with Whisper in accurate mode only (no live draft), and the keyboard does not offer them. The language-pack picker can prepare Irish in both directions; the dictation picker does not falsely offer unsupported Irish recognition.
+Added 2026-09-15: Catalan, Norwegian Bokmål, Icelandic, Serbian (Cyrillic), Bosnian, Macedonian and Belarusian. The same multilingual OPUS checkpoints already carry them, so only en → ca adds new weights; the other 13 folders reuse existing weights with their own target tag. Parakeet does not recognize these languages: dictation transcribes them with Whisper in accurate mode only (no live draft), and the keyboard does not offer them.
+
+Arabic translates with its own tc-big en → ar (`>>ara<<`, Modern Standard Arabic; FLORES-101 BLEU 29.4) and ar → en (BLEU 42.6) packs. Arabic speech stays on Cohere Arabic. The language-pack picker can prepare Irish in both directions; the dictation picker does not falsely offer unsupported Irish recognition.
 
 Models are downloadable assets rather than bundled weights. No bulk download of all languages is performed on the phone. Some checkpoints are tc-big, others are standard OPUS-MT. A successful smoke test validates loading and decoding, not uniform translation quality or a comprehensive language benchmark.
 
@@ -26,7 +28,7 @@ Models are downloadable assets rather than bundled weights. No bulk download of 
 4. Rerun the original converter to reverify all existing outputs; it preserves the valid HF fallbacks.
 5. `node Engine/Translation/Scripts/register-eu-opus.mjs` verifies every hash/size, emits EuropeanQualityDigests.swift, and records smoke outputs in eu-opus-verification.json.
 
-Distribution: [existing MurMur mirror](https://huggingface.co/beshkenadze/murmur-translation-ct2), updates [7851fd226891a81d38cf71daa20feb50b4087fd3](https://huggingface.co/beshkenadze/murmur-translation-ct2/commit/7851fd226891a81d38cf71daa20feb50b4087fd3) and [79c280547c03928319ad7ef9ccbf2b4f09f15265](https://huggingface.co/beshkenadze/murmur-translation-ct2/commit/79c280547c03928319ad7ef9ccbf2b4f09f15265) (the seven 2026-09-15 languages; all 77 files matched size and LFS SHA-256). Each folder includes per-source attribution, source SHA/revision, model-card license, output hashes and target tags. Portuguese explicitly selects European Portuguese.
+Distribution: [existing MurMur mirror](https://huggingface.co/beshkenadze/murmur-translation-ct2), updates [7851fd226891a81d38cf71daa20feb50b4087fd3](https://huggingface.co/beshkenadze/murmur-translation-ct2/commit/7851fd226891a81d38cf71daa20feb50b4087fd3) and [79c280547c03928319ad7ef9ccbf2b4f09f15265](https://huggingface.co/beshkenadze/murmur-translation-ct2/commit/79c280547c03928319ad7ef9ccbf2b4f09f15265) (the seven 2026-09-15 languages; all 77 files matched size and LFS SHA-256), and [c8c96216a78496bd798af54aa441bf52e8fd2dda](https://huggingface.co/beshkenadze/murmur-translation-ct2/commit/c8c96216a78496bd798af54aa441bf52e8fd2dda) (Arabic; all 11 files matched). Each folder includes per-source attribution, source SHA/revision, model-card license, output hashes and target tags. Portuguese explicitly selects European Portuguese.
 
 ## Added direction packs
 
@@ -92,10 +94,12 @@ Distribution: [existing MurMur mirror](https://huggingface.co/beshkenadze/murmur
 | mk → en | opus-mt-tc-big-zls-en | 250.9 |
 | en → be | opus-mt-tc-big-en-zle | 253.3 |
 | be → en | opus-mt-tc-big-zle-en | 252.8 |
+| en → ar | opus-mt-tc-big-en-ar | 252.6 |
+| ar → en | opus-mt-tc-big-ar-en | 252.5 |
 
 ## Validation
 
-EuropeanTranslationTests verifies all 1056 routes resolve to pinned artifacts. The native Swift/C++ test translates all 46 new directions and runs a full TranslationSession preparation/preview/finalization/unload for Maltese → Irish without Mozilla packs. Model counts return to zero after eviction. Results are in eu-opus-native-verification.json. The associated quality-download tests also pass; the existing opt-in network test remains skipped. Core suite: 58 passing. Signed Debug and Release builds pass.
+EuropeanTranslationTests verifies all 1122 routes resolve to pinned artifacts. The native Swift/C++ test translates all 46 new directions and runs a full TranslationSession preparation/preview/finalization/unload for Maltese → Irish without Mozilla packs. Model counts return to zero after eviction. Results are in eu-opus-native-verification.json. The associated quality-download tests also pass; the existing opt-in network test remains skipped. Core suite: 58 passing. Signed Debug and Release builds pass.
 
 The published mirror was checked against every newly registered artifact: all 237 required files have the expected size; all 138 LFS artifacts also have matching remote SHA-256 identifiers. See eu-opus-mirror-verification.json.
 

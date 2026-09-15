@@ -478,5 +478,21 @@
     "input": "Я дашлю дакументы заўтра.",
     "output": "I'll send the papers tomorrow.",
     "bytes": 252756226
+  },
+  {
+    "pair": "enar",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-ar",
+    "source_sha256": "e8733833b816f9ac5bc7c13b196b0683fc42ae392bddf26d6d574e179662a1e5",
+    "input": "I will send the documents tomorrow.",
+    "output": "سأرسل الوثائق غداً",
+    "bytes": 252607871
+  },
+  {
+    "pair": "aren",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-ar-en",
+    "source_sha256": "b2440a530982ada0823cd4718d6be2b8669a38db348f11bc289ac4af6d30f0e2",
+    "input": "سأرسل المستندات غدًا.",
+    "output": "I'll send the documents tomorrow.",
+    "bytes": 252454084
   }
 ]

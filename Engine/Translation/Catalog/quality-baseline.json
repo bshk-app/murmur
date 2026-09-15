@@ -1,9 +1,52 @@
 {
   "schemaVersion": 1,
-  "version": "baseline-236537a9bf115a59",
+  "version": "baseline-34ad01b1bb7d7cb4",
   "status": "baseline",
   "runtime": "CTranslate2 4.8.2 CPU, one thread",
   "bindings": [
+    {
+      "pair": {
+        "source": "ar",
+        "target": "en"
+      },
+      "modelID": "opus-8ab6b096a82cc45235f2769bde389665d3f280e6ab05e2a13a8afeaf16dba4e9",
+      "directoryName": "ct2-aren",
+      "targetTag": "",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "cd90eef39e9f181bac516565a7bfc239306ecd446eb0adc85a44be4458fe6fe9",
+          "bytes": 804240
+        },
+        {
+          "name": "model.bin",
+          "sha256": "cc1c01a73276a27ddd69ece65288b6defe12d8b598acfbd90ebad6a6aabaaefd",
+          "bytes": 248955245
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "fce8e7e41d2e9337d5176edc530bd900efd6d99f86153f755c88529796b67a65",
+          "bytes": 915066
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "44d71ff9b75b066d1b56c7d87cd52258603269fdde99e8b02c47a7b9bdc5852e",
+          "bytes": 1779312
+        }
+      ]
+    },
     {
       "pair": {
         "source": "be",
@@ -345,6 +388,54 @@
           "name": "shared_vocabulary.json",
           "sha256": "de77938983aa10bc06e52ed06ab217e25e4545b61b04341034c0d3f0b6efcea7",
           "bytes": 1977376
+        }
+      ]
+    },
+    {
+      "pair": {
+        "source": "en",
+        "target": "ar"
+      },
+      "modelID": "opus-75577a0d8bfa1f500db3425f05bccc222f04ef5a1d61129d972c18a8763d86ff",
+      "directoryName": "ct2-enar",
+      "targetTag": ">>ara<<",
+      "decoding": {
+        "beamSize": 1,
+        "maxSourcePieces": 200,
+        "maxDecodingLength": 512,
+        "lengthPenalty": 1,
+        "computeType": "int8"
+      },
+      "files": [
+        {
+          "name": "target.spm",
+          "sha256": "db09c46631638384f2b13ccdececb1c88103f0e59c14d5def247975007e7eaac",
+          "bytes": 916373
+        },
+        {
+          "name": "model.bin",
+          "sha256": "809f89b32c7cbe4fc2ed4a257d714ef0388f1525d13ba7db716c8f9733cac5b5",
+          "bytes": 249097661
+        },
+        {
+          "name": "target_tag.txt",
+          "sha256": "9cdafc50a67bed103eb6970fbb40f0563757484fb368086926fd7b810fec440c",
+          "bytes": 8
+        },
+        {
+          "name": "config.json",
+          "sha256": "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68",
+          "bytes": 221
+        },
+        {
+          "name": "source.spm",
+          "sha256": "0a9b220e324e29d4fbab530747ab82968a79d5408f1b3210f0f6d812d148b7d2",
+          "bytes": 806127
+        },
+        {
+          "name": "shared_vocabulary.json",
+          "sha256": "a0e6bb37588d1134dd47116c74674e49a809a8e6cecdeb5782f1b8956cb058e3",
+          "bytes": 1787481
         }
       ]
     },

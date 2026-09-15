@@ -662,5 +662,27 @@
     "model_card_license": "cc-by-4.0",
     "sample_input": "Я дашлю дакументы заўтра.",
     "sample_reference": "I will send the documents tomorrow."
+  },
+  {
+    "pair": "enar",
+    "from": "en",
+    "to": "ar",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-en-ar",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/eng-ara/opusTCv20210807+bt_transformer-big_2022-02-25.zip",
+    "target_tag": ">>ara<<",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "I will send the documents tomorrow.",
+    "sample_reference": "سأرسل المستندات غدًا."
+  },
+  {
+    "pair": "aren",
+    "from": "ar",
+    "to": "en",
+    "checkpoint": "Helsinki-NLP/opus-mt-tc-big-ar-en",
+    "source_url": "https://object.pouta.csc.fi/Tatoeba-MT-models/ara-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip",
+    "target_tag": "",
+    "model_card_license": "cc-by-4.0",
+    "sample_input": "سأرسل المستندات غدًا.",
+    "sample_reference": "I will send the documents tomorrow."
   }
 ]

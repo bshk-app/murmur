@@ -435,5 +435,20 @@ extension TranslationQualityDigests {
             File(name: "source.spm", sha256: "a982dbb9362861151e36b0db1595b324cd1ce09acf46ce1f4d6d624e11c5807f", bytes: 1016851),
             File(name: "shared_vocabulary.json", sha256: "b5a35f2050eba451db60ea0f740e8ebabd473f3d1b1ff4e106cd9ec134828309", bytes: 2076466),
         ]),
+        "enar": Entry(files: [
+            File(name: "target.spm", sha256: "db09c46631638384f2b13ccdececb1c88103f0e59c14d5def247975007e7eaac", bytes: 916373),
+            File(name: "model.bin", sha256: "809f89b32c7cbe4fc2ed4a257d714ef0388f1525d13ba7db716c8f9733cac5b5", bytes: 249097661),
+            File(name: "target_tag.txt", sha256: "9cdafc50a67bed103eb6970fbb40f0563757484fb368086926fd7b810fec440c", bytes: 8),
+            File(name: "config.json", sha256: "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68", bytes: 221),
+            File(name: "source.spm", sha256: "0a9b220e324e29d4fbab530747ab82968a79d5408f1b3210f0f6d812d148b7d2", bytes: 806127),
+            File(name: "shared_vocabulary.json", sha256: "a0e6bb37588d1134dd47116c74674e49a809a8e6cecdeb5782f1b8956cb058e3", bytes: 1787481),
+        ]),
+        "aren": Entry(files: [
+            File(name: "target.spm", sha256: "cd90eef39e9f181bac516565a7bfc239306ecd446eb0adc85a44be4458fe6fe9", bytes: 804240),
+            File(name: "model.bin", sha256: "cc1c01a73276a27ddd69ece65288b6defe12d8b598acfbd90ebad6a6aabaaefd", bytes: 248955245),
+            File(name: "config.json", sha256: "152eb448f1020eb55f90971d7b95f61896abee8415d555ca51ae7897ac0a0e68", bytes: 221),
+            File(name: "source.spm", sha256: "fce8e7e41d2e9337d5176edc530bd900efd6d99f86153f755c88529796b67a65", bytes: 915066),
+            File(name: "shared_vocabulary.json", sha256: "44d71ff9b75b066d1b56c7d87cd52258603269fdde99e8b02c47a7b9bdc5852e", bytes: 1779312),
+        ]),
     ]
 }

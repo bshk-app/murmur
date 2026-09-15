@@ -112,9 +112,18 @@
         });
     }
 
-    function setLanguage(value) {
-        if (value === null) document.documentElement.removeAttribute('lang');
-        else document.documentElement.setAttribute('lang', value);
+    function setRootAttribute(name, value) {
+        if (value === null) document.documentElement.removeAttribute(name);
+        else document.documentElement.setAttribute(name, value);
+    }
+
+    function setLanguage(value) { setRootAttribute('lang', value); }
+
+    // Translated text reads in the target script's direction; an RTL page turned
+    // into an LTR language must stop right-aligning it.
+    function textDirection(language, originalDirection) {
+        if (/^(ar|fa|he|ur)(-|$)/i.test(language || '')) return 'rtl';
+        return originalDirection === 'rtl' ? 'ltr' : originalDirection;
     }
 
     function restore(active) {
@@ -122,6 +131,7 @@
             if (matches(group, 'translated')) group.runs.forEach(function (run) { run.node.nodeValue = run.original; });
         });
         if (document.documentElement.getAttribute('lang') === active.language) setLanguage(active.originalLanguage);
+        if (document.documentElement.getAttribute('dir') === active.direction) setRootAttribute('dir', active.originalDirection);
     }
 
     // A new Safari Action gets a new global object. The existing toolbar's event
@@ -185,6 +195,8 @@
             });
             var expectedLanguage = showingOriginal ? active.language : active.originalLanguage;
             if (document.documentElement.getAttribute('lang') === expectedLanguage) setLanguage(showingOriginal ? active.originalLanguage : active.language);
+            var expectedDirection = showingOriginal ? active.direction : active.originalDirection;
+            if (document.documentElement.getAttribute('dir') === expectedDirection) setRootAttribute('dir', showingOriginal ? active.originalDirection : active.direction);
             active.view = showingOriginal ? 'original' : 'translation';
             toggle.textContent = showingOriginal ? label('showTranslation', 'Show translation') : label('showOriginal', 'Show original');
             toggle.setAttribute('aria-pressed', showingOriginal ? 'true' : 'false');
@@ -233,7 +245,8 @@
             // Only an accepted result replaces the prior translation; cancellation is inert.
             if (eligible.length && old) restore(old);
             if (old && old.toolbar) old.toolbar.remove();
-            var active = eligible.length ? { groups: eligible, originalLanguage: old ? old.originalLanguage : document.documentElement.getAttribute('lang'), view: 'translation' } : (old || { groups: [], originalLanguage: document.documentElement.getAttribute('lang'), view: 'translation' });
+            var originalDirection = old ? old.originalDirection : document.documentElement.getAttribute('dir');
+            var active = eligible.length ? { groups: eligible, originalLanguage: old ? old.originalLanguage : document.documentElement.getAttribute('lang'), originalDirection: originalDirection, view: 'translation' } : (old || { groups: [], originalLanguage: document.documentElement.getAttribute('lang'), originalDirection: originalDirection, direction: originalDirection, view: 'translation' });
             eligible.forEach(function (group) {
                 group.runs.forEach(function (run) {
                     run.translated = /\S/u.test(run.original) ? run.original.match(/^\s*/u)[0] + outputs.get(run.id).trim() + run.original.match(/\s*$/u)[0] : run.original;
@@ -244,6 +257,8 @@
             if (eligible.length) {
                 active.language = !skipped && !pending.truncated && typeof args.target === 'string' && /^[A-Za-z]{2,8}(-[A-Za-z0-9]{1,8})*$/.test(args.target) ? args.target : active.originalLanguage;
                 setLanguage(active.language);
+                active.direction = textDirection(args.target, active.originalDirection);
+                setRootAttribute('dir', active.direction);
             } else if (!old) active.language = active.originalLanguage;
             session.active = active;
             toolbar(active, args, eligible.length, skipped, pending.truncated);

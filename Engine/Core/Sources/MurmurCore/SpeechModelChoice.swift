@@ -14,7 +14,7 @@ public enum SpeechModelChoice: String, CaseIterable {
     }
     /// Translation languages Parakeet does not recognize; Whisper transcribes them.
     public static let whisperLanguages: Set<String> = ["be", "bs", "ca", "is", "mk", "nb", "sr"]
-    public static let parakeetLanguages = LanguagePair.qualityLanguages.subtracting(whisperLanguages.union(["ga"]))
+    public static let parakeetLanguages = LanguagePair.qualityLanguages.subtracting(whisperLanguages.union(["ga", "ar"]))
     /// Whisper names Norwegian `no`; iOS names written Norwegian Bokmål `nb`.
     public static func whisperLanguageCode(_ language: String?) -> String? {
         language == "nb" ? "no" : language

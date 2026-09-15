@@ -349,6 +349,16 @@ https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-zle-en
 License: cc-by-4.0
 Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/zle-eng/opusTCv20210807+bt_transformer-big_2022-03-17.zip
 
+enar: Helsinki-NLP/opus-mt-tc-big-en-ar
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-en-ar
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/eng-ara/opusTCv20210807+bt_transformer-big_2022-02-25.zip
+
+aren: Helsinki-NLP/opus-mt-tc-big-ar-en
+https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-ar-en
+License: cc-by-4.0
+Original source: https://object.pouta.csc.fi/Tatoeba-MT-models/ara-eng/opusTCv20210807+bt_transformer-big_2022-03-09.zip
+
 fien: Helsinki-NLP/opus-mt-tc-big-fi-en
 https://huggingface.co/Helsinki-NLP/opus-mt-tc-big-fi-en
 License: CC-BY-4.0
