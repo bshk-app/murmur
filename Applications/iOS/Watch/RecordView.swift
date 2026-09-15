@@ -66,14 +66,18 @@ struct RecordView: View {
                 .foregroundStyle(WatchPalette.muted)
         case .ready where !sync.hasEverReceived:
             VStack(spacing: 12) {
+                // The mark is drawn dark for paper. Inverting keeps its internal
+                // drawing, which a single-colour template would flatten to a blob.
                 Image("MascotMark")
                     .resizable().scaledToFit()
                     .frame(width: metrics.mascot, height: metrics.mascot)
-                    .foregroundStyle(WatchPalette.muted)
+                    .colorInvert()
+                    .opacity(0.46)
                 Text("Audio stayed on this iPhone. Only the text is saved.")
                     .font(.system(size: metrics.hint))
                     .foregroundStyle(WatchPalette.muted)
                     .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, 18)
         default:
