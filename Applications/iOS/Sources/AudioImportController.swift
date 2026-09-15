@@ -129,6 +129,10 @@ import MurmurSpeech
         return UIApplication.shared.backgroundTimeRemaining
     }
 
+    /// Awaits the running import, so a scheduled task can hold its slot until the
+    /// work is actually done rather than reporting success the moment it starts.
+    func waitForCompletion() async { await work?.value }
+
     func releaseUnusedBudget() {
         if activeID == nil { releaseBackgroundGrace() }
     }

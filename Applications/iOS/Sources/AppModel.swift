@@ -1,5 +1,6 @@
 import SwiftUI
 import AVFoundation
+import BackgroundTasks
 import ActivityKit
 import MurmurCore
 import MurmurSpeech
@@ -86,6 +87,7 @@ import MurmurTranslation
         watch.onRecordingStaged = { [weak self] in await self?.receiveWatchRecordings() }
         audioImports.onFinished = { [weak self] job in self?.reportTranscriptToWatch(job) }
         audioImports.onTiming = { [weak self] audio, decode, load in self?.learnSpeechTimings(audio, decode, load) }
+        registerTranscriptionTask()
         watch.activate()
     }
     /// A recording made on the wrist answers back there, so the watch confirms the
@@ -122,8 +124,71 @@ import MurmurTranslation
         }
         // One banner, not two: either the note is being transcribed now and the
         // finish will say so, or it waits and the arrival says that instead.
-        if !startWatchImportInBackground(), arrived { watch.announceArrival() }
+        if !startWatchImportInBackground(), arrived {
+            watch.announceArrival()
+            // Too long for the wake, so ask the scheduler for a wider window.
+            scheduleTranscriptionTask()
+        }
     }
+    // MARK: - Transcribing while the phone is put away
+
+    /// A wake from the watch grants about fifteen seconds, and a cold model load
+    /// alone takes fourteen of them. The scheduler is the only window wide enough,
+    /// at the price of running on the system's timetable rather than ours.
+    static let transcriptionTaskID = "app.bshk.murmur.ios.transcribe"
+
+    private func registerTranscriptionTask() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: Self.transcriptionTaskID, using: nil) { [weak self] task in
+            Task { @MainActor in await self?.runScheduledTranscription(task) }
+        }
+    }
+
+    /// Asked for whenever a recording is left waiting. Submitting the same
+    /// identifier twice replaces the pending request rather than queueing another.
+    func scheduleTranscriptionTask() {
+        guard waitingWatchNote() != nil else { return }
+        let request = BGProcessingTaskRequest(identifier: Self.transcriptionTaskID)
+        request.requiresNetworkConnectivity = false
+        request.requiresExternalPower = false
+        do {
+            try BGTaskScheduler.shared.submit(request)
+            WatchDiagnostics.note("scheduled a transcription task")
+        } catch {
+            WatchDiagnostics.note("could not schedule", error.localizedDescription)
+        }
+    }
+
+    @MainActor private func runScheduledTranscription(_ task: BGTask) async {
+        WatchDiagnostics.note("scheduled task started", WatchDiagnostics.state())
+        // Chained first: expiry can cut this short at any point, and the next slot
+        // has to be asked for while we still can.
+        scheduleTranscriptionTask()
+        task.expirationHandler = {
+            WatchDiagnostics.note("scheduled task expired")
+            Task { @MainActor [weak self] in self?.audioImports.pause(userInitiated: false) }
+        }
+        var transcribed = false
+        while let job = waitingWatchNote() {
+            guard audioImports.activeID == nil, !audioImports.receiving, !keyboard.isActive, canReleaseMemory else { break }
+            await releaseModels()
+            audioImports.start(job.id, allowBackground: true)
+            guard audioImports.activeID == job.id else { break }
+            await audioImports.waitForCompletion()
+            transcribed = true
+        }
+        WatchDiagnostics.note("scheduled task finished", "transcribed=\(transcribed) " + WatchDiagnostics.state())
+        task.setTaskCompleted(success: transcribed)
+    }
+
+    /// The oldest watch recording that could run if something were willing to run it.
+    private func waitingWatchNote() -> AudioImportJob? {
+        audioImports.jobs
+            .filter { $0.origin == .watch && ($0.autoStart ?? true)
+                      && ($0.status == .pending || $0.status == .paused)
+                      && languageLibrary.isPrepared("speech:" + $0.language) }
+            .min { $0.createdAt < $1.createdAt }
+    }
+
     /// What this phone has measured about its own speed. Persisted because the
     /// decision below happens seconds after a cold launch, with nothing else to
     /// go on.

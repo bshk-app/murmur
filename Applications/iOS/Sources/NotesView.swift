@@ -135,7 +135,10 @@ struct NotesView: View {
         .onChange(of:onboardingComplete) { _,_ in consumeRecordingRequest() }
         .onChange(of:scenePhase) { _,phase in
             if phase != .active { Task { await model.pauseLanguagePreparation() } }
-            if phase == .background { model.audioImports.continueInBackground(); model.textTranslator.cancel() }
+            if phase == .background {
+                model.audioImports.continueInBackground(); model.textTranslator.cancel()
+                model.scheduleTranscriptionTask()
+            }
             if phase == .active {
                 model.audioImports.returnedToForeground()
                 Task { await model.resumeLanguagePreparation(); await model.refresh(); await model.receiveWatchRecordings() }

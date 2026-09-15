@@ -18,7 +18,11 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             // "audio" covers dictation. "fetch" is what makes the app eligible for
             // Background App Refresh, and without that iOS never wakes it to take a
             // recording from the watch: the files queue until someone opens the app.
-            "UIBackgroundModes": ["audio", "fetch"], "UILaunchScreen": [:],
+            // "processing" lets the scheduler hand us minutes when the phone is
+            // idle, which is the only window a cold model load fits into.
+            "UIBackgroundModes": ["audio", "fetch", "processing"],
+            "BGTaskSchedulerPermittedIdentifiers": ["app.bshk.murmur.ios.transcribe"],
+            "UILaunchScreen": [:],
             "CFBundleURLTypes": [["CFBundleURLName": "app.bshk.murmur.ios", "CFBundleURLSchemes": ["murmur"]]],
             "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
             "UIFileSharingEnabled": true, "LSSupportsOpeningDocumentsInPlace": false,
