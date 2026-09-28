@@ -31,6 +31,28 @@ private final class FakeLiveLane {
 }
 
 final class CaptionEngineTests: XCTestCase {
+    func test_hesitation_keeps_a_paused_sentence_in_one_correction() {
+        let live = FakeLiveLane()
+        var speaking = true
+        var ranges: [Range<Int>] = []
+        let engine = CaptionEngine(
+            live: live.make(), isSpeech: { _ in speaking }, batch: { _, _ in "" },
+            endpointSilence: 0.064, hesitation: 0.48, minimumPhrase: 4,
+            enqueueCorrection: { _, range, _ in ranges.append(range) }
+        )
+        engine.step([Float](repeating: 1, count: 1536))
+        speaking = false
+        engine.step([Float](repeating: 0, count: 3072))    // 192 ms: past the endpoint, short of a hesitation
+        speaking = true
+        engine.step([Float](repeating: 1, count: 1536))
+        XCTAssertTrue(ranges.isEmpty, "a pause split the sentence")
+        XCTAssertEqual(engine.nextPhraseStart, 0)
+        speaking = false
+        engine.step([Float](repeating: 0, count: 9216))
+        XCTAssertEqual(ranges, [0 ..< 6144])
+        XCTAssertEqual(live.epochs, 1, "the pause restarted the live draft")
+    }
+
     func test_external_correction_does_not_block_live_or_replace_new_phrase() {
         let live = FakeLiveLane()
         var speaking = true

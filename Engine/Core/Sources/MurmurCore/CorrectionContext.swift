@@ -29,4 +29,10 @@ public struct CorrectionContext {
         return Request(id: id, segmentIDs: ids, samples: samples, range: (range.upperBound - samples.count)..<range.upperBound)
     }
     public var startSample: Int? { endSample.map { $0 - samples.count } }
+
+    /// Where a later correction may still rewrite this group, or nil once the
+    /// phrase starting at `nextPhraseStart` cannot extend it and its text is final.
+    public func revisableStart(nextPhraseStart: Int) -> Int? {
+        endSample == nextPhraseStart ? startSample : nil
+    }
 }

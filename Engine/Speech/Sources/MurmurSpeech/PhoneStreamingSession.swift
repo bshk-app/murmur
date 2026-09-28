@@ -262,6 +262,8 @@ private actor PhoneStreamingEngine {
                 return Device.withDefaultDevice(.gpu) { lane.vad.isSpeech(frame) }
             },
             batch: { _, _ in "" },
+            hesitation: SpeechBoundaryPolicy.hesitationSeconds,
+            minimumPhrase: SpeechBoundaryPolicy.sentenceSeconds,
             maxEpochSeconds: usesGPUBatch ? 28 : 4,
             enqueueCorrection: { id, range, audio in lane.corrections.append((id, range, audio)) }
         )
@@ -371,7 +373,8 @@ private actor PhoneStreamingEngine {
         guard let policy else { return .init(revision: 0, confirmed: [], provisional: "") }
         let snapshot = policy.snapshot()
         let end = snapshot.confirmed.last?.endSample ?? 0
-        let contextStart = (!policy.isUtteranceOpen || currentMode == .fast) ? end : (resources?.correctionContext.startSample ?? 0)
+        let revisable = currentMode == .fast ? nil : resources?.correctionContext.revisableStart(nextPhraseStart: policy.nextPhraseStart)
+        let contextStart = revisable ?? end
         let boundary = min(contextStart, pendingRanges.values.map(\.lowerBound).min() ?? contextStart)
         return .init(revision: snapshot.revision, confirmed: snapshot.confirmed, provisional: snapshot.provisional, settledThroughSample: boundary)
     }

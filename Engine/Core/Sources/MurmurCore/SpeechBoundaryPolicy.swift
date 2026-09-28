@@ -14,11 +14,18 @@ public enum SpeechBoundaryEvent: Equatable {
 /// Boundaries are markers: closing a segment hands a range to the batch pass.
 /// A forced close atomically opens its continuation at the same sample.
 public struct SpeechBoundaryPolicy {
+    /// A phrase shorter than `sentenceSeconds` ends only at a pause this long;
+    /// tuned on speakers who stop to think in the middle of a sentence.
+    public static let hesitationSeconds = 1.5
+    public static let sentenceSeconds = 4.0
+
     private let frameSamples: Int
     private let preRollSamples: Int
     private let endpointSilenceFrames: Int
     private let maxEpochSamples: Int
     private let hardMaximumSamples: Int?
+    private let minimumPhraseSamples: Int
+    private let hesitationFrames: Int
 
     private var cursor = 0            // samples consumed, i.e. end of last frame
     private var openStart: Int?       // start of the live segment, pre-roll applied
@@ -34,13 +41,17 @@ public struct SpeechBoundaryPolicy {
         preRollSamples: Int,
         endpointSilenceFrames: Int,
         maxEpochSamples: Int,
-        hardMaximumSamples: Int? = nil
+        hardMaximumSamples: Int? = nil,
+        minimumPhraseSamples: Int = 0,
+        hesitationFrames: Int? = nil
     ) {
         self.frameSamples = frameSamples
         self.preRollSamples = preRollSamples
         self.endpointSilenceFrames = endpointSilenceFrames
         self.maxEpochSamples = maxEpochSamples
         self.hardMaximumSamples = hardMaximumSamples
+        self.minimumPhraseSamples = minimumPhraseSamples
+        self.hesitationFrames = hesitationFrames ?? endpointSilenceFrames
     }
 
     /// Feed one VAD verdict. Returns a boundary when this frame produced one.
@@ -87,8 +98,16 @@ public struct SpeechBoundaryPolicy {
 
         lastGapEnd = cursor
         silentFrames += 1
-        guard silentFrames >= endpointSilenceFrames else { return nil }
+        guard silentFrames >= requiredSilenceFrames else { return nil }
         return close(at: lastSpeechEnd, forced: false)
+    }
+
+    /// A speaker who hesitates mid-sentence has not finished it. Until a phrase
+    /// reaches the minimum length only a hesitation-long pause ends it, so the
+    /// batch pass hears the sentence whole rather than one fragment per breath.
+    private var requiredSilenceFrames: Int {
+        guard let start = openStart, lastSpeechEnd - start < minimumPhraseSamples else { return endpointSilenceFrames }
+        return hesitationFrames
     }
 
     /// Where to cut when the cap is reached.
@@ -114,6 +133,10 @@ public struct SpeechBoundaryPolicy {
     /// Samples the policy has consumed — frame-aligned, so it lags the audio by
     /// up to one frame.
     public var consumedSamples: Int { cursor }
+
+    /// Earliest sample the open or the next phrase can start at: pre-roll never
+    /// reaches into a closed phrase, and a new one opens one pre-roll back at most.
+    public var nextPhraseStart: Int { openStart ?? max(cursor - preRollSamples, lastClosedEnd) }
 
     /// Close whatever is still open, e.g. when the user stops captions.
     ///

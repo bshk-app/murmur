@@ -48,6 +48,8 @@ public final class CaptionEngine {
         isSpeech: @escaping ([Float]) -> Bool,
         batch: @escaping (Range<Int>, [Float]) -> String,
         endpointSilence: Double = 0.48,
+        hesitation: Double? = nil,
+        minimumPhrase: Double = 0,
         preRoll: Double = 0.288,
         maxEpochSeconds: Double = CaptionEngine.defaultMaxEpochSeconds,
         enqueueCorrection: ((UInt64, Range<Int>, [Float]) -> Void)? = nil
@@ -58,11 +60,14 @@ public final class CaptionEngine {
         self.batch = batch
         self.enqueueCorrection = enqueueCorrection
         let rate = Double(Self.sampleRate)
+        let frame = Double(frameSamples)
         self.policy = SpeechBoundaryPolicy(
             frameSamples: frameSamples,
             preRollSamples: Int(preRoll * rate),
             endpointSilenceFrames: max(1, Int((endpointSilence * rate) / Double(frameSamples))),
-            maxEpochSamples: Int(maxEpochSeconds * rate)
+            maxEpochSamples: Int(maxEpochSeconds * rate),
+            minimumPhraseSamples: Int(minimumPhrase * rate),
+            hesitationFrames: hesitation.map { max(1, Int(($0 * rate) / frame)) }
         )
     }
 
@@ -102,6 +107,7 @@ public final class CaptionEngine {
 
     public func snapshot() -> CaptionSnapshot { transcript.snapshot() }
     public var isUtteranceOpen: Bool { openSegment != nil }
+    public var nextPhraseStart: Int { policy.nextPhraseStart }
 
     /// Called on the policy owner's executor when a separate backend finishes.
     /// Segment IDs prevent a late correction from replacing newer speech.

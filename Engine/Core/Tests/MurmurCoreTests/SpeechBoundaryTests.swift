@@ -282,4 +282,81 @@ final class SpeechBoundaryTests: XCTestCase {
 
         XCTAssertNil(policy.finish())
     }
+
+    // MARK: hesitation
+
+    private let hesitationFrames = 47   // ~1.5 s
+
+    private func makeHesitantPolicy(minimumPhraseSamples: Int = 16_000 * 4) -> SpeechBoundaryPolicy {
+        SpeechBoundaryPolicy(
+            frameSamples: frame,
+            preRollSamples: preRollSamples,
+            endpointSilenceFrames: silenceFrames,
+            maxEpochSamples: capSamples,
+            minimumPhraseSamples: minimumPhraseSamples,
+            hesitationFrames: hesitationFrames
+        )
+    }
+
+    private func feed(_ policy: inout SpeechBoundaryPolicy, speech: Bool, frames: Int, into events: inout [SpeechBoundaryEvent]) {
+        for _ in 0 ..< frames { if let event = policy.frame(isSpeech: speech) { events.append(event) } }
+    }
+
+    /// A speaker who pauses mid-sentence keeps one phrase, so the batch pass
+    /// hears the sentence whole instead of "simple ones." and "story need".
+    func test_pause_inside_a_short_phrase_does_not_split_it() {
+        var policy = makeHesitantPolicy()
+        var events: [SpeechBoundaryEvent] = []
+        feed(&policy, speech: true, frames: 10, into: &events)              // 0 ..< 5_120
+        feed(&policy, speech: false, frames: 30, into: &events)             // 960 ms: past the endpoint
+        feed(&policy, speech: true, frames: 10, into: &events)              // resumes through 25_600
+        feed(&policy, speech: false, frames: hesitationFrames, into: &events)
+
+        XCTAssertEqual(events, [.opened(startSample: 0), .closed(range: 0 ..< 25_600, forced: false)])
+    }
+
+    /// A long pause still ends a short phrase, at its last speech.
+    func test_hesitation_length_pause_ends_a_short_phrase() {
+        var policy = makeHesitantPolicy()
+        var events: [SpeechBoundaryEvent] = []
+        feed(&policy, speech: true, frames: 10, into: &events)
+        feed(&policy, speech: false, frames: hesitationFrames - 1, into: &events)
+        XCTAssertEqual(events, [.opened(startSample: 0)])
+
+        feed(&policy, speech: false, frames: 1, into: &events)
+        XCTAssertEqual(events.last, .closed(range: 0 ..< 5_120, forced: false))
+    }
+
+    /// Once a phrase is long enough, the ordinary endpoint ends it as before.
+    func test_phrase_past_the_minimum_ends_at_the_endpoint() {
+        var policy = makeHesitantPolicy(minimumPhraseSamples: 5_120)
+        var events: [SpeechBoundaryEvent] = []
+        feed(&policy, speech: true, frames: 10, into: &events)
+        feed(&policy, speech: false, frames: silenceFrames, into: &events)
+
+        XCTAssertEqual(events, [.opened(startSample: 0), .closed(range: 0 ..< 5_120, forced: false)])
+    }
+
+    /// The next phrase can start no earlier than one pre-roll before the cursor,
+    /// and never inside the closed one.
+    func test_next_phrase_start_after_a_pause() {
+        var policy = makePolicy()
+        var events: [SpeechBoundaryEvent] = []
+        feed(&policy, speech: true, frames: 10, into: &events)
+        XCTAssertEqual(policy.nextPhraseStart, 0, "an open phrase starts where it opened")
+
+        feed(&policy, speech: false, frames: silenceFrames, into: &events)   // cursor 12_800
+        XCTAssertEqual(policy.nextPhraseStart, 12_800 - preRollSamples)
+    }
+
+    /// A cursor-aligned cap reopens exactly at the cut, so the group it closed
+    /// can still be extended until the pause outlasts the pre-roll.
+    func test_next_phrase_start_after_a_cursor_cut_is_the_cut() {
+        var policy = SpeechBoundaryPolicy(frameSamples: frame, preRollSamples: preRollSamples,
+                                          endpointSilenceFrames: silenceFrames, maxEpochSamples: 5_120)
+        var events: [SpeechBoundaryEvent] = []
+        feed(&policy, speech: true, frames: 10, into: &events)
+        XCTAssertEqual(events.last, .closed(range: 0 ..< 5_120, forced: true))
+        XCTAssertEqual(policy.nextPhraseStart, 5_120)
+    }
 }

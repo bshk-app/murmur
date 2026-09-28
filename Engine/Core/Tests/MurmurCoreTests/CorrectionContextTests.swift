@@ -22,6 +22,17 @@ final class CorrectionContextTests: XCTestCase {
         XCTAssertEqual(next.segmentIDs, [2])
     }
 
+    /// Text inside a group is final only once no later phrase can extend it;
+    /// settling earlier would let the next correction print it a second time.
+    func test_group_stays_revisable_while_the_next_phrase_can_extend_it() {
+        var context = CorrectionContext()
+        XCTAssertNil(context.revisableStart(nextPhraseStart: 0))
+        _ = context.append(id: 1, range: 100..<200, audio: [Float](repeating: 0, count: 100))
+        _ = context.append(id: 2, range: 200..<300, audio: [Float](repeating: 0, count: 100))
+        XCTAssertEqual(context.revisableStart(nextPhraseStart: 300), 100)
+        XCTAssertNil(context.revisableStart(nextPhraseStart: 301))
+    }
+
     func test_revised_context_replaces_broken_word_and_preserves_next_live_phrase() {
         var transcript = CaptionTranscript()
         let a = transcript.open(startSample: 0)
