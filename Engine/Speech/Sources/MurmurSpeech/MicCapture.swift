@@ -18,7 +18,10 @@ public final class MicCapture: @unchecked Sendable {
 
     /// Fixed-size 16 kHz mono chunks delivered on the capture queue.
     public var onChunk: ([Float]) -> Void = { _ in }
+    /// Frames converted, hardware rate, peak of the conditioned audio, error.
     public var onCapture: (Int, Double, Float, String?) -> Void = { _, _, _, _ in }
+    /// Applied to 16 kHz audio before chunking. Set before `start`.
+    public var automaticGain: AutomaticGain?
 
     // 96 ms @ 16 kHz. Hybrid now only runs Nemotron live, so the old 480 ms
     // feed (a two-model MLX-overhead workaround) is no longer required.
@@ -103,9 +106,6 @@ public final class MicCapture: @unchecked Sendable {
     }
 
     private func ingest(_ buffer: AVAudioPCMBuffer) {
-        let rawPeak = buffer.floatChannelData.map { channel in
-            (0..<Int(buffer.frameLength)).reduce(Float(0)) { max($0, abs(channel[0][$1])) }
-        } ?? 0
         guard let outFmt, let converter else { return }
         let ratio = outFmt.sampleRate / buffer.format.sampleRate
         let cap = AVAudioFrameCount(Double(buffer.frameLength) * ratio) + 16
@@ -119,26 +119,38 @@ public final class MicCapture: @unchecked Sendable {
             status.pointee = .haveData
             return buffer
         }
-        onCapture(Int(out.frameLength), buffer.format.sampleRate, rawPeak, err?.localizedDescription)
-        guard err == nil, out.frameLength > 0, let ch = out.floatChannelData else { return }
-        enqueue(Array(UnsafeBufferPointer(start: ch[0], count: Int(out.frameLength))))
+        let frames = Int(out.frameLength), rate = buffer.format.sampleRate
+        guard err == nil, frames > 0, let ch = out.floatChannelData else {
+            onCapture(frames, rate, 0, err?.localizedDescription)
+            return
+        }
+        enqueue(Array(UnsafeBufferPointer(start: ch[0], count: frames))) { [self] level in onCapture(frames, rate, level, nil) }
     }
 
     // Internal so capture-boundary tests can replay PCM without opening a microphone.
-    func enqueue(_ chunk: [Float]) {
+    func enqueue(_ chunk: [Float], level: ((Float) -> Void)? = nil) {
+        guard !chunk.isEmpty else { return }
+        queue.async { [self] in
+            var samples = chunk
+            automaticGain?.process(&samples)
+            level?(samples.reduce(0) { max($0, abs($1)) })
+            accept(samples)
+        }
+    }
+
+    /// Queue-confined.
+    private func accept(_ chunk: [Float]) {
         guard !chunk.isEmpty else { return }
         var sum: Float = 0
         for value in chunk { sum += value * value }
         let rms = (sum / Float(chunk.count)).squareRoot()
-        queue.async { [self] in
-            totalSamples += chunk.count
-            if rms > peak { peak = rms }
-            pending.append(contentsOf: chunk)
-            while pending.count >= chunkSize {
-                let next = Array(pending.prefix(chunkSize))
-                pending.removeFirst(chunkSize)
-                onChunk(next)
-            }
+        totalSamples += chunk.count
+        if rms > peak { peak = rms }
+        pending.append(contentsOf: chunk)
+        while pending.count >= chunkSize {
+            let next = Array(pending.prefix(chunkSize))
+            pending.removeFirst(chunkSize)
+            onChunk(next)
         }
     }
 

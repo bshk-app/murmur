@@ -96,6 +96,7 @@ private actor DirectUtteranceAccumulator {
     public func arm(inputDeviceUID: String? = "built-in") throws {
         guard microphone == nil else { return }
         let capture = MicCapture(inputDeviceUID: inputDeviceUID, allowConcurrentPlayback: true)
+        capture.automaticGain = AutomaticGain()
         let gate = self.gate
         capture.onChunk = { gate.append($0) }
         capture.onCapture = { [weak self] count, _, peak, error in

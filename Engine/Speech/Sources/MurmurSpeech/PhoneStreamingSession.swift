@@ -486,6 +486,7 @@ public final class SpeechSession: @unchecked Sendable {
             }
         }
         mic = MicCapture(inputDeviceUID: microphoneUID)
+        mic.automaticGain = AutomaticGain()
         mic.onCapture = { [weak self] frames, rate, peak, error in
             self?.onCapture?(frames, rate, peak, error)
             if let error { self?.onRecordingError?(error) }

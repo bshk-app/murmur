@@ -95,7 +95,7 @@ import MurmurTranslation
                 let input = DirectSpeechSession(computeMode: .backgroundCPU)
                 directSpeech = input
                 input.onCapture = { [weak self] _, peak in Task { @MainActor in
-                    guard let self, self.operation == token else { return }; self.state.level = min(1, peak * 6)
+                    guard let self, self.operation == token else { return }; self.state.level = InputLevel.meter(peak: peak)
                 } }
                 input.onError = { [weak self] _ in Task { @MainActor in
                     guard let self, self.operation == token, self.isActive else { return }
@@ -166,7 +166,7 @@ import MurmurTranslation
             await self.end(message: L10n.text("Could not save audio.") + " " + message)
         } }
         input.onLevel = { [weak self] peak in Task { @MainActor in
-            guard let self, self.operation == token else { return }; self.state.level = min(1, peak * 6)
+            guard let self, self.operation == token else { return }; self.state.level = InputLevel.meter(peak: peak)
         } }
         input.onError = { [weak self] _ in Task { @MainActor in
             guard let self, self.operation == token, self.isActive else { return }

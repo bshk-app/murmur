@@ -932,7 +932,7 @@ import MurmurTranslation
                 directSpeech.onCapture = { [weak self] frames, peak in Task { @MainActor in
                     guard let self, self.operation == token, self.phase == .recording else { return }
                     self.capturedFrames += frames
-                    self.levels.append(CGFloat(min(1, max(0.05, peak * 6))))
+                    self.levels.append(CGFloat(InputLevel.meter(peak: peak)))
                     self.levels = Array(self.levels.suffix(24))
                 } }
                 directSpeech.onError = { [weak self] _ in Task { @MainActor in
@@ -1009,7 +1009,7 @@ import MurmurTranslation
             Task { @MainActor in
                 guard let self, self.operation == token else { return }
                 self.capturedFrames += frames
-                self.levels.append(CGFloat(min(1, max(0.05, peak * 6))))
+                self.levels.append(CGFloat(InputLevel.meter(peak: peak)))
                 self.levels = Array(self.levels.suffix(24))
             }
         }
