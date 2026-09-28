@@ -22,6 +22,8 @@ public final class MicCapture: @unchecked Sendable {
     public var onCapture: (Int, Double, Float, String?) -> Void = { _, _, _, _ in }
     /// Applied to 16 kHz audio before chunking. Set before `start`.
     public var automaticGain: AutomaticGain?
+    /// The system's voice processing: noise suppression for noisy rooms. Set before `start`.
+    public var voiceProcessing = false
 
     // 96 ms @ 16 kHz. Hybrid now only runs Nemotron live, so the old 480 ms
     // feed (a two-model MLX-overhead workaround) is no longer required.
@@ -47,7 +49,8 @@ public final class MicCapture: @unchecked Sendable {
         queue.sync { pending.removeAll(keepingCapacity: true); totalSamples = 0; peak = 0 }
 
         #if os(iOS)
-        try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine, allowConcurrentPlayback: allowConcurrentPlayback)
+        try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine, allowConcurrentPlayback: allowConcurrentPlayback,
+                                    voiceProcessing: voiceProcessing)
         #else
         try AudioInputDevices.route(preferredUID: inputDeviceUID, on: engine)
         #endif

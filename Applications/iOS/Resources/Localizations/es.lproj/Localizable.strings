@@ -779,3 +779,5 @@
 "Record on Apple Watch" = "Grabar en el Apple Watch";
 "Start a recording from the watch face." = "Empieza una grabación desde la esfera.";
 "Local mode" = "Modo local";
+"Reduce background noise" = "Reducir el ruido de fondo";
+"Uses iPhone voice processing while you record. Helps in noisy rooms but can soften distant voices." = "Usa el procesamiento de voz del iPhone mientras grabas. Ayuda en lugares ruidosos, pero puede atenuar voces lejanas.";

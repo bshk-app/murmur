@@ -456,6 +456,9 @@ import MurmurTranslation
     var directTranslationEnabled = UserDefaults.standard.bool(forKey: "directSpeechTranslationEnabled") {
         didSet { UserDefaults.standard.set(directTranslationEnabled, forKey: "directSpeechTranslationEnabled") }
     }
+    var noiseReduction = UserDefaults.standard.bool(forKey: "noiseReduction") {
+        didSet { UserDefaults.standard.set(noiseReduction, forKey: "noiseReduction") }
+    }
     var target = UserDefaults.standard.string(forKey: "targetLanguage") ?? "en"
     var mode = DictationMode(rawValue: UserDefaults.standard.string(forKey: "speechMode") ?? "hybrid") ?? .hybrid
     // Legacy saved recommendations remain automatic; explicit new choices win.
@@ -939,7 +942,7 @@ import MurmurTranslation
                     guard let self, self.operation == token, self.phase == .recording else { return }
                     await self.interrupted()
                 } }
-                try directSpeech.arm()
+                try directSpeech.arm(voiceProcessing: noiseReduction)
                 try directSpeech.begin(source: source, target: target,
                     recordingURL: recordingAudio?.url(in: StoragePaths.recordings),
                     onBatch: { [weak self] value in
@@ -948,7 +951,8 @@ import MurmurTranslation
                     })
             } else if let speech {
                 wire(speech, token: token)
-                try await speech.start(mode: mode, language: source, microphoneUID: "built-in", recordingURL: recordingAudio?.url(in: StoragePaths.recordings))
+                try await speech.start(mode: mode, language: source, microphoneUID: "built-in", recordingURL: recordingAudio?.url(in: StoragePaths.recordings),
+                                       voiceProcessing: noiseReduction)
             } else { throw CancellationError() }
             guard operation == token, phase == .preparing, UIApplication.shared.applicationState == .active else {
                 await directSpeech?.close(); if let speech { await speech.close() }; throw CancellationError()

@@ -9,6 +9,14 @@ struct SettingsView: View {
     @State private var keyboard = false
     @State private var help: StartHelpKind?
     private var p: MurmurPalette { .init(scheme: scheme) }
+    private var noiseReduction: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Toggle("Reduce background noise", isOn: $model.noiseReduction)
+                .accessibilityIdentifier("noise-reduction-toggle")
+            Text("Uses iPhone voice processing while you record. Helps in noisy rooms but can soften distant voices.")
+                .font(.footnote).foregroundStyle(p.muted)
+        }.padding(15)
+    }
     var body: some View {
         Group {
             ScrollView {
@@ -34,6 +42,8 @@ struct SettingsView: View {
                                 Text("Translates speech directly for supported directions with English. Recognition may also differ. Results appear as sections are processed.")
                                     .font(.footnote).foregroundStyle(p.muted)
                             }.padding(15)
+                            Divider().overlay(p.border)
+                            noiseReduction
                         }.murmurCard(radius: 16, padding: 0).disabled(model.busy)
                     }
                     section("Tools") {

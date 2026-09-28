@@ -779,3 +779,5 @@
 "Record on Apple Watch" = "Tallenna Apple Watchilla";
 "Start a recording from the watch face." = "Aloita tallennus kellotaulusta.";
 "Local mode" = "Paikallinen tila";
+"Reduce background noise" = "Vähennä taustamelua";
+"Uses iPhone voice processing while you record. Helps in noisy rooms but can soften distant voices." = "Käyttää iPhonen puheenkäsittelyä tallennuksen aikana. Auttaa meluisissa paikoissa, mutta voi vaimentaa kaukaisia ääniä.";

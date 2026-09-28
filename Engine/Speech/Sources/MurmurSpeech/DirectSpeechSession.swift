@@ -93,9 +93,10 @@ private actor DirectUtteranceAccumulator {
         try await processor.prepare(progress: progress)
     }
 
-    public func arm(inputDeviceUID: String? = "built-in") throws {
+    public func arm(inputDeviceUID: String? = "built-in", voiceProcessing: Bool = false) throws {
         guard microphone == nil else { return }
         let capture = MicCapture(inputDeviceUID: inputDeviceUID, allowConcurrentPlayback: true)
+        capture.voiceProcessing = voiceProcessing
         capture.automaticGain = AutomaticGain()
         let gate = self.gate
         capture.onChunk = { gate.append($0) }

@@ -8,6 +8,7 @@ import MurmurCore
     enum Phase { case idle, preparing, ready, recording, refining }
     var phase = Phase.idle
     var directTranslationEnabled = false
+    var noiseReduction = false
     var directTranslationSelected: Bool { directTranslationEnabled && source != target && (source == "en" || target == "en") }
     var directTranslationUnavailableOnDevice = false
     var conversation = RecordingTranscript()

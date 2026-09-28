@@ -462,7 +462,8 @@ public final class SpeechSession: @unchecked Sendable {
         try await engine.warmUp(mode: recognitionProfile?.mode ?? mode, language: recognitionProfile?.language ?? language)
     }
 
-    public func start(mode: DictationMode, language: String?, microphoneUID: String?, recordingURL: URL? = nil) async throws {
+    public func start(mode: DictationMode, language: String?, microphoneUID: String?, recordingURL: URL? = nil,
+                      voiceProcessing: Bool = false) async throws {
         let mode = recognitionProfile?.mode ?? mode
         let language = recognitionProfile?.language ?? language
         qualificationTelemetry.reset()
@@ -486,6 +487,7 @@ public final class SpeechSession: @unchecked Sendable {
             }
         }
         mic = MicCapture(inputDeviceUID: microphoneUID)
+        mic.voiceProcessing = voiceProcessing
         mic.automaticGain = AutomaticGain()
         mic.onCapture = { [weak self] frames, rate, peak, error in
             self?.onCapture?(frames, rate, peak, error)
