@@ -16,15 +16,10 @@ final class ConversationLogTests: XCTestCase {
         }
         let anchored = app.staticTexts[candidate.identifier]
         let y = anchored.frame.minY
-        let draft = app.staticTexts["pending-utterance-text"]
-        XCTAssertTrue(draft.waitForExistence(timeout: 5))
-        let initialDraft = draft.label
-        let changed = XCTNSPredicateExpectation(predicate: NSPredicate { value, _ in
-            guard let element = value as? XCUIElement, element.exists else { return false }
-            return element.label != initialDraft
-        }, object: draft)
-        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 6), .completed)
+        // The draft now continues the log below the reading position, so it is announced, not shown.
         XCTAssertTrue(app.staticTexts["transcript-unread"].waitForExistence(timeout: 6))
+        // Let a draft revision and a settled utterance land below the anchor.
+        _ = XCTWaiter.wait(for: [XCTestExpectation(description: "live updates")], timeout: 3)
         XCTAssertTrue(anchored.frame.intersects(reader.frame))
         XCTAssertEqual(anchored.frame.minY, y, accuracy: 2, "New speech must not move the utterance being read")
         let evidence = XCTAttachment(screenshot: app.screenshot()); evidence.name = "stable-reading-position"; evidence.lifetime = .keepAlways

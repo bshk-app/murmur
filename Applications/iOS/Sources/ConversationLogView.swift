@@ -15,6 +15,9 @@ struct ConversationLogView: View {
     private var ready: [RecordedUtterance] {
         Array(conversation.utterances.prefix { $0.settled && (!translated || $0.translation != nil || $0.translationFailed == true) })
     }
+    private var pendingStart: Int {
+        conversation.utterances.dropFirst(ready.count).first?.startSample ?? ready.last?.endSample ?? 0
+    }
     private var pendingText: String {
         let pending = conversation.utterances.dropFirst(ready.count)
         if !translated { return (pending.map(\.text) + [conversation.provisional]).filter { !$0.isEmpty }.joined(separator: " ") }
@@ -46,6 +49,13 @@ struct ConversationLogView: View {
                                          identifier: utterance.id == ready.first?.id ? identifier : "\(identifier)-utterance-\(utterance.id)")
                                 .id(utterance.id)
                         }
+                        // The revisable phrase continues the log in lighter ink and settles in place.
+                        if !pendingText.isEmpty {
+                            UtteranceRow(utterance: .init(id: .max, startSample: pendingStart, endSample: pendingStart, text: pendingText),
+                                         translated: false, size: fontSize, identifier: "pending-utterance-text")
+                                .foregroundStyle(p.secondary)
+                        }
+                        Color.clear.frame(height: 1).id(Self.end)
                     }.padding(.trailing, 8).padding(.vertical, 8)
                 }.contentShape(Rectangle()).clipped().accessibilityIdentifier("transcript-reader")
                     .defaultScrollAnchor(.bottom, for: .initialOffset)
@@ -54,34 +64,30 @@ struct ConversationLogView: View {
                         if phase == .tracking || phase == .interacting { following = false; userScrolled = true }
                         if phase == .idle && userScrolled { following = nearBottom; userScrolled = false }
                     }
-                    .onChange(of: ready.last?.id) {
-                        if !following { unread = true }
-                        Task { @MainActor in
-                            await Task.yield()
-                            if following, let last = ready.last { proxy.scrollTo(last.id, anchor: .bottom) }
-                        }
-                    }
+                    .onChange(of: ready.last?.id) { reveal(proxy) }
+                    .onChange(of: pendingText) { reveal(proxy) }
                 Button {
                     following = true; unread = false
-                    if let last = ready.last { proxy.scrollTo(last.id, anchor: .bottom) }
+                    proxy.scrollTo(Self.end, anchor: .bottom)
                 } label: {
                     Label(following ? "Following live text" : "Back to live text", systemImage: following ? "dot.radiowaves.left.and.right" : "arrow.down.to.line")
                         .frame(maxWidth: .infinity, minHeight: 44)
                 }.font(.footnote).buttonStyle(.bordered).accessibilityIdentifier("transcript-latest")
                     .accessibilityValue(L10n.text(following ? "Following live text" : "Reading earlier text"))
                 if unread && !following { Text("New text below").font(.caption).foregroundStyle(p.secondary).accessibilityIdentifier("transcript-unread") }
-                // The revisable phrase has its own fixed viewport. It cannot move the log.
-                if !pendingText.isEmpty {
-                ScrollView {
-                    Text(pendingText).font(.system(size: fontSize)).lineSpacing(5).frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(12).accessibilityIdentifier("pending-utterance-text")
-                }.frame(maxWidth: .infinity).frame(height: 112).contentShape(Rectangle()).clipped()
-                    .defaultScrollAnchor(.bottom, for: .sizeChanges)
-                    .background(p.card2, in: RoundedRectangle(cornerRadius: 14)).foregroundStyle(p.secondary)
-                    .accessibilityIdentifier("current-utterance")
-                }
             }
             .onAppear { if ![20.0, 24, 28, 32].contains(fontSize) { fontSize = 24 } }
+        }
+    }
+
+    private static let end = "end"
+
+    /// New text only moves the viewport while following; otherwise it is announced below.
+    private func reveal(_ proxy: ScrollViewProxy) {
+        if !following { unread = true }
+        Task { @MainActor in
+            await Task.yield()
+            if following { proxy.scrollTo(Self.end, anchor: .bottom) }
         }
     }
 }
