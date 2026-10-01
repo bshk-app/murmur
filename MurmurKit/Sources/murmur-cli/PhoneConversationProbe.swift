@@ -27,7 +27,7 @@ enum PhoneConversationProbe {
         var audio = [Float](); audio.reserveCapacity(count)
         while audio.count < count { audio.append(contentsOf: source.prefix(min(source.count, count - audio.count))) }
         let observed = Observations()
-        let speech = SpeechSession(quantization: "int4", ane: true, memoryLimit: 3_500_000_000, corrector: language == "ru" ? .gigaam : .parakeet, modelsRoot: modelsRoot)
+        let speech = SpeechSession(ane: true, memoryLimit: 3_500_000_000, corrector: language == "ru" ? .gigaam : .parakeet, modelsRoot: modelsRoot)
         let translator = TranslationSession(modelsRoot: modelsRoot)
         FileHandle.standardError.write(Data("Preparing real phone engines for \(language) → \(target), \(seconds)s\n".utf8))
         try await speech.load(mode: mode)

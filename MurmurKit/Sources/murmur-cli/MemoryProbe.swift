@@ -75,7 +75,7 @@ enum MemoryProbe {
         let sampler = Task.detached {
             while !Task.isCancelled { recorder.sample(); try? await Task.sleep(for: .milliseconds(20)) }
         }
-        let speech = SpeechSession(quantization: "int4", ane: true, memoryLimit: 3_500_000_000,
+        let speech = SpeechSession(ane: true, memoryLimit: 3_500_000_000,
                                    corrector: .gigaam, modelsRoot: root)
         let translation = TranslationSession(modelsRoot: root)
         var runs: [[String: Any]] = []

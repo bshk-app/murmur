@@ -22,12 +22,11 @@ private actor PhoneCorrector {
     private var gigaam: GigaAMCorrector?
     private let choice: SpeechModelChoice
     private let ane: Bool
-    private let quantization: String
     private var previous: Task<String, Error>?
     private var serialID: UInt64 = 0
 
-    init(ane: Bool, quantization: String, choice: SpeechModelChoice) {
-        self.ane = ane; self.quantization = quantization; self.choice = choice
+    init(ane: Bool, choice: SpeechModelChoice) {
+        self.ane = ane; self.choice = choice
     }
 
     func load(onProgress: @escaping @MainActor @Sendable (Progress) -> Void) async throws {
@@ -36,7 +35,8 @@ private actor PhoneCorrector {
             return
         }
         guard manager == nil else { return }
-        let encoderName = quantization == "int4" ? "EncoderInt4.mlmodelc" : "Encoder.mlmodelc"
+        // 6-bit encoder: EncoderInt4 from the same snapshot is ~1.7x worse on WER and slower.
+        let encoderName = "Encoder.mlmodelc"
         let repo = HuggingFace.Repo.ID(rawValue: SpeechSession.coreMLRepo)!
         let cache = HubCache.default
         let root = cache.snapshotsDirectory(repo: repo, kind: .model)
@@ -159,12 +159,12 @@ private actor PhoneStreamingEngine {
     private var onModelEvent: (@Sendable (SpeechEvent) -> Void)?
     private var onQueueDepth: (@Sendable (Int) -> Void)?
 
-    init(ane: Bool, quantization: String, choice: SpeechModelChoice, independent: Bool, modelsRoot: URL) {
+    init(ane: Bool, choice: SpeechModelChoice, independent: Bool, modelsRoot: URL) {
         self.choice = choice
         self.independent = independent
         self.modelsRoot = modelsRoot
         self.ane = ane
-        corrector = PhoneCorrector(ane: ane, quantization: quantization, choice: choice)
+        corrector = PhoneCorrector(ane: ane, choice: choice)
     }
 
     func load(_ mode: DictationMode, onPreparation: @escaping @MainActor @Sendable (String) -> Void,
@@ -458,14 +458,14 @@ public final class SpeechSession: @unchecked Sendable {
     public private(set) var capturedSeconds = 0.0
     public private(set) var capturedPeak: Float = 0
 
-    public init(quantization: String, ane: Bool, memoryLimit: Int, corrector: SpeechModelChoice = .parakeet, independent: Bool = false, modelsRoot: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
+    public init(ane: Bool, memoryLimit: Int, corrector: SpeechModelChoice = .parakeet, independent: Bool = false, modelsRoot: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
         GPU.set(memoryLimit: memoryLimit, relaxed: false)
-        engine = PhoneStreamingEngine(ane: ane, quantization: quantization, choice: corrector, independent: independent, modelsRoot: modelsRoot)
+        engine = PhoneStreamingEngine(ane: ane, choice: corrector, independent: independent, modelsRoot: modelsRoot)
     }
 
-    public convenience init(profile: SpeechRecognitionProfile, quantization: String = "int4", ane: Bool = true,
+    public convenience init(profile: SpeechRecognitionProfile, ane: Bool = true,
                             memoryLimit: Int, modelsRoot: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
-        self.init(quantization: quantization, ane: ane, memoryLimit: memoryLimit, corrector: profile.model,
+        self.init(ane: ane, memoryLimit: memoryLimit, corrector: profile.model,
                   independent: profile.independentCorrector, modelsRoot: modelsRoot)
         recognitionProfile = profile
     }
@@ -694,7 +694,7 @@ public actor CoreMLSpeechLane {
     private let independentWorker = PhoneIndependentCorrector()
     public init(choice: SpeechModelChoice, ane: Bool = true, modelsRoot: URL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]) {
         self.choice = choice; self.ane = ane; root = modelsRoot
-        standard = PhoneCorrector(ane: ane, quantization: "int4", choice: choice)
+        standard = PhoneCorrector(ane: ane, choice: choice)
     }
     public func load() async throws {
         if choice.usesGPU { try await independentWorker.load(choice: choice, ane: ane, modelsRoot: root) }

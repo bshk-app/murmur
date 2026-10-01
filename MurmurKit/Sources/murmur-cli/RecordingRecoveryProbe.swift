@@ -71,7 +71,7 @@ enum RecordingRecoveryProbe {
         base.audio = audio; base.transcriptionComplete = false
         try await repository.save(base)
         let observed = RecordingProbeState(base)
-        let speech = SpeechSession(quantization: "int4", ane: true, memoryLimit: 3_500_000_000, corrector: language == "ru" ? .gigaam : .parakeet, modelsRoot: modelsRoot)
+        let speech = SpeechSession(ane: true, memoryLimit: 3_500_000_000, corrector: language == "ru" ? .gigaam : .parakeet, modelsRoot: modelsRoot)
         let translator = TranslationSession(modelsRoot: modelsRoot, qualityModelsRoots: qualityRoots)
         try await speech.load(mode: .accurate); try await speech.warmUp(mode: .accurate, language: language)
         try await translator.prepare(from: language, to: target); try await translator.warmUp(from: language, to: target)
