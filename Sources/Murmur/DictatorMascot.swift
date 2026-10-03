@@ -43,11 +43,13 @@ struct DictatorMascot: View {
         let size: CGFloat
         let reduceMotion: Bool
         @State private var start = Date.now
+        @State private var finished = false
 
         var body: some View {
             let animation = mood.animation
-            TimelineView(.animation(minimumInterval: animation.interval, paused: reduceMotion)) { context in
-                let column = mood.frame(at: context.date.timeIntervalSince(start), reduceMotion: reduceMotion)
+            TimelineView(.animation(minimumInterval: animation.interval, paused: reduceMotion || finished)) { context in
+                let elapsed = finished ? Double(animation.count) * animation.interval : context.date.timeIntervalSince(start)
+                let column = mood.frame(at: elapsed, reduceMotion: reduceMotion)
                 let width = size * 192 / 208
                 Image("murmur_pet")
                     .renderingMode(.original)
@@ -57,6 +59,17 @@ struct DictatorMascot: View {
                     .offset(x: -CGFloat(column) * width, y: -CGFloat(animation.row) * size)
                     .frame(width: width, height: size, alignment: .topLeading)
                     .clipped()
+            }
+            .task(id: reduceMotion) {
+                start = .now
+                finished = false
+                guard !reduceMotion, !animation.repeats else { return }
+                do {
+                    try await Task.sleep(for: .seconds(Double(animation.count) * animation.interval))
+                    finished = true
+                } catch {
+                    // SwiftUI cancels playback when the state changes or the view disappears.
+                }
             }
         }
     }
