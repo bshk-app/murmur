@@ -61,9 +61,19 @@ child.on('close', async code => {
     // Reuse the in-memory issuer for processing checks: one 1Password approval,
     // without caching its value or asking for authorization again after upload.
     if (code !== 0) return;
+    const uploadRecord = {version: report.version, build: report.build, uploaded: true,
+        acceptedAt: new Date().toISOString(), method: 'altool', ipaSHA256: report.ipa.sha256,
+        appleProcessing: 'pending', testFlightGroupAssignment: 'not_confirmed'};
+    const saveUpload = () => fs.writeFileSync(path.join(directory, 'upload.json'), JSON.stringify(uploadRecord, null, 2) + '\n');
+    saveUpload();
     for (let attempt = 0; attempt < 18; attempt++) {
         try {
             const build = await checkStatus();
+            if (build) {
+                uploadRecord.appleProcessing = build.attributes.processingState;
+                uploadRecord.internalBuildState = build.testingState;
+                saveUpload();
+            }
             if (build && (['FAILED', 'INVALID'].includes(build.attributes.processingState) ||
                 build.attributes.processingState === 'VALID' && build.testingState === 'IN_BETA_TESTING')) return;
         } catch (error) { console.error(error.message); return; }
