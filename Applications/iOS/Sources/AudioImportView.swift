@@ -101,6 +101,7 @@ struct AudioImportView: View {
                 if active && (model.audioImports.preparing || model.audioImports.pausing) { ProgressView().controlSize(.small) }
                 Text(status(job)).font(.subheadline).fixedSize(horizontal: false, vertical: true)
             }
+            if job.origin == .watch { StatusTag(title: "From Apple Watch") }
             if job.status == .queued { StatusTag(title: "Waiting") }
             else if job.status == .paused { StatusTag(title: "Partial transcript", tone: tone) }
             else if job.status == .failed { StatusTag(title: "Recognition", tone: .error) }

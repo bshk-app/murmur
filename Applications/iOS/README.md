@@ -89,3 +89,13 @@ Pushed screens use the system navigation bar and back gesture in one navigation 
 On iOS 18.4+, Settings → Default translation app opens the system Default Apps settings, where Murmator can be selected. The app now embeds its own TranslationUIProvider. It receives the selected text reactively, detects supported source languages, uses downloaded quality models, and offers copy, share and replacement when the source supports editing. Open the containing app once after an update to prepare its shared store.
 
 The extension uses a dedicated language-pack App Group, without access to the notes/keyboard group. Existing translation packs move into this store; conflicting legacy copies are preserved and remain visible in Storage. Cross-process file locks protect download, import and deletion. The native extension memory mode maps INT8 weights read-only and bounds temporary buffers without changing weights or decoding parameters. See results/system-translation-2026-09-08/README.md for the device/kernel evidence, memory comparison and end-to-end replacement test.
+
+## Apple Watch recording (2026-09-14)
+
+Murmator now ships a companion watch app. It records a voice note on the wrist and transfers the file to the iPhone over WatchConnectivity; the phone transcribes it through the existing audio import. The watch runs no recogniser and links none of the Engine packages. The language is the phone's dictation language, which the watch displays and warns about when the phone has no models for it.
+
+A recording that arrives while the app is not in front raises one local notification, and transcription starts by itself when the app next becomes active. It waits instead while keyboard dictation is active or memory cannot be released, and shows its state on the Notes banner. Automatic start goes through the same path a tap does, so it unloads warm models first. Leaving the app no longer counts as pausing an import deliberately: only a tap stops a recording from resuming.
+
+See Watch/README.md for the handover, the file's lifetime on both devices, and the watchOS platform the build requires. The start policy lives in MurmurCore as WatchImportPolicy and is covered by unit tests in Engine/Core.
+
+Verification so far covers those unit tests, project generation with the watch app embedded in the iOS app, and compilation of both. Nothing on a device has been checked. WatchConnectivity delivery, background launch of the phone app, locked-phone delivery, wrist-down recording, interruption by a call, transfers surviving a watch reboot and the recognition quality of 16 kHz AAC are all unverified. Maestro cannot drive a watchOS simulator, so the watch app has no flow coverage.
