@@ -1,0 +1,8 @@
+# Native full OCR dependencies and algorithm provenance
+
+- ONNX Runtime 1.30.0: Microsoft, MIT; installed with CocoaPods, pinned in Podfile.lock.
+- OpenCV mobile 4.13.0, v35 iOS Simulator package: https://github.com/nihui/opencv-mobile/releases/download/v35/opencv-mobile-4.13.0-ios-simulator.zip . OpenCV/mobile licensing notices are retained in the package. Used for CPU resize, contour extraction, perspective transform and decoding. Only the arm64 slice is linked. It differs from host opencv-python 5.0.0.93, so pixel-level equivalence is not assumed.
+- Clipper 6.4.2, Angus Johnson: Boost Software License 1.0. Source/header obtained from https://github.com/fonttools/pyclipper/tree/main/src ; original notices preserved in vendor/clipper.cpp and clipper.hpp. Used for DB polygon expansion.
+- Detection DB postprocessing, crop geometry and CTC decoder are adaptations of the algorithms in PaddleOCR/RapidOCR. Copyright (c) 2020 PaddlePaddle Authors; Apache License 2.0. References: https://github.com/RapidAI/RapidOCR/tree/main/python/rapidocr/ch_ppocr_det and https://github.com/RapidAI/RapidOCR/tree/main/python/rapidocr/ch_ppocr_rec . Full Apache text: https://www.apache.org/licenses/LICENSE-2.0 . Changes: Objective-C++ implementation using native ORT, explicit timing, traces, simulator entry point, and removal of the Python wrapper.
+
+ML Kit is not linked. Model provenance, source URLs and SHA256 values are recorded in `Resources/model-provenance.json`. Detector graphs are converted to fixed portrait/landscape shapes and FP16 with Resize cast removal by `Scripts/prepare_models.py`; recognition weights remain the downloaded RapidOCR conversions. Clipper sources and original notices are in `Sources/COCR`.

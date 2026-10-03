@@ -16,7 +16,8 @@ import AppIntents
             Group {
                 #if DEBUG
                 #if !MURMUR_UI_HOST
-                if ProcessInfo.processInfo.arguments.contains("--quality-qualification-probe") { QualityQualificationProbe() }
+                if ProcessInfo.processInfo.arguments.contains("--photo-translation-probe") { PhotoTranslationView(initialPhotoURL: FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent(ProcessInfo.processInfo.environment["PHOTO_PROBE_FIXTURE"] == "partial-failure" ? "photo-failure-probe.jpg" : "photo-probe.jpg"), source: "en", target: ProcessInfo.processInfo.environment["PHOTO_PROBE_TARGET"] ?? "ru") }
+                else if ProcessInfo.processInfo.arguments.contains("--quality-qualification-probe") { QualityQualificationProbe() }
                 else if ProcessInfo.processInfo.arguments.contains("--keyboard-stream-replay") { KeyboardStreamReplayView() }
                 else if ProcessInfo.processInfo.arguments.contains("--storage-probe") { StorageProbe() }
                 else if ProcessInfo.processInfo.arguments.contains("--text-translation-probe") { TextTranslationProbe() }

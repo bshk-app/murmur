@@ -42,6 +42,10 @@ function add(title, file) {
     if (!fs.statSync(file).isFile()) throw Error(`Missing license: ${file}`);
     sections.push({title, source: path.relative(repo, file), text: fs.readFileSync(file, 'utf8')});
 }
+for (const file of fs.readdirSync(path.join(repo, 'Engine/OCR/NativeLicenses'))) {
+    add(`Photo OCR — ${file}`, path.join(repo, 'Engine/OCR/NativeLicenses', file));
+}
+add('Photo OCR models and modified native pipeline — attribution', path.join(repo, 'Engine/OCR/THIRD_PARTY.md'));
 add('Murmator', path.join(repo, 'LICENSE'));
 const pins = JSON.parse(fs.readFileSync(path.join(app, 'Package.resolved'), 'utf8')).pins;
 const directories = fs.readdirSync(checkouts);

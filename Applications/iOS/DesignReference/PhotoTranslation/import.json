@@ -1,0 +1,27 @@
+{
+  "project": "https://claude.ai/design/p/71b76ff3-1995-4810-8583-36908c45101d",
+  "file": "Murmator Photo Translate Prototype.dc.html",
+  "transport": "Claude CLI via claude_design MCP, read-only export",
+  "files": {
+    "mascot-mono.png": {
+      "bytes": 19700,
+      "sha256": "b65b002a882c08c6169e7e1057e134bc6bd43fd4cf312d450331042d6d5c7879"
+    },
+    "Murmator Photo Translate Prototype.dc.html": {
+      "bytes": 35141,
+      "sha256": "05525588839e1be071adc9838b1f9c949cf2c204c2f0990078122eacc2f153d8"
+    },
+    "support.js": {
+      "bytes": 57767,
+      "sha256": "fab925b9a2ecd39654935eff0cf72691465750f4dd5fe2f836e5c5e18659979b"
+    },
+    "mascot.png": {
+      "bytes": 1332856,
+      "sha256": "6bfe1a180c02a21fc43583907c1c02cb50971afc663ab982f3335d0cd3d9a2f4"
+    },
+    "handoff.md": {
+      "bytes": 11450,
+      "sha256": "b32a922024c16d8145f86636e6bb6e962357d30549c99173af6dc2a89b9a8609"
+    }
+  }
+}

@@ -1,1 +1,2 @@
 "NSMicrophoneUsageDescription" = "Murmator records and transcribes your voice on this device.";
+"NSCameraUsageDescription" = "Murmator reads and translates text from a photo on this device.";

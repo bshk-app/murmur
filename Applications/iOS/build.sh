@@ -6,6 +6,7 @@ if [[ "${MURMUR_QUALIFICATION_BUILD:-0}" == "1" ]]; then
   node ../../Engine/Speech/Qualification/capture-build-source.mjs
 fi
 tuist generate --no-open
+bash ../../Engine/OCR/Scripts/prepare.sh
 mkdir -p MurMurMobile.xcworkspace/xcshareddata/swiftpm
 cp Package.resolved MurMurMobile.xcworkspace/xcshareddata/swiftpm/Package.resolved
 xcodebuild -resolvePackageDependencies -workspace MurMurMobile.xcworkspace -scheme MurMurMobile -derivedDataPath build -onlyUsePackageVersionsFromResolvedFile

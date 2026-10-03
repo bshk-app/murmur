@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  @keyframes mshimmer { 0%{transform:translateX(-70%)} 100%{transform:translateX(280%)} }
+  @keyframes mpulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes mrise { 0%{opacity:0;transform:translateY(10px)} 100%{opacity:1;transform:translateY(0)} }
+  *::-webkit-scrollbar { width:0; height:0; }
+  body { margin:0; -webkit-font-smoothing:antialiased; background:#e9e4dc;
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif; }
+  a { color:#c9722c; } a:hover { color:#e8893b; }
+  [data-theme="light"] { --sheet:#FFFDF9; --card:#FFFDF9; --ink:#2A2520; --ink2:rgba(74,62,52,.74);
+    --ink3:rgba(74,62,52,.52); --line:rgba(60,40,20,.11); --fill:rgba(60,40,20,.07); --fill2:rgba(60,40,20,.12);
+    --acc:#E07A2F; --accT:#C9722C; --accTint:rgba(224,122,47,.13); --err:#A52A17; --errTint:rgba(165,42,23,.11);
+    --plaque:rgba(252,250,246,.955); --plaqueInk:#251F1A; --plaqueSub:rgba(74,62,52,.6);
+    --plaqueWeak:rgba(252,250,246,.5); --plaqueWeakInk:rgba(37,31,26,.6); --sys:#e7e3dd; }
+  [data-theme="dark"] { --sheet:#1E1916; --card:rgba(255,255,255,.07); --ink:rgba(255,255,255,.95); --ink2:rgba(255,255,255,.68);
+    --ink3:rgba(255,255,255,.46); --line:rgba(255,255,255,.12); --fill:rgba(255,255,255,.10); --fill2:rgba(255,255,255,.16);
+    --acc:#E07A2F; --accT:#F0A469; --accTint:rgba(224,122,47,.16); --err:#F0A194; --errTint:rgba(240,161,148,.13);
+    --plaque:rgba(26,22,19,.95); --plaqueInk:rgba(255,255,255,.95); --plaqueSub:rgba(255,255,255,.6);
+    --plaqueWeak:rgba(26,22,19,.58); --plaqueWeakInk:rgba(255,255,255,.52); --sys:#2a2521; }
+</style>
+</helmet>
+
+<div data-theme="light" style="min-height:100vh;box-sizing:border-box;padding:40px 24px 64px;display:flex;flex-direction:column;align-items:center;gap:20px;background:#e9e4dc">
+
+  <div style="width:100%;max-width:620px;display:flex;align-items:flex-start;gap:12px">
+    <img src="mascot.png" alt="" style="width:34px;height:34px;object-fit:contain;flex:none">
+    <div>
+      <div style="font:700 17px/1.2 -apple-system,system-ui;letter-spacing:-.01em;color:#2a2520">Прототип · фото → результат → ошибка блока → исправление</div>
+      <div style="margin-top:4px;font:400 12.5px/1.45 -apple-system,system-ui;color:rgba(74,62,52,.6);text-wrap:pretty">Нажмите спуск. Блок с пунктиром — тот, что не удалось перевести: он открывается тапом.</div>
+    </div>
+  </div>
+
+  <div data-theme="{{ theme }}" data-screen-label="Прототип" style="position:relative;width:393px;height:852px;border-radius:44px;overflow:hidden;background:#37423F;display:flex;flex-direction:column;box-shadow:0 14px 34px rgba(40,28,14,.18)">
+
+    <div style="position:absolute;inset:0;background:#37423F"></div>
+    <div style="position:absolute;left:0;right:0;top:0;height:300px;background:#2E3836"></div>
+    <div style="position:absolute;left:34px;right:34px;top:150px;height:286px;border-radius:6px;background:#D8D0BF;box-shadow:0 18px 40px rgba(0,0,0,.34)"></div>
+    <div style="position:absolute;left:34px;right:34px;top:150px;height:286px;border-radius:6px;background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(0,0,0,.14))"></div>
+    <div style="position:absolute;left:34px;right:34px;top:150px;height:286px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;color:rgba(41,35,28,.9)">
+      <span style="font:700 34px/1 -apple-system,system-ui;letter-spacing:.02em">TERVETULOA</span>
+      <span style="font:600 17px/1 -apple-system,system-ui;letter-spacing:.06em">AVOlNNA 9–21</span>
+      <span style="font:500 14px/1.3 -apple-system,system-ui;letter-spacing:.04em;text-align:center">KAHVILA JA LEIPOMO</span>
+    </div>
+    <div style="position:absolute;left:52px;right:52px;bottom:150px;height:120px;border-radius:4px;background:#46514D"></div>
+
+    <sc-if value="{{ dim }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;z-index:3;background:rgba(8,6,5,.58)"></div>
+    </sc-if>
+
+    <div style="position:relative;flex:none;height:54px;z-index:5">
+      <div style="position:absolute;top:11px;left:50%;transform:translateX(-50%);width:114px;height:34px;border-radius:20px;background:#0a0a0a"></div>
+      <div style="position:absolute;left:30px;top:17px;font:600 15px/1 -apple-system,system-ui;color:#fff">9:41</div>
+      <div style="position:absolute;right:26px;top:19px;display:flex;align-items:center;gap:5px;color:#fff;opacity:.9">
+        <span style="display:block;width:17px;height:11px;border:1.5px solid currentColor;border-radius:3px"></span>
+        <span style="display:block;width:17px;height:11px;border-radius:3px;background:currentColor"></span>
+      </div>
+    </div>
+
+    <sc-if value="{{ isCam }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative;z-index:5;flex:none;display:flex;justify-content:center;padding:6px 16px 0">
+        <button style="height:44px;padding:0 16px;border:0;border-radius:22px;background:rgba(18,16,14,.55);color:#fff;display:flex;align-items:center;gap:8px;font:600 15px/1 -apple-system,system-ui;cursor:pointer;backdrop-filter:blur(14px)">
+          <span>Финский</span><span style="opacity:.6;font-weight:400">→</span><span>Русский</span><span style="opacity:.65;font:400 10px/1 -apple-system,system-ui">▼</span>
+        </button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasBar }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;display:flex;align-items:center;gap:10px;padding:4px 16px 0">
+        <button onClick="{{ reset }}" style="flex:none;width:44px;height:44px;border:0;border-radius:22px;background:rgba(18,16,14,.55);color:#fff;font:400 19px/1 -apple-system,system-ui;cursor:pointer;backdrop-filter:blur(14px)">✕</button>
+        <button style="flex:1;min-width:0;height:44px;border:0;border-radius:22px;background:rgba(18,16,14,.55);color:#fff;display:flex;align-items:center;justify-content:center;gap:7px;font:600 15px/1 -apple-system,system-ui;cursor:pointer;backdrop-filter:blur(14px)">
+          <span>Финский</span><span style="opacity:.6;font-weight:400">→</span><span>Русский</span><span style="opacity:.65;font:400 10px/1 -apple-system,system-ui">▼</span>
+        </button>
+        <button onClick="{{ toggleOrig }}" style="{{ origBtnStyle }}">{{ origLabel }}</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProc }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;z-index:3;left:34px;right:34px;top:226px;height:46px;border-radius:9px;background:var(--plaque);overflow:hidden">
+        <div style="width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(160,150,140,.5),transparent);animation:mshimmer 1.5s linear infinite"></div>
+      </div>
+      <div style="position:absolute;z-index:3;left:50%;transform:translateX(-50%);top:286px;width:180px;height:30px;border-radius:8px;background:var(--plaque);overflow:hidden">
+        <div style="width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(160,150,140,.5),transparent);animation:mshimmer 1.5s linear .25s infinite"></div>
+      </div>
+      <div style="position:absolute;z-index:3;left:50%;transform:translateX(-50%);top:331px;width:214px;height:26px;border-radius:8px;background:var(--plaque);overflow:hidden">
+        <div style="width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(160,150,140,.5),transparent);animation:mshimmer 1.5s linear .5s infinite"></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showPlaques }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;z-index:2;left:34px;right:34px;top:224px;padding:10px 12px;border-radius:9px;background:var(--plaque);box-shadow:0 3px 14px rgba(0,0,0,.3);display:flex;align-items:center;gap:9px">
+        <sc-if value="{{ nums }}" hint-placeholder-val="{{ false }}">
+          <span style="flex:none;width:20px;height:20px;border-radius:10px;background:var(--fill2);color:var(--plaqueSub);display:flex;align-items:center;justify-content:center;font:600 11px/1 ui-monospace,Menlo,monospace">1</span>
+        </sc-if>
+        <div style="flex:1;font:700 26px/1.1 -apple-system,system-ui;letter-spacing:-.015em;color:var(--plaqueInk);text-align:center">ДОБРО ПОЖАЛОВАТЬ</div>
+      </div>
+
+      <sc-if value="{{ badBlock }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ openErr }}" style="{{ badStyle }}">
+          <span style="flex:none;width:19px;height:19px;border-radius:10px;background:var(--err);color:var(--sheet);display:flex;align-items:center;justify-content:center;font:700 12px/1 -apple-system,system-ui">!</span>
+          <span style="flex:none;white-space:nowrap;font:500 17px/1.2 -apple-system,system-ui;color:var(--plaqueInk)">{{ badText }}</span>
+          <span style="flex:none;white-space:nowrap;font:600 10px/1.2 -apple-system,system-ui;letter-spacing:.05em;text-transform:uppercase;color:var(--err)">Не переведено</span>
+        </button>
+      </sc-if>
+
+      <sc-if value="{{ fixingBlock }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;z-index:4;left:50%;transform:translateX(-50%);top:284px;width:190px;height:34px;border-radius:8px;background:var(--plaque);box-shadow:0 0 0 2.5px var(--acc);overflow:hidden">
+          <div style="width:44%;height:100%;background:linear-gradient(90deg,transparent,rgba(224,122,47,.45),transparent);animation:mshimmer 1.2s linear infinite"></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ goodBlock }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;z-index:2;left:50%;transform:translateX(-50%);top:284px;padding:7px 11px;border-radius:8px;background:var(--plaque);box-shadow:0 3px 14px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px">
+          <sc-if value="{{ nums }}" hint-placeholder-val="{{ false }}">
+            <span style="flex:none;width:18px;height:18px;border-radius:9px;background:var(--fill2);color:var(--plaqueSub);display:flex;align-items:center;justify-content:center;font:600 10px/1 ui-monospace,Menlo,monospace">2</span>
+          </sc-if>
+          <div style="font:600 17px/1.1 -apple-system,system-ui;color:var(--plaqueInk)">ОТКРЫТО 9–21</div>
+        </div>
+      </sc-if>
+
+      <div style="position:absolute;z-index:2;left:50%;transform:translateX(-50%);top:330px;padding:6px 10px;border-radius:8px;background:var(--plaque);box-shadow:0 3px 14px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px">
+        <sc-if value="{{ nums }}" hint-placeholder-val="{{ false }}">
+          <span style="flex:none;width:18px;height:18px;border-radius:9px;background:var(--fill2);color:var(--plaqueSub);display:flex;align-items:center;justify-content:center;font:600 10px/1 ui-monospace,Menlo,monospace">3</span>
+        </sc-if>
+        <div style="font:500 14px/1.2 -apple-system,system-ui;color:var(--plaqueInk)">КОФЕЙНЯ И ПЕКАРНЯ</div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1"></div>
+
+    <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:6;flex:none;align-self:center;margin-bottom:14px;padding:11px 15px;border-radius:14px;background:rgba(18,16,14,.78);backdrop-filter:blur(14px);display:flex;align-items:center;gap:9px;animation:mrise .22s ease-out">
+        <span style="flex:none;width:20px;height:20px;border-radius:10px;background:#8DCCA1;color:#12281B;display:flex;align-items:center;justify-content:center;font:700 12px/1 -apple-system,system-ui">✓</span>
+        <span style="font:600 14px/1.2 -apple-system,system-ui;color:#fff">Блок переведён</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCam }}" hint-placeholder-val="{{ true }}">
+      <div style="position:relative;z-index:5;flex:none;margin:0 20px 18px;padding:15px 16px;border-radius:18px;background:rgba(18,16,14,.62);backdrop-filter:blur(16px);display:flex;gap:12px;align-items:flex-start">
+        <img src="mascot-mono.png" alt="" style="width:30px;height:30px;object-fit:contain;flex:none;filter:invert(1);opacity:.92">
+        <div style="min-width:0">
+          <div style="font:600 16px/1.3 -apple-system,system-ui;color:#fff;text-wrap:pretty">Наведите на текст и снимите</div>
+          <div style="margin-top:5px;font:400 14px/1.45 -apple-system,system-ui;color:rgba(255,255,255,.76);text-wrap:pretty">Перевод появится поверх надписей. Можно взять готовый снимок из галереи.</div>
+        </div>
+      </div>
+      <div style="position:relative;z-index:5;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 30px 10px">
+        <button style="width:60px;height:60px;border:1px solid rgba(255,255,255,.28);border-radius:14px;background:rgba(18,16,14,.5);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;backdrop-filter:blur(14px)">
+          <span style="font:400 19px/1 -apple-system,system-ui">⌗</span><span style="font:500 10px/1 -apple-system,system-ui">Галерея</span>
+        </button>
+        <button onClick="{{ shoot }}" aria-label="Снять фото" style="width:78px;height:78px;border:0;border-radius:39px;background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.34);cursor:pointer"></button>
+        <button style="width:60px;height:60px;border:1px solid rgba(255,255,255,.28);border-radius:14px;background:rgba(18,16,14,.5);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;backdrop-filter:blur(14px)">
+          <span style="font:400 19px/1 -apple-system,system-ui">⚡︎</span><span style="font:500 10px/1 -apple-system,system-ui">Авто</span>
+        </button>
+      </div>
+      <div style="position:relative;z-index:5;flex:none;display:flex;justify-content:center;padding:6px 0 9px"><div style="width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.55)"></div></div>
+    </sc-if>
+
+    <sc-if value="{{ isProc }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;margin:0 20px 16px;padding:15px 16px;border-radius:18px;background:rgba(18,16,14,.66);backdrop-filter:blur(16px);display:flex;align-items:center;gap:13px">
+        <span style="flex:none;display:flex;align-items:center;gap:3px">
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out infinite"></span>
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out .2s infinite"></span>
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out .4s infinite"></span>
+        </span>
+        <div style="flex:1;min-width:0">
+          <div style="font:600 16px/1.3 -apple-system,system-ui;color:#fff">Читаем текст на фото</div>
+          <div style="margin-top:3px;font:400 13.5px/1.4 -apple-system,system-ui;color:rgba(255,255,255,.72);text-wrap:pretty">Готовые блоки покажем сразу, как только переведутся</div>
+        </div>
+        <button onClick="{{ reset }}" style="flex:none;height:38px;padding:0 14px;border:1px solid rgba(255,255,255,.34);border-radius:19px;background:none;color:#fff;font:600 14px/1 -apple-system,system-ui;cursor:pointer">Отмена</button>
+      </div>
+      <div style="position:relative;z-index:5;flex:none;display:flex;justify-content:center;padding:4px 0 9px"><div style="width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.55)"></div></div>
+    </sc-if>
+
+    <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;display:flex;justify-content:flex-end;gap:10px;padding:0 16px 12px">
+        <button style="width:44px;height:44px;border:0;border-radius:22px;background:rgba(18,16,14,.55);color:#fff;font:400 17px/1 -apple-system,system-ui;cursor:pointer;backdrop-filter:blur(14px)">↻</button>
+        <button onClick="{{ reset }}" style="height:44px;padding:0 15px;border:0;border-radius:22px;background:rgba(18,16,14,.55);color:#fff;display:flex;align-items:center;gap:7px;font:500 14px/1 -apple-system,system-ui;cursor:pointer;backdrop-filter:blur(14px)"><span style="font-size:15px">⌗</span>Другое фото</button>
+      </div>
+
+      <div style="position:relative;z-index:5;flex:none;background:var(--sheet);border-radius:16px 16px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.26);display:flex;flex-direction:column">
+        <div style="flex:none;display:flex;justify-content:center;padding:7px 0 3px"><div style="width:38px;height:5px;border-radius:3px;background:var(--fill2)"></div></div>
+        <div style="flex:none;display:flex;align-items:center;gap:10px;padding:5px 18px 10px">
+          <div style="flex:1;min-width:0">
+            <div style="font:600 17px/1.2 -apple-system,system-ui;color:var(--ink)">Полный текст</div>
+            <div style="margin-top:3px;font:400 13px/1.3 -apple-system,system-ui;color:var(--ink3)">{{ listSub }}</div>
+          </div>
+          <button style="flex:none;height:36px;padding:0 13px;border:0;border-radius:18px;background:var(--acc);color:#fff;font:600 14px/1 -apple-system,system-ui;cursor:pointer">Поделиться</button>
+        </div>
+        <div style="flex:none;height:1px;background:var(--line)"></div>
+        <div style="display:flex;gap:11px;padding:13px 18px;border-left:3px solid transparent">
+          <span style="flex:none;width:20px;font:600 12px/1.5 ui-monospace,Menlo,monospace;color:var(--ink3)">1</span>
+          <div style="min-width:0">
+            <div style="font:400 17px/1.4 -apple-system,system-ui;color:var(--ink)">Добро пожаловать</div>
+            <div style="margin-top:3px;font:400 13px/1.35 -apple-system,system-ui;color:var(--ink3)">TERVETULOA</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ badBlock }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openErr }}" style="display:flex;gap:11px;padding:13px 18px;border:0;border-left:3px solid var(--err);background:var(--errTint);text-align:left;cursor:pointer;width:100%;box-sizing:border-box;align-items:center">
+            <span style="flex:none;width:20px;font:600 12px/1.5 ui-monospace,Menlo,monospace;color:var(--ink3)">2</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="flex:none;width:17px;height:17px;border-radius:9px;background:var(--err);color:var(--sheet);display:flex;align-items:center;justify-content:center;font:700 11px/1 -apple-system,system-ui">!</span>
+                <span style="font:600 13px/1.3 -apple-system,system-ui;color:var(--err)">Не удалось перевести</span>
+              </div>
+              <div style="margin-top:4px;font:400 15px/1.35 -apple-system,system-ui;color:var(--ink2)">{{ badText }}</div>
+            </div>
+            <span style="flex:none;font:600 14px/1 -apple-system,system-ui;color:var(--accT)">Разобрать ›</span>
+          </button>
+        </sc-if>
+
+        <sc-if value="{{ goodBlock }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;gap:11px;padding:13px 18px;border-left:3px solid transparent">
+            <span style="flex:none;width:20px;font:600 12px/1.5 ui-monospace,Menlo,monospace;color:var(--ink3)">2</span>
+            <div style="min-width:0">
+              <div style="font:400 17px/1.4 -apple-system,system-ui;color:var(--ink)">Открыто 9–21</div>
+              <div style="margin-top:3px;font:400 13px/1.35 -apple-system,system-ui;color:var(--ink3)">AVOINNA 9–21</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;gap:11px;padding:13px 18px 16px;border-left:3px solid transparent">
+          <span style="flex:none;width:20px;font:600 12px/1.5 ui-monospace,Menlo,monospace;color:var(--ink3)">3</span>
+          <div style="min-width:0">
+            <div style="font:400 17px/1.4 -apple-system,system-ui;color:var(--ink)">Кофейня и пекарня</div>
+            <div style="margin-top:3px;font:400 13px/1.35 -apple-system,system-ui;color:var(--ink3)">KAHVILA JA LEIPOMO</div>
+          </div>
+        </div>
+        <div style="flex:none;display:flex;justify-content:center;padding:4px 0 9px"><div style="width:140px;height:5px;border-radius:3px;background:var(--fill2)"></div></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isErr }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;background:var(--sheet);border-radius:16px 16px 0 0;box-shadow:0 -10px 34px rgba(0,0,0,.34);display:flex;flex-direction:column">
+        <div style="flex:none;display:flex;justify-content:center;padding:7px 0 3px"><div style="width:38px;height:5px;border-radius:3px;background:var(--fill2)"></div></div>
+        <div style="flex:none;padding:8px 18px 0;display:flex;align-items:flex-start;gap:11px">
+          <span style="flex:none;width:24px;height:24px;border-radius:12px;background:var(--errTint);color:var(--err);display:flex;align-items:center;justify-content:center;font:700 14px/1 -apple-system,system-ui">!</span>
+          <div style="min-width:0">
+            <div style="font:700 21px/1.25 -apple-system,system-ui;letter-spacing:-.015em;color:var(--ink);text-wrap:pretty">Этот блок не удалось перевести</div>
+            <div style="margin-top:6px;font:400 15px/1.45 -apple-system,system-ui;color:var(--ink2);text-wrap:pretty">В распознанном тексте есть лишний символ: рядом с надписью стоял столб, и он попал в слово.</div>
+          </div>
+        </div>
+        <div style="flex:none;margin:14px 18px 0;border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden">
+          <div style="padding:11px 13px 0;font:600 10.5px/1.4 -apple-system,system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)">Распознано на фото</div>
+          <div style="padding:6px 13px 12px;font:400 17px/1.4 -apple-system,system-ui;color:var(--ink)">AVO<span style="background:var(--errTint);border-bottom:2px solid var(--err);padding:0 1px">l</span>NNA 9–21</div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;gap:9px;padding:14px 18px 0">
+          <button onClick="{{ startEdit }}" style="height:50px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:600 16px/1 -apple-system,system-ui;cursor:pointer">Исправить текст</button>
+          <button onClick="{{ retry }}" style="height:50px;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font:600 16px/1 -apple-system,system-ui;cursor:pointer">Повторить перевод блока</button>
+          <button onClick="{{ back }}" style="height:44px;border:0;border-radius:14px;background:none;color:var(--ink2);font:500 15px/1 -apple-system,system-ui;cursor:pointer">Пропустить</button>
+        </div>
+        <div style="flex:none;display:flex;justify-content:center;padding:8px 0 9px"><div style="width:140px;height:5px;border-radius:3px;background:var(--fill2)"></div></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isEdit }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;background:var(--sheet);border-radius:16px 16px 0 0;display:flex;flex-direction:column">
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px 8px">
+          <button onClick="{{ back }}" style="border:0;background:none;padding:0;font:400 17px/1.2 -apple-system,system-ui;color:var(--accT);cursor:pointer">Отменить</button>
+          <div style="font:600 16px/1.2 -apple-system,system-ui;color:var(--ink)">Исправить текст</div>
+          <button onClick="{{ translate }}" style="border:0;background:none;padding:0;font:600 17px/1.2 -apple-system,system-ui;color:var(--accT);cursor:pointer">Готово</button>
+        </div>
+        <div style="flex:none;margin:6px 18px 0;border:2px solid var(--acc);border-radius:14px;background:var(--card);padding:12px 13px;min-height:52px;box-sizing:border-box">
+          <div style="font:400 19px/1.4 -apple-system,system-ui;color:var(--ink);display:flex;align-items:baseline">{{ editText }}<span style="display:inline-block;width:2px;height:22px;margin-left:1px;background:var(--acc)"></span></div>
+        </div>
+        <div style="flex:none;padding:10px 18px 0;font:400 13.5px/1.45 -apple-system,system-ui;color:var(--ink3);text-wrap:pretty">{{ editHint }}</div>
+        <sc-if value="{{ showSuggest }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ fixChar }}" style="flex:none;margin:12px 18px 0;height:46px;border:1px solid var(--line);border-radius:13px;background:var(--fill);color:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font:500 15px/1 -apple-system,system-ui;cursor:pointer">
+            <span>Убрать лишнюю «l»</span><span style="color:var(--accT);font-weight:600">AVOINNA</span>
+          </button>
+        </sc-if>
+        <button onClick="{{ translate }}" style="flex:none;margin:12px 18px 0;height:50px;border:0;border-radius:14px;background:var(--acc);color:#fff;font:600 16px/1 -apple-system,system-ui;cursor:pointer">Перевести этот блок</button>
+        <div style="flex:none;margin-top:14px;background:var(--sys);padding:8px 5px 4px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;gap:5px;justify-content:center">
+            <span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span>
+          </div>
+          <div style="display:flex;gap:5px;justify-content:center">
+            <span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span>
+          </div>
+          <div style="display:flex;gap:5px;justify-content:center">
+            <span style="flex:none;width:44px;height:38px;border-radius:6px;background:var(--fill2)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:1;height:38px;border-radius:6px;background:var(--card)"></span><span style="flex:none;width:44px;height:38px;border-radius:6px;background:var(--fill2)"></span>
+          </div>
+          <div style="display:flex;justify-content:center;padding:2px 0 4px"><div style="width:140px;height:5px;border-radius:3px;background:var(--fill2)"></div></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFix }}" hint-placeholder-val="{{ false }}">
+      <div style="position:relative;z-index:5;flex:none;margin:0 20px 16px;padding:15px 16px;border-radius:18px;background:rgba(18,16,14,.66);backdrop-filter:blur(16px);display:flex;align-items:center;gap:13px">
+        <span style="flex:none;display:flex;align-items:center;gap:3px">
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out infinite"></span>
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out .2s infinite"></span>
+          <span style="display:block;width:6px;height:6px;border-radius:3px;background:#fff;animation:mpulse 1.1s ease-in-out .4s infinite"></span>
+        </span>
+        <div style="flex:1;min-width:0">
+          <div style="font:600 16px/1.3 -apple-system,system-ui;color:#fff">Переводим исправленный блок</div>
+          <div style="margin-top:3px;font:400 13.5px/1.4 -apple-system,system-ui;color:rgba(255,255,255,.72);text-wrap:pretty">Остальные переводы остаются на месте</div>
+        </div>
+      </div>
+      <div style="position:relative;z-index:5;flex:none;display:flex;justify-content:center;padding:4px 0 9px"><div style="width:140px;height:5px;border-radius:3px;background:rgba(255,255,255,.55)"></div></div>
+    </sc-if>
+
+  </div>
+
+  <div style="width:100%;max-width:620px;display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+    <div style="font:600 12px/1.3 -apple-system,system-ui;color:rgba(74,62,52,.6)">{{ stageLabel }}</div>
+    <div style="flex:1"></div>
+    <button onClick="{{ reset }}" style="height:34px;padding:0 13px;border:1px solid rgba(60,40,20,.16);border-radius:17px;background:#FFFDF9;color:#2a2520;font:500 13px/1 -apple-system,system-ui;cursor:pointer">Начать заново</button>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:1010},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;,&quot;section&quot;:&quot;Показ&quot;},&quot;withError&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Сценарий&quot;},&quot;numbers&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Показ&quot;}}">
+class Component extends DCLogic {
+  state = { stage: 'cam', orig: false, charFixed: false, toast: false };
+  timers = [];
+  later(fn, ms) { this.timers.push(setTimeout(fn, ms)); }
+  componentWillUnmount() { this.timers.forEach(clearTimeout); }
+  set(stage, extra) { this.setState(Object.assign({ stage: stage }, extra || {})); }
+
+  renderVals() {
+    const s = this.state;
+    const withError = this.props.withError ?? true;
+    const theme = this.props.theme ?? 'light';
+    const nums = this.props.numbers ?? false;
+    const st = s.stage;
+    const isCam = st === 'cam', isProc = st === 'proc', isRes = st === 'res';
+    const isErr = st === 'err', isEdit = st === 'edit', isFix = st === 'fix', isDone = st === 'done';
+    const labels = {
+      cam: 'Шаг 1 · камера готова', proc: 'Шаг 2 · распознавание и перевод',
+      res: 'Шаг 3 · частичный результат: 2 из 3', err: 'Шаг 4 · разбор неудачного блока',
+      edit: 'Шаг 5 · исправление распознанного текста', fix: 'Шаг 6 · повторный перевод одного блока',
+      done: 'Шаг 7 · полный результат'
+    };
+    return {
+      theme: theme, nums: nums,
+      isCam: isCam, isProc: isProc, isErr: isErr, isEdit: isEdit, isFix: isFix,
+      isList: isRes || isDone,
+      dim: isErr || isEdit,
+      showPlaques: !isCam && !isProc && !s.orig,
+      badBlock: (isRes || isErr) && withError,
+      fixingBlock: isFix,
+      goodBlock: isDone || (isRes && !withError),
+      badText: 'AVOlNNA 9–21',
+      badStyle: 'position:absolute;z-index:4;left:50%;transform:translateX(-50%);top:283px;padding:7px 10px;border-radius:9px;background:var(--plaque);border:2px dashed var(--err);cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px;white-space:nowrap;'
+        + (isErr ? 'box-shadow:0 0 0 2.5px var(--acc),0 8px 26px rgba(0,0,0,.4)' : 'box-shadow:0 3px 14px rgba(0,0,0,.3)'),
+      origLabel: s.orig ? 'Перевод' : 'Оригинал',
+      origBtnStyle: 'flex:none;height:44px;padding:0 14px;border:0;border-radius:22px;cursor:pointer;backdrop-filter:blur(14px);font:500 14px/1 -apple-system,system-ui;'
+        + (s.orig ? 'background:#fff;color:#241F1C' : 'background:rgba(18,16,14,.55);color:#fff'),
+      hasBar: !isCam && !isProc,
+      listSub: (isRes && withError) ? '2 переведено · 1 с ошибкой' : '3 блока · финский → русский',
+      toast: s.toast,
+      editText: s.charFixed ? 'AVOINNA 9–21' : 'AVOlNNA 9–21',
+      editHint: s.charFixed ? 'Лишняя «l» убрана. Перевод пересчитается только для этого блока.'
+        : 'Проверьте распознанный текст. Правка касается только этого блока.',
+      showSuggest: !s.charFixed,
+      stageLabel: labels[st] || '',
+      shoot: () => { this.set('proc'); this.later(() => this.set(withError ? 'res' : 'done'), 1700); },
+      openErr: () => this.set('err'),
+      back: () => this.set('res'),
+      startEdit: () => this.set('edit'),
+      fixChar: () => this.setState({ charFixed: true }),
+      retry: () => { this.set('fix'); this.later(() => this.finish(), 1400); },
+      translate: () => { this.set('fix'); this.later(() => this.finish(), 1300); },
+      reset: () => this.setState({ stage: 'cam', orig: false, charFixed: false, toast: false }),
+      toggleOrig: () => this.setState(p => ({ orig: !p.orig }))
+    };
+  }
+
+  finish() {
+    this.setState({ stage: 'done', toast: true });
+    this.later(() => this.setState({ toast: false }), 2400);
+  }
+}
+</script>
+</body>
+</html>

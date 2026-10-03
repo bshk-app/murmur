@@ -12,6 +12,13 @@ struct NotesView: View {
     @State private var keyboardHelp = false
     @State private var editNoteID: UUID?
     private var palette: MurmurPalette { .init(scheme: scheme) }
+    private var controlsIdleTimer: Bool {
+        #if MURMUR_UI_HOST
+        return true
+        #else
+        return !model.photoTranslationActive
+        #endif
+    }
 
 
     private var navigationContent: some View {
@@ -129,7 +136,7 @@ struct NotesView: View {
     }
     var body: some View {
         presentedContent
-        .onChange(of:model.busy) { _,value in UIApplication.shared.isIdleTimerDisabled = value && model.phase != .ready }
+        .onChange(of:model.busy) { _,value in if controlsIdleTimer { UIApplication.shared.isIdleTimerDisabled = value && model.phase != .ready } }
         .onChange(of:onboardingComplete) { _,_ in consumeRecordingRequest() }
         .onChange(of:scenePhase) { _,phase in
             if phase != .active { Task { await model.pauseLanguagePreparation() } }

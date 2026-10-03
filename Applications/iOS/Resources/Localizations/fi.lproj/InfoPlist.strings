@@ -1,1 +1,2 @@
 "NSMicrophoneUsageDescription" = "Murmator tallentaa ja litteroi puheesi tällä laitteella.";
+"NSCameraUsageDescription" = "Murmator tunnistaa ja kääntää kuvan tekstin tällä laitteella.";

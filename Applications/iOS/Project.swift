@@ -2,9 +2,9 @@ import ProjectDescription
 
 let team = "Q8H6GWJ658"
 let releaseVersion = "1.0.0"
-let releaseBuild = "22"
+let releaseBuild = "28"
 let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegions: ["en", "ru", "de", "es", "fr", "fi"], developmentRegion: "en", disableSynthesizedResourceAccessors: true), packages: [
-    .local(path: "../../Engine/Core"), .local(path: "../../Engine/Speech"), .local(path: "../../Engine/Translation")
+    .local(path: "../../Engine/Session"), .local(path: "../../Engine/OCR"), .local(path: "../../Engine/Core"), .local(path: "../../Engine/Speech"), .local(path: "../../Engine/Translation")
 ], targets: [
     .target(name: "MurMurMobile", destinations: [.iPhone, .iPad], product: .app,
         bundleId: "app.bshk.murmur.ios", deploymentTargets: .iOS("18.0"),
@@ -12,6 +12,7 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             "CFBundleDisplayName": "Murmator", "CFBundleShortVersionString": .string(releaseVersion), "CFBundleVersion": .string(releaseBuild),
             "ITSAppUsesNonExemptEncryption": false,
             "com.apple.developer.translation-ui-provider.network-access": true,
+            "NSCameraUsageDescription": "Murmator reads and translates text from a photo on this device.",
             "NSMicrophoneUsageDescription": "Murmator records and transcribes your voice on this device.",
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
             "NSSupportsLiveActivities": true, "UIBackgroundModes": ["audio"], "UILaunchScreen": [:],
@@ -21,8 +22,15 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
             "CFBundleDocumentTypes": [["CFBundleTypeName": "Audio recording", "CFBundleTypeRole": "Viewer", "LSHandlerRank": "Alternate", "LSItemContentTypes": ["public.audio"]]]
         ]), sources: ["Sources/**", "Shared/**", "PageTranslation/PageL10n.swift"], resources: ["Resources/**", "PageTranslation/Resources/Localizations/**"],
         entitlements: .file(path: "MurMur.entitlements"),
-        dependencies: [.package(product:"MurmurCore"), .package(product:"MurmurSpeech"), .package(product:"MurmurTranslation"), .target(name:"MurMurWidgets"), .target(name:"MurMurKeyboard"), .target(name:"MurMurTranslationProvider"), .target(name:"MurMurPageTranslation")],
+        dependencies: [.package(product:"MurmurSession"), .package(product:"MurmurOCR"), .package(product:"MurmurCore"), .package(product:"MurmurSpeech"), .package(product:"MurmurTranslation"), .target(name:"MurMurWidgets"), .target(name:"MurMurKeyboard"), .target(name:"MurMurTranslationProvider"), .target(name:"MurMurPageTranslation")],
         settings: .settings(base: ["SWIFT_VERSION":"5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE":"Automatic", "ASSETCATALOG_COMPILER_APPICON_NAME":"AppIcon"])),
+    .target(name: "MurmatorPhotoPreview", destinations: [.iPhone, .iPad], product: .app,
+        bundleId: "app.bshk.murmur.photo-preview", deploymentTargets: .iOS("18.0"),
+        infoPlist: .extendingDefault(with: ["CFBundleDisplayName": "Murmator Photo", "CFBundleShortVersionString": "1.0.0", "CFBundleVersion": "1", "UILaunchScreen": [:], "NSCameraUsageDescription": "Murmator reads and translates text from a photo on this device.", "UIFileSharingEnabled": true]),
+        sources: ["PhotoPreview/**", "Sources/PhotoTranslation/**", "Sources/LanguageMenu.swift", "Sources/TranslationStorageSetup.swift", "Shared/Localization.swift", "Shared/StoragePaths.swift", "Shared/TranslationPaths.swift"],
+        resources: ["Resources/Localizations/**", "Resources/PhotoTranslation/**", "Resources/PrivacyInfo.xcprivacy"],
+        dependencies: [.package(product: "MurmurOCR"), .package(product: "MurmurCore"), .package(product: "MurmurTranslation")],
+        settings: .settings(base: ["SWIFT_VERSION": "5.0", "DEVELOPMENT_TEAM": .string(team), "CODE_SIGN_STYLE": "Automatic"])),
     .target(name:"MurMurWidgets", destinations:[.iPhone,.iPad], product:.appExtension,
         bundleId:"app.bshk.murmur.ios.widgets", deploymentTargets:.iOS("18.0"),
         infoPlist:.extendingDefault(with:["CFBundleDisplayName":"Murmator", "CFBundleShortVersionString":.string(releaseVersion), "CFBundleVersion":.string(releaseBuild), "NSExtension":["NSExtensionPointIdentifier":"com.apple.widgetkit-extension"]]),
