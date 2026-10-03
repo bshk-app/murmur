@@ -35,7 +35,6 @@ private actor PhoneCorrector {
             return
         }
         guard manager == nil else { return }
-        // 6-bit encoder: EncoderInt4 from the same snapshot is ~1.7x worse on WER and slower.
         let encoderName = "Encoder.mlmodelc"
         let repo = HuggingFace.Repo.ID(rawValue: SpeechSession.coreMLRepo)!
         let cache = HubCache.default
@@ -77,8 +76,8 @@ private actor PhoneCorrector {
                 encoder: try MLModel(contentsOf: root.appendingPathComponent(encoderName), configuration: configuration),
                 preprocessor: try MLModel(contentsOf: root.appendingPathComponent("Preprocessor.mlmodelc"), configuration: cpu),
                 decoder: try MLModel(contentsOf: root.appendingPathComponent("Decoder.mlmodelc"), configuration: cpu),
-                joint: try MLModel(contentsOf: root.appendingPathComponent("JointDecision.mlmodelc"), configuration: cpu),
-                configuration: configuration, vocabulary: vocabulary, version: .v3)
+                joint: try MLModel(contentsOf: root.appendingPathComponent("JointDecisionv3.mlmodelc"), configuration: cpu),
+                configuration: configuration, vocabulary: vocabulary, version: .ultra)
             manager = AsrManager(config: ASRConfig(parallelChunkConcurrency: 1), models: models)
             _ = try await correct([Float](repeating: 0, count: 16_000))
             try Data("validated".utf8).write(to: marker, options: .atomic)
@@ -440,8 +439,10 @@ private final class SpeechCaptureRun: @unchecked Sendable {
 /// the capture callback. The engine actor and CPU corrector progress independently.
 public final class SpeechSession: @unchecked Sendable {
     public static let nemotronRepository = "mlx-community/nemotron-3.5-asr-streaming-0.6b-8bit"
-    public static let coreMLRepo = "FluidInference/parakeet-tdt-0.6b-v3-coreml"
-    public static let coreMLRevision = "7dd20fe6b1797d35f5e3307e8b1732d9a178edfe"
+    public static let coreMLRepo = "FluidInference/parakeet-ultra-coreml"
+    public static let coreMLRevision = "95eaa59a39d4394f047a4dc5cce480388a60d1b6"
+    /// Parakeet v3, replaced by Ultra. Listed in storage only so it can be deleted.
+    public static let previousCoreMLRepo = "FluidInference/parakeet-tdt-0.6b-v3-coreml"
     public var onSnapshot: (@Sendable (CaptionSnapshot, Int, Int, Int) -> Void)?
     public var onError: (@Sendable (String) -> Void)?
     public var onModelEvent: (@Sendable (SpeechEvent) -> Void)?

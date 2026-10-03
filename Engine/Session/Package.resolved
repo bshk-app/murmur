@@ -1,5 +1,5 @@
 {
-  "originHash" : "039833a52f8f3b0639b81805f053a49ad47f092e12ade7f390b9d2680af663ed",
+  "originHash" : "9ff63538b377cba6b3c14e01c08aaee49e0ca27b12bbf528bfcf3f78b2783cf8",
   "pins" : [
     {
       "identity" : "argmax-oss-swift",
@@ -22,9 +22,9 @@
     {
       "identity" : "fluidaudio",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/beshkenadze/FluidAudio.git",
+      "location" : "https://github.com/FluidInference/FluidAudio.git",
       "state" : {
-        "revision" : "4ef33f0b64837c2943e8cd0f66940d5861176d6a"
+        "revision" : "a6b826ce9a09028fc685a4b32a8927ec920c3188"
       }
     },
     {
@@ -34,15 +34,6 @@
       "state" : {
         "revision" : "b83108d10f42680d78f23fe4d4d80fc88dab3212",
         "version" : "7.11.1"
-      }
-    },
-    {
-      "identity" : "keyboardshortcuts",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sindresorhus/KeyboardShortcuts",
-      "state" : {
-        "revision" : "1aef85578fdd4f9eaeeb8d53b7b4fc31bf08fe27",
-        "version" : "2.4.0"
       }
     },
     {
@@ -61,24 +52,6 @@
       "state" : {
         "revision" : "bd4b7434e6bdb588c7ef55706ff8904cb7fd4c57",
         "version" : "3.31.4"
-      }
-    },
-    {
-      "identity" : "posthog-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/PostHog/posthog-ios",
-      "state" : {
-        "revision" : "9fcdb83e79b155c0dae104eadf5c269079dcbddb",
-        "version" : "3.62.0"
-      }
-    },
-    {
-      "identity" : "sparkle",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/sparkle-project/Sparkle",
-      "state" : {
-        "revision" : "d46d456107feacc80711b21847b82b07bd9fb46e",
-        "version" : "2.9.3"
       }
     },
     {

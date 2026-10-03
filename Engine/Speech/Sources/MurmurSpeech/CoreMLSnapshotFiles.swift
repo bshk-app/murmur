@@ -5,7 +5,7 @@ import HuggingFace
 /// Hub tree listings contain directories as well as files.
 enum CoreMLSnapshotFiles {
     static func select(from entries: [Git.TreeEntry], encoder: String) -> [String] {
-        let roots = [encoder, "Preprocessor.mlmodelc", "Decoder.mlmodelc", "JointDecision.mlmodelc"]
+        let roots = [encoder, "Preprocessor.mlmodelc", "Decoder.mlmodelc", "JointDecisionv3.mlmodelc"]
         let files = entries.filter { entry in
             entry.type == .file && (
                 entry.path == "parakeet_vocab.json" || roots.contains { entry.path.hasPrefix($0 + "/") }

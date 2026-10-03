@@ -832,3 +832,5 @@
 "Record on Apple Watch" = "Запись на Apple Watch";
 "Start a recording from the watch face." = "Начать запись прямо с циферблата.";
 "Local mode" = "Локальный режим";
+"Previous speech recognition model" = "Прежняя модель распознавания речи";
+"No longer used. Delete it to free up space." = "Больше не используется. Удалите, чтобы освободить место.";

@@ -832,3 +832,5 @@
 "Record on Apple Watch" = "Tallenna Apple Watchilla";
 "Start a recording from the watch face." = "Aloita tallennus kellotaulusta.";
 "Local mode" = "Paikallinen tila";
+"Previous speech recognition model" = "Aiempi puheentunnistusmalli";
+"No longer used. Delete it to free up space." = "Ei enää käytössä. Poista se vapauttaaksesi tilaa.";

@@ -17,7 +17,10 @@ extension SpeechAssets {
         }
         let readiness=root.appendingPathComponent("murmur-coreml-readiness")
         addRepo(GigaAMCorrector.repo,id:"speech/russian-accurate",title:"Russian speech recognition",detail:"Used for Russian dictation and audio imports.",markers:[readiness.appendingPathComponent("ready-gigaam-"+GigaAMCorrector.revision)])
-        addRepo(SpeechSession.coreMLRepo,id:"speech/multilingual-accurate",title:"Multilingual speech recognition",detail:"Shared by several dictation languages and keyboard sessions.",markers:["Encoder.mlmodelc","EncoderInt4.mlmodelc"].map { readiness.appendingPathComponent("ready-"+$0+"-"+SpeechSession.coreMLRevision) })
+        addRepo(SpeechSession.coreMLRepo,id:"speech/multilingual-accurate",title:"Multilingual speech recognition",detail:"Shared by several dictation languages and keyboard sessions.",markers:[readiness.appendingPathComponent("ready-Encoder.mlmodelc-"+SpeechSession.coreMLRevision)])
+        if let previous=Repo.ID(rawValue:SpeechSession.previousCoreMLRepo) {
+            locations.append(.init(id:"speech/previous-multilingual",root:root,directory:cache.repoDirectory(repo:previous,kind:.model),title:"Previous speech recognition model",detail:"No longer used. Delete it to free up space.",downloadable:false,markers:["Encoder.mlmodelc","EncoderInt4.mlmodelc"].map { readiness.appendingPathComponent("ready-"+$0+"-7dd20fe6b1797d35f5e3307e8b1732d9a178edfe") }))
+        }
         for (repo,id,title) in [(SpeechSession.nemotronRepository,"speech/live","Live dictation"),(SpeechBoundaryDetector.defaultRepo,"speech/detection-live","Speech detection for live dictation")] {
             let directory=root.appendingPathComponent("mlx-audio").appendingPathComponent(repo.replacingOccurrences(of:"/",with:"_"))
             let snapshots = Repo.ID(rawValue:repo).map { [cache.repoDirectory(repo:$0,kind:.model)] } ?? []

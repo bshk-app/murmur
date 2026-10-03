@@ -832,3 +832,5 @@
 "Record on Apple Watch" = "Grabar en el Apple Watch";
 "Start a recording from the watch face." = "Empieza una grabación desde la esfera.";
 "Local mode" = "Modo local";
+"Previous speech recognition model" = "Modelo de reconocimiento de voz anterior";
+"No longer used. Delete it to free up space." = "Ya no se usa. Elimínalo para liberar espacio.";

@@ -32,9 +32,10 @@ https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-li
 Licensed by NVIDIA Corporation under the NVIDIA Open Model License
 The complete NVIDIA agreement follows below.
 
-FluidInference/parakeet-tdt-0.6b-v3-coreml
-https://huggingface.co/FluidInference/parakeet-tdt-0.6b-v3-coreml
-Verified upstream revision: 7dd20fe6b1797d35f5e3307e8b1732d9a178edfe
+FluidInference/parakeet-ultra-coreml
+https://huggingface.co/FluidInference/parakeet-ultra-coreml
+Verified upstream revision: 95eaa59a39d4394f047a4dc5cce480388a60d1b6
+Core ML conversion of moondream/parakeet-ultra (https://huggingface.co/moondream/parakeet-ultra), a post-training of nvidia/parakeet-tdt-0.6b-v3
 License: cc-by-4.0
 
 mlx-community/silero-vad
