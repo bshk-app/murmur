@@ -49,6 +49,9 @@ public struct SpeechRecognitionProfile {
         #endif
     }
     public static func baselineModel(language: String) -> SpeechModelChoice {
+        // Desktop automatic recognition historically uses multilingual Parakeet.
+        // "auto" is a recognition mode, not a language to route to Whisper.
+        if language == "auto" { return .parakeet }
         if language == "ru" { return .gigaam }
         if language == "ar" { return .cohereArabic }
         return SpeechModelChoice.parakeet.supports(language) ? .parakeet : .whisper

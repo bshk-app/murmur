@@ -21,6 +21,7 @@ let package = Package(
         .package(path: "../Engine/Core"),
         .package(path: "../Engine/Speech"),
         .package(path: "../Engine/Translation"),
+        .package(path: "../Engine/Session"),
         .package(path: "../Engine/Speech/Vendor/mlx-audio-swift"),
         .package(url: "https://github.com/huggingface/swift-huggingface.git", .upToNextMajor(from: "0.8.1")),
     ],
@@ -39,6 +40,7 @@ let package = Package(
                 .product(name: "HuggingFace", package: "swift-huggingface"), // Repo.ID / HubClient / HubCache
                 .product(name: "MurmurCore", package: "Core"),
                 .product(name: "MurmurSpeech", package: "Speech"),
+                .product(name: "MurmurSession", package: "Session"),
                 .product(name: "MurmurTranslation", package: "Translation"),                                                  // CPU translation, off the GPU
             ],
             linkerSettings: [

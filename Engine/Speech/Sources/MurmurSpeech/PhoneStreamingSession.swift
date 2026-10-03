@@ -409,6 +409,33 @@ private actor PhoneStreamingEngine {
     }
 }
 
+/// Per-run resources ensure an asynchronous overload stop cannot stop a newer mic.
+private final class SpeechCaptureRun: @unchecked Sendable {
+    let mic: MicCapture
+    let recording = RecordingAudioSink()
+    let backlog = AudioBacklog()
+    let token: UUID
+    private let stopLock = NSLock()
+    private var stopped: MicCapture.Result?
+    private var finishError: Error?
+
+    init(microphoneUID: String?) {
+        mic = MicCapture(inputDeviceUID: microphoneUID)
+        token = backlog.reset()
+    }
+
+    /// Never call from the mic queue: MicCapture.stop synchronously drains it.
+    func stop() -> (MicCapture.Result, Error?) {
+        stopLock.lock(); defer { stopLock.unlock() }
+        if let stopped { return (stopped, finishError) }
+        let result = mic.stop()
+        backlog.close(generation: token)
+        do { try recording.finish() } catch { finishError = error }
+        stopped = result
+        return (result, finishError)
+    }
+}
+
 /// Owns mic lifecycle. AsyncStream preserves capture order; inference runs off
 /// the capture callback. The engine actor and CPU corrector progress independently.
 public final class SpeechSession: @unchecked Sendable {
@@ -423,9 +450,9 @@ public final class SpeechSession: @unchecked Sendable {
     private let qualificationTelemetry = SpeechQualificationTelemetry()
     public var onCapture: ((Int, Double, Float, String?) -> Void)?
     public var onRecordingError: (@Sendable (String) -> Void)?
-    private let recording = RecordingAudioSink()
+    public var onCaptureError: (@Sendable (String) -> Void)?
     private let engine: PhoneStreamingEngine
-    private var mic = MicCapture()
+    private var capture: SpeechCaptureRun?
     private var continuation: AsyncStream<[Float]>.Continuation?
     private var consumer: Task<Void, Never>?
     public private(set) var capturedSeconds = 0.0
@@ -463,7 +490,9 @@ public final class SpeechSession: @unchecked Sendable {
         let mode = recognitionProfile?.mode ?? mode
         let language = recognitionProfile?.language ?? language
         qualificationTelemetry.reset()
-        try recording.begin(url: recordingURL)
+        let run = SpeechCaptureRun(microphoneUID: microphoneUID)
+        try run.recording.begin(url: recordingURL)
+        capture = run
         await engine.begin(mode: mode, language: language,
                            onError: { [weak self] in self?.onError?($0) },
                            onModelEvent: { [weak self] event in
@@ -474,36 +503,58 @@ public final class SpeechSession: @unchecked Sendable {
                                self?.qualificationTelemetry.pendingCorrections(depth)
                                self?.publishQualificationTelemetry()
                            }) { [weak self] in self?.onSnapshot?($0, $1, $2, $3) }
-        let stream = AsyncStream<[Float]> { continuation = $0 }
-        consumer = Task { [engine, qualificationTelemetry] in
+        let (stream, input) = AsyncStream<[Float]>.makeStream()
+        continuation = input
+        consumer = Task { [engine, qualificationTelemetry, run] in
             for await chunk in stream {
                 if Task.isCancelled { break }
                 await engine.step(chunk)
+                run.backlog.release(chunk.count, generation: run.token)
                 qualificationTelemetry.audioQueued(-1)
             }
         }
-        mic = MicCapture(inputDeviceUID: microphoneUID)
-        mic.onCapture = { [weak self] frames, rate, peak, error in
+        run.mic.onCapture = { [weak self, weak run] frames, rate, peak, error in
+            guard let run, self?.capture === run else { return }
             self?.onCapture?(frames, rate, peak, error)
-            if let error { self?.onRecordingError?(error) }
+            if let error { (self?.onCaptureError ?? self?.onRecordingError)?(error) }
         }
-        mic.onChunk = { [weak self] samples in
-            guard let self else { return }
-            do { try self.recording.append(samples) }
+        run.mic.onChunk = { [weak self, weak run] samples in
+            guard let self, let run else { return }
+            switch run.backlog.admit(samples.count, generation: run.token) {
+            case .closed: return
+            case .overloaded:
+                // Finish the accepted stream without dropping any queued frames.
+                // Dispatch before notification: consumers may synchronously stop.
+                input.finish()
+                DispatchQueue.global(qos: .userInitiated).async { [weak self, run] in
+                    _ = run.stop()
+                    guard let self, self.capture === run else { return }
+                    let message = "Audio processing fell more than 10 seconds behind. Recording stopped; accepted audio is being finalized."
+                    (self.onCaptureError ?? self.onRecordingError)?(message)
+                }
+                return
+            case .accepted: break
+            }
+            do { try run.recording.append(samples) }
             catch { self.onRecordingError?(error.localizedDescription) }
             self.qualificationTelemetry.audioQueued(1)
-            self.continuation?.yield(samples)
+            if case .terminated = input.yield(samples) {
+                run.backlog.release(samples.count, generation: run.token)
+                self.qualificationTelemetry.audioQueued(-1)
+            }
         }
-        do { try mic.start() }
-        catch { continuation?.finish(); consumer?.cancel(); throw error }
+        do { try run.mic.start() }
+        catch { _ = run.stop(); input.finish(); consumer?.cancel(); throw error }
     }
 
     public func stop() async -> String {
         let finalStart = ProcessInfo.processInfo.systemUptime
-        let result = mic.stop()
-        do { try recording.finish() } catch { onRecordingError?(error.localizedDescription) }
-        capturedSeconds = result.durationS
-        capturedPeak = result.peakRMS
+        if let capture {
+            let (result, error) = capture.stop()
+            if let error { onRecordingError?(error.localizedDescription) }
+            capturedSeconds = result.durationS
+            capturedPeak = result.peakRMS
+        }
         continuation?.finish()
         await consumer?.value
         let text = await engine.finish()
@@ -513,16 +564,14 @@ public final class SpeechSession: @unchecked Sendable {
     }
 
     public func cancel() {
-        _ = mic.stop()
-        try? recording.finish()
+        _ = capture?.stop()
         continuation?.finish()
         consumer?.cancel()
         Task { await engine.cancel() }
     }
 
     public func close() async {
-        _ = mic.stop()
-        do { try recording.finish() } catch { onRecordingError?(error.localizedDescription) }
+        if let (_, error) = capture?.stop(), let error { onRecordingError?(error.localizedDescription) }
         continuation?.finish(); consumer?.cancel()
         await consumer?.value
         await engine.shutdown()

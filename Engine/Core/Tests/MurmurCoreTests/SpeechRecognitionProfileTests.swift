@@ -2,6 +2,11 @@ import XCTest
 @testable import MurmurCore
 
 final class SpeechRecognitionProfileTests: XCTestCase {
+    func testDesktopAutomaticRecognitionKeepsMultilingualParakeet() throws {
+        let profile = try SpeechRecognitionProfile.resolve(language: "auto", mode: .hybrid)
+        XCTAssertEqual(profile.model, .parakeet)
+        XCTAssertEqual(profile.mode, .hybrid)
+    }
     func testLegacyRecommendationRemainsAutomaticButExplicitChoiceSurvives() {
         XCTAssertFalse(SpeechRecognitionProfile.selectionIsExplicit(savedFlag: nil, savedModel: .parakeet, language: "fi"))
         XCTAssertTrue(SpeechRecognitionProfile.selectionIsExplicit(savedFlag: nil, savedModel: .whisper, language: "fi"))

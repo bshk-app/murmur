@@ -7,8 +7,13 @@ Reusable local Swift packages shared by the macOS compatibility facade, MurMur L
 | `MurmurCore` | Caption snapshots, correction windows, speech boundaries, language/model choices, atomic note storage. Foundation only. |
 | `MurmurSpeech` | Microphone capture, Silero VAD, live ASR, independent Core ML correctors, model preparation and replay. |
 | `MurmurTranslation` | Mozilla preview, strict OPUS correction, verified downloads and translation sessions. |
+| `MurmurSession` | Shared foreground preparation, capture lifecycle, corrected transcript and translation orchestration for iOS and macOS. |
 
 Consumers depend on the products directly. `MurmurKit` re-exports them for existing macOS callers; the mobile applications do not depend on the desktop app or compile its files.
+
+## Foreground recording
+
+Both apps use `RecordingSession` from `MurmurSession`; see [its lifecycle contract](Session/README.md). Apps own UI, permissions and persistence destinations. Speech/translation policy is implemented once in the package. Experimental direct translation, background keyboard sessions and file import retain their specialized lower-level APIs.
 
 ## Speech
 

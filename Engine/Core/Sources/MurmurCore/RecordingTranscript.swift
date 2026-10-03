@@ -89,6 +89,13 @@ public struct RecordingTranscript: Sendable {
             utterances[index].translationFailed = value.failed
         }
     }
+    /// Changing the target must not retain old-language results or discard source history.
+    public mutating func clearTranslations() {
+        for index in utterances.indices {
+            utterances[index].translation = nil
+            utterances[index].translationFailed = nil
+        }
+    }
     public mutating func finish(fallback: String, endSample: Int) {
         guard !finished else { return }
         if utterances.isEmpty && !fallback.isEmpty {
