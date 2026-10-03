@@ -4,7 +4,7 @@ import PostHog
 import SwiftUI
 
 /// The menu-bar dropdown (design: MurMur.dc.html) shown as a `.window`-style
-/// MenuBarExtra: mascot + master toggle, live status + hotkey, a mic meter, the
+/// MenuBarExtra: mascot + master toggle, live status + hotkey, Start/Stop, a mic meter, the
 /// Model / Insert / Hotkey segmented controls, and a Settings/Quit footer.
 struct MenuPopover: View {
     let dictation: DictationController
@@ -23,6 +23,10 @@ struct MenuPopover: View {
     @AppStorage(TranslationSetting.key) private var translateToRaw = TranslationSetting.off
     @AppStorage(MicrophoneSetting.defaultsKey)
     private var microphoneUID = MicrophoneSetting.systemDefaultUID
+    @AppStorage(CaptionsDisplay.defaultsKey) private var captionsDisplay = CaptionsDisplay.followCursor
+    /// Bumped on screen reconfiguration so the picker lists what is plugged in now.
+    @State private var screensGeneration = 0
+    @State private var showingCaptionsAppearance = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -55,6 +59,16 @@ struct MenuPopover: View {
                 "to_mode": newValue,
             ])
         }
+        .onChange(of: captionsDisplay) { _, newValue in
+            // A no-op unless a talk is on screen; the next one reads the setting at start.
+            dictation.captionsOverlay.moveToDisplay(newValue)
+            PostHogSDK.shared.capture("captions_display_changed", properties: [
+                "pinned": newValue != CaptionsDisplay.followCursor,
+                "screens": NSScreen.screens.count,
+            ])
+        }
+        .onReceive(NotificationCenter.default.publisher(
+            for: NSApplication.didChangeScreenParametersNotification)) { _ in screensGeneration += 1 }
         .onAppear {
             let validUID = dictation.refreshMicrophones(preferredUID: microphoneUID)
             if validUID != microphoneUID { microphoneUID = validUID }
@@ -82,8 +96,33 @@ struct MenuPopover: View {
                     .padding(.horizontal, 6).padding(.vertical, 3)
                     .background(fieldBG, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             }
+            startStopButton
         }
         .padding(.horizontal, 16).padding(.top, 15).padding(.bottom, 12)
+    }
+
+    private var isRecording: Bool { dictation.state == .recording }
+
+    /// Stop is always offered; Start follows the master switch, like the hotkey.
+    private var startStopDisabled: Bool {
+        guard !isRecording else { return false }
+        return !enabled || dictation.isActive || dictation.state == .loadingModels
+    }
+
+    private var startStopButton: some View {
+        let what = appModeRaw == AppMode.captions.rawValue ? "captions" : "dictation"
+        return Button { dictation.toggleFromMenu() } label: {
+            Text(isRecording ? "Stop \(what)" : "Start \(what)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(isRecording ? primary : .white)
+                .frame(maxWidth: .infinity).padding(.vertical, 6)
+                .background(isRecording ? fieldBG : Mur.accent,
+                            in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(startStopDisabled)
+        .opacity(startStopDisabled ? 0.45 : 1)
     }
 
     // MARK: mic meter (animated for now; live level is a later pass)
@@ -235,11 +274,20 @@ struct MenuPopover: View {
                 // supporting — the running one owns the mic until it stops.
                 .disabled(dictation.isActive)
             if appModeRaw == AppMode.captions.rawValue {
-                Text("Tap the shortcut to start, tap again to stop. Nothing is typed into other apps.")
+                Text("Start above or tap the shortcut; the same again stops. Nothing is typed into other apps.")
                     .font(.system(size: 11.5))
                     .foregroundStyle(tertiary)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 7)
+                displayPicker
+                Button("Caption appearance & layout…") { showingCaptionsAppearance = true }
+                    .font(.system(size: 11.5)).padding(.top, 7)
+                    .popover(isPresented: $showingCaptionsAppearance) {
+                        CaptionsCustomizationView(overlay: dictation.captionsOverlay,
+                                                  display: captionsDisplay,
+                                                  translating: TranslationSetting.target != nil,
+                                                  preferences: dictation.captionsOverlay.preferences)
+                    }
             }
             label("Model").padding(.top, 11)
             MurSegment(label: "Model", selection: $modelRaw, options: modelOptions)
@@ -333,6 +381,41 @@ struct MenuPopover: View {
     private func label(_ s: String) -> some View {
         Text(s).font(.system(size: 12)).foregroundStyle(tertiary)
             .padding(.bottom, 7).frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// Screens as they are connected right now, keyed by the UUID that is saved.
+    private var screenOptions: [(uuid: String, name: String)] {
+        _ = screensGeneration
+        return NSScreen.screens.compactMap { screen in
+            CaptionsDisplay.uuid(of: screen).map { ($0, screen.localizedName) }
+        }
+    }
+
+    /// Stays enabled mid-session: moving the overlay is safe, and a speaker who
+    /// picked the laptop instead of the projector must not have to stop the talk.
+    @ViewBuilder
+    private var displayPicker: some View {
+        let options = screenOptions
+        let missing = captionsDisplay != CaptionsDisplay.followCursor
+            && !options.contains { $0.uuid == captionsDisplay }
+        label("Show on").padding(.top, 11)
+        Picker("Show on", selection: $captionsDisplay) {
+            Text("Screen with cursor").tag(CaptionsDisplay.followCursor)
+            ForEach(options, id: \.uuid) { Text($0.name).tag($0.uuid) }
+            // Keeps the saved choice selectable (and visible) while its
+            // projector is unplugged, instead of silently showing a blank.
+            if missing { Text("Saved display (not connected)").tag(captionsDisplay) }
+        }
+        .labelsHidden()
+        .pickerStyle(.menu)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        if missing {
+            Text("That display is not connected, so captions appear on the screen with the cursor.")
+                .font(.system(size: 11.5))
+                .foregroundStyle(tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 7)
+        }
     }
 
     // MARK: footer

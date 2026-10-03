@@ -1,3 +1,4 @@
+import AppKit
 import MurmurKit
 import PostHog
 import SwiftUI
@@ -58,6 +59,54 @@ enum AppMode: String, CaseIterable, Identifiable {
     static let defaultsKey = "murmur.appMode"
     static var current: AppMode {
         AppMode(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .dictation
+    }
+}
+
+/// Which screen the captions overlay lives on — persisted by display UUID.
+///
+/// Not an index into `NSScreen.screens` and not `NSScreenNumber`: both are
+/// reassigned when a projector is unplugged and plugged back in. Only
+/// `CGDisplayCreateUUIDFromDisplayID` survives that, which is exactly the
+/// moment it matters — HDMI goes in minutes before the talk.
+enum CaptionsDisplay {
+    static let defaultsKey = "murmur.captionsDisplay"
+    /// Stored as `""`: put the overlay wherever the cursor is.
+    static let followCursor = ""
+
+    static var current: String {
+        UserDefaults.standard.string(forKey: defaultsKey) ?? followCursor
+    }
+
+    static func uuid(of screen: NSScreen) -> String? {
+        guard let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber,
+              let uuid = CGDisplayCreateUUIDFromDisplayID(number.uint32Value)?.takeRetainedValue()
+        else { return nil }
+        return CFUUIDCreateString(nil, uuid) as String
+    }
+
+    /// The connected screen with this UUID, or nil when it is not plugged in
+    /// (or `uuid` is `followCursor`).
+    static func screen(for uuid: String) -> NSScreen? {
+        guard uuid != followCursor else { return nil }
+        return NSScreen.screens.first { Self.uuid(of: $0) == uuid }
+    }
+
+    /// The pinned screen when it is connected, otherwise the one under the
+    /// cursor. A missing projector never stops the session — the text moves
+    /// to a screen that exists.
+    static func resolve(_ uuid: String) -> NSScreen? {
+        screen(for: uuid) ?? .underCursor
+    }
+}
+
+extension NSScreen {
+    /// The screen under the cursor, then `.main`, then any. The cursor comes
+    /// first because `.main` follows the key window, and this `.accessory`
+    /// agent with non-activating panels never has one — on a multi-display
+    /// setup it is not deterministic.
+    static var underCursor: NSScreen? {
+        let mouse = NSEvent.mouseLocation
+        return screens.first { $0.frame.contains(mouse) } ?? .main ?? screens.first
     }
 }
 

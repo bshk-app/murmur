@@ -38,20 +38,21 @@ final class BeginRecordingLatchTests: XCTestCase {
 
     /// Returns the controller and its substituted session, already started.
     private func record(language: String, model: DictationMode)
-        -> (DictationController, FakeDictationSession) {
+        async -> (DictationController, FakeDictationSession) {
         UserDefaults.standard.set(language, forKey: SpeechLanguage.defaultsKey)
         UserDefaults.standard.set(model.rawValue, forKey: ModelSetting.key)
         let controller = DictationController()
         let fake = FakeDictationSession()
         controller.session = fake
         controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
         XCTAssertEqual(fake.startCount, 1, "the session never started; the test asserts nothing")
         return (controller, fake)
     }
 
     /// The mutation this exists for: delete `dictationSource = language`.
-    func testTheSourceHandedToTheRecogniserIsTheSourceLatched() {
-        let (controller, fake) = record(language: "ru", model: .hybrid)
+    func testTheSourceHandedToTheRecogniserIsTheSourceLatched() async {
+        let (controller, fake) = await record(language: "ru", model: .hybrid)
 
         XCTAssertEqual(fake.startedLanguage, "ru")
         XCTAssertEqual(controller.dictationSource, "ru")
@@ -67,8 +68,8 @@ final class BeginRecordingLatchTests: XCTestCase {
     /// The other mutation: latch `ModelSetting.current` instead of the
     /// downgraded `modelMode`. Japanese has no live draft, so Hybrid really
     /// runs as Accurate - the two values differ with nobody touching anything.
-    func testTheModeHandedToTheRecogniserIsTheModeLatched() {
-        let (controller, fake) = record(language: "ja", model: .hybrid)
+    func testTheModeHandedToTheRecogniserIsTheModeLatched() async {
+        let (controller, fake) = await record(language: "ja", model: .hybrid)
 
         XCTAssertEqual(fake.startedMode, .accurate,
                        "ja is expected to have no live draft; test assumption is stale")
@@ -84,34 +85,36 @@ final class BeginRecordingLatchTests: XCTestCase {
     /// A language that keeps its live draft is not downgraded, so the same
     /// two values agree - proving the previous test failed for the right
     /// reason rather than because the latch is hardcoded.
-    func testAnUndowngradedLanguageLatchesTheRequestedMode() {
-        let (controller, fake) = record(language: "ru", model: .hybrid)
+    func testAnUndowngradedLanguageLatchesTheRequestedMode() async {
+        let (controller, fake) = await record(language: "ru", model: .hybrid)
         XCTAssertEqual(fake.startedMode, .hybrid)
         XCTAssertEqual(controller.dictationMode, .hybrid)
     }
 
     /// A session that never started must not leave a latch behind claiming it
     /// did, or the next stop would describe an utterance that never happened.
-    func testAFailedStartLatchesNothing() {
+    func testAFailedStartLatchesNothing() async {
         UserDefaults.standard.set("ru", forKey: SpeechLanguage.defaultsKey)
         let controller = DictationController()
         let fake = FakeDictationSession()
         fake.startError = NSError(domain: "test", code: 1)
         controller.session = fake
         controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
 
         XCTAssertNil(controller.dictationSource)
         XCTAssertNil(controller.dictationMode)
     }
 
     /// Not ready means the press is spent on loading and no utterance begins.
-    func testAnUnreadySessionLatchesNothing() {
+    func testAnUnreadySessionLatchesNothing() async {
         UserDefaults.standard.set("ru", forKey: SpeechLanguage.defaultsKey)
         let controller = DictationController()
         let fake = FakeDictationSession()
         fake.ready = false
         controller.session = fake
         controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
 
         XCTAssertEqual(fake.startCount, 0)
         XCTAssertNil(controller.dictationSource)

@@ -58,17 +58,17 @@ final class DictationControllerQualityTests: XCTestCase {
                      "a pivot has no quality-converted leg yet; offering one would only fail")
     }
 
-    /// Only ru-en and en-ru are actually converted. Every other direction,
-    /// even a perfectly valid direct fast-tier pair, must not offer a button
-    /// that can only end in `unpinnedDirection`.
+    /// The shared catalog includes German now; unknown directions must still
+    /// avoid a download button that can only fail.
     func testOnlyConvertedDirectionsAreOffered() {
         let dictation = DictationController()
         XCTAssertTrue(dictation.qualityModelIsOffered(
             for: LanguagePair(source: "ru", target: "en")))
         XCTAssertTrue(dictation.qualityModelIsOffered(
             for: LanguagePair(source: "en", target: "ru")))
+        XCTAssertTrue(dictation.qualityModelIsOffered(
+            for: LanguagePair(source: "de", target: "en")))
         XCTAssertFalse(dictation.qualityModelIsOffered(
-            for: LanguagePair(source: "de", target: "en")),
-            "de-en has a fast model but no published quality conversion")
+            for: LanguagePair(source: "xx", target: "en")))
     }
 }

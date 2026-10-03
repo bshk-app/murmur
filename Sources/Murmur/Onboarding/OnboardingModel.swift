@@ -10,7 +10,7 @@ import SwiftUI
 /// `OnboardingFlow.State`, delegates every transition/gate to `OnboardingFlow`,
 /// and owns the real-subsystem hooks (mic, accessibility, download, try-it) —
 /// implemented as stubs here and filled in by later phases. Reuses the already-
-/// warmed `DictationSession` from `DictationController` so the try-it step does
+/// warmed `RecordingSession` from `DictationController` so the try-it step does
 /// not spin up a second pipeline.
 @MainActor
 @Observable
@@ -20,6 +20,7 @@ final class OnboardingModel {
     var flow = OnboardingFlow.State()
     var finished = false
     var downloadError: String?
+    var preparationProgress: RecordingSession.Preparation?
 
     /// Called once the user completes onboarding — the AppDelegate uses it to boot
     /// the live menu app (mic now granted, models now cached). Set before launch.
@@ -34,13 +35,13 @@ final class OnboardingModel {
     /// Retry never spawn two concurrent downloads.
     @ObservationIgnored private var downloadStarted = false
 
-    private let session: any DictationSessioning
+    private let session: any RecordingSessioning
 
     /// Polls AX trust while the Permissions step is open — there's no
     /// notification for Accessibility-trust changes, so we have to ask.
     @ObservationIgnored private var accPollTimer: Timer?
 
-    init(session: any DictationSessioning) { self.session = session }
+    init(session: any RecordingSessioning) { self.session = session }
 
     // MARK: navigation
 
@@ -55,7 +56,7 @@ final class OnboardingModel {
     func next() {
         guard canContinue else { return }
         if flow.step == .permissions { stopAccessibilityPolling() }
-        if flow.step == .tryIt { tryEnd() }                   // stop + restore onUpdate on leave
+        if flow.step == .tryIt { tryEnd() }                   // stop + restore onEvent on leave
         if flow.step == .done { finish(); return }
         // Download starts when the Download step itself appears (DownloadScreen
         // .onAppear) — no preemptive background load during earlier steps.
@@ -63,7 +64,7 @@ final class OnboardingModel {
     }
     func back() {
         if flow.step == .permissions { stopAccessibilityPolling() }
-        if flow.step == .tryIt { tryEnd() }                   // stop + restore onUpdate on leave
+        if flow.step == .tryIt { tryEnd() }                   // stop + restore onEvent on leave
         flow.step = OnboardingFlow.back(flow.step)
     }
 
@@ -82,7 +83,8 @@ final class OnboardingModel {
         // run, so show the Download step as instantly complete instead of a 0-bar
         // soft-lock (the guard would otherwise early-return and never gate-open).
         downloadStarted = false
-        if session.isReady(.hybrid) {
+        modelsReady = session.isPrepared
+        if modelsReady {
             flow.fastFraction = 1
             flow.accurateFraction = 1
         }
@@ -137,29 +139,32 @@ final class OnboardingModel {
 
     // MARK: download — real per-repo progress (Task 3.2)
 
-    /// Pre-download both model repos with live per-repo progress into the HF cache
-    /// `*.fromPretrained` reads, then warm the Hybrid pipeline (cache hit, no
-    /// re-download). Triggered by the Download step's `.onAppear` (nothing loads
-    /// before then); re-callable as Retry after `downloadError` clears `downloadStarted`.
+    /// Prepare the same speech profile used by the main application. The shared
+    /// session owns model downloads and warm-up; onboarding only presents progress.
     func startDownload() {
         guard !downloadStarted else { return }
         downloadStarted = true
         downloadError = nil
+        preparationProgress = nil
+        modelsReady = false
+        flow.fastFraction = 0
+        flow.accurateFraction = 0
         PostHogSDK.shared.capture("model_download_started")
         Task {
             do {
-                try await OnboardingDownloader.download { p in
-                    // Monotonic: progress ticks arrive unordered (per-tick Tasks),
-                    // so a stale sub-1.0 tick must never regress a finished lane —
-                    // else the gate (both ≥ 1) could hang at full-looking bars (I1).
-                    self.flow.fastFraction = max(self.flow.fastFraction, p.fast)
-                    self.flow.accurateFraction = max(self.flow.accurateFraction, p.accurate)
+                let saved = session.onEvent
+                session.onEvent = { [weak self] event in
+                    saved?(event)
+                    guard case let .preparation(progress) = event else { return }
+                    self?.preparationProgress = progress
                 }
-                try await self.session.load(mode: .hybrid)   // warm both (cache hit)
+                defer { session.onEvent = saved }
+                let profile = try SpeechRecognitionProfile.resolve(language: SpeechLanguage.automatic, mode: .hybrid)
+                try await session.prepare(.init(profile: profile))
+                flow.fastFraction = 1
+                flow.accurateFraction = 1
                 self.modelsReady = true                       // pipeline in memory → try-it button enables
-                PostHogSDK.shared.capture("model_download_completed", properties: [
-                    "total_gb": OnboardingFlow.totalGB,
-                ])
+                PostHogSDK.shared.capture("model_download_completed")
             } catch {
                 self.downloadError = error.localizedDescription
                 self.downloadStarted = false                 // allow Retry
@@ -177,7 +182,7 @@ final class OnboardingModel {
         // model's bar from 1 → 0 → 1 (I2). The monotonic max-clamp keeps it stable.
         if flow.fastFraction < 1 { flow.fastFraction = 0 }
         if flow.accurateFraction < 1 { flow.accurateFraction = 0 }
-        modelsReady = session.isReady(.hybrid)    // already loaded on a replay → try-it works at once
+        modelsReady = session.isPrepared    // already loaded on a replay → try-it works at once
         startDownload()
     }
 
@@ -190,15 +195,16 @@ final class OnboardingModel {
     var tryListening = false
 
     /// True once the Hybrid pipeline is loaded into memory (set after the Download
-    /// step's `session.load`). Observable — so the try-it button re-enables the moment
-    /// loading finishes, which lags the download bars (`session.isReady` isn't tracked).
+    /// step's `session.prepare`). Observable — so the try-it button re-enables the moment
+    /// loading finishes, which lags the download bars (`session.isPrepared` isn't tracked).
     var modelsReady = false
     var tryReady: Bool { modelsReady }
 
-    /// The controller's HUD `onUpdate` handler, parked while the try-it field
-    /// borrows `session.onUpdate`, and restored when the dictation ends — the
+    /// The controller's HUD `onEvent` handler, parked while the try-it field
+    /// borrows `session.onEvent`, and restored when the dictation ends — the
     /// session is app-lifetime, so the main app must keep driving the HUD after.
-    @ObservationIgnored private var savedOnUpdate: ((String, String) -> Void)?
+    @ObservationIgnored private var savedOnEvent: ((RecordingSession.Event) -> Void)?
+    @ObservationIgnored private var startTask: Task<Void, Never>?
 
     /// True while a previous `tryEnd` is still draining `stop()` off-main. Blocks a
     /// rapid re-press from starting a new utterance before teardown finishes —
@@ -211,61 +217,53 @@ final class OnboardingModel {
     /// start a Hybrid utterance. No-op if the pipeline isn't ready, already live,
     /// or a previous stop is still draining.
     func tryStart() {
-        guard session.isReady(.hybrid), !tryListening, !tryBusy else { return }
-        savedOnUpdate = session.onUpdate
+        guard session.isPrepared, !tryListening, !tryBusy else { return }
+        savedOnEvent = session.onEvent
         tryConfirmed = ""
         tryPartial = ""
-        session.onUpdate = { c, p in
-            Task { @MainActor in
-                self.tryConfirmed = c
-                self.tryPartial = p
-            }
+        tryListening = true
+        session.onEvent = { [weak self] event in
+            guard case let .snapshot(snapshot) = event else { return }
+            self?.tryConfirmed = snapshot.confirmed.map(\.text).joined(separator: " ")
+            self?.tryPartial = snapshot.provisional
         }
-        do {
-            try session.start(
-                mode: .hybrid,
-                // Was the `start` default before the session became a
-                // protocol; spelled out because try-it runs before the user
-                // has chosen a language, so detection is the point.
-                language: SpeechLanguage.automatic,
-                microphoneUID: MicrophoneSetting.currentUID
-            )
-            tryListening = true
-        } catch {
-            tryListening = false
-            session.onUpdate = savedOnUpdate
-            savedOnUpdate = nil
+        startTask = Task {
+            do {
+                let profile = try SpeechRecognitionProfile.resolve(language: SpeechLanguage.automatic, mode: .hybrid)
+                try await session.prepare(.init(profile: profile))
+                try await session.start(microphoneUID: MicrophoneSetting.currentUID, recordingURL: nil)
+            } catch {
+                tryListening = false
+                session.onEvent = savedOnEvent
+                savedOnEvent = nil
+            }
         }
     }
 
-    /// Release: stop off-main (drains the backlog), settle the final text, mark the
-    /// try-it gate, and restore the controller's HUD handler. Idempotent via the
-    /// `tryListening` guard, so `.onDisappear` can call it safely.
     func tryEnd() {
         guard tryListening else { return }
         tryListening = false
         tryBusy = true
-        // Restore the controller's HUD handler SYNCHRONOUSLY (it's just a property
-        // write) so a re-press can never observe the borrowed closure as the saved
-        // one. Only the draining `stop()` goes off-main (like endRecording); capture
-        // `session` directly so it doesn't touch main-actor `self` there.
-        session.onUpdate = savedOnUpdate
-        savedOnUpdate = nil
-        Task.detached(priority: .userInitiated) { [session] in
-            let final = session.stop()
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                self.tryConfirmed = final
-                self.tryPartial = ""
-                let wasFirst = !self.flow.didTry
-                self.flow.didTry = self.flow.didTry || !final.isEmpty   // monotonic: one success is enough
-                if wasFirst && !final.isEmpty {
-                    PostHogSDK.shared.capture("try_it_completed", properties: [
-                        "word_count": final.split(separator: " ").count,
-                    ])
-                }
-                self.tryBusy = false
+        let previousEvent = savedOnEvent
+        Task {
+            await startTask?.value
+            defer {
+                session.onEvent = previousEvent
+                savedOnEvent = nil
+                tryBusy = false
             }
+            guard session.state == .recording else { return }
+            do {
+                let result = try await session.stop()
+                let final = result.text
+                tryConfirmed = final
+                tryPartial = ""
+                let wasFirst = !flow.didTry
+                flow.didTry = flow.didTry || !final.isEmpty
+                if wasFirst && !final.isEmpty {
+                    PostHogSDK.shared.capture("try_it_completed", properties: ["word_count": final.split(separator: " ").count])
+                }
+            } catch { downloadError = error.localizedDescription }
         }
     }
 

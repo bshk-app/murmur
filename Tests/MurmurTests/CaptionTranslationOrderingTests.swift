@@ -2,101 +2,89 @@ import XCTest
 @testable import Murmur
 @testable import MurmurKit
 
-/// A live screenshot showed a caption's translation vanish: closing text
-/// missing from the HUD's second line entirely, with no error a user could
-/// see. `StartupTests` proves the write-ordering half of that bug (an older
-/// snapshot's pass overwriting a newer one's HUD write). This proves the
-/// other half: `CaptionTranslator`'s own cache must not be read before a
-/// pending `reset()` - spawned when a talk or its target language changes -
-/// has actually finished. A new caption session gets a brand-new
-/// `CaptionEngine` (`TwoTierEngine.makeCaptionEngine`), whose segment ids
-/// restart at 1, so back-to-back sessions collide on id *and*, for a
-/// repeated or common opening phrase, on text too. Reading `done[1]` before
-/// a reset that should have cleared it returns the previous session's
-/// translation, in the previous session's language, with nothing downstream
-/// able to tell it apart from a correct cache hit.
 @MainActor
 final class CaptionTranslationOrderingTests: XCTestCase {
-    private actor OrderLog {
-        private(set) var events: [String] = []
-        func record(_ e: String) { events.append(e) }
-    }
-
-    /// Held closed for as long as the test wants, so "a reset is pending"
-    /// can be simulated deterministically instead of racing the real
-    /// (near-instant, no-op-bodied) `CaptionTranslator.reset()`.
-    private actor Gate {
-        private var open = false
-        private var waiters: [CheckedContinuation<Void, Never>] = []
-        func wait() async {
-            if open { return }
-            await withCheckedContinuation { waiters.append($0) }
-        }
-        func release() {
-            open = true
-            waiters.forEach { $0.resume() }
-            waiters.removeAll()
-        }
-    }
-
-    private struct LoggingFakeTranslator: PhraseTranslating {
-        let log: OrderLog
-        func translateOrEmpty(_ text: String, from source: String, to target: String) async -> String {
-            await log.record("translated:\(text)->\(target)")
-            return "[\(target)] \(text)"
-        }
-    }
-
-    func testTranslateCaptionsWaitsForAPendingResetBeforeReadingTheCache() async {
-        let controller = DictationController()
-        let log = OrderLog()
-        controller.captionTranslation = CaptionTranslator(service: LoggingFakeTranslator(log: log))
-
-        let savedTarget = UserDefaults.standard.string(forKey: TranslationSetting.key)
-        defer {
-            if let savedTarget {
-                UserDefaults.standard.set(savedTarget, forKey: TranslationSetting.key)
-            } else {
-                UserDefaults.standard.removeObject(forKey: TranslationSetting.key)
-            }
-        }
-        UserDefaults.standard.set("en", forKey: TranslationSetting.key)
+    func testTargetChangesAreDelegatedToTheSharedSession() async {
+        let saved = UserDefaults.standard.object(forKey: TranslationSetting.key)
+        defer { UserDefaults.standard.set(saved, forKey: TranslationSetting.key) }
+        let session = FakeDictationSession()
+        let controller = DictationController(session: session)
         controller.captionSource = "ru"
-        controller.captionTarget = "en"
-
-        // A reset is "in flight" - as it would be right after a talk or its
-        // target starts, before the fire-and-forget clear has necessarily
-        // reached the actor - and stays that way until the test releases it.
-        let gate = Gate()
-        controller.captionTranslationReset = Task {
-            await gate.wait()
-            await log.record("reset-released")
+        for target in ["en", "de", TranslationSetting.off] {
+            UserDefaults.standard.set(target, forKey: TranslationSetting.key)
+            controller.updateCaptionTarget()
+            await controller.captionTranslateTask?.value
         }
+        XCTAssertEqual(session.targets.count, 3)
+        XCTAssertEqual(session.targets[0], "en")
+        XCTAssertEqual(session.targets[1], "de")
+        XCTAssertNil(session.targets[2])
+    }
 
-        let snapshot = CaptionSnapshot(
-            revision: 1,
-            confirmed: [CaptionSegment(id: 1, startSample: 0, endSample: 100,
-                                        text: "Привет", state: .confirmed)],
-            provisional: "")
-        controller.translateCaptions(snapshot)
+    func testIncompleteTranslationFallsBackToTheWholeOriginal() {
+        var transcript = RecordingTranscript()
+        transcript.appendSettled(.init(id: 1, startSample: 0, endSample: 100, text: "First"))
+        transcript.appendSettled(.init(id: 2, startSample: 100, endSample: 200, text: "Second"))
+        transcript.applyTranslations([.init(id: 1, source: "First", text: "Первый", isFinal: true)])
+        XCTAssertEqual(DictationController.completeTranslation(in: transcript), "")
+        transcript.applyTranslations([.init(id: 2, source: "Second", text: "Второй", isFinal: true)])
+        XCTAssertEqual(DictationController.completeTranslation(in: transcript), "Первый Второй")
+    }
 
-        // A fixed wall-clock sleep here would only be a *probably* reliable
-        // head start: on a slow or loaded machine, a mutation that skips
-        // `await pendingReset?.value` could still lose the race and log
-        // after the gate opens, passing the test for the wrong reason. Ticks
-        // of the cooperative scheduler are what actually matter here, not
-        // elapsed time: under the mutation there is no further suspension
-        // between the task starting and reaching `translateOrEmpty` (the
-        // cache-check loop inside `CaptionTranslator.translation` runs
-        // synchronously up to that call), so handing the scheduler many
-        // chances to run anything runnable guarantees that call has already
-        // happened, on any machine, regardless of how fast or slow it is.
-        for _ in 0 ..< 1_000 { await Task.yield() }
-        await gate.release()
-        await controller.captionTranslateTask?.value
+    func testCorrectionFailureLeavesTheRecordingStoppable() async {
+        let keys = [AppMode.defaultsKey, SpeechLanguage.defaultsKey, TranslationSetting.key]
+        let saved = keys.map { UserDefaults.standard.object(forKey: $0) }
+        defer { for (key, value) in zip(keys, saved) { UserDefaults.standard.set(value, forKey: key) } }
+        UserDefaults.standard.set(AppMode.captions.rawValue, forKey: AppMode.defaultsKey)
+        UserDefaults.standard.set("en", forKey: SpeechLanguage.defaultsKey)
+        UserDefaults.standard.set(TranslationSetting.off, forKey: TranslationSetting.key)
+        let session = FakeDictationSession()
+        let controller = DictationController(session: session)
+        controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
+        controller.receive(.failure(.recognition("Correction failed")))
+        XCTAssertEqual(controller.state, .recording)
+        XCTAssertEqual(controller.sessionWarning, "Correction failed")
+        controller.endRecording()
+        await controller.recordingTask?.value
+        XCTAssertEqual(session.stopCount, 1)
+    }
 
-        let events = await log.events
-        XCTAssertEqual(events, ["reset-released", "translated:Привет->en"],
-                       "the cache must not be read until the pending reset actually finished")
+    func testTranslationPreparationFailureStillFinishesTheSession() async {
+        let keys = [AppMode.defaultsKey, SpeechLanguage.defaultsKey, TranslationSetting.key]
+        let saved = keys.map { UserDefaults.standard.object(forKey: $0) }
+        defer { for (key, value) in zip(keys, saved) { UserDefaults.standard.set(value, forKey: key) } }
+        UserDefaults.standard.set(AppMode.dictation.rawValue, forKey: AppMode.defaultsKey)
+        UserDefaults.standard.set("ru", forKey: SpeechLanguage.defaultsKey)
+        UserDefaults.standard.set("en", forKey: TranslationSetting.key)
+        let session = FakeDictationSession()
+        session.translationError = NSError(domain: "test", code: 1)
+        let controller = DictationController(session: session)
+        controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
+        controller.endRecording()
+        await controller.recordingTask?.value
+        XCTAssertEqual(session.finishCount, 1)
+        XCTAssertEqual(session.state, .ready)
+        XCTAssertEqual(controller.state, .transcribed(""))
+        XCTAssertNotNil(controller.sessionWarning)
+    }
+
+    func testAReleaseDuringAsyncStartStopsExactlyOnceAfterCaptureStarts() async {
+        let keys = [AppMode.defaultsKey, SpeechLanguage.defaultsKey, TranslationSetting.key]
+        let saved = keys.map { UserDefaults.standard.object(forKey: $0) }
+        defer { for (key, value) in zip(keys, saved) { UserDefaults.standard.set(value, forKey: key) } }
+        UserDefaults.standard.set(AppMode.captions.rawValue, forKey: AppMode.defaultsKey)
+        UserDefaults.standard.set("en", forKey: SpeechLanguage.defaultsKey)
+        UserDefaults.standard.set(TranslationSetting.off, forKey: TranslationSetting.key)
+        let session = FakeDictationSession()
+        let controller = DictationController(session: session)
+        controller.beginRecording(submit: false)
+        controller.endRecording()
+        await controller.recordingTask?.value
+        await controller.recordingTask?.value
+        XCTAssertEqual(session.startCount, 1)
+        XCTAssertEqual(session.stopCount, 1)
+        XCTAssertEqual(controller.state, .transcribed(""))
     }
 }

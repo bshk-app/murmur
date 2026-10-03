@@ -1,43 +1,53 @@
 import Foundation
 @testable import MurmurKit
 
-/// A session that records what it was asked to do and does none of it.
-///
-/// The point is not to simulate dictation - it is to make `beginRecording`
-/// reachable at all. The real session needs loaded weights and a microphone,
-/// so everything the controller decides *before* handing work over was
-/// previously unverifiable.
-///
-/// `@unchecked Sendable`: `DictationSessioning` requires `Sendable` because
-/// `endRecording` calls `stop()` from a detached task. Every test here drives
-/// it from the main actor and only reads it after the call it is asserting
-/// about, so the mutable boxes are not actually shared across threads.
-final class FakeDictationSession: DictationSessioning, @unchecked Sendable {
-    var onUpdate: ((String, String) -> Void)?
-
-    /// What `isReady` answers. `beginRecording` bails out to `prepare` when
-    /// this is false, so a test that forgets it silently exercises nothing.
+/// App adapter tests exercise the shared asynchronous boundary without models or a microphone.
+@MainActor
+final class FakeDictationSession: RecordingSessioning {
+    var onEvent: ((RecordingSession.Event) -> Void)?
+    var configuration: RecordingSession.Configuration?
     var ready = true
-    var supportedLanguageCodes: [String] = ["en", "ru", "ja"]
-
-    /// Thrown from `start` when set, to drive the failure path.
+    var isPrepared: Bool { ready }
+    var state: RecordingSession.State = .ready
+    var capturedSeconds: Double = 0
+    var residentTranslationModelCount: Int { get async { 0 } }
+    var transcript = RecordingTranscript()
     var startError: Error?
-
-    // What the recogniser was actually handed.
+    var translationError: Error?
+    var startGate: (() async -> Void)?
     private(set) var startedMode: DictationMode?
     private(set) var startedLanguage: String?
     private(set) var startCount = 0
+    private(set) var stopCount = 0
+    private(set) var finishCount = 0
+    private(set) var targets: [String?] = []
 
-    func isReady(_ mode: DictationMode) -> Bool { ready }
-    func load(mode: DictationMode) async throws {}
-    func requestMicrophonePermission(_ completion: @escaping (Bool) -> Void) { completion(true) }
-
-    func start(mode: DictationMode, language: String?, microphoneUID: String?) throws {
+    func prepare(_ configuration: RecordingSession.Configuration) async throws { self.configuration = configuration }
+    func prepareTranslation(from: String, to: String, priority: ProcessingQuality,
+                            onProgress: @escaping @MainActor @Sendable (TranslationDownloader.Progress) -> Void) async throws {}
+    func start(microphoneUID: String?, recordingURL: URL?) async throws {
+        await startGate?()
         if let startError { throw startError }
-        startedMode = mode
-        startedLanguage = language
+        startedMode = configuration?.profile.mode
+        startedLanguage = configuration?.profile.language
         startCount += 1
+        state = .recording
     }
-
-    func stop() -> String { "" }
+    func stopSource() async throws -> RecordingSession.Result {
+        stopCount += 1
+        state = .finishing
+        return .init(transcript: transcript, duration: capturedSeconds)
+    }
+    func finishTranslation() async throws -> RecordingSession.Result {
+        finishCount += 1
+        state = .ready
+        return .init(transcript: transcript, duration: capturedSeconds)
+    }
+    func stop() async throws -> RecordingSession.Result { _ = try await stopSource(); return try await finishTranslation() }
+    func setTranslation(target: String?, priority: ProcessingQuality) async throws {
+        if let translationError { throw translationError }
+        targets.append(target)
+    }
+    func cancel() async { state = .ready }
+    func unload() async { ready = false; state = .idle }
 }

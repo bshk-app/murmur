@@ -10,7 +10,7 @@ import SwiftUI
 ///
 /// Room-scale subtitles are deliberately NOT a variant of this panel: they need
 /// geometry derived from the target screen, an opaque backdrop and a session that
-/// outlives one utterance. See the conference-captions design.
+/// outlives one utterance. They live in `CaptionsOverlay`.
 
 @Observable
 final class HUDModel {
@@ -422,8 +422,7 @@ final class HUDController {
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         // A translation left from the previous utterance under a fresh one
-        // would read as a translation of it - and the quality label would
-        // misdescribe it too, since captions never use the quality engine.
+        // would read as a translation of it, and so would its quality label.
         model.translation = ""
         model.translationIsQuality = false
         model.translating = false
@@ -438,36 +437,6 @@ final class HUDController {
     }
 
     /// Live two-tier update.
-    /// The rolling translation of a caption session.
-    ///
-    /// Separate from `finish(_:delivery:translation:)` because captions have no
-    /// finish: the second line is rewritten as phrases close, for as long as
-    /// the talk runs. Clearing it when it goes empty means switching translation
-    /// off mid-session takes the line away rather than freezing the last value
-    /// on screen.
-    /// Repoint the header badge mid-talk.
-    ///
-    /// `begin` stamps the target once, which is enough for dictation - one
-    /// utterance, one setting. Captions run for as long as the talk does and
-    /// the picker stays live throughout, so the badge has to follow it: a
-    /// header reading `RU → EN` over German, or over a second line that
-    /// translation was just switched off for, is a promise the pill no longer
-    /// keeps. `""` means "no target", which drops the arrow entirely.
-    func setTranslationTarget(_ target: String) {
-        guard panel != nil else { return }
-        model.target = target
-    }
-    func showTranslation(_ text: String) {
-        model.translating = false
-        model.translation = text
-        // Captions only ever run the fast engine (CaptionTranslator has no
-        // quality path) - explicit here rather than relying on `begin` having
-        // zeroed it once, so a caption session can never show a label a
-        // previous dictation utterance left set.
-        model.translationIsQuality = false
-        resizeForCurrentTranslationState()
-    }
-
     func update(confirmed: String, partial: String) {
         show(confirmed: confirmed, partial: partial)
         if model.phase != .error, model.recording {
@@ -596,19 +565,10 @@ final class HUDController {
     }
 
     private func position(_ panel: NSPanel) {
-        guard let screen = Self.targetScreen() else { return }
+        guard let screen = NSScreen.underCursor else { return }
         let v = screen.visibleFrame
         let size = currentSize
         panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,
                               width: size.width, height: size.height), display: true)
-    }
-
-    /// `NSScreen.main` is the screen holding the key window — but this app never has
-    /// one (the panel is `.nonactivatingPanel` and we stay an `.accessory` agent), so
-    /// on a multi-display setup it is not deterministic. The cursor is where the user
-    /// is working, and it costs no Accessibility round-trip to ask.
-    private static func targetScreen() -> NSScreen? {
-        let mouse = NSEvent.mouseLocation
-        return NSScreen.screens.first { $0.frame.contains(mouse) } ?? .main ?? NSScreen.screens.first
     }
 }

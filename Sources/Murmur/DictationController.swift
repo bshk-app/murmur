@@ -1,16 +1,12 @@
 import AppKit
+import AVFoundation
 import Foundation
 import KeyboardShortcuts
 import MurmurKit
 import Observation
 import PostHog
 
-/// Thin SwiftUI-facing wrapper around `MurmurKit.DictationSession`: maps the
-/// shared pipeline to an `@Observable` menu-bar state, wires the Carbon hotkey
-/// to start/stop, and injects the final transcript into the focused field.
-///
-/// All the heavy lifting (mic, STT, 480 ms feed, warm-up) lives in MurmurKit and
-/// is shared verbatim with `murmur-cli`.
+/// Platform presentation and delivery over the shared iOS/macOS recording session.
 @MainActor
 @Observable
 final class DictationController {
@@ -24,52 +20,24 @@ final class DictationController {
     }
 
     private(set) var state: State = .loadingModels
+    private(set) var sessionWarning: String?
 
     /// Pinned since the Insert-mode setting was removed. Kept in the events rather
     /// than dropped so historical PostHog series stay continuous.
     private static let insertModeAnalyticsValue = "inField"
 
-    // Not private, and a protocol rather than the concrete class: tests
-    // substitute a session so `beginRecording` can be reached without models
-    // or a microphone. Two latches inside it were previously provable only by
-    // reading the code - see `DictationSessioning`.
-    var session: any DictationSessioning
-    private let captionSession: CaptionSession
-    // Not private: tests assert on the HUD the controller drives - notably
-    // that the language badge follows a target changed mid-talk - which is
-    // otherwise only observable by looking at the screen.
+    var session: any RecordingSessioning
     let hud = HUDController()
-    /// Keeps translation models resident between utterances. Built eagerly and
-    /// cheaply: nothing loads until a target language is set and something is
-    /// actually translated.
-    private let translation = TranslationService(modelsRoot: TranslationModels.root)
-    /// Captions translate continuously rather than once at stop, so they keep
-    /// their own phrase cache on top of the shared engine.
-    @ObservationIgnored
-    // Not `private`: a test swaps in a fake `PhraseTranslating` to control
-    // translation timing deterministically, without 17 MB of models on disk.
-    lazy var captionTranslation = CaptionTranslator(service: translation)
-    // Not `private`: a test awaits this to know a translation pass settled.
-    @ObservationIgnored var captionTranslateTask: Task<Void, Never>?
-    /// The in-flight `CaptionTranslator.reset()`, if one has not yet finished.
-    /// Spawning it as a bare `Task { await ... }` and moving on would only
-    /// make the clear *probably* land before the next snapshot's translate
-    /// call reaches the same actor - a new caption session gets a brand new
-    /// `CaptionEngine` (see `TwoTierEngine.makeCaptionEngine`), whose segment
-    /// ids restart at 1, so the very next talk's first segment can collide
-    /// with the previous talk's under `CaptionTranslator`'s id/text cache and
-    /// come back in the old language pair if the clear has not actually run
-    /// yet. Tracking the handle lets `translateCaptions` await it explicitly
-    /// - a real happens-before, not a hopeful ordering.
-    // Not `private`: a test drives this directly to prove translateCaptions
-    // actually awaits it rather than merely hoping it finished in time.
-    @ObservationIgnored var captionTranslationReset: Task<Void, Never>?
-    /// The language captions were started with, and the target last translated
-    /// into. Both belong to the session, not to the current setting. Not
-    /// `private`: tests drive `translateCaptions` directly without the mic
-    /// session `beginCaptions()` would otherwise require.
+    /// Captions render here, not in the HUD — see `CaptionsOverlay`.
+    let captionsOverlay = CaptionsOverlay()
     @ObservationIgnored var captionSource: String?
     @ObservationIgnored var captionTarget: String?
+    @ObservationIgnored var recordingTask: Task<Void, Never>?
+    @ObservationIgnored var captionTranslateTask: Task<Void, Never>?
+    @ObservationIgnored private var starting = false
+    @ObservationIgnored private var stopAfterStart = false
+    @ObservationIgnored private var captureFailed = false
+
     /// The language *this utterance* was recognised in, latched when the
     /// recogniser was started.
     ///
@@ -113,35 +81,6 @@ final class DictationController {
     /// Fallback only covers a stop with no start behind it, where nothing ran
     /// to be described.
     var completedModelMode: DictationMode { dictationMode ?? ModelSetting.current }
-    /// Bumped whenever a caption session starts or stops, and - see the
-    /// comment inside `translateCaptions` - on every snapshot too.
-    ///
-    /// `cancel()` alone cannot make a late translation safe: the work inside is
-    /// a synchronous C++ call that runs to completion regardless, so a pass
-    /// already in the engine when the talk ends will still come back holding a
-    /// finished line. Stamping it and checking the stamp at the moment of
-    /// writing is what keeps the previous talk's translation from landing under
-    /// the next one's text.
-    @ObservationIgnored private(set) var captionGeneration: UInt64 = 0
-
-    /// Whether a caption translation started under `token` may still be shown.
-    func captionTranslationIsCurrent(_ token: UInt64) -> Bool {
-        token == captionGeneration
-    }
-
-    /// Retire every in-flight caption translation.
-    ///
-    /// The bump is what does the work. `cancel()` is a courtesy: the pass may
-    /// already be inside a synchronous C++ translate that runs to completion no
-    /// matter what, and it is the stamp check at the write that stops its
-    /// result from landing under the next talk's text.
-    func retireCaptionTranslations() {
-        captionTranslateTask?.cancel()
-        captionTranslateTask = nil
-        captionGeneration &+= 1
-        captionSource = nil
-        captionTarget = nil
-    }
     /// The in-flight model fetch, so scrubbing through the picker cannot leave
     /// a queue of downloads for languages nobody chose.
     @ObservationIgnored private var translationPrepare: Task<Void, Never>?
@@ -151,27 +90,63 @@ final class DictationController {
     /// bar that now belongs to a later choice.
     @ObservationIgnored private var translationGeneration = 0
 
-    /// Both pipelines share one model stack — switching between Dictation and
-    /// Captions in the popover must not load a second ~3.4 GB copy of the weights,
-    /// nor set a second Metal memory cap.
-    init() {
-        let models = SpeechModels()
-        self.session = DictationSession(models: models)
-        self.captionSession = CaptionSession(models: models)
+    init(session: (any RecordingSessioning)? = nil) {
+        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("Murmur", isDirectory: true)
+        self.session = session ?? RecordingSession(modelsRoot: root,
+            translationRoot: TranslationModels.root, memoryLimit: Int(Double(ProcessInfo.processInfo.physicalMemory) * 0.6))
+        connectSession()
     }
 
-    /// The shared, already-warmed pipeline — exposed so onboarding's try-it step
-    /// reuses it instead of spinning up a second `DictationSession`.
-    var dictationSession: any DictationSessioning { session }
+    var dictationSession: any RecordingSessioning { session }
+
+    private func connectSession() {
+        session.onEvent = { [weak self] event in self?.receive(event) }
+    }
+
+    func receive(_ event: RecordingSession.Event) {
+        switch event {
+        case let .snapshot(snapshot):
+            guard state == .recording || state == .transcribing else { return }
+            echo(snapshot.confirmed.map(\.text).joined(separator: " "), snapshot.provisional)
+        case let .translation(line, _):
+            guard captionsRunning, state == .recording else { return }
+            captionsOverlay.showTranslation(line)
+        case let .preparation(progress):
+            if progress.stage == .translation, let fraction = progress.fraction {
+                translationDownload = .init(fraction: fraction, receivedBytes: 0, totalBytes: 0)
+            }
+        case let .failure(failure):
+
+            switch failure {
+            case let .recognition(message):
+                sessionWarning = message
+            case let .translation(message):
+                sessionWarning = message
+                if captionsRunning { captionsOverlay.showTranslation("") }
+                FileHandle.standardError.write(Data("Translation failed: \(message)\n".utf8))
+            case let .capture(message):
+                sessionWarning = message
+                captureFailed = true
+                endRecording()
+            case let .recording(message):
+
+                FileHandle.standardError.write(Data("Diagnostic audio failed: \(message)\n".utf8))
+            }
+        default: break
+        }
+    }
 
     @ObservationIgnored private var promptedAccessibility = false
     @ObservationIgnored private var isPreparing = false
+    @ObservationIgnored private var preparationTask: Task<Void, Never>?
 
     /// Which pipeline owns the live session, and whether its stop comes from a
     /// second tap rather than the key release. Both latched at start so a mode
     /// change mid-session cannot strand a running mic.
     @ObservationIgnored private var captionsRunning = false
-    @ObservationIgnored private var latchedToggle = false
+    /// Readable so tests can prove a menu start latches tap-off.
+    @ObservationIgnored private(set) var latchedToggle = false
 
     /// Whether this utterance ends with a Return. Latched when recording begins and
     /// left alone until it ends: in hold mode there is no separate stop gesture to
@@ -195,7 +170,7 @@ final class DictationController {
         KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
     }
 
-    var supportedLanguageCodes: [String] { dictationSession.supportedLanguageCodes }
+    var supportedLanguageCodes: [String] { [SpeechLanguage.automatic] + LanguagePair.qualityLanguages.sorted() }
 
     /// The binding actually held for this utterance, so the HUD names the key the
     /// user is on rather than a guess. An unbound send-shortcut falls back to the
@@ -209,6 +184,7 @@ final class DictationController {
     var needsAccessibilityToType: Bool { !Accessibility.isTrusted }
 
     var statusLine: String {
+        if let sessionWarning { return sessionWarning }
         switch state {
         case .loadingModels: return "Loading models…"
         case .idle: return "Idle — hold \(shortcutLabel)"
@@ -221,6 +197,7 @@ final class DictationController {
 
     /// Compact status for the menu popover.
     var shortStatus: String {
+        if let sessionWarning { return sessionWarning }
         switch state {
         case .loadingModels: return "Loading…"
         case .idle, .transcribed: return "Ready"
@@ -240,7 +217,9 @@ final class DictationController {
         case .recording: return .listening
         case .transcribing: return .transcribing
         case .error: return .error
-        case .loadingModels, .idle, .transcribed: return .idle
+        case .loadingModels: return .transcribing
+        case .transcribed: return .success
+        case .idle: return .idle
         }
     }
 
@@ -253,7 +232,6 @@ final class DictationController {
     /// in a unit test. A list can be inspected without being executed.
     enum StartupStep: CaseIterable {
         case transcriptEcho
-        case captionEcho
         case hotkeys
         case microphonePermission
         case currentMode
@@ -271,7 +249,6 @@ final class DictationController {
     /// missing at launch in the first place.
     static let startupSteps: [StartupStep] = [
         .transcriptEcho,
-        .captionEcho,
         .hotkeys,
         .microphonePermission,
         .currentMode,
@@ -285,16 +262,14 @@ final class DictationController {
     private func apply(_ step: StartupStep) {
         switch step {
         case .transcriptEcho:
-            session.onUpdate = { [weak self] confirmed, partial in self?.echo(confirmed, partial) }
-        case .captionEcho:
-            captionSession.onSnapshot = { [weak self] snapshot in self?.echoCaptions(snapshot) }
+            connectSession()
         case .hotkeys:
             KeyboardShortcuts.onKeyDown(for: .dictate) { [weak self] in self?.hotkeyDown(submit: false) }
             KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
             KeyboardShortcuts.onKeyDown(for: .dictateAndSend) { [weak self] in self?.hotkeyDown(submit: true) }
             KeyboardShortcuts.onKeyUp(for: .dictateAndSend) { [weak self] in self?.hotkeyUp() }
         case .microphonePermission:
-            session.requestMicrophonePermission()   // surface the mic prompt early
+            AVCaptureDevice.requestAccess(for: .audio) { _ in }
         case .currentMode:
             prepareCurrentMode()                    // load only what this mode needs
         case .translationModels:
@@ -311,83 +286,62 @@ final class DictationController {
     /// which would strand the running mic (stop only fires from `.recording`).
     func prepareCurrentMode() {
         guard !isActive else { return }
-        if AppMode.current == .captions { return prepareCaptions() }
         prepare(mode: ModelSetting.current)
     }
 
-    /// Fetch the translation models for the current pair if they are missing.
-    ///
-    /// Called when the target language changes rather than at stop: the files
-    /// are ~20 MB and pulling them between the stop gesture and the paste would
-    /// stall the one moment the user is waiting on. Failure is silent here — an
-    /// utterance that finds no model still pastes its original text, and a
-    /// download error at picker time is not something to interrupt anyone with.
+    /// Prepares the selected pair through the common owner before the next recording.
     func prepareTranslation() {
-        // A picker is easy to scrub through; each pass would otherwise start a
-        // fetch that nothing stops.
-        translationPrepare?.cancel()
+        let previousPreparation = translationPrepare
+        previousPreparation?.cancel()
         translationDownload = nil
-        // Cancellation is not instant: the outgoing task may already have
-        // progress callbacks queued for the main actor, and it still has its
-        // own tidy-up to run. Both would land on a bar that now belongs to a
-        // different language, so every write is stamped and stale ones are
-        // dropped rather than raced against.
         translationGeneration &+= 1
         let generation = translationGeneration
-
+        if captionsRunning, state == .recording {
+            updateCaptionTarget()
+            return
+        }
+        guard !isActive else { return }
         let source = SpeechLanguage.current
         guard let target = TranslationSetting.target,
-              source != SpeechLanguage.automatic,
-              let route = LanguagePair.route(from: source, to: target) else { return }
-        let legs: [LanguagePair]
-        switch route {
-        case .direct(let pair): legs = [pair]
-        case .pivot(let first, let second): legs = [first, second]
-        }
-        let root = TranslationModels.root
-
-        // Only what is actually missing. An installed leg contributes no bytes
-        // and must not inflate the total, or a pivot with one leg already on
-        // disk would stall the bar at half.
-        let pending = legs.filter { !TranslationDownloader.isInstalled(pair: $0, in: root) }
-        guard !pending.isEmpty else { return }
-
-        // Sizes come from the manifest, so the whole pivot is denominated
-        // before the first byte moves. Legs are weighted by their real size:
-        // 17 MB followed by 43 MB is not two halves.
-        let combined = CombinedDownloadProgress(
-            legBytes: pending.map { TranslationDownloader.expectedDownloadBytes(for: $0) ?? 0 })
-
-        translationPrepare = Task.detached(priority: .utility) { [weak self] in
-            for (index, leg) in pending.enumerated() {
-                // Checked between legs so a pivot abandons its second hop.
-                if Task.isCancelled { break }
-                _ = try? await TranslationDownloader.download(
-                    pair: leg, into: root,
-                    onProgress: { progress in
-                        guard let self, self.translationGeneration == generation else { return }
-                        // Weighting lives in `CombinedDownloadProgress` so it
-                        // can be tested; doing it here would put the one part
-                        // that can silently go wrong out of reach.
-                        let point = combined.at(leg: index, received: progress.receivedBytes)
-                        self.translationDownload = TranslationDownload(
-                            fraction: point.fraction,
-                            receivedBytes: point.receivedBytes,
-                            totalBytes: combined.totalBytes)
-                    })
+              TranslationSetting.canTranslate(from: source) else { return }
+        let pendingSpeech = preparationTask
+        translationPrepare = Task { [weak self] in
+            await previousPreparation?.value
+            await pendingSpeech?.value
+            guard let self, !Task.isCancelled else { return }
+            do {
+                let profile = try SpeechRecognitionProfile.resolve(language: source, mode: ModelSetting.current)
+                try await session.prepare(.init(profile: profile, target: target))
+            } catch is CancellationError {
+            } catch {
+                FileHandle.standardError.write(Data("Translation preparation failed: \(error.localizedDescription)\n".utf8))
             }
-            await MainActor.run { [weak self] in
-                guard let self, self.translationGeneration == generation else { return }
-                self.translationDownload = nil
+            if translationGeneration == generation { translationDownload = nil }
+        }
+    }
+
+    /// The picker owns the desired target; the shared session owns cancellation,
+    /// cache invalidation and stale-result protection.
+    func updateCaptionTarget() {
+        captionsOverlay.setTranslationTarget(captionSource.map(TranslationSetting.badge(dictating:)) ?? "")
+        let target = captionSource.flatMap { TranslationSetting.canTranslate(from: $0) ? TranslationSetting.target : nil }
+        captionTarget = target
+        captionsOverlay.showTranslation("")
+        let previous = captionTranslateTask
+        previous?.cancel()
+        captionTranslateTask = Task { [session] in
+            await previous?.value
+            do {
+                try Task.checkCancellation()
+                try await session.setTranslation(target: target, priority: .quality)
+            }
+            catch is CancellationError {} catch {
+                FileHandle.standardError.write(Data("Translation failed: \(error.localizedDescription)\n".utf8))
             }
         }
     }
 
-    /// Live translation-model download, or nil when nothing is being fetched.
-    ///
-    /// Stays nil for an already-installed pair — that path returns before any
-    /// byte is requested, so switching to a language already on disk shows no
-    /// bar at all rather than flashing one for a frame.
+    /// Presentation progress; the common session owns downloads and warm-up.
     struct TranslationDownload: Equatable {
         var fraction: Double
         var receivedBytes: Int64
@@ -522,22 +476,18 @@ final class DictationController {
     /// a loading state. A no-op when already ready or a load is in flight.
     private func prepare(mode: DictationMode) {
         guard !isPreparing else { return }
-        guard !session.isReady(mode) else {
-            // Already warmed (e.g. the onboarding Download step loaded both models
-            // into the shared session before bootstrap ran) — just go idle.
-            if case .loadingModels = state { state = .idle }
-            return
-        }
         isPreparing = true
         state = .loadingModels
-        Task { @MainActor in
+        let pendingTranslation = translationPrepare
+        pendingTranslation?.cancel()
+        preparationTask = Task { @MainActor in
+            await pendingTranslation?.value
             defer { isPreparing = false }
             do {
-                try await session.load(mode: mode)
+                let profile = try SpeechRecognitionProfile.resolve(language: SpeechLanguage.current, mode: mode)
+                try await session.prepare(.init(profile: profile))
                 if case .loadingModels = state { state = .idle }
-            } catch {
-                state = .error("model load: \(error.localizedDescription)")
-            }
+            } catch { state = .error("model load: \(error.localizedDescription)") }
         }
     }
 
@@ -577,126 +527,96 @@ final class DictationController {
         )
     }
 
+    /// The popover's Start/Stop, for anyone without the shortcut to hand.
+    /// Always tap-on / tap-off: a click leaves no key to release.
+    func toggleFromMenu() {
+        if state == .recording { endRecording() } else { beginRecording(submit: false, forceToggle: true) }
+    }
+
     /// Not `private`: tests drive this with a substituted session to prove
     /// what it latches.
-    func beginRecording(submit: Bool) {
-        guard state != .recording, state != .transcribing else { return }
-        if AppMode.current == .captions { return beginCaptions() }
+    func beginRecording(submit: Bool, forceToggle: Bool = false) {
+        guard !isActive, !isPreparing else { return }
         let language = SpeechLanguage.current
-        // The routing matrix marks Nemotron's streaming preview unreliable for a
-        // few languages, so the live draft is dropped and the batch pass stands
-        // alone. Resolved before the readiness check: asking whether the models
-        // for Hybrid are loaded is the wrong question when Hybrid will not run.
         let modelMode = ModelSetting.current.effective(for: language)
-        // Models for this mode not loaded yet (e.g. just switched) — kick the load
-        // and skip this press; the next one records once ready.
-        guard session.isReady(modelMode) else { prepare(mode: modelMode); return }
-        let toggle = Self.togglesOnPress
-        submitOnFinish = submit
-        do {
-            // The live two-tier view stays in the HUD; the field receives one paste
-            // on release (Variant B — paste is atomic, so no live-into-field typing).
-            try session.start(
-                mode: modelMode,
-                language: language,
-                microphoneUID: MicrophoneSetting.currentUID
-            )
-            captionsRunning = false
-            // Latched here, beside the recogniser that was just handed them,
-            // so stop cannot read a different answer than start used.
-            // `modelMode`, not `ModelSetting.current`: it is the mode after
-            // `effective(for:)`, i.e. the lane that will really run.
-            dictationSource = language
-            dictationMode = modelMode
-            latchedToggle = toggle
-            state = .recording
-            PostHogSDK.shared.capture("dictation_started", properties: [
-                "model_mode": modelMode.rawValue,
-                "trigger_mode": TriggerMode.current.rawValue,
-                "insert_mode": Self.insertModeAnalyticsValue,
-                "language": language,
-            ])
-            // Toggle mode → interactive HUD with a Stop button (tap-to-stop too).
-            hud.begin(lang: SpeechLanguage.badge(for: language),
-                      target: TranslationSetting.badge(dictating: language),
-                      interactive: toggle, submits: submit,
-                      shortcutLabel: activeShortcutLabel(submit: submit),
-                      onStop: { [weak self] in self?.endRecording() })
-        } catch {
-            state = .error(error.localizedDescription)
-            PostHogSDK.shared.capture("dictation_failed", properties: [
-                "error": error.localizedDescription,
-                "model_mode": modelMode.rawValue,
-            ])
-            hud.error("Open Privacy in Settings →")
-        }
-    }
-
-    /// Captions run for a whole talk: one live epoch per phrase, each corrected by
-    /// the batch model while the speaker carries on, and nothing is ever typed.
-    private func beginCaptions() {
-        guard captionSession.isReady() else { return prepareCaptions() }
-        let language = SpeechLanguage.current
-        submitOnFinish = false
-        do {
-            try captionSession.start(
-                language: language,
-                microphoneUID: MicrophoneSetting.currentUID
-            )
-            captionsRunning = true
-            // Pinned for the whole talk, exactly as the dictation path pins it
-            // at stop. The Language picker stays live while captions run, and
-            // the recogniser keeps the language it was started with — reading
-            // the setting again per snapshot would hand already-transcribed
-            // Russian to the engine as, say, German and produce confident
-            // nonsense rather than an obvious failure.
-            captionGeneration &+= 1
-            captionSource = language
-            captionTarget = TranslationSetting.target
-            // A new talk must not inherit the previous one's phrases.
-            captionTranslationReset = Task { [captionTranslation] in await captionTranslation.reset() }
-            latchedToggle = true    // captions is always tap-on / tap-off
-            state = .recording
-            PostHogSDK.shared.capture("captions_started", properties: ["language": language])
-            hud.begin(lang: SpeechLanguage.badge(for: language),
-                      target: TranslationSetting.badge(dictating: language),
-                      interactive: true, submits: false,
-                      shortcutLabel: activeShortcutLabel(submit: false),
-                      onStop: { [weak self] in self?.endRecording() })
-        } catch {
-            state = .error(error.localizedDescription)
-            hud.error("Open Privacy in Settings →")
-        }
-    }
-
-    /// Captions need the boundary detector on top of the dictation models, so its
-    /// readiness is loaded separately — but off the same weights.
-    private func prepareCaptions() {
-        guard !isPreparing else { return }
-        guard !captionSession.isReady() else {
-            if case .loadingModels = state { state = .idle }
-            return
-        }
-        isPreparing = true
-        state = .loadingModels
-        Task { @MainActor in
-            defer { isPreparing = false }
+        guard session.isPrepared || translationPrepare != nil else { prepare(mode: modelMode); return }
+        let captions = AppMode.current == .captions
+        let toggle = forceToggle || Self.togglesOnPress
+        submitOnFinish = captions ? false : submit
+        sessionWarning = nil
+        captureFailed = false
+        starting = true
+        stopAfterStart = false
+        latchedToggle = toggle
+        state = .recording
+        connectSession()
+        let pendingTranslation = translationPrepare
+        recordingTask = Task {
+            defer { starting = false }
             do {
-                try await captionSession.load()
-                if case .loadingModels = state { state = .idle }
+                await pendingTranslation?.value
+                let profile = try SpeechRecognitionProfile.resolve(language: language, mode: modelMode)
+                // Translate captions continuously; dictation chooses its output target at Stop.
+                let target = captions && TranslationSetting.canTranslate(from: language) ? TranslationSetting.target : nil
+                do {
+                    try await session.prepare(.init(profile: profile, target: target))
+                } catch {
+                    guard target != nil else { throw error }
+                    // A translation model failure must not prevent live original captions.
+                    try await session.prepare(.init(profile: profile))
+                }
+                try await session.start(microphoneUID: MicrophoneSetting.currentUID,
+                                        recordingURL: captions ? nil : diagnosticRecordingURL())
+                captionsRunning = captions
+                dictationSource = language
+                dictationMode = modelMode
+                captionSource = captions ? language : nil
+                captionTarget = target
+                PostHogSDK.shared.capture(captions ? "captions_started" : "dictation_started", properties: [
+                    "model_mode": modelMode.rawValue, "language": language,
+                    "trigger_mode": TriggerMode.current.rawValue,
+                    "insert_mode": Self.insertModeAnalyticsValue,
+                ])
+                if captions {
+                    captionsOverlay.begin(target: TranslationSetting.badge(dictating: language),
+                                          display: CaptionsDisplay.current)
+                } else {
+                    hud.begin(lang: SpeechLanguage.badge(for: language),
+                              target: TranslationSetting.badge(dictating: language),
+                              interactive: toggle, submits: submitOnFinish,
+                              shortcutLabel: activeShortcutLabel(submit: submitOnFinish),
+                              onStop: { [weak self] in self?.endRecording() })
+                }
+                starting = false
+                if stopAfterStart { endRecording() }
             } catch {
-                state = .error("model load: \(error.localizedDescription)")
+                state = .error(error.localizedDescription)
+                hud.error(error.localizedDescription)
+                PostHogSDK.shared.capture("dictation_failed", properties: ["error": error.localizedDescription])
             }
         }
     }
 
-    /// Runs on the mic capture queue (via `onUpdate`). Two jobs (nothing is typed
-    /// into the field live — the field gets one paste on release):
-    ///  1. drive the HUD overlay (confirmed prefix + the fast Nemotron `⟨tail⟩`),
-    ///     hopping to the main actor since the panel is UI;
-    ///  2. echo the same view to the console, redrawn in place — handy from Xcode.
-    private nonisolated func echo(_ confirmed: String, _ partial: String) {
-        Task { @MainActor in self.hud.update(confirmed: confirmed, partial: partial) }
+    private func diagnosticRecordingURL() -> URL? {
+        guard UserDefaults.standard.bool(forKey: DictationSession.recordUtterancesKey) else { return nil }
+        let directory = DiagnosticRecordings.directory()
+        do {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            return directory.appendingPathComponent("\(DiagnosticRecordings.filePrefix)\(UUID().uuidString).wav")
+        } catch {
+            FileHandle.standardError.write(Data("Diagnostic audio failed: \(error.localizedDescription)\n".utf8))
+            return nil
+        }
+    }
+
+    /// Events arrive on the main actor so final HUD presentation cannot be
+    /// overtaken by a queued update from the previous utterance.
+    private func echo(_ confirmed: String, _ partial: String) {
+        if captionsRunning {
+            captionsOverlay.update(confirmed: confirmed, partial: partial)
+        } else {
+            hud.update(confirmed: confirmed, partial: partial)
+        }
         #if DEBUG
         let line = partial.isEmpty ? confirmed : "\(confirmed) ⟨\(partial)⟩"
         let tail = line.count > 100 ? "…" + String(line.suffix(100)) : line
@@ -704,177 +624,83 @@ final class DictationController {
         #endif
     }
 
-    /// Same job as `echo`, from the caption pipeline's rolling snapshot: the
-    /// confirmed phrases read as one paragraph, with the live draft as the tail.
-    /// The HUD clamps to its own capacity, keeping the most recent words.
-    private nonisolated func echoCaptions(_ snapshot: CaptionSnapshot) {
-        let confirmed = snapshot.confirmed.map(\.text).joined(separator: " ")
-        echo(confirmed, snapshot.provisional)
-        Task { @MainActor in self.translateCaptions(snapshot) }
-    }
-
-    /// Keep the HUD's second line in step with the closed phrases.
-    ///
-    /// Coalesced rather than queued: snapshots arrive several times a second
-    /// and only the newest matters, so a still-running pass is replaced instead
-    /// of another being stacked behind it. Cheap in the common case because the
-    /// translator only works on phrases whose text it has not already seen.
-    /// Not `private`: tests drive this directly, without a live mic session.
-    func translateCaptions(_ snapshot: CaptionSnapshot) {
-        // Before the guard, so it covers both outcomes with one rule: the
-        // header badge tracks the *live* setting rather than the one `begin`
-        // captured. The picker stays enabled during a talk, so the target can
-        // change under us (handled below) or be switched off entirely (the
-        // guard's else) - and in both cases a stale `RU → EN` would be
-        // advertising a second line that is now German, or gone.
-        // `badge(dictating:)` is the same gate the initial stamp used, so the
-        // two can never disagree.
-        hud.setTranslationTarget(captionSource.map(TranslationSetting.badge(dictating:)) ?? "")
-        guard let source = captionSource,
-              let target = TranslationSetting.target,
-              TranslationSetting.canTranslate(from: source) else {
-            captionTranslateTask?.cancel()
-            // See the bump below: an abandoned pass from before translation
-            // turned off can still land afterward and overwrite this
-            // intentional blank with stale, now-unwanted text.
-            captionGeneration &+= 1
-            hud.showTranslation("")
-            return
-        }
-        // Switching target mid-talk re-translates everything: a second line
-        // holding half German and half French would be worse than a pause.
-        if captionTarget != target {
-            captionTarget = target
-            captionTranslateTask?.cancel()
-            captionTranslationReset = Task { [captionTranslation] in await captionTranslation.reset() }
-        }
-        captionTranslateTask?.cancel()
-        // Stamped fresh for *this* snapshot, not only at session boundaries.
-        // `cancel()` is a courtesy: the pass may already be inside the
-        // synchronous, non-cancellable C++ translate (see the doc on
-        // `captionGeneration`), so an older snapshot's task can still finish
-        // - and write - after a newer one already has. Session-level
-        // stamping alone only rejects a translation from an already-ended
-        // talk; within the same talk it does nothing, because every snapshot
-        // shared one generation. That let a slower, stale pass silently
-        // clobber the HUD with a shorter, already-superseded line, with no
-        // further snapshot to correct it if the speaker then paused. Bumping
-        // here makes every snapshot's generation unique, so only the result
-        // whose generation still matches - the most recently *started* pass,
-        // whichever finishes first - is ever allowed to write.
-        captionGeneration &+= 1
-        let generation = captionGeneration
-        // Waited on explicitly, not assumed already finished: a bare
-        // `Task { await reset() }` only *probably* reaches the actor before
-        // this call does, and a stale hit in `CaptionTranslator`'s cache
-        // would read as a normal cache hit - correct id, correct text, wrong
-        // language - with nothing downstream able to tell the difference.
-        let pendingReset = captionTranslationReset
-        captionTranslateTask = Task { [captionTranslation, hud, weak self] in
-            await pendingReset?.value
-            let line = await captionTranslation.translation(
-                of: snapshot.confirmed, draft: snapshot.provisional,
-                from: source, to: target)
-            await MainActor.run {
-                // Checked here rather than before the hop: the session can end
-                // while this pass is inside the engine, and only the stamp
-                // taken at the write can tell whether the HUD on screen is
-                // still the one this line belongs to.
-                guard let self, self.captionTranslationIsCurrent(generation) else { return }
-                hud.showTranslation(line)
-            }
-        }
-    }
-
-    private func endRecording() {
+    func endRecording() {
         guard state == .recording else { return }
+        if starting { stopAfterStart = true; return }
         state = .transcribing
-        if captionsRunning { return endCaptions() }
+        let captions = captionsRunning
+        let displayOnly = captions || captureFailed
         let modelModeAtStop = completedModelMode.rawValue
         let submitAtStop = submitOnFinish
-        // The target is read fresh at stop on purpose: the user may change it
-        // while the batch pass runs, and half an utterance in one language is
-        // worse than all of it in the language they asked for. The source is
-        // the opposite case - see `translationSource`.
-        let sourceAtStop = translationSource
-        let targetAtStop = TranslationSetting.target
-        // The mic is already closed by `stop()`, so the overlay must stop looking
-        // like it is listening while the batch pass runs.
-        hud.finalizing()
-        // Drain off the main thread so a slow finish never freezes the UI, then
-        // paste the final on the main thread (pasteboard + ⌘V).
-        Task.detached(priority: .userInitiated) { [session, translation] in
-            let final = session.stop()
-
-            // Translate off the main thread, between the transcript and the
-            // paste: the field receives the translation, and the HUD shows both
-            // lines so the speaker can still see what was heard.
-            var translated = ""
-            var translatedWithQuality = false
-            // Nothing to route from under automatic detection, so do not even
-            // show the translating state for a pass that cannot produce one.
-            if let targetAtStop, !final.isEmpty,
-               TranslationSetting.canTranslate(from: sourceAtStop) {
-                await MainActor.run { self.hud.translating() }
-                // The quality engine, not the realtime one: this is the one
-                // paste per utterance, not a live draft redrawn several times a
-                // second, so the ~350 ms CTranslate2 costs is the right trade
-                // for the reason the whole second engine exists. A direction
-                // with no quality model installed falls back to the fast one
-                // inside translateBest itself, at no extra cost.
-                let outcome = await translation.translateBestOrEmpty(
-                    final, from: sourceAtStop, to: targetAtStop)
-                translated = outcome.text
-                translatedWithQuality = outcome.usedQuality
+        let target = TranslationSetting.canTranslate(from: translationSource) ? TranslationSetting.target : nil
+        captionTranslateTask?.cancel()
+        if captions { captionsOverlay.dismiss() } else { hud.finalizing() }
+        recordingTask = Task {
+            defer {
+                if !captions { Task.detached(priority: .utility) { DiagnosticRecordings.sweep() } }
             }
-
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                FileHandle.standardError.write(Data("\n".utf8))
-                // What lands in the field is the translation when there is one.
-                // Pasting both languages would put text the user never asked
-                // for into someone else's document.
-                let payload = translated.isEmpty ? final : translated
-                let delivery = payload.isEmpty ? TranscriptDelivery.typed
-                                               : self.insertFinal(payload, submit: submitAtStop)
-                self.hud.finish(final, delivery: delivery, translation: translated,
-                                translationIsQuality: translatedWithQuality)
-                PostHogSDK.shared.capture("dictation_completed", properties: [
-                    "word_count": final.split(separator: " ").count,
-                    "character_count": final.count,
-                    "is_empty": final.isEmpty,
-                    "model_mode": modelModeAtStop,
-                    "insert_mode": Self.insertModeAnalyticsValue,
-                    "submit_on_finish": submitAtStop,
-                    "delivered": delivery == .typed,
-                ])
-                self.state = .transcribed(final)
+            do {
+                // Close the microphone before potentially preparing a newly selected translation.
+                let source = try await session.stopSource()
+                var result = source
+                if !displayOnly && !captureFailed {
+                    do {
+                        try await session.setTranslation(target: target, priority: .quality)
+                        if target != nil { hud.translating() }
+                    } catch {
+                        sessionWarning = "Translation failed: \(error.localizedDescription)"
+                    }
+                } else if captureFailed {
+                    try await session.setTranslation(target: nil, priority: .quality)
+                }
+                do {
+                    result = try await session.finishTranslation()
+                } catch {
+                    // Always finish the shared lifecycle, even if target preparation failed.
+                    // The original remains the atomic delivery fallback.
+                    sessionWarning = "Translation failed: \(error.localizedDescription)"
+                }
+                let final = result.text
+                if displayOnly || captureFailed {
+                    if !captions {
+                        hud.finish(final, delivery: .displayedOnly)
+                    } else if captureFailed {
+                        // The band just vanished mid-talk; say why on the speaker's screen.
+                        hud.error(sessionWarning ?? "")
+                    }
+                    PostHogSDK.shared.capture("captions_completed", properties: [
+                        "phrase_count": result.transcript.utterances.count, "character_count": final.count,
+                    ])
+                } else {
+                    let translated = Self.completeTranslation(in: result.transcript)
+                    let payload = translated.isEmpty ? final : translated
+                    let delivery = payload.isEmpty ? TranscriptDelivery.typed : insertFinal(payload, submit: submitAtStop)
+                    hud.finish(final, delivery: delivery, translation: translated, translationIsQuality: !translated.isEmpty && session.configuration?.translationQuality == .quality)
+                    PostHogSDK.shared.capture("dictation_completed", properties: [
+                        "word_count": final.split(separator: " ").count, "character_count": final.count,
+                        "is_empty": final.isEmpty, "model_mode": modelModeAtStop,
+                        "insert_mode": Self.insertModeAnalyticsValue, "submit_on_finish": submitAtStop,
+                        "delivered": delivery == .typed,
+                    ])
+                }
+                captionsRunning = false
+                captionSource = nil
+                captionTarget = nil
+                state = .transcribed(final)
+            } catch {
+                state = .error(error.localizedDescription)
+                hud.error(error.localizedDescription)
             }
         }
     }
 
-    /// Stop captions: close the open phrase and take the overlay away. The user
-    /// asked for it to stop, so holding the last line on screen only keeps it in
-    /// front of whatever they turned back to.
-    private func endCaptions() {
-        // Retire any pass still running: `finish` is about to clear the second
-        // line, and a late write must not put it back.
-        retireCaptionTranslations()
-        hud.finalizing()
-        Task.detached(priority: .userInitiated) { [captionSession] in
-            let snapshot = captionSession.stop()
-            await MainActor.run { [weak self] in
-                guard let self else { return }
-                FileHandle.standardError.write(Data("\n".utf8))
-                let text = (snapshot?.confirmed.map(\.text) ?? []).joined(separator: " ")
-                self.hud.finish(text, delivery: .displayedOnly)
-                PostHogSDK.shared.capture("captions_completed", properties: [
-                    "phrase_count": snapshot?.confirmed.count ?? 0,
-                    "character_count": text.count,
-                ])
-                self.state = .transcribed(text)
-            }
-        }
+    /// A failed phrase must never turn one atomic paste into a truncated message.
+    static func completeTranslation(in transcript: RecordingTranscript) -> String {
+        guard !transcript.utterances.isEmpty,
+              transcript.utterances.allSatisfy({
+                  $0.translationFailed != true && !($0.translation ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+              }) else { return "" }
+        return transcript.translatedText
     }
 
     /// Paste the final transcript into the focused field. Posting ⌘V needs

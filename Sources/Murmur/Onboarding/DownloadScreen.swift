@@ -1,29 +1,20 @@
 import MurmurKit
 import SwiftUI
 
-/// Step 3 — Download (design: MurMur Onboarding.dc.html STEP 3). Two model cards
-/// (Fast / Accurate) with live progress bars bound to `flow.fastFraction` /
-/// `accurateFraction`, a derived "{downloaded} / {total} · {eta} · {speed}" line,
-/// a done banner when both reach 100 %, and an error note with Retry. The actual
-/// download runs from `OnboardingModel.startDownload`, triggered by this screen's
-/// `.onAppear` — nothing downloads until the user reaches this step. Continue is
-/// gated by the footer (`OnboardingFlow.canContinue` → both ≥ 1). Sizes/maths come
-/// from `OnboardingFlow` — no hardcoded GB in the view.
+/// Presents actual shared preparation progress without assuming model sizes or lanes.
 struct DownloadScreen: View {
     @Bindable var model: OnboardingModel
     @Environment(\.colorScheme) private var scheme
 
-    /// Tracks the previous (downloadedGB, timestamp) to derive speed + ETA from
-    /// the fraction deltas — no separate byte accounting (GB is the SSOT here).
-    @State private var lastGB = 0.0
-    @State private var lastTick = Date()
-    @State private var speedGBs = 0.0   // GB/second, smoothed
-
     private var t: OnTheme { OnTheme(scheme) }
 
-    private var metrics: OnboardingFlow.DownloadMetrics {
-        OnboardingFlow.downloadMetrics(fast: model.flow.fastFraction,
-                                       accurate: model.flow.accurateFraction)
+    private var stage: LocalizedStringKey {
+        guard let progress = model.preparationProgress else { return "Preparing speech models…" }
+        switch progress.stage {
+        case .speech: return "Preparing speech models…"
+        case .translation: return "Preparing translation…"
+        case .warmup: return "Warming up recognition…"
+        }
     }
 
     var body: some View {
@@ -35,77 +26,49 @@ struct DownloadScreen: View {
                 Text("Getting my voice ready")
                     .murFont(32, weight: .semibold, design: .serif)
                     .foregroundStyle(t.ink).padding(.top, 10)
-                Text("Two models download once, then run entirely on your Mac. A fast one for the instant draft, an accurate one for the final text.")
+                Text("Speech models download to your Mac and run locally. Preparation includes loading and warming up recognition.")
                     .murFont(14.5).lineSpacing(4)
                     .foregroundStyle(t.muted(0.66))
                     .frame(maxWidth: 444, alignment: .leading).padding(.top, 11)
             }
 
-            VStack(spacing: 12) {
-                modelCard(title: "Fast model",
-                          subtitle: "Instant draft as you speak",
-                          sizeGB: OnboardingFlow.fastGB,
-                          fraction: model.flow.fastFraction)
-                modelCard(title: "Accurate model",
-                          subtitle: "Rewrites the utterance when you release",
-                          sizeGB: OnboardingFlow.accurateGB,
-                          fraction: model.flow.accurateFraction)
-            }
-            .padding(.top, 22)
+            preparationCard.padding(.top, 22)
 
-            metricsLine.padding(.top, 14)
-
-            if metrics.done {
+            if model.modelsReady {
                 doneBanner.padding(.top, 14)
             } else if let err = model.downloadError {
                 errorBanner(err).padding(.top, 14)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .onChange(of: metrics.downloadedGB) { _, newGB in updateSpeed(newGB) }
         .onAppear { model.startDownload() }   // download starts when this step is reached
     }
 
-    // MARK: - Per-model card
-
-    private func modelCard(title: LocalizedStringKey,
-                           subtitle: LocalizedStringKey,
-                           sizeGB: Double,
-                           fraction: Double) -> some View {
-        let ready = fraction >= 1
-        let pct = Int((fraction * 100).rounded())
-        return VStack(alignment: .leading, spacing: 11) {
+    private var preparationCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 3) {
-                    HStack(spacing: 8) {
-                        Text(title).murFont(15, weight: .semibold).foregroundStyle(t.ink)
-                        Text(verbatim: String(format: "%.1f GB", sizeGB))
-                            .font(.system(size: 10.5, weight: .medium))
-                            .foregroundStyle(t.muted(0.55))
-                            .padding(.horizontal, 6).padding(.vertical, 3)
-                            .background(t.line(0.06), in: RoundedRectangle(cornerRadius: 5, style: .continuous))
-                    }
-                    Text(subtitle).murFont(13).foregroundStyle(t.muted(0.6))
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-                if ready {
+                Text(model.modelsReady ? "Recognition is ready" : stage)
+                    .murFont(15, weight: .semibold).foregroundStyle(t.ink)
+                Spacer()
+                if model.modelsReady {
                     readyPill
-                } else {
-                    Text(verbatim: "\(pct)%")
+                } else if let fraction = model.preparationProgress?.fraction {
+                    Text(verbatim: "\(Int((max(0, min(1, fraction)) * 100).rounded()))%")
                         .font(.system(size: 13, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Mur.accent)
+                } else {
+                    ProgressView().controlSize(.small)
                 }
             }
-
-            progressBar(fraction: fraction, ready: ready)
+            if model.modelsReady {
+                progressBar(fraction: 1, ready: true)
+            } else if let fraction = model.preparationProgress?.fraction {
+                progressBar(fraction: fraction, ready: false)
+            }
         }
         .padding(16)
         .background(t.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(t.line(0.1), lineWidth: 1))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(title)
-        .accessibilityValue(ready ? "Downloaded" : "\(pct) percent")
     }
 
     private func progressBar(fraction: Double, ready: Bool) -> some View {
@@ -129,56 +92,6 @@ struct DownloadScreen: View {
         .background(t.ok.opacity(0.14), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 
-    // MARK: - Metrics line ("{downloaded} / {total} · {eta} · {speed}")
-
-    private var metricsLine: some View {
-        let m = metrics
-        let downloaded = String(format: "%.1f", m.downloadedGB)
-        let total = String(format: "%.1f", m.totalGB)
-        return HStack(spacing: 0) {
-            Text(verbatim: "\(downloaded) / \(total) GB")
-            if !m.done {
-                Text(verbatim: " · ")
-                Text(verbatim: etaText(remainingGB: m.remainingGB))
-                Text(verbatim: " · ")
-                Text(verbatim: speedText)
-            }
-        }
-        .font(.system(size: 12.5, design: .monospaced))
-        .foregroundStyle(t.muted(0.5))
-    }
-
-    /// Human ETA from the remaining GB and the smoothed speed. Falls back to a
-    /// neutral placeholder until a speed sample exists.
-    private func etaText(remainingGB: Double) -> String {
-        guard speedGBs > 0.0001 else { return "estimating…" }
-        let secs = Int((remainingGB / speedGBs).rounded())
-        if secs >= 60 { return "~\(secs / 60)m \(secs % 60)s left" }
-        return "~\(secs)s left"
-    }
-
-    private var speedText: String {
-        guard speedGBs > 0.0001 else { return "—" }
-        let mbs = speedGBs * 1024   // GB/s → MB/s
-        return String(format: "%.0f MB/s", mbs)
-    }
-
-    /// Derive instantaneous speed from the GB delta since the last tick, lightly
-    /// smoothed (EMA) so the line doesn't jitter.
-    private func updateSpeed(_ newGB: Double) {
-        let now = Date()
-        let dt = now.timeIntervalSince(lastTick)
-        let dGB = newGB - lastGB
-        if dt > 0.05, dGB > 0 {
-            let sample = dGB / dt
-            speedGBs = speedGBs == 0 ? sample : speedGBs * 0.6 + sample * 0.4
-            lastGB = newGB
-            lastTick = now
-        } else if dGB > 0 {
-            lastGB = newGB
-        }
-    }
-
     // MARK: - Done / error banners
 
     private var doneBanner: some View {
@@ -186,7 +99,7 @@ struct DownloadScreen: View {
             Circle().fill(t.ok).frame(width: 22, height: 22)
                 .overlay(Text(verbatim: "✓").font(.system(size: 12, weight: .bold)).foregroundStyle(.white))
                 .accessibilityHidden(true)   // decorative; the banner text carries the meaning
-            Text("Both models are on your Mac — you’re ready to roll.")
+            Text("Recognition is ready on your Mac.")
                 .murFont(13.5, weight: .medium).foregroundStyle(t.ink)
             Spacer(minLength: 0)
         }
