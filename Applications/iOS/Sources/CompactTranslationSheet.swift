@@ -37,7 +37,7 @@ struct CompactTranslationSheet: View {
 
     var body: some View {
         ViewThatFits(in: .vertical) {
-            content.fixedSize(horizontal: false, vertical: true)
+            content
             ScrollView { content }
         }
         .frame(maxWidth: 640, alignment: .top)
@@ -65,9 +65,9 @@ struct CompactTranslationSheet: View {
 
     private var content: some View {
         VStack(spacing: 12) {
-            header
+            header.fixedSize(horizontal: false, vertical: true)
             if editing { sourceEditor } else { translationCard }
-            actions
+            actions.fixedSize(horizontal: false, vertical: true)
         }.padding(.horizontal, 18).padding(.top, 8).padding(.bottom, 12)
     }
 
@@ -119,7 +119,9 @@ struct CompactTranslationSheet: View {
                 ScrollView {
                     TranscriptText(text: controller.output, size: 18, identifier: "compact-output")
                         .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { resultHeight = $0 }
-                }.frame(height: min(max(28, resultHeight), typeSize.isAccessibilitySize ? 320 : 240))
+                // Keep short results compact; let longer ones use the height
+                // offered by the system sheet after the controls are laid out.
+                }.frame(minHeight: 28, idealHeight: 28, maxHeight: max(28, resultHeight))
                     .accessibilityIdentifier("compact-output-scroll")
                     .padding(.horizontal, 14).padding(.top, 9).padding(.bottom, 12)
             } else {
@@ -131,13 +133,8 @@ struct CompactTranslationSheet: View {
 
     @ViewBuilder private var status: some View {
         if controller.isBusy {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(phaseTitle).font(.subheadline).accessibilityIdentifier("compact-progress")
-                ProgressTrack(value: controller.phase == .preparing ? controller.fraction : nil, tone: controller.phase == .cancelling ? .neutral : .accent)
-                if controller.phase == .preparing, let fraction = controller.fraction {
-                    Text(fraction, format: .percent.precision(.fractionLength(0))).font(.caption).monospacedDigit()
-                }
-            }.frame(maxWidth: .infinity, alignment: .leading)
+            TranslationProgressStatus(title: phaseTitle, fraction: controller.phase == .preparing ? controller.fraction : nil,
+                                      tone: controller.phase == .cancelling ? .neutral : .accent)
         } else if controller.error != nil {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Could not translate. Your text is kept.").font(.subheadline)
@@ -198,4 +195,21 @@ struct CompactTranslationSheet: View {
     private func beginEditing() { draft = controller.input; editing = true; expand(); editorFocused = true }
     private func start() { copied = false; if controller.canTranslate { translate() } }
     private func saveLanguages() { TranslationPreferences.save(source: controller.source, target: controller.target); copied = false }
+}
+
+/// Phase title, bar and percentage; the extension also shows it before the sheet exists.
+struct TranslationProgressStatus: View {
+    let title: LocalizedStringKey
+    let fraction: Double?
+    var tone = DesignTone.accent
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.subheadline).accessibilityIdentifier("compact-progress")
+            ProgressTrack(value: fraction, tone: tone)
+            if let fraction {
+                Text(fraction, format: .percent.precision(.fractionLength(0))).font(.caption).monospacedDigit()
+            }
+        }.frame(maxWidth: .infinity, alignment: .leading)
+    }
 }

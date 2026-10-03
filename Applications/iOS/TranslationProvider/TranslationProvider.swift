@@ -14,20 +14,13 @@ import MurmurTranslation
 
 @MainActor private struct SelectedTextTranslationView: View {
     let context: any TranslationUIProviderContext
-    @State private var controller: TextTranslationModel
+    @State private var controller: TextTranslationModel?
+    @State private var verified=0.0
     @State private var operation: Task<Void, Never>?
-    @State private var needsSourceChoice: Bool
+    @State private var needsSourceChoice=false
     @Environment(\.colorScheme) private var scheme
 
-    init(context: any TranslationUIProviderContext) {
-        self.context=context
-        let source=TranslationPreferences.source
-        let target=TranslationPreferences.target
-        let model=TextTranslationModel(engine:TextTranslationSession(modelsRoot:TranslationPaths.models),source:source,target:target,
-            availableTargets:{ TextTranslationSession.availableTargets(from:$0,modelsRoot:TranslationPaths.models) })
-        _controller=State(initialValue:model)
-        _needsSourceChoice=State(initialValue:false)
-    }
+    init(context: any TranslationUIProviderContext) { self.context=context }
     var body: some View {
         let palette=MurmurPalette(scheme:scheme)
         VStack(spacing:0) {
@@ -37,7 +30,7 @@ import MurmurTranslation
                     Text("Your selected text is kept. Return here after opening the app.").foregroundStyle(palette.secondary)
                     Button("Done") { context.finish(translation:nil) }.frame(minHeight:44)
                 }.padding(24)
-            } else {
+            } else if let controller {
                 CompactTranslationSheet(controller:controller,sourceNeedsReview:needsSourceChoice,replace:context.allowsReplacement ? { output in
                     guard !output.isEmpty, !controller.isBusy else { return }
                     context.finish(translation:AttributedString(output))
@@ -45,24 +38,38 @@ import MurmurTranslation
                     controller.cancel()
                     context.finish(translation:nil)
                 },expand:{ context.expandSheet() })
+            } else {
+                TranslationProgressStatus(title:"Preparing translation…",fraction:verified)
+                    .padding(.horizontal,18).padding(.top,8).frame(maxHeight:.infinity,alignment:.top)
             }
         }.foregroundStyle(palette.ink).tint(palette.accentText)
-            .task(id: selectedText) {
-                guard let text=selectedText else { return }
+            .task {
+                // Each invocation is a new process, so every installed pack is hashed
+                // again; doing it in the model's init left the sheet blank meanwhile.
+                guard TranslationPaths.isReady, controller==nil else { return }
+                await TranslationPaths.verifyInstalledModels { verified=$0 }
+                guard !Task.isCancelled else { return }
+                controller=TextTranslationModel(engine:TextTranslationSession(modelsRoot:TranslationPaths.models),
+                    source:TranslationPreferences.source,target:TranslationPreferences.target,
+                    availableTargets:{ TextTranslationSession.availableTargets(from:$0,modelsRoot:TranslationPaths.models) })
+            }
+            .task(id: controller==nil ? nil : selectedText) {
+                guard let controller, let text=selectedText else { return }
                 controller.cancel()
                 await operation?.value
                 guard !Task.isCancelled else { return }
-                receive(text)
-                if TranslationPaths.isReady, !needsSourceChoice { startTranslation() }
+                receive(text,into:controller)
+                if !needsSourceChoice { startTranslation() }
             }
             .onDisappear {
+                guard let controller else { return }
                 controller.cancel()
                 let pending=operation
                 Task { await pending?.value; await controller.unload() }
             }
     }
     private var selectedText: String? { context.inputText.map { String($0.characters) } }
-    private func receive(_ text: String) {
+    private func receive(_ text: String, into controller: TextTranslationModel) {
         let preferredSource=TranslationPreferences.source
         let preferredTarget=TranslationPreferences.target
         let detected=NLLanguageRecognizer.dominantLanguage(for:String(text.prefix(1500)))?.rawValue
@@ -77,6 +84,6 @@ import MurmurTranslation
     }
     private func startTranslation() {
         needsSourceChoice=false
-        if let task=controller.start() { operation=task }
+        if let task=controller?.start() { operation=task }
     }
 }

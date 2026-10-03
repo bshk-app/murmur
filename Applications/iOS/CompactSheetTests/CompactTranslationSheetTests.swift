@@ -68,13 +68,29 @@ final class CompactTranslationSheetTests: XCTestCase {
         let output = app.staticTexts["compact-output"]
         XCTAssertTrue(output.waitForExistence(timeout: 5))
         let scroll = app.scrollViews["compact-output-scroll"]
-        XCTAssertLessThanOrEqual(scroll.frame.height, 320)
+        XCTAssertGreaterThan(scroll.frame.height, app.frame.height * 0.5,
+            "Expanded sheet must use the available height for the translation")
+        XCTAssertLessThan(app.frame.maxY - app.buttons["compact-share"].frame.maxY, 100,
+            "Actions must not leave a large unused area below a scrolling result")
         let before = app.buttons["replace-translation"].frame
         capture(app, "compact-long-dark")
         scroll.swipeUp(); scroll.swipeUp()
         XCTAssertEqual(app.buttons["replace-translation"].frame, before)
         XCTAssertTrue(app.buttons["compact-share"].isHittable)
         XCTAssertTrue(app.buttons["compact-close"].isHittable)
+    }
+    func testReadOnlyLongResultUsesExpandedHeight() {
+        let app = launch(["--compact-long", "--compact-read-only", "--compact-dark"])
+        XCTAssertTrue(app.staticTexts["compact-output"].waitForExistence(timeout: 5))
+        let scroll = app.scrollViews["compact-output-scroll"]
+        XCTAssertGreaterThan(scroll.frame.height, app.frame.height * 0.5)
+        XCTAssertLessThan(app.frame.maxY - app.buttons["compact-share"].frame.maxY, 100)
+        XCTAssertFalse(app.buttons["replace-translation"].exists)
+        let before = app.buttons["compact-share"].frame
+        scroll.swipeUp()
+        XCTAssertEqual(app.buttons["compact-share"].frame, before)
+        XCTAssertTrue(app.buttons["compact-share"].isHittable)
+        capture(app, "compact-read-only-long-expanded")
     }
     func testEditRetranslatesAndCancelPreservesResult() {
         let app = launch()

@@ -34,6 +34,24 @@ public enum TranslationModelIdentity {
         return identity
     }
 
+    /// Fills the `cached(directory:)` cache away from the caller's actor, so a
+    /// UI can show progress instead of hashing every pack before its first frame.
+    /// Progress is weighted by `model.bin` size; absent packs are skipped.
+    @concurrent public static func warm(_ directories: [URL], onProgress: @escaping @MainActor @Sendable (Double) -> Void) async {
+        let packs = directories.compactMap { directory -> (URL, Int64)? in
+            let size = (try? FileManager.default.attributesOfItem(atPath: directory.appendingPathComponent("model.bin").path))?[.size] as? Int64
+            return size.map { (directory, $0) }
+        }
+        let total = Double(max(1, packs.reduce(0) { $0 + $1.1 }))
+        var done: Int64 = 0
+        for (directory, size) in packs {
+            guard !Task.isCancelled else { return }
+            _ = try? cached(directory: directory)
+            done += size
+            await onProgress(Double(done) / total)
+        }
+    }
+
     public static func compute(directory: URL) throws -> String {
         let names = try files(in: directory)
         let rows = try names.map { name in

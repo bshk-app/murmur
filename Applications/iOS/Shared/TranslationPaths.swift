@@ -25,6 +25,12 @@ enum TranslationPaths {
         }
         return .init(installedModels: installed, catalog: catalog)
     }
+    /// Hashes installed packs off the main actor; later route checks in this
+    /// process reuse TranslationModelIdentity's cache instead of blocking a frame.
+    static func verifyInstalledModels(onProgress: @escaping @MainActor @Sendable (Double) -> Void) async {
+        let names = Set(TranslationProfileCatalog.current.registeredModels.map(\.directoryName))
+        await TranslationModelIdentity.warm(names.sorted().map { models.appendingPathComponent($0) }, onProgress: onProgress)
+    }
 }
 
 enum TranslationPreferences {
