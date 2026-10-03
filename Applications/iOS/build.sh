@@ -1,12 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 cd "$(dirname "$0")"
+bash ../../Engine/Translation/Scripts/check-extension-memory.sh
 mkdir -p ../../Tuist
 if [[ "${MURMUR_QUALIFICATION_BUILD:-0}" == "1" ]]; then
   node ../../Engine/Speech/Qualification/capture-build-source.mjs
 fi
-tuist generate --no-open
 bash ../../Engine/OCR/Scripts/prepare.sh
+tuist generate --no-open
 mkdir -p MurMurMobile.xcworkspace/xcshareddata/swiftpm
 cp Package.resolved MurMurMobile.xcworkspace/xcshareddata/swiftpm/Package.resolved
 xcodebuild -resolvePackageDependencies -workspace MurMurMobile.xcworkspace -scheme MurMurMobile -derivedDataPath build -onlyUsePackageVersionsFromResolvedFile

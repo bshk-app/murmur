@@ -23,6 +23,9 @@ jobs:
       - name: Report toolchain
         run: swift --version
 
+      - name: Check iOS translation extension memory support
+        run: bash Engine/Translation/Scripts/check-extension-memory.sh
+
       - name: Test MurmurKit
         run: cd MurmurKit && swift test
 

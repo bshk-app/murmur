@@ -6,15 +6,22 @@ ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 SHIM="$ROOT/MurmurKit/Sources/CBergamot"
 CT2_SOURCE="${CT2_SOURCE:-/Volumes/DATA/ctranslate2-arm64}"
 BERG_SOURCE="${BERG_SOURCE:-/Volumes/DATA/bergamot-arm64/src}"
-IOS_BUILD="${IOS_BUILD:-/Volumes/DATA/Murmur/Prototypes/iOS/build}"
+IOS_BUILD="${IOS_BUILD:-$ROOT/Prototypes/iOS/build}"
+PATCH_HASH="$(shasum -a 256 "$ROOT/Engine/Translation/Patches/ct2-mapped-weights.patch" | cut -c 1-12)"
 ARTIFACT="$ROOT/Engine/Translation/Artifacts/MurmurMT.xcframework"
 WORK="$(mktemp -d)"
 for slice in macos-arm64 ios-arm64 ios-arm64-simulator; do
   case "$slice" in
     macos-arm64) sdk=macosx; target=arm64-apple-macos15.0; platform=macos; minimum=15.0; build="${CT2_MAC_BUILD:-$CT2_SOURCE/build}";;
-    ios-arm64) sdk=iphoneos; target=arm64-apple-ios18.0; platform=ios; minimum=18.0; build="${CT2_IOS_BUILD:-$IOS_BUILD/ct2-ios}";;
-    ios-arm64-simulator) sdk=iphonesimulator; target=arm64-apple-ios18.0-simulator; platform=ios-simulator; minimum=18.0; build="${CT2_SIM_BUILD:-$IOS_BUILD/ct2-full-simulator-bb64126e8d38}";;
+    ios-arm64) sdk=iphoneos; target=arm64-apple-ios18.0; platform=ios; minimum=18.0; build="${CT2_IOS_BUILD:-$IOS_BUILD/ct2-device-$PATCH_HASH}";;
+    ios-arm64-simulator) sdk=iphonesimulator; target=arm64-apple-ios18.0-simulator; platform=ios-simulator; minimum=18.0; build="${CT2_SIM_BUILD:-$IOS_BUILD/ct2-full-simulator-$PATCH_HASH}";;
   esac
+  # Reject stale, unpatched caches before replacing any published slice. The
+  # shim's CT2_MMAP_WEIGHTS string alone does not prove the loader supports it.
+  if [[ "$platform" != macos ]] && ! strings "$build/libctranslate2.a" | grep -F 'Mapped weights require a file-backed CPU INT8 model' >/dev/null; then
+    echo "Missing mapped-weight loader in $build. Rebuild the patched iOS CT2 dependencies first." >&2
+    exit 1
+  fi
   mkdir -p "$WORK/$slice"
   xcrun --sdk "$sdk" clang++ -std=c++17 -O2 -target "$target" \
     -isysroot "$(xcrun --sdk "$sdk" --show-sdk-path)" -w -c \

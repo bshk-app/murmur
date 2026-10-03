@@ -13,6 +13,7 @@ ROOT="$PWD"  # Absolute, so an override given as a relative path still resolves 
 CT2_PATCH="$PATCHES/ct2-mapped-weights.patch"
 CT2_PATCH_HASH="$(shasum -a 256 "$CT2_PATCH" | cut -c 1-12)"
 CT2_PATCHED="$ROOT/build/ct2-mapped-$CT2_PATCH_HASH"
+CT2_BUILD="$ROOT/build/ct2-device-$CT2_PATCH_HASH"
 if [[ ! -f "$CT2_PATCHED/.murmur-source-ready" ]]; then
     mkdir -p "$CT2_PATCHED"
     rsync -a --exclude='/.git/' --exclude='/build/' --exclude='/build-*/' --exclude='/.venv/' --exclude='/.env' "$CT2_SOURCE/" "$CT2_PATCHED/"
@@ -39,10 +40,10 @@ fi
 cmake -S build/pcre2-source -B build/pcre2-ios "${COMMON[@]}" \
     -DPCRE2_BUILD_TESTS=OFF -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_SUPPORT_JIT=OFF
 cmake --build build/pcre2-ios -j 6
-cmake -S "$CT2_SOURCE" -B build/ct2-ios "${COMMON[@]}" \
+cmake -S "$CT2_SOURCE" -B "$CT2_BUILD" "${COMMON[@]}" \
     -DBUILD_CLI=OFF -DBUILD_TESTS=OFF -DWITH_ACCELERATE=ON -DWITH_RUY=ON \
     -DWITH_MKL=OFF -DWITH_CUDA=OFF -DOPENMP_RUNTIME=NONE -DCPUINFO_BUILD_TOOLS=OFF
-cmake --build build/ct2-ios -j 6
+cmake --build "$CT2_BUILD" -j 6
 cmake -S build/bergamot-source -B build/bergamot-device "${COMMON[@]}" \
     -DCOMPILE_CPU=ON -DCOMPILE_CUDA=OFF -DCOMPILE_TESTS=OFF -DCOMPILE_EXAMPLES=OFF \
     -DCOMPILE_LIBRARY_ONLY=ON -DUSE_APPLE_ACCELERATE=ON -DUSE_RUY=ON \
@@ -75,15 +76,17 @@ xcrun --sdk iphoneos clang++ "${FLAGS[@]}" -c "$SHIM/murmur_ct2.cpp" -o "$WORK/m
     -I"$BERG/3rd_party/marian-dev/src/3rd_party/sentencepiece"
 cat > "$WORK/exports.txt" <<'EXPORTS'
 _murmur_ct2_open
+_murmur_ct2_open_with_options
 _murmur_ct2_translate
+_murmur_ct2_translate_with_options
 _murmur_ct2_close
 _murmur_ct2_string_free
 EXPORTS
 CT2_LIBS=()
-while IFS= read -r file; do CT2_LIBS+=("$file"); done < <(rg --files --no-ignore build/ct2-ios/third_party -g '*.a')
+while IFS= read -r file; do CT2_LIBS+=("$file"); done < <(rg --files --no-ignore "$CT2_BUILD/third_party" -g '*.a')
 xcrun ld -r -arch arm64 -platform_version ios 18.0 26.5 -all_load \
     -exported_symbols_list "$WORK/exports.txt" -o "$WORK/ct2_all.o" \
-    "$WORK/murmur_ct2.o" build/ct2-ios/libctranslate2.a "${CT2_LIBS[@]}"
+    "$WORK/murmur_ct2.o" "$CT2_BUILD/libctranslate2.a" "${CT2_LIBS[@]}"
 if nm -gU "$WORK/ct2_all.o" | rg spdlog; then echo 'CTranslate2 spdlog symbols leaked' >&2; exit 1; fi
 BERG_LIBS=()
 while IFS= read -r file; do BERG_LIBS+=("$file"); done < <(rg --files --no-ignore "$BERG_BUILD" -g '*.a')
