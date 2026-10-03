@@ -11,6 +11,7 @@ private struct PageTranslationTestHome: View {
     @State private var status = "Fixture not prepared"
     @State private var preparing = false
     @State private var ready = false
+    @State private var selectedText = "Tarkista ajankohtaiset rahoitusehdot"
 
     var body: some View {
         NavigationStack {
@@ -20,6 +21,10 @@ private struct PageTranslationTestHome: View {
                 Button("Prepare test models") { prepare() }
                     .accessibilityIdentifier("page-fixture-seed").disabled(preparing)
                 Text(status).accessibilityIdentifier("page-fixture-status")
+                if ProcessInfo.processInfo.arguments.contains("--selected-text-fixture") {
+                    TextEditor(text: $selectedText).frame(height: 100)
+                        .accessibilityIdentifier("provider-fixture-text")
+                }
                 if #available(iOS 18.4, *) {
                     Button("Default apps settings") {
                         guard let url = URL(string: UIApplication.openDefaultApplicationsSettingsURLString) else { return }
@@ -40,6 +45,16 @@ private struct PageTranslationTestHome: View {
                 Spacer()
             }.padding().navigationTitle("Murmator Page Tests")
         }.task {
+            if ProcessInfo.processInfo.arguments.contains("--selected-text-long-fixture") {
+                selectedText = """
+                *Tarkista ajankohtaiset rahoitusehdot
+                https://www.tesla.com/fi_fi/modely/design
+
+                Yhteystiedot:
+                Puhelin: +358 9 42456059
+                Puhelun hinta: Paikallisverkko- tai matkapuhelinmaksu.
+                """
+            }
             if ProcessInfo.processInfo.arguments.contains("--test-fixture") { prepare() }
         }
     }
@@ -51,7 +66,7 @@ private struct PageTranslationTestHome: View {
         Task {
             do {
                 let copied = try await Task.detached(priority: .userInitiated) { try PageFixtureSeeder.seed() }.value
-                TranslationPreferences.save(source: "en", target: "fi")
+                TranslationPreferences.save(source: "en", target: ProcessInfo.processInfo.arguments.contains("--selected-text-long-fixture") ? "ru" : "fi")
                 status = "READY: English → Finnish (\(copied) packages copied)"
                 ready = true
             } catch {

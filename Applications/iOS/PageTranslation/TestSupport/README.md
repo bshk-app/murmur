@@ -20,3 +20,34 @@ Tests launch with `--test-fixture`, wait for package preparation, and invoke Saf
 Cancellation coverage includes dismissal before starting and cancellation after native translation progress appears. The latter verifies the entire original page, including language and every long paragraph, then retries the same page to detect a stuck model lease or progress state. The harmless “Verify original page” fixture button reads the live DOM; it does not modify the application's translation state.
 
 The runtime tests must execute against the real production extension. A JavaScript-only fixture self-check with synthetic text verifies the observer wiring only and is not an inference or end-to-end translation test.
+
+## System selected-text translation
+
+`testSelectedFinnishTextShowsProviderAndTranslation` and
+`testSelectedFinnishNotesWithLinkTranslateToRussian` exercise the production
+`MurMurTranslationProvider` through the system selection menu. They check that
+the provider renders its controls, receives the entire selection, and produces
+nonempty translated text; the second case includes Finnish notes and a URL and
+requires Russian output. No fixture HTTP server is needed for these two tests.
+
+Build the `MurmatorPageTestHost` scheme for a simulator using
+`CODE_SIGNING_ALLOWED=YES CODE_SIGN_IDENTITY=-`. Xcode must embed the simulated
+entitlements, including the host's default-translation-app capability; manually
+codesigning an unsigned simulator binary does not provide those embedded
+entitlements. Use a disposable simulator: this host has the same bundle ID as
+Murmator and replaces its simulator installation. The tests restore the previous
+default translator where the system exposes a selected choice.
+
+Run only these two cases with `xcodebuild test-without-building` and the generated
+`.xctestrun` file, passing:
+
+```sh
+-only-testing:MurmatorPageTests/PageTranslationIntegrationTests/testSelectedFinnishTextShowsProviderAndTranslation \
+-only-testing:MurmatorPageTests/PageTranslationIntegrationTests/testSelectedFinnishNotesWithLinkTranslateToRussian
+```
+
+The test host's `--selected-text-fixture` flag exposes the selection editor;
+`--selected-text-long-fixture` chooses the notes fixture and Russian target.
+This checks the real extension process on the simulator, but does not establish
+its behavior under the physical iPhone's memory limit or reproduce a particular
+third-party application's selection payload.

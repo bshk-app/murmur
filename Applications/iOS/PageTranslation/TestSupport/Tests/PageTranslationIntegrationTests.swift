@@ -3,6 +3,104 @@ import XCTest
 final class PageTranslationIntegrationTests: XCTestCase {
     override func setUpWithError() throws { continueAfterFailure = false }
 
+    func testSelectedFinnishTextShowsProviderAndTranslation() throws {
+        try checkSelectedTextTranslation(long: false)
+    }
+
+    func testSelectedFinnishNotesWithLinkTranslateToRussian() throws {
+        try checkSelectedTextTranslation(long: true)
+    }
+
+    private func checkSelectedTextTranslation(long: Bool) throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--test-fixture", "--selected-text-fixture", "-AppleLanguages", "(en)"]
+        if long { app.launchArguments += ["--selected-text-long-fixture"] }
+        app.launch()
+        let status = app.staticTexts["page-fixture-status"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15))
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label BEGINSWITH %@", "READY:"), object: status)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 90), .completed, status.label)
+        app.buttons["page-default-apps-settings"].tap()
+        let settings = XCUIApplication(bundleIdentifier: "com.apple.Preferences")
+        XCTAssertTrue(settings.wait(for: .runningForeground, timeout: 10))
+        if !settings.navigationBars["Default Translation App"].exists {
+            let translation = settings.buttons.matching(NSPredicate(format: "label BEGINSWITH[c] %@", "Translation")).firstMatch
+            // Some simulator runtimes open the Settings root for the default-apps URL.
+            if !translation.waitForExistence(timeout: 2) {
+                let defaults = settings.buttons["com.apple.Settings.Apps.DefaultApps"]
+                if !defaults.exists {
+                    let apps = settings.buttons["com.apple.settings.apps"]
+                    for _ in 0..<5 { if apps.exists && apps.isHittable { break }; settings.swipeUp() }
+                    XCTAssertTrue(apps.exists, settings.debugDescription)
+                    apps.tap()
+                }
+                XCTAssertTrue(defaults.waitForExistence(timeout: 5), settings.debugDescription)
+                defaults.tap()
+            }
+            for _ in 0..<5 { if translation.exists && translation.isHittable { break }; settings.swipeUp() }
+            XCTAssertTrue(translation.exists, settings.debugDescription)
+            translation.tap()
+        }
+        let previous = settings.buttons.allElementsBoundByIndex.first(where: { $0.isSelected })?.label
+        defer {
+            settings.activate()
+            if let previous, settings.buttons[previous].exists {
+                settings.buttons[previous].tap()
+                XCTAssertTrue(settings.buttons[previous].isSelected)
+            }
+        }
+        let provider = settings.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Murmator")).firstMatch
+        XCTAssertTrue(provider.waitForExistence(timeout: 10), settings.debugDescription)
+        provider.tap()
+        app.activate()
+        let editor = app.textViews["provider-fixture-text"]
+        let source = try XCTUnwrap(editor.value as? String)
+        let selectAll = app.menuItems["Select All"]
+        func translateItem() -> XCUIElement {
+            app.buttons["Translate"].exists ? app.buttons["Translate"] : app.menuItems["Translate"]
+        }
+        for _ in 0..<2 {
+            editor.tap()
+            editor.press(forDuration: 1.2)
+            if selectAll.waitForExistence(timeout: 3) { selectAll.tap(); break }
+            if translateItem().exists { break }
+        }
+        for _ in 0..<4 {
+            if translateItem().exists { break }
+            if app.buttons["Forward"].exists { app.buttons["Forward"].tap() }
+        }
+        XCTAssertTrue(translateItem().waitForExistence(timeout: 5), app.debugDescription)
+        translateItem().tap()
+        let shown = app.buttons["compact-source-language"].waitForExistence(timeout: 15)
+        capture("selected-text-provider-presentation")
+        XCTAssertTrue(shown, "Blank system translation sheet: " + app.debugDescription)
+        XCTAssertEqual(app.staticTexts["compact-original"].label, source, "The provider must receive the entire selection")
+        let result = app.staticTexts["compact-output"]
+        XCTAssertTrue(result.waitForExistence(timeout: 90), app.debugDescription)
+        XCTAssertFalse(result.label.isEmpty)
+        XCTAssertNotEqual(result.label, "Tarkista ajankohtaiset rahoitusehdot")
+        if long {
+            XCTAssertTrue(result.label.range(of: "[А-Яа-я]", options: .regularExpression) != nil, result.label)
+            // This fixture is shorter than the automatic expansion threshold.
+            // Reproduce the user's full-height sheet by dragging its system title.
+            let title = app.staticTexts["Murmator"]
+            XCTAssertTrue(title.exists, app.debugDescription)
+            title.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                .press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.1)))
+            let scroll = app.scrollViews["compact-output-scroll"]
+            let fits = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in
+                scroll.frame.height + 1 >= result.frame.height &&
+                    app.buttons["compact-copy"].isHittable && app.buttons["compact-share"].isHittable
+            }, object: nil)
+            let fitResult = XCTWaiter.wait(for: [fits], timeout: 8)
+            capture("selected-text-provider-layout")
+            XCTAssertEqual(fitResult, .completed,
+                "Reader: \(scroll.frame); text: \(result.frame). " + app.debugDescription)
+        }
+        print("SELECTED_TEXT_TRANSLATION: " + result.label)
+        capture("selected-text-provider-result")
+    }
+
     func testHUSSeparateWindowTranslatesToRussian() throws {
         try translateHUSPage("https://www.hus.fi/")
     }
