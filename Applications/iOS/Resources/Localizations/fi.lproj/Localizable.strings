@@ -828,7 +828,7 @@
 "Received from Apple Watch" = "Vastaanotettu Apple Watchista";
 "Recording from Apple Watch received" = "Tallenne Apple Watchista vastaanotettu";
 "Transcription starts when you open Murmator." = "Litterointi alkaa, kun avaat Murmatorin.";
-"Start a recording on Apple Watch and send it to iPhone." = "Tallenna Apple Watchilla ja lähetä iPhoneen.";
+"Start a recording on your watch and send it to your phone." = "Tallenna kellolla ja lähetä puhelimeen.";
 "Record on Apple Watch" = "Tallenna Apple Watchilla";
 "Start a recording from the watch face." = "Aloita tallennus kellotaulusta.";
 "Local mode" = "Paikallinen tila";

@@ -2,7 +2,7 @@ import ProjectDescription
 
 let team = "Q8H6GWJ658"
 let releaseVersion = "1.0.0"
-let releaseBuild = "29"
+let releaseBuild = "30"
 let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegions: ["en", "ru", "de", "es", "fr", "fi"], developmentRegion: "en", disableSynthesizedResourceAccessors: true), packages: [
     .local(path: "../../Engine/Session"), .local(path: "../../Engine/OCR"), .local(path: "../../Engine/Core"), .local(path: "../../Engine/Speech"), .local(path: "../../Engine/Translation")
 ], targets: [

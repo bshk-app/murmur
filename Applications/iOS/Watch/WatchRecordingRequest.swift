@@ -25,7 +25,7 @@ enum WatchRecordingRequest {
 /// wrist never has to find the app before speaking.
 struct StartWatchRecordingIntent: AppIntent {
     static var title: LocalizedStringResource = "Record a Murmator note"
-    static var description = IntentDescription("Start a recording on Apple Watch and send it to iPhone.")
+    static var description = IntentDescription("Start a recording on your watch and send it to your phone.")
     static var openAppWhenRun = true
     @MainActor func perform() async throws -> some IntentResult {
         WatchRecordingRequest.raise()
