@@ -31,7 +31,11 @@ export function verifyMinimumOS(app) {
                 return match ? [match[1]] : [];
             });
             assert.ok(minimums.length, `${binary}: missing iOS deployment load command`);
-            for (const minimum of minimums) {
+            // A watchOS binary pairs an arm64_32 slice at the declared minimum with an arm64
+            // slice that Xcode builds for watchOS 26, the first release on 64-bit watches.
+            const required = /\bplatform\s+WATCHOS\b/.test(output)
+                ? [minimums.reduce((low, value) => compare(value, low) < 0 ? value : low)] : minimums;
+            for (const minimum of required) {
                 assert.ok(compare(info.MinimumOSVersion, minimum) >= 0,
                     `${directory}: Info.plist declares iOS ${info.MinimumOSVersion}, but Mach-O requires iOS ${minimum} (ITMS-90208)`);
             }

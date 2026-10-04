@@ -23,7 +23,8 @@ assert.equal(info.CFBundleVersion,expectedBuild);
 assert.equal(info.ITSAppUsesNonExemptEncryption,false);
 assert.ok(!info.NSAppTransportSecurity?.NSAllowsArbitraryLoads);
 assert.equal(info['com.apple.developer.translation-ui-provider.network-access'],true);
-assert.deepEqual(info.UIBackgroundModes,['audio']);
+assert.deepEqual(info.UIBackgroundModes,['audio','fetch','processing']);
+assert.deepEqual(info.BGTaskSchedulerPermittedIdentifiers,['app.bshk.murmur.ios.transcribe']);
 assert.ok(info.NSMicrophoneUsageDescription?.length > 10);
 assert.ok(info.CFBundleIcons?.CFBundlePrimaryIcon);
 const plugins = fs.readdirSync(path.join(appPath,'PlugIns')).filter(name=>name.endsWith('.appex')).sort();
@@ -100,8 +101,9 @@ if(exported) {
         assert.equal(content.buildNumber,expectedBuild);
         assert.equal(content.versionNumber,'1.0.0');
         const groups=content.entitlements['com.apple.security.application-groups'];
-        const expected=['MurMurTranslationProvider.appex','MurMurPageTranslation.appex'].includes(content.name) ? ['group.app.bshk.murmur.ios.translation'] : content.name==='MurMurMobile.app' ? ['group.app.bshk.murmur.ios.shared','group.app.bshk.murmur.ios.translation'] : ['group.app.bshk.murmur.ios.shared'];
-        assert.deepEqual([...groups].sort(),expected.sort());
+        // The watch app and its widget share nothing through app groups; WatchConnectivity carries recordings.
+        const expected=['MurmatorWatch.app','MurmatorWatchWidgets.appex'].includes(content.name) ? [] : ['MurMurTranslationProvider.appex','MurMurPageTranslation.appex'].includes(content.name) ? ['group.app.bshk.murmur.ios.translation'] : content.name==='MurMurMobile.app' ? ['group.app.bshk.murmur.ios.shared','group.app.bshk.murmur.ios.translation'] : ['group.app.bshk.murmur.ios.shared'];
+        assert.deepEqual([...(groups ?? [])].sort(),expected.sort());
     }
     const unpacked = fs.mkdtempSync(path.join(root,'build/ipa-verification-'));
     run('/usr/bin/unzip',['-q',file,'-d',unpacked]);
