@@ -2,7 +2,7 @@ import ProjectDescription
 
 let team = "Q8H6GWJ658"
 let releaseVersion = "1.0.0"
-let releaseBuild = "28"
+let releaseBuild = "29"
 let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegions: ["en", "ru", "de", "es", "fr", "fi"], developmentRegion: "en", disableSynthesizedResourceAccessors: true), packages: [
     .local(path: "../../Engine/Session"), .local(path: "../../Engine/OCR"), .local(path: "../../Engine/Core"), .local(path: "../../Engine/Speech"), .local(path: "../../Engine/Translation")
 ], targets: [
@@ -58,7 +58,7 @@ let project = Project(name: "MurMurMobile", options: .options(defaultKnownRegion
     // One complication offering one action. It shares the intent with the app so
     // the face, the Action Button and Shortcuts all enter the same way.
     .target(name: "MurmatorWatchWidgets", destinations: [.appleWatch], product: .appExtension,
-        bundleId: "app.bshk.murmur.ios.watchkitapp.complication", deploymentTargets: .watchOS("11.0"),
+        bundleId: "app.bshk.murmur.ios.watchkitapp.widgets", deploymentTargets: .watchOS("11.0"),
         infoPlist: .extendingDefault(with: [
             "CFBundleDisplayName": "Murmator", "CFBundleShortVersionString": .string(releaseVersion), "CFBundleVersion": .string(releaseBuild),
             "CFBundleDevelopmentRegion": "en", "CFBundleLocalizations": ["en", "ru", "de", "es", "fr", "fi"],
