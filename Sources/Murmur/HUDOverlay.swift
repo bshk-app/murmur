@@ -54,6 +54,20 @@ final class HUDModel {
     /// read as deliberate once the header says where it is going.
     var target = ""
     var onStop: () -> Void = {}
+    /// `HUDStyle.compact`, latched for the utterance at `begin`.
+    var compact = false
+
+    /// The small fixed capsule rather than the transcript pill. Only while
+    /// the take is live or finishing: an error must be read, and so must a
+    /// transcript that could not be delivered (`.finished` only shows when
+    /// the pill is the one place the words still are).
+    var showsCompactPill: Bool {
+        compact && (phase == .listening || phase == .transcribing || phase == .finalizing)
+    }
+    /// The compact capsule's width, fixed for the utterance at `begin`: room
+    /// for the bars and every badge this utterance can come to show, so one
+    /// arriving never widens it.
+    var compactWidth = HUDController.compactPillSize.width
 }
 
 /// How much text the pill can hold, derived from its own geometry: a 460pt column
@@ -101,6 +115,24 @@ private struct PulseDot: View {
     }
 }
 
+/// Three dots lighting up in turn: the microphone is off and the text is
+/// being finished. Bars would claim it is still listening.
+private struct WaitDots: View {
+    var color: Color
+    @State private var on = false
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(0 ..< 3, id: \.self) { i in
+                Circle().fill(color).frame(width: 5, height: 5)
+                    .opacity(on ? 1 : 0.3)
+                    .animation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)
+                        .delay(Double(i) * 0.16), value: on)
+            }
+        }
+        .onAppear { on = true }
+    }
+}
+
 // MARK: - HUD view
 
 private struct HUDView: View {
@@ -109,19 +141,66 @@ private struct HUDView: View {
 
     var body: some View {
         Group {
-            switch model.phase {
-            case .error:        mascotBubble(.error) { errorPill }
-            case .listening:    mascotBubble(.listening) { listeningPill }
-            case .transcribing: mascotBubble(.transcribing) { transcribePill }
-            // Same face as live decoding: the work is the same, only the audio has
-            // stopped arriving. A dedicated mascot state can slot in here.
-            case .finalizing:   mascotBubble(.transcribing) { transcribePill }
-            case .finished:     mascotBubble(.success) { transcribePill }
+            if model.showsCompactPill {
+                compactPill
+            } else {
+                switch model.phase {
+                case .error:        mascotBubble(.error) { errorPill }
+                case .listening:    mascotBubble(.listening) { listeningPill }
+                case .transcribing: mascotBubble(.transcribing) { transcribePill }
+                // Same face as live decoding: the work is the same, only the audio has
+                // stopped arriving. A dedicated mascot state can slot in here.
+                case .finalizing:   mascotBubble(.transcribing) { transcribePill }
+                case .finished:     mascotBubble(.success) { transcribePill }
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, 30)
-        .padding(.horizontal, 40)
+        .padding(.bottom, HUDController.bottomInset)
+        .padding(.horizontal, HUDController.sideInset)
+    }
+
+    /// `HUDStyle.compact`: one capsule that keeps its size for the whole
+    /// utterance - the badges have reserved room on the right, so nothing
+    /// inside shifts either when one appears.
+    private var compactPill: some View {
+        HStack(spacing: 8) {
+            Group {
+                if model.phase == .finalizing {
+                    WaitDots(color: Mur.accent)
+                        .accessibilityLabel(Text("Finalizing…"))
+                } else {
+                    LevelBars(color: Mur.accent, count: 5, barHeight: 14)
+                        .accessibilityLabel(Text("Listening…"))
+                }
+            }
+            .frame(width: 30)
+            Spacer(minLength: 0)
+            Group {
+                if model.submits {
+                    submitBadge
+                } else if model.confirmsWithReturn, model.recording {
+                    // Just the glyph: "⏎ Insert" spelled out would not fit, and
+                    // the quiet colour already tells it apart from the accent ⏎
+                    // that sends.
+                    Text("⏎").font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
+                        .padding(.horizontal, 6).padding(.vertical, 3)
+                        .background(scheme == .dark ? Color.white.opacity(0.09) : Mur.ink.opacity(0.07),
+                                    in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                        .accessibilityLabel(Text("Press Return to insert, Escape to cancel"))
+                }
+            }
+            // A glyph squeezed by its neighbours truncates to an ellipsis.
+            .fixedSize()
+            if model.showStop { stopButton }
+        }
+        .padding(.horizontal, 14)
+        .frame(width: model.compactWidth, height: HUDController.compactPillSize.height)
+        // The full pill's 22pt shadow is sized for a 460pt slab; under a
+        // capsule this small it reads as a smudge.
+        .murPill(scheme, radius: 16, border: borderColor,
+                 shadowRadius: 10, shadowY: 4)
     }
 
     // Header: animated bars + language badge; the mascot overlaps the pill edge.
@@ -378,13 +457,14 @@ private struct HUDView: View {
 
 /// Glass-pill background: blurred material + warm tint + hairline border + shadow.
 private extension View {
-    func murPill(_ scheme: ColorScheme, radius: CGFloat, border: Color) -> some View {
+    func murPill(_ scheme: ColorScheme, radius: CGFloat, border: Color,
+                 shadowRadius: CGFloat = 22, shadowY: CGFloat = 14) -> some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         return self
             .background(Mur.glass(scheme), in: shape)
             .background(.ultraThinMaterial, in: shape)
             .overlay(shape.strokeBorder(border, lineWidth: 1))
-            .shadow(color: .black.opacity(scheme == .dark ? 0.42 : 0.18), radius: 22, y: 14)
+            .shadow(color: .black.opacity(scheme == .dark ? 0.42 : 0.18), radius: shadowRadius, y: shadowY)
     }
 }
 
@@ -405,6 +485,25 @@ final class HUDController {
     var panelSize: CGSize? { panel?.frame.size }
     private var hideWork: DispatchWorkItem?
     private static let baseSize = NSSize(width: 940, height: 260)
+    /// Where the pill sits inside the panel. Shared with `HUDView`, which
+    /// pads by exactly these, so a panel sized from them fits its pill.
+    nonisolated static let bottomInset: CGFloat = 30
+    nonisolated static let sideInset: CGFloat = 40
+    /// The widest compact pill (`compactWidth(returnGlyph: true, stop: true)`),
+    /// which the compact panel is sized for.
+    nonisolated static let compactPillSize = CGSize(width: 130, height: 36)
+    /// 14pt either side, the 30pt bars, 8pt of air before the right edge, and
+    /// for each badge 8pt plus the badge: ⏎ 26, Stop 22. A hold-to-talk take
+    /// shows bars alone, so its capsule is just that wide.
+    nonisolated static func compactWidth(returnGlyph: Bool, stop: Bool) -> CGFloat {
+        14 + 30 + (returnGlyph ? 8 + 26 : 0) + (stop ? 8 + 22 : 0) + 8 + 14
+    }
+    /// Just the capsule, its insets and room for its shadow - not the full
+    /// panel. In toggle mode the panel takes clicks, and an invisible
+    /// 940×260 window around a pill this small would swallow them for no
+    /// reason.
+    private static let compactPanelSize = NSSize(width: compactPillSize.width + 2 * sideInset,
+                                                 height: compactPillSize.height + bottomInset + 30)
     /// Extra room the translation row needs at its worst case: the hairline,
     /// the 11pt of air either side of it, up to `HUDCapacity.maxLines` lines
     /// at the translation's own 17pt/1.5 (25.5pt each, per the design), and
@@ -423,14 +522,16 @@ final class HUDController {
     /// moment a resize actually happens, not whatever it was when the panel
     /// was first created.
     private var currentSize: NSSize {
-        NSSize(width: Self.baseSize.width,
-               height: Self.baseSize.height + (model.showsTranslationRow ? Self.translationExtraHeight : 0))
+        if model.showsCompactPill { return Self.compactPanelSize }
+        return NSSize(width: Self.baseSize.width,
+                      height: Self.baseSize.height + (model.showsTranslationRow ? Self.translationExtraHeight : 0))
     }
 
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
-    /// panel accept clicks so the Stop button works.
+    /// panel accept clicks so the Stop button works. `style` is read once
+    /// here: switching it mid-utterance would resize the pill under the user.
     func begin(lang: String, target: String = "", interactive: Bool = false, submits: Bool = false,
-               confirmsWithReturn: Bool = false,
+               confirmsWithReturn: Bool = false, style: HUDStyle = .current,
                shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
@@ -439,6 +540,10 @@ final class HUDController {
         model.submits = submits
         model.confirmsWithReturn = confirmsWithReturn
         model.shortcutLabel = shortcutLabel
+        model.compact = style == .compact
+        // A tap-on take can turn into one that sends (Return pressed twice)
+        // after it starts, so its ⏎ slot is there from the start.
+        model.compactWidth = Self.compactWidth(returnGlyph: submits || confirmsWithReturn, stop: interactive)
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
         // A translation left from the previous utterance under a fresh one
@@ -511,7 +616,7 @@ final class HUDController {
     func translating() {
         guard panel != nil else { return }
         model.translating = true
-        resizeForCurrentTranslationState()
+        fitPanel()
     }
 
     /// End the presentation according to what happened to the transcript. An
@@ -525,11 +630,12 @@ final class HUDController {
         model.translating = false
         model.translation = translation
         model.translationIsQuality = translationIsQuality
-        resizeForCurrentTranslationState()
+        fitPanel()
         if policy.showsText, !finalText.isEmpty {
             show(confirmed: finalText, partial: "")
             model.phase = .finished
             if let message = policy.message { model.errorText = message }
+            fitPanel()          // a compact pill has no room for the words
         }
         guard policy.linger > 0 else { return dismiss() }
         scheduleHide(after: policy.linger)
@@ -575,21 +681,22 @@ final class HUDController {
         return panel
     }
 
-    /// Height only, growing upward: the panel's bottom-left origin (AppKit's
-    /// frame is bottom-anchored) is exactly where the pill's own
-    /// `alignment: .bottom` already sits it, so changing only `size.height`
-    /// and leaving `origin` alone extends the frame upward without moving
-    /// the pill or re-querying which screen it belongs on. `position(_:)`
-    /// does the fuller job (screen + both axes) for a new utterance;
-    /// mid-utterance the translation row can arrive or clear on its own, and
-    /// re-running the screen lookup then - the cursor may since have moved
-    /// to a different display - would be a surprising reason for the panel
-    /// to jump.
-    private func resizeForCurrentTranslationState() {
+    /// Resize in place, growing upward from the same bottom centre: AppKit's
+    /// frame is bottom-anchored and the pill sits at the bottom of the panel
+    /// (`alignment: .bottom`), so keeping `minY` and `midX` keeps the pill
+    /// exactly where it was. Two causes mid-utterance: the translation row
+    /// arriving or clearing, and a compact pill handing over to the full one
+    /// to show text that could not be delivered. `position(_:)` does the
+    /// fuller job (screen + both axes) for a new utterance; re-running the
+    /// screen lookup here - the cursor may since have moved to a different
+    /// display - would be a surprising reason for the panel to jump.
+    private func fitPanel() {
         guard let panel else { return }
-        var frame = panel.frame
-        frame.size.height = currentSize.height
-        panel.setFrame(frame, display: true)
+        let size = currentSize
+        let old = panel.frame
+        guard old.size != size else { return }
+        panel.setFrame(NSRect(x: old.midX - size.width / 2, y: old.minY,
+                              width: size.width, height: size.height), display: true)
     }
 
     private func position(_ panel: NSPanel) {

@@ -163,13 +163,38 @@ final class GlobalKeyTap: KeyCaptureSink, @unchecked Sendable {
         default: break
         }
         lock.unlock()
-        if let gesture = outcome.gesture {
-            let onGesture = self.onGesture
-            // FIFO, unlike a Task per gesture: Return-then-Return must arrive
-            // as confirm-then-submit, never the other way round.
-            DispatchQueue.main.async { MainActor.assumeIsolated { onGesture(gesture) } }
+        if let gesture = outcome.gesture { deliver(gesture) }
+        if let pressedAt = outcome.holdCheck {
+            // On this thread's run loop rather than the main queue: decided
+            // here, in turn with the key events around it, the hold reaches
+            // the controller in order with them. A busy main thread can then
+            // delay a hold-to-talk take, but not lose it - checked from the
+            // main queue, a release the tap saw first left it unreported.
+            let timer = CFRunLoopTimerCreateWithHandler(
+                kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + KeyGestureRecognizer.holdDelay, 0, 0, 0
+            ) { [weak self] _ in
+                self?.holdDelayPassed(pressedAt: pressedAt)
+            }
+            CFRunLoopAddTimer(CFRunLoopGetCurrent(), timer, .commonModes)
         }
         return outcome.swallow
+    }
+
+    /// `holdDelay` after a right-⌘ press: is that press still down on its own?
+    /// The decision is the recognizer's (`holdDelayPassed(pressedAt:)`), and
+    /// is tested there.
+    private func holdDelayPassed(pressedAt: TimeInterval) {
+        lock.lock()
+        let gesture = recognizer.holdDelayPassed(pressedAt: pressedAt)
+        lock.unlock()
+        if let gesture { deliver(gesture) }
+    }
+
+    private func deliver(_ gesture: KeyGesture) {
+        let onGesture = self.onGesture
+        // FIFO, unlike a Task per gesture: Return-then-Return must arrive
+        // as confirm-then-submit, never the other way round.
+        DispatchQueue.main.async { MainActor.assumeIsolated { onGesture(gesture) } }
     }
 
     private static func keyCode(_ event: CGEvent) -> Int {

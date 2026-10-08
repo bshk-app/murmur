@@ -10,11 +10,14 @@ import XCTest
 /// - not just that `HUDModel.showsTranslationRow` computes the right bool,
 /// which alone would not have caught a codepath that computes the right
 /// answer but forgets to apply it to the actual window.
+///
+/// Full style throughout: the compact pill has no translation row to grow
+/// for (`HUDCompactPillTests`).
 @MainActor
 final class HUDTranslationHeightTests: XCTestCase {
     func testThePanelGrowsWhenATranslationArrives() {
         let hud = HUDController()
-        hud.begin(lang: "RU")
+        hud.begin(lang: "RU", style: .full)
         let baseHeight = hud.panelSize?.height
         XCTAssertNotNil(baseHeight, "begin() must create the panel")
 
@@ -27,7 +30,7 @@ final class HUDTranslationHeightTests: XCTestCase {
 
     func testThePanelStaysAtBaseHeightWithoutATranslation() {
         let hud = HUDController()
-        hud.begin(lang: "RU")
+        hud.begin(lang: "RU", style: .full)
         let baseHeight = hud.panelSize?.height
 
         hud.finish("hello", delivery: .typed)   // no translation argument
@@ -40,7 +43,7 @@ final class HUDTranslationHeightTests: XCTestCase {
     /// will need, so the window does not resize twice in quick succession.
     func testThePanelGrowsForTheTranslatingPlaceholderToo() {
         let hud = HUDController()
-        hud.begin(lang: "RU")
+        hud.begin(lang: "RU", style: .full)
         let baseHeight = hud.panelSize?.height
 
         hud.translating()
@@ -54,11 +57,11 @@ final class HUDTranslationHeightTests: XCTestCase {
     /// one carrying dead space from a talk that has already ended.
     func testANewUtteranceWithoutTranslationShrinksThePanelBackDown() {
         let hud = HUDController()
-        hud.begin(lang: "RU")
+        hud.begin(lang: "RU", style: .full)
         hud.finish("hello", delivery: .typed, translation: "hola")
         let grownHeight = hud.panelSize?.height
 
-        hud.begin(lang: "RU")
+        hud.begin(lang: "RU", style: .full)
 
         XCTAssertLessThan(hud.panelSize?.height ?? 0, grownHeight ?? 0,
                           "a fresh utterance with no translation yet must not inherit the "

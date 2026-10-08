@@ -337,4 +337,135 @@ final class KeyGestureControllerTests: XCTestCase {
         XCTAssertEqual(controller.state, .idle)
         XCTAssertEqual(recorder.current, .off)
     }
+
+    // MARK: holding right ⌘
+
+    /// The microphone opens with the key still down, and letting go inserts.
+    func testHoldingRightCommandTalksUntilItIsLetGo() async {
+        let (controller, fake, recorder) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.startCount, 1)
+        XCTAssertEqual(controller.state, .recording)
+        XCTAssertTrue(controller.heldPressStarted)
+
+        controller.handle(.rightCommandReleased)
+        XCTAssertEqual(controller.state, .transcribing)
+        XCTAssertEqual(recorder.current, .finishing, "inserting, not throwing away")
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.stopCount, 1)
+        XCTAssertFalse(controller.heldPressStarted)
+    }
+
+    /// A slow tap passes the hold delay too. Up in time to be a tap, it keeps
+    /// the dictation it opened, and Return finishes it like any tap.
+    func testASlowTapKeepsTheDictationItOpened() async {
+        let (controller, fake, _) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        controller.handle(.rightCommandTap)
+        await controller.recordingTask?.value
+        XCTAssertEqual(controller.state, .recording, "the tap must not stop what it just started")
+        XCTAssertEqual(fake.startCount, 1)
+        XCTAssertEqual(fake.stopCount, 0)
+        XCTAssertFalse(controller.heldPressStarted)
+
+        controller.handle(.confirm)
+        XCTAssertEqual(controller.state, .transcribing)
+    }
+
+    /// ⌘C typed slowly: the shortcut reached the app, the take is dropped.
+    func testAShortcutAfterTheHoldThrowsTheTakeAway() async {
+        let (controller, fake, recorder) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        controller.handle(.rightCommandChord)
+        XCTAssertEqual(recorder.current, .off)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.stopCount, 1)
+        XCTAssertEqual(controller.state, .idle)
+    }
+
+    /// Held while a tap-started take runs: no second take, and letting go
+    /// stops the first, the way a tap would.
+    func testHoldingDuringATakeStopsItWhenLetGo() async {
+        let (controller, fake, _) = controller()
+        controller.handle(.rightCommandTap)
+        await controller.recordingTask?.value
+        controller.handle(.rightCommandHeld)
+        XCTAssertFalse(controller.heldPressStarted)
+        XCTAssertEqual(fake.startCount, 1)
+
+        controller.handle(.rightCommandChord)
+        XCTAssertEqual(controller.state, .recording, "a chord drops only a take its own press opened")
+
+        controller.handle(.rightCommandReleased)
+        XCTAssertEqual(controller.state, .transcribing)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.stopCount, 1)
+    }
+
+    /// A hold-to-talk take on the shortcut is the shortcut's to end.
+    func testLettingGoOfRightCommandLeavesAShortcutTakeAlone() async {
+        let (controller, _, _) = controller()
+        controller.beginRecording(submit: false)
+        await controller.recordingTask?.value
+        controller.handle(.rightCommandReleased)
+        XCTAssertEqual(controller.state, .recording)
+    }
+
+    /// The microphone failed to open while the key was down. Letting go in
+    /// tap time is the end of that same press, not a second try.
+    func testAFailedHoldIsNotRetriedWhenTheKeyComesUp() async {
+        let (controller, fake, recorder) = controller()
+        fake.startError = NSError(domain: "test", code: 1)
+        var attempts = 0
+        fake.startGate = { attempts += 1 }
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        controller.handle(.rightCommandTap)
+        await controller.recordingTask?.value
+        XCTAssertEqual(attempts, 1)
+        XCTAssertEqual(recorder.current, .off)
+    }
+
+    /// Return pressed before letting go finishes the take and ends the press:
+    /// the next tap is a new dictation.
+    func testReturnBeforeLettingGoEndsThePressToo() async {
+        let (controller, fake, _) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        controller.handle(.confirm)
+        XCTAssertFalse(controller.heldPressStarted)
+        await controller.recordingTask?.value
+
+        controller.handle(.rightCommandTap)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.startCount, 2)
+    }
+
+    /// Cold models: the hold asks for them instead of recording, and the tap
+    /// that ends the press is free to start once they are there.
+    func testAHoldThatOnlyLoadedTheModelsLeavesTheTapFree() async {
+        let (controller, fake, _) = controller()
+        fake.ready = false
+        controller.handle(.rightCommandHeld)
+        XCTAssertFalse(controller.heldPressStarted)
+    }
+
+    func testHoldingIsSwitchedOffWithTheTap() async {
+        UserDefaults.standard.set(false, forKey: RightCommandTrigger.key)
+        let (controller, fake, _) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.startCount, 0)
+    }
+
+    func testTheMasterSwitchBlocksHoldingToo() async {
+        UserDefaults.standard.set(false, forKey: DictationEnabled.key)
+        let (controller, fake, _) = controller()
+        controller.handle(.rightCommandHeld)
+        await controller.recordingTask?.value
+        XCTAssertEqual(fake.startCount, 0)
+    }
 }

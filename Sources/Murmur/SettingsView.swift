@@ -8,6 +8,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
     @AppStorage(RightCommandTrigger.key) private var rightCommand = true
+    @AppStorage(HUDStyle.defaultsKey) private var hudStyle: HUDStyle = .compact
     @AppStorage(DictationSession.recordUtterancesKey) private var recordUtterances = false
     @State private var confirmingDelete = false
     /// Counted when the pane appears and after a delete, never inside `body`:
@@ -22,11 +23,11 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section {
-                Toggle("Tap right ⌘ to dictate", isOn: $rightCommand)
+                Toggle("Dictate with right ⌘", isOn: $rightCommand)
             } header: {
                 Text("Right ⌘")
             } footer: {
-                Text("Tap right ⌘ and speak, then press Return to insert the text or Esc to throw it away. Press Return twice to insert and send. Needs Accessibility, like typing does.")
+                Text("Tap right ⌘ and speak, then press Return to insert the text or Esc to throw it away. Press Return twice to insert and send. Or hold right ⌘ while you speak and let go to insert. Needs Accessibility, like typing does.")
             }
 
             Section {
@@ -38,6 +39,17 @@ struct SettingsView: View {
                 Text("Shortcut")
             } footer: {
                 Text("Hold a shortcut to dictate; release to finish. “Dictate and send” also presses Return, which sends the message in most chats. Leave it empty if you mostly dictate into editors, where Return would just break the line.")
+            }
+
+            Section {
+                Picker("While you speak:", selection: $hudStyle) {
+                    Text("Compact").tag(HUDStyle.compact)
+                    Text("Full").tag(HUDStyle.full)
+                }
+            } header: {
+                Text("On-screen pill")
+            } footer: {
+                Text("Compact is a small capsule that stays put while you speak. Full also shows your words as they are recognised and corrected.")
             }
 
             Section {

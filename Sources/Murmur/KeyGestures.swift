@@ -23,6 +23,16 @@ enum KeyCapture: Equatable, Sendable {
 enum KeyGesture: Equatable, Sendable {
     /// Right ⌘ pressed and released on its own.
     case rightCommandTap
+    /// Right ⌘ has been down on its own for `KeyGestureRecognizer.holdDelay`:
+    /// a hold-to-talk take beginning, or a slow tap. Sent once per press;
+    /// the release says which (`.rightCommandTap` or `.rightCommandReleased`).
+    case rightCommandHeld
+    /// Let go after `.rightCommandHeld`, too late to be a tap: the end of a
+    /// hold-to-talk take.
+    case rightCommandReleased
+    /// Another key, modifier or click joined a press that had already sent
+    /// `.rightCommandHeld`: it was a shortcut after all, not dictation.
+    case rightCommandChord
     /// Return while recording: stop and insert.
     case confirm
     /// Escape while recording: stop and insert nothing.
@@ -92,17 +102,34 @@ enum KeyInput: Equatable, Sendable {
 /// Right ⌘ is still a modifier, so ⌘C typed with the right hand, a ⌘-click or
 /// a ⌘⇧ chord must not start a dictation, and a press held long enough to
 /// look like second thoughts is not a tap either.
+///
+/// Held on its own past `holdDelay`, the press opens the microphone while
+/// the key is still down - hold-to-talk. Whether it was that or a slow tap is
+/// only known at release, so the controller is told both: `.rightCommandHeld`
+/// when the microphone should open, then `.rightCommandTap` (keep listening,
+/// Return inserts) or `.rightCommandReleased` (insert now). A shortcut that
+/// arrives late (`.rightCommandChord`) throws the take away.
 struct KeyGestureRecognizer {
     struct Outcome: Equatable {
         var swallow = false
         var gesture: KeyGesture?
+        /// A right-⌘ press began at this time. Call `holdDelayPassed(pressedAt:)`
+        /// with it once `holdDelay` has gone by: no event arrives to say a key
+        /// is still being held.
+        var holdCheck: TimeInterval?
     }
 
-    /// Long enough for an unhurried tap, short enough that resting a thumb on
-    /// the key and changing your mind does not open the microphone.
+    /// Long enough for an unhurried tap. Let go any later and it was a
+    /// hold-to-talk take, if one began (`holdDelay`), or nothing.
     static let maxTapDuration: TimeInterval = 0.6
+    /// How long right ⌘ must be down on its own before the microphone opens.
+    /// Most ⌘-shortcuts follow the ⌘ within this, so they never get that far;
+    /// a longer wait would cut off the first word of a hold-to-talk take.
+    static let holdDelay: TimeInterval = 0.3
 
     private var tapStartedAt: TimeInterval?
+    /// `.rightCommandHeld` was sent for the press that is down now.
+    private var holdReported = false
     /// Keys whose key-down was kept from the app. Their key-up and auto-repeat
     /// go with it, whatever the capture mode has become since: an app that
     /// sees half of a key press can act on the half it saw.
@@ -114,16 +141,38 @@ struct KeyGestureRecognizer {
             return modifiersChanged(keyCode: keyCode, modifiers: modifiers, time: time)
 
         case let .keyDown(keyCode, modifiers, isRepeat):
-            tapStartedAt = nil
-            return keyDown(keyCode: keyCode, modifiers: modifiers, isRepeat: isRepeat, capture: capture)
+            if let outcome = finishHeldTake(keyCode: keyCode, modifiers: modifiers, capture: capture) {
+                return outcome
+            }
+            let chord = endPress()
+            var outcome = keyDown(keyCode: keyCode, modifiers: modifiers, isRepeat: isRepeat, capture: capture)
+            // Never both: a gesture from `keyDown` needs a bare key, a chord
+            // needs right ⌘ down.
+            if outcome.gesture == nil { outcome.gesture = chord }
+            return outcome
 
         case let .keyUp(keyCode):
             return Outcome(swallow: heldBack.remove(keyCode) != nil)
 
         case .pointerDown:
-            tapStartedAt = nil
-            return Outcome()
+            return Outcome(gesture: endPress())
         }
+    }
+
+    /// The check `Outcome.holdCheck` asked for. `.rightCommandHeld` if that
+    /// same press is still down on its own; nil if it has been released or
+    /// joined by another key since, or a newer press replaced it.
+    mutating func holdDelayPassed(pressedAt: TimeInterval) -> KeyGesture? {
+        guard tapStartedAt == pressedAt, !holdReported else { return nil }
+        holdReported = true
+        return .rightCommandHeld
+    }
+
+    /// The press stops being a tap or a hold. A chord, if the controller had
+    /// already been told the key was held.
+    private mutating func endPress() -> KeyGesture? {
+        defer { tapStartedAt = nil; holdReported = false }
+        return tapStartedAt != nil && holdReported ? .rightCommandChord : nil
     }
 
     private mutating func modifiersChanged(keyCode: Int, modifiers: KeyModifiers,
@@ -131,21 +180,44 @@ struct KeyGestureRecognizer {
         guard keyCode == kVK_RightCommand else {
             // Any other modifier going down or up while right ⌘ is held turns
             // the press into a chord.
-            tapStartedAt = nil
-            return Outcome()
+            return Outcome(gesture: endPress())
         }
         if modifiers.contains(.rightCommand) {
-            tapStartedAt = modifiers == .rightCommand ? time : nil
-            return Outcome()
+            // With anything else already down it is a chord from the start.
+            guard modifiers == .rightCommand else { return Outcome(gesture: endPress()) }
+            tapStartedAt = time
+            holdReported = false
+            return Outcome(holdCheck: time)
         }
-        defer { tapStartedAt = nil }
-        guard let start = tapStartedAt, time - start <= Self.maxTapDuration else {
-            return Outcome()
-        }
+        let held = holdReported
+        guard let start = tapStartedAt else { return Outcome() }
+        tapStartedAt = nil
+        holdReported = false
         // The modifier event itself still goes through: a lone ⌘ press means
         // nothing to any app, and holding back half of one could leave an app
         // believing ⌘ is still down.
-        return Outcome(gesture: .rightCommandTap)
+        if time - start <= Self.maxTapDuration { return Outcome(gesture: .rightCommandTap) }
+        return Outcome(gesture: held ? .rightCommandReleased : nil)
+    }
+
+    /// Return or Escape pressed before letting go of right ⌘ in a
+    /// hold-to-talk take: they finish it the way they would after letting go,
+    /// rather than counting as a ⌘-shortcut that throws the take away.
+    private mutating func finishHeldTake(keyCode: Int, modifiers: KeyModifiers,
+                                         capture: KeyCapture) -> Outcome? {
+        guard tapStartedAt != nil, holdReported, capture == .recording,
+              modifiers.subtracting(.function) == .rightCommand else { return nil }
+        let gesture: KeyGesture
+        switch keyCode {
+        case kVK_Return, kVK_ANSI_KeypadEnter: gesture = .confirm
+        case kVK_Escape: gesture = .cancel
+        default: return nil
+        }
+        // Done with this press: letting go of the key now means nothing.
+        tapStartedAt = nil
+        holdReported = false
+        heldBack.insert(keyCode)
+        return Outcome(swallow: true, gesture: gesture)
     }
 
     private mutating func keyDown(keyCode: Int, modifiers: KeyModifiers, isRepeat: Bool,

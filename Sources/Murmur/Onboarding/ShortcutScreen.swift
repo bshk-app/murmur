@@ -66,7 +66,7 @@ struct ShortcutScreen: View {
 
             // Not a preset: a lone modifier is not something the recorder can
             // hold, and it works without choosing anything.
-            Text("No chord needed: tap right ⌘, speak, then press Return to insert.")
+            Text("No chord needed: tap right ⌘, speak, then press Return to insert. Or hold right ⌘ while you speak.")
                 .murFont(12.5).foregroundStyle(t.muted(0.55))
                 .padding(.top, 16)
         }

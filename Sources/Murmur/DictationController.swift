@@ -60,6 +60,14 @@ final class DictationController {
     /// Return was pressed again while the text was still being finalised.
     /// The user meant "and send it", so Return is pressed after the paste.
     @ObservationIgnored private(set) var submitRequested = false
+    /// Right ⌘ is down and its `.rightCommandHeld` was acted on: the gesture
+    /// that ends this press (tap, release, chord - or Return / Escape pressed
+    /// before letting go) belongs to what the hold started, not to a new take.
+    /// Cleared by that gesture rather than by the recording ending, so a press
+    /// whose start failed is not taken for a fresh tap when it comes up.
+    @ObservationIgnored private(set) var heldPressStarted = false
+    /// Why the take being thrown away was thrown away, for analytics.
+    @ObservationIgnored private var cancelReason = CancelReason.escape
     /// The paste has been posted and the app has not necessarily applied it
     /// yet. Return stays held back through that window - the same one
     /// `TextInjector` waits out before its own Return - or a press in it would
@@ -608,6 +616,9 @@ final class DictationController {
         switch gesture {
         case .rightCommandTap:
             guard RightCommandTrigger.isEnabled else { return }
+            // This press opened the microphone while it was still down and came
+            // up in time to be a tap: keep listening, Return inserts.
+            if heldPressStarted { heldPressStarted = false; return }
             // Always tap-on: there is no key left held to release. Stops only
             // what a tap could have started - a held chord still owns its
             // own session.
@@ -617,10 +628,41 @@ final class DictationController {
                 begin: { beginRecording(submit: false, forceToggle: true, source: .rightCommand) },
                 end: endRecording
             )
+        case .rightCommandHeld:
+            // Only from idle. Held during a take, the key is on its way to
+            // stopping it, and its release will.
+            guard RightCommandTrigger.isEnabled, DictationEnabled.value, !isActive else { return }
+            // Tap-on until the key says otherwise: if it comes up in time to
+            // be a tap, this is the tap's dictation, already listening.
+            beginRecording(submit: false, forceToggle: true, source: .rightCommand)
+            // Only if it really started: with the models still cold it asks for
+            // them instead, and the tap that ends this press may then start one.
+            // A start that fails later still counts - this press made it.
+            heldPressStarted = state == .recording
+        case .rightCommandReleased:
+            guard RightCommandTrigger.isEnabled else { return }
+            if heldPressStarted {
+                heldPressStarted = false
+                endRecording()
+            } else {
+                // A long press during a take a tap started: letting go
+                // finishes it, as a tap would have.
+                RecordingTriggerPolicy.route(.keyDown, state: recordingTriggerState,
+                                             begin: {}, end: endRecording)
+            }
+        case .rightCommandChord:
+            // ⌘C and friends, typed slowly enough that the microphone had
+            // already opened. The shortcut itself went through to the app.
+            guard heldPressStarted else { return }
+            heldPressStarted = false
+            cancelRecording(reason: .shortcut)
         case .confirm:
+            // Return before letting go of a held right ⌘ ends that press too.
+            heldPressStarted = false
             guard confirmsWithReturn, state == .recording else { return }
             endRecording()
         case .cancel:
+            heldPressStarted = false
             guard confirmsWithReturn else { return }
             cancelRecording()
         case .submitWhenDone:
@@ -652,6 +694,14 @@ final class DictationController {
         case menu
     }
 
+    /// Why a take was thrown away: Escape, or a ⌘-shortcut that turned out
+    /// to be what a held right ⌘ was for. Kept apart in analytics so
+    /// shortcuts do not read as people giving up on dictation.
+    enum CancelReason: String {
+        case escape
+        case shortcut
+    }
+
     /// Not `private`: tests drive this with a substituted session to prove
     /// what it latches.
     func beginRecording(submit: Bool, forceToggle: Bool = false, source: TriggerSource = .shortcut) {
@@ -670,6 +720,7 @@ final class DictationController {
         // Before `state`: its observer reads these to decide what to capture.
         confirmsWithReturn = toggle && !captions
         discarding = false
+        cancelReason = .escape
         submitRequested = false
         // Before the new capture replaces the old: a Return held back for the
         // previous paste still has to send it.
@@ -713,6 +764,9 @@ final class DictationController {
                               target: TranslationSetting.badge(dictating: language),
                               interactive: toggle, submits: submitOnFinish,
                               confirmsWithReturn: confirmsWithReturn,
+                              // Without Accessibility nothing gets typed, and the
+                              // live text is the only place the words show up.
+                              style: Accessibility.isTrusted ? .current : .full,
                               shortcutLabel: activeShortcutLabel(submit: submitOnFinish),
                               onStop: { [weak self] in self?.endRecording() })
                 }
@@ -756,9 +810,10 @@ final class DictationController {
     /// Escape: stop listening and insert nothing. Runs the ordinary stop so the
     /// microphone and the session's lifecycle close the same way, and only
     /// the delivery is skipped.
-    func cancelRecording() {
+    func cancelRecording(reason: CancelReason = .escape) {
         guard state == .recording else { return }
         discarding = true
+        cancelReason = reason
         endRecording()
     }
 
@@ -766,6 +821,7 @@ final class DictationController {
         guard state == .recording else { return }
         if starting { stopAfterStart = true; return }
         let discard = discarding
+        let cancelReasonAtStop = cancelReason
         state = .transcribing
         let captions = captionsRunning
         let displayOnly = captions || captureFailed || discard
@@ -809,6 +865,7 @@ final class DictationController {
                 if discard {
                     PostHogSDK.shared.capture("dictation_cancelled", properties: [
                         "character_count": final.count, "model_mode": modelModeAtStop,
+                        "reason": cancelReasonAtStop.rawValue,
                     ])
                 } else if displayOnly || captureFailed {
                     if !captions {

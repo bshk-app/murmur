@@ -101,12 +101,12 @@
         }
       }
     },
-    "No chord needed: tap right ⌘, speak, then press Return to insert.": {
+    "No chord needed: tap right ⌘, speak, then press Return to insert. Or hold right ⌘ while you speak.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Можно без сочетания: нажмите правый ⌘, говорите, затем Return — и текст вставится."
+            "value": "Можно без сочетания: нажмите правый ⌘, говорите, затем Return — и текст вставится. Или держите правый ⌘, пока говорите."
           }
         }
       }

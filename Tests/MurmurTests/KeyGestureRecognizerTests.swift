@@ -71,12 +71,98 @@ final class KeyGestureRecognizerTests: XCTestCase {
         XCTAssertNil(feed(rightCommand(down: false, at: 11.15)).gesture)
     }
 
-    /// Resting a thumb on the key and changing your mind must not open the
-    /// microphone.
+    /// Released too late for a tap, and never reported as held (the hold
+    /// check did not run): nothing.
     func testALongPressIsNotATap() {
         XCTAssertNil(tap(holding: KeyGestureRecognizer.maxTapDuration + 0.05).last?.gesture)
         XCTAssertEqual(tap(at: 20, holding: KeyGestureRecognizer.maxTapDuration - 0.05).last?.gesture,
                        .rightCommandTap)
+    }
+
+    // MARK: holding right ⌘
+
+    private func press(at time: TimeInterval) -> KeyGestureRecognizer.Outcome {
+        feed(rightCommand(down: true, at: time))
+    }
+
+    private func held(at time: TimeInterval) {
+        _ = press(at: time)
+        XCTAssertEqual(recognizer.holdDelayPassed(pressedAt: time), .rightCommandHeld)
+    }
+
+    func testAPressAsksToBeCheckedForAHoldOnce() {
+        XCTAssertEqual(press(at: 10).holdCheck, 10)
+        XCTAssertEqual(recognizer.holdDelayPassed(pressedAt: 10), .rightCommandHeld)
+        XCTAssertNil(recognizer.holdDelayPassed(pressedAt: 10), "once per press")
+    }
+
+    func testLettingGoLateEndsAHeldTake() {
+        held(at: 10)
+        let release = feed(rightCommand(down: false, at: 10 + KeyGestureRecognizer.maxTapDuration + 1))
+        XCTAssertEqual(release.gesture, .rightCommandReleased)
+        XCTAssertFalse(release.swallow)
+    }
+
+    /// A slow tap is held long enough to open the microphone; it is still a tap.
+    func testLettingGoInTimeIsATapEvenAfterTheHoldCheck() {
+        held(at: 10)
+        XCTAssertEqual(feed(rightCommand(down: false, at: 10.5)).gesture, .rightCommandTap)
+    }
+
+    func testNoHoldOnceTheKeyIsUp() {
+        _ = tap(at: 10)
+        XCTAssertNil(recognizer.holdDelayPassed(pressedAt: 10))
+    }
+
+    func testALateCheckDoesNotCountForANewerPress() {
+        _ = tap(at: 10)
+        _ = press(at: 11)
+        XCTAssertNil(recognizer.holdDelayPassed(pressedAt: 10))
+        XCTAssertEqual(recognizer.holdDelayPassed(pressedAt: 11), .rightCommandHeld)
+    }
+
+    /// The usual ⌘C: the letter follows the ⌘ before the microphone would open.
+    func testAShortcutBeforeTheHoldDelayIsNoHold() {
+        _ = press(at: 10)
+        XCTAssertNil(feed(.keyDown(keyCode: kVK_ANSI_C, modifiers: .rightCommand, isRepeat: false)).gesture)
+        XCTAssertNil(recognizer.holdDelayPassed(pressedAt: 10))
+    }
+
+    /// A slow ⌘C: the shortcut still reaches the app, and the take it opened
+    /// is reported so it can be thrown away.
+    func testAShortcutAfterTheHoldIsAChord() {
+        held(at: 10)
+        let c = feed(.keyDown(keyCode: kVK_ANSI_C, modifiers: .rightCommand, isRepeat: false), .recording)
+        XCTAssertEqual(c.gesture, .rightCommandChord)
+        XCTAssertFalse(c.swallow)
+        XCTAssertNil(feed(.keyDown(keyCode: kVK_ANSI_V, modifiers: .rightCommand, isRepeat: false)).gesture,
+                     "reported once")
+        XCTAssertNil(feed(rightCommand(down: false, at: 12)).gesture)
+    }
+
+    func testAClickOrAnotherModifierAfterTheHoldIsAChordToo() {
+        held(at: 10)
+        XCTAssertEqual(feed(.pointerDown).gesture, .rightCommandChord)
+        held(at: 20)
+        XCTAssertEqual(feed(.modifiersChanged(keyCode: kVK_Shift, modifiers: [.rightCommand, .shift],
+                                              time: 20.5)).gesture, .rightCommandChord)
+    }
+
+    /// Return before letting go means "done", not ⌘Return.
+    func testReturnBeforeLettingGoFinishesTheHeldTake() {
+        held(at: 10)
+        XCTAssertEqual(feed(.keyDown(keyCode: kVK_Return, modifiers: .rightCommand, isRepeat: false), .recording),
+                       KeyGestureRecognizer.Outcome(swallow: true, gesture: .confirm))
+        XCTAssertTrue(feed(.keyUp(keyCode: kVK_Return), .finishing).swallow)
+        XCTAssertNil(feed(rightCommand(down: false, at: 12), .finishing).gesture,
+                     "the take is already finished; letting go adds nothing")
+    }
+
+    func testEscapeBeforeLettingGoThrowsTheHeldTakeAway() {
+        held(at: 10)
+        XCTAssertEqual(feed(.keyDown(keyCode: kVK_Escape, modifiers: .rightCommand, isRepeat: false), .recording),
+                       KeyGestureRecognizer.Outcome(swallow: true, gesture: .cancel))
+        XCTAssertNil(feed(rightCommand(down: false, at: 12)).gesture)
     }
 
     /// One chord must not poison the next tap.
