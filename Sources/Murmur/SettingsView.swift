@@ -7,18 +7,33 @@ import SwiftUI
 /// shortcut and where the transcript goes on release.
 struct SettingsView: View {
     @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
+    @AppStorage(RightCommandTrigger.key) private var rightCommand = true
     @AppStorage(DictationSession.recordUtterancesKey) private var recordUtterances = false
     @State private var confirmingDelete = false
     /// Counted when the pane appears and after a delete, never inside `body`:
     /// touching the filesystem on every re-render would run it on each animation
     /// frame of the switch above it.
     @State private var recordingCount = 0
+    /// Whether macOS answers to the same chords. Checked when the pane shows,
+    /// when a shortcut changes, and when Murmur comes back to the front.
+    @State private var dictateClash: SystemShortcutClash?
+    @State private var sendClash: SystemShortcutClash?
 
     var body: some View {
         Form {
             Section {
-                KeyboardShortcuts.Recorder("Push-to-talk:", name: .dictate)
-                KeyboardShortcuts.Recorder("Dictate and send:", name: .dictateAndSend)
+                Toggle("Tap right ⌘ to dictate", isOn: $rightCommand)
+            } header: {
+                Text("Right ⌘")
+            } footer: {
+                Text("Tap right ⌘ and speak, then press Return to insert the text or Esc to throw it away. Press Return twice to insert and send. Needs Accessibility, like typing does.")
+            }
+
+            Section {
+                KeyboardShortcuts.Recorder("Push-to-talk:", name: .dictate) { _ in refreshClashes() }
+                clashNote(dictateClash, name: .dictate)
+                KeyboardShortcuts.Recorder("Dictate and send:", name: .dictateAndSend) { _ in refreshClashes() }
+                clashNote(sendClash, name: .dictateAndSend)
             } header: {
                 Text("Shortcut")
             } footer: {
@@ -67,9 +82,38 @@ struct SettingsView: View {
                 Text("This removes the saved audio of what you dictated. It cannot be undone.")
             }
         }
-        .onAppear { recordingCount = DiagnosticRecordings.count() }
+        .onAppear {
+            recordingCount = DiagnosticRecordings.count()
+            refreshClashes()
+        }
+        // Back from System Settings, where the macOS shortcut may just have
+        // been turned off.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            refreshClashes()
+        }
         .formStyle(.grouped)
         .frame(width: 420)
         .frame(minHeight: 300)
+    }
+
+    private func refreshClashes() {
+        dictateClash = SystemShortcuts.clash(for: .dictate)
+        sendClash = SystemShortcuts.clash(for: .dictateAndSend)
+    }
+
+    @ViewBuilder
+    private func clashNote(_ clash: SystemShortcutClash?, name: KeyboardShortcuts.Name) -> some View {
+        if let clash, let chord = KeyboardShortcuts.getShortcut(for: name)?.description {
+            VStack(alignment: .leading, spacing: 6) {
+                Label {
+                    Text(SystemShortcuts.warning(clash, chord: chord))
+                        .fixedSize(horizontal: false, vertical: true)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                }
+                .font(.callout)
+                Button("Open Keyboard Settings…") { NSWorkspace.shared.open(SystemShortcuts.settingsURL) }
+            }
+        }
     }
 }

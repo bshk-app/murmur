@@ -1,4 +1,5 @@
 import AppKit
+import KeyboardShortcuts
 import MurmurKit
 import PostHog
 import SwiftUI
@@ -27,6 +28,9 @@ struct MenuPopover: View {
     /// Bumped on screen reconfiguration so the picker lists what is plugged in now.
     @State private var screensGeneration = 0
     @State private var showingCaptionsAppearance = false
+    /// macOS answers to the push-to-talk chord too. Checked each time the menu
+    /// opens: the user may have changed either side since.
+    @State private var shortcutClash: SystemShortcutClash?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -72,6 +76,7 @@ struct MenuPopover: View {
         .onAppear {
             let validUID = dictation.refreshMicrophones(preferredUID: microphoneUID)
             if validUID != microphoneUID { microphoneUID = validUID }
+            shortcutClash = SystemShortcuts.clash(for: .dictate)
         }
     }
 
@@ -91,16 +96,38 @@ struct MenuPopover: View {
                 Text(dictation.shortStatus).font(.system(size: 12)).foregroundStyle(secondary)
                     .lineLimit(1)
                 Spacer(minLength: 6)
-                Text(dictation.shortcutLabel).font(.system(size: 11, design: .monospaced))
+                Text(dictation.triggerLabel).font(.system(size: 11, design: .monospaced))
                     .foregroundStyle(secondary)
                     .padding(.horizontal, 6).padding(.vertical, 3)
                     .background(fieldBG, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            }
+            if let shortcutClash, let chord = KeyboardShortcuts.getShortcut(for: .dictate)?.description {
+                clashRow(shortcutClash, chord: chord)
             }
             startStopButton
         }
         .padding(.horizontal, 16).padding(.top, 15).padding(.bottom, 12)
     }
 
+    /// The one place an existing user sees it: they set their chord long ago
+    /// and do not open Settings, while macOS has been answering to it too.
+    private func clashRow(_ clash: SystemShortcutClash, chord: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 10))
+                .foregroundStyle(Mur.accent)
+            Text(clash == .inputSource
+                 ? String(localized: "\(chord) also switches your keyboard layout")
+                 : String(localized: "macOS also uses \(chord)"))
+                .font(.system(size: 11)).foregroundStyle(secondary)
+                .lineLimit(2)
+            Spacer(minLength: 4)
+            Button("Change…") {
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            }
+            .buttonStyle(.link).font(.system(size: 11, weight: .semibold))
+        }
+    }
     private var isRecording: Bool { dictation.state == .recording }
 
     /// Stop is always offered; Start follows the master switch, like the hotkey.

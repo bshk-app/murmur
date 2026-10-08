@@ -19,7 +19,13 @@ final class DictationController {
         case error(String)
     }
 
-    private(set) var state: State = .loadingModels
+    private(set) var state: State = .loadingModels {
+        // Every transition, wherever it happens, tells the key tap what to
+        // hold back. One hook rather than a call after each assignment: a
+        // missed call would leave Return captured after a dictation ended,
+        // and Return would stop working everywhere on the Mac.
+        didSet { syncKeyCapture() }
+    }
     private(set) var sessionWarning: String?
 
     /// Pinned since the Insert-mode setting was removed. Kept in the events rather
@@ -37,6 +43,50 @@ final class DictationController {
     @ObservationIgnored private var starting = false
     @ObservationIgnored private var stopAfterStart = false
     @ObservationIgnored private var captureFailed = false
+
+    /// Right ⌘, Return and Escape. Installed by `bootstrap`, never in tests:
+    /// a system-wide event tap has no place in a unit test, so they set
+    /// `keyCaptureSink` to a recorder instead.
+    @ObservationIgnored private var keyTap: GlobalKeyTap?
+    @ObservationIgnored var keyCaptureSink: KeyCaptureSink?
+    /// Whether this session finishes on Return and cancels on Escape. Latched
+    /// at start: every tap-on dictation does (there is no key held down to
+    /// release, so Return is the natural "done"), hold-to-talk and captions
+    /// do not. A talk runs for an hour while the speaker types, and a held
+    /// chord already says when it ends.
+    @ObservationIgnored private(set) var confirmsWithReturn = false
+    /// Escape was pressed: the transcript is dropped rather than inserted.
+    @ObservationIgnored private var discarding = false
+    /// Return was pressed again while the text was still being finalised.
+    /// The user meant "and send it", so Return is pressed after the paste.
+    @ObservationIgnored private(set) var submitRequested = false
+    /// The paste has been posted and the app has not necessarily applied it
+    /// yet. Return stays held back through that window - the same one
+    /// `TextInjector` waits out before its own Return - or a press in it would
+    /// send the chat field without the text.
+    @ObservationIgnored private(set) var pasteSettling = false
+    /// Stamps each recording, so the end of one paste's settle window cannot
+    /// release the capture a newer recording already owns.
+    @ObservationIgnored private var recordingGeneration = 0
+    /// The settling paste already ends with its own Return.
+    @ObservationIgnored private var settleAlreadySubmits = false
+    /// Sends a Return held back during the settle window. A seam for tests: the
+    /// real one posts a key event into whatever app the developer has focused.
+    @ObservationIgnored var pressReturn: () -> Void = { TextInjector.pressReturn() }
+
+    /// What the key tap should hold back right now. Derived, not stored, so it
+    /// cannot drift from `state`.
+    var keyCapture: KeyCapture {
+        guard confirmsWithReturn else { return .off }
+        switch state {
+        case .recording: return .recording
+        case .transcribing: return discarding ? .off : .finishing
+        case .transcribed where pasteSettling: return .finishing
+        default: return .off
+        }
+    }
+
+    private func syncKeyCapture() { keyCaptureSink?.setCapture(keyCapture) }
 
     /// The language *this utterance* was recognised in, latched when the
     /// recogniser was started.
@@ -167,7 +217,17 @@ final class DictationController {
     }
 
     var shortcutLabel: String {
-        KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
+        KeyboardShortcuts.getShortcut(for: .dictate)?.description
+            ?? KeyboardShortcuts.Name.dictate.defaultShortcut?.description ?? ""
+    }
+
+    /// Whether a right-⌘ tap starts a dictation right now: switched on, and the
+    /// tap able to see the key at all, which takes Accessibility.
+    var rightCommandWorks: Bool { RightCommandTrigger.isEnabled && Accessibility.isTrusted }
+
+    /// Every way to start, for the menu: the key that needs no chord first.
+    var triggerLabel: String {
+        rightCommandWorks ? "\(RightCommandTrigger.label) · \(shortcutLabel)" : shortcutLabel
     }
 
     var supportedLanguageCodes: [String] { [SpeechLanguage.automatic] + LanguagePair.qualityLanguages.sorted() }
@@ -187,7 +247,10 @@ final class DictationController {
         if let sessionWarning { return sessionWarning }
         switch state {
         case .loadingModels: return "Loading models…"
-        case .idle: return "Idle — hold \(shortcutLabel)"
+        case .idle:
+            return rightCommandWorks
+                ? "Idle — tap \(RightCommandTrigger.label) or hold \(shortcutLabel)"
+                : "Idle — hold \(shortcutLabel)"
         case .recording: return "Listening…"
         case .transcribing: return "Transcribing…"
         case let .transcribed(t): return t.isEmpty ? "…(no speech detected)" : t
@@ -233,6 +296,10 @@ final class DictationController {
     enum StartupStep: CaseIterable {
         case transcriptEcho
         case hotkeys
+        /// Right ⌘ to start, Return to insert, Escape to cancel. A step of its
+        /// own because it is not a Carbon hotkey: a lone modifier cannot be
+        /// registered as one, and holding Return back takes an event tap.
+        case keyTap
         case microphonePermission
         case currentMode
         /// Resume an interrupted or never-started model fetch. Without this, a
@@ -250,6 +317,7 @@ final class DictationController {
     static let startupSteps: [StartupStep] = [
         .transcriptEcho,
         .hotkeys,
+        .keyTap,
         .microphonePermission,
         .currentMode,
         .translationModels,
@@ -268,6 +336,11 @@ final class DictationController {
             KeyboardShortcuts.onKeyUp(for: .dictate) { [weak self] in self?.hotkeyUp() }
             KeyboardShortcuts.onKeyDown(for: .dictateAndSend) { [weak self] in self?.hotkeyDown(submit: true) }
             KeyboardShortcuts.onKeyUp(for: .dictateAndSend) { [weak self] in self?.hotkeyUp() }
+        case .keyTap:
+            let tap = GlobalKeyTap { [weak self] gesture in self?.handle(gesture) }
+            keyTap = tap
+            keyCaptureSink = tap
+            tap.start()
         case .microphonePermission:
             AVCaptureDevice.requestAccess(for: .audio) { _ in }
         case .currentMode:
@@ -527,15 +600,61 @@ final class DictationController {
         )
     }
 
+    /// Right ⌘, Return and Escape, from the key tap.
+    ///
+    /// Not `private`: tests drive the gestures directly, since the tap that
+    /// produces them cannot run in a test.
+    func handle(_ gesture: KeyGesture) {
+        switch gesture {
+        case .rightCommandTap:
+            guard RightCommandTrigger.isEnabled else { return }
+            // Always tap-on: there is no key left held to release. Stops only
+            // what a tap could have started - a held chord still owns its
+            // own session.
+            RecordingTriggerPolicy.route(
+                .keyDown,
+                state: recordingTriggerState,
+                begin: { beginRecording(submit: false, forceToggle: true, source: .rightCommand) },
+                end: endRecording
+            )
+        case .confirm:
+            guard confirmsWithReturn, state == .recording else { return }
+            endRecording()
+        case .cancel:
+            guard confirmsWithReturn else { return }
+            cancelRecording()
+        case .submitWhenDone:
+            // `.recording` with a stop pending is the first Return landing
+            // while the microphone was still opening: still finishing, as far
+            // as the user can tell.
+            let finishing = state == .transcribing || (state == .recording && stopAfterStart)
+            guard confirmsWithReturn, finishing, !discarding else { return }
+            submitRequested = true
+            hud.willSubmit()
+        }
+    }
+
     /// The popover's Start/Stop, for anyone without the shortcut to hand.
     /// Always tap-on / tap-off: a click leaves no key to release.
     func toggleFromMenu() {
-        if state == .recording { endRecording() } else { beginRecording(submit: false, forceToggle: true) }
+        if state == .recording {
+            endRecording()
+        } else {
+            beginRecording(submit: false, forceToggle: true, source: .menu)
+        }
+    }
+
+    /// What started a recording, for analytics: whether people actually
+    /// reach for right ⌘ is the question the key exists to answer.
+    enum TriggerSource: String {
+        case shortcut
+        case rightCommand = "right_command"
+        case menu
     }
 
     /// Not `private`: tests drive this with a substituted session to prove
     /// what it latches.
-    func beginRecording(submit: Bool, forceToggle: Bool = false) {
+    func beginRecording(submit: Bool, forceToggle: Bool = false, source: TriggerSource = .shortcut) {
         guard !isActive, !isPreparing else { return }
         let language = SpeechLanguage.current
         let modelMode = ModelSetting.current.effective(for: language)
@@ -548,6 +667,14 @@ final class DictationController {
         starting = true
         stopAfterStart = false
         latchedToggle = toggle
+        // Before `state`: its observer reads these to decide what to capture.
+        confirmsWithReturn = toggle && !captions
+        discarding = false
+        submitRequested = false
+        // Before the new capture replaces the old: a Return held back for the
+        // previous paste still has to send it.
+        if pasteSettling { closePasteSettle(pasteHasLanded: false) }
+        recordingGeneration &+= 1
         state = .recording
         connectSession()
         let pendingTranslation = translationPrepare
@@ -575,6 +702,7 @@ final class DictationController {
                 PostHogSDK.shared.capture(captions ? "captions_started" : "dictation_started", properties: [
                     "model_mode": modelMode.rawValue, "language": language,
                     "trigger_mode": TriggerMode.current.rawValue,
+                    "trigger_source": source.rawValue,
                     "insert_mode": Self.insertModeAnalyticsValue,
                 ])
                 if captions {
@@ -584,6 +712,7 @@ final class DictationController {
                     hud.begin(lang: SpeechLanguage.badge(for: language),
                               target: TranslationSetting.badge(dictating: language),
                               interactive: toggle, submits: submitOnFinish,
+                              confirmsWithReturn: confirmsWithReturn,
                               shortcutLabel: activeShortcutLabel(submit: submitOnFinish),
                               onStop: { [weak self] in self?.endRecording() })
                 }
@@ -624,17 +753,33 @@ final class DictationController {
         #endif
     }
 
+    /// Escape: stop listening and insert nothing. Runs the ordinary stop so the
+    /// microphone and the session's lifecycle close the same way, and only
+    /// the delivery is skipped.
+    func cancelRecording() {
+        guard state == .recording else { return }
+        discarding = true
+        endRecording()
+    }
+
     func endRecording() {
         guard state == .recording else { return }
         if starting { stopAfterStart = true; return }
+        let discard = discarding
         state = .transcribing
         let captions = captionsRunning
-        let displayOnly = captions || captureFailed
+        let displayOnly = captions || captureFailed || discard
         let modelModeAtStop = completedModelMode.rawValue
         let submitAtStop = submitOnFinish
         let target = TranslationSetting.canTranslate(from: translationSource) ? TranslationSetting.target : nil
         captionTranslateTask?.cancel()
-        if captions { captionsOverlay.dismiss() } else { hud.finalizing() }
+        if captions {
+            captionsOverlay.dismiss()
+        } else if discard {
+            hud.dismiss()
+        } else {
+            hud.finalizing()
+        }
         recordingTask = Task {
             defer {
                 if !captions { Task.detached(priority: .utility) { DiagnosticRecordings.sweep() } }
@@ -661,7 +806,11 @@ final class DictationController {
                     sessionWarning = "Translation failed: \(error.localizedDescription)"
                 }
                 let final = result.text
-                if displayOnly || captureFailed {
+                if discard {
+                    PostHogSDK.shared.capture("dictation_cancelled", properties: [
+                        "character_count": final.count, "model_mode": modelModeAtStop,
+                    ])
+                } else if displayOnly || captureFailed {
                     if !captions {
                         hud.finish(final, delivery: .displayedOnly)
                     } else if captureFailed {
@@ -674,23 +823,71 @@ final class DictationController {
                 } else {
                     let translated = Self.completeTranslation(in: result.transcript)
                     let payload = translated.isEmpty ? final : translated
-                    let delivery = payload.isEmpty ? TranscriptDelivery.typed : insertFinal(payload, submit: submitAtStop)
+                    // Read now, not at stop: a second Return lands while the
+                    // text is still being finalised, which is after the stop.
+                    let submit = submitAtStop || submitRequested
+                    let delivery = payload.isEmpty ? TranscriptDelivery.typed : insertFinal(payload, submit: submit)
+                    if confirmsWithReturn, !payload.isEmpty, delivery == .typed {
+                        holdReturnUntilPasteLands(alreadySubmitting: submit)
+                    }
                     hud.finish(final, delivery: delivery, translation: translated, translationIsQuality: !translated.isEmpty && session.configuration?.translationQuality == .quality)
                     PostHogSDK.shared.capture("dictation_completed", properties: [
                         "word_count": final.split(separator: " ").count, "character_count": final.count,
                         "is_empty": final.isEmpty, "model_mode": modelModeAtStop,
-                        "insert_mode": Self.insertModeAnalyticsValue, "submit_on_finish": submitAtStop,
+                        "insert_mode": Self.insertModeAnalyticsValue, "submit_on_finish": submit,
                         "delivered": delivery == .typed,
                     ])
                 }
                 captionsRunning = false
                 captionSource = nil
                 captionTarget = nil
-                state = .transcribed(final)
+                state = discard ? .idle : .transcribed(final)
             } catch {
                 state = .error(error.localizedDescription)
                 hud.error(error.localizedDescription)
             }
+        }
+    }
+
+    /// Keep Return held back until a just-posted paste has had time to land,
+    /// then let it go - and press Return for the user if they asked to send in
+    /// the meantime.
+    ///
+    /// Asked of the tap, not of `submitRequested`: the tap's gesture for a
+    /// Return travels to this thread on its own and can still be on its way.
+    /// `endCapture` releases the key and reports a held-back Return in one
+    /// step, so a press is either counted there or reaches the app after the
+    /// text, never eaten.
+    ///
+    /// Not `private`: tests drive the window directly, since reaching it
+    /// through a real paste would write to the developer's clipboard.
+    func holdReturnUntilPasteLands(alreadySubmitting: Bool) {
+        pasteSettling = true
+        settleAlreadySubmits = alreadySubmitting
+        syncKeyCapture()
+        let generation = recordingGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + TextInjector.pasteSettleDelay) { [weak self] in
+            MainActor.assumeIsolated {
+                // A newer recording cut the window short and already closed it.
+                guard let self, self.recordingGeneration == generation, self.pasteSettling else { return }
+                self.closePasteSettle(pasteHasLanded: true)
+                self.syncKeyCapture()
+            }
+        }
+    }
+
+    /// End the settle window: release Return, and send a Return held back in
+    /// it. A new recording can end the window early - tapping straight into
+    /// the next dictation - and then the paste may not have landed yet, so
+    /// the Return waits out the rest of it on its own.
+    private func closePasteSettle(pasteHasLanded: Bool) {
+        pasteSettling = false
+        guard keyCaptureSink?.endCapture() == true, !settleAlreadySubmits else { return }
+        let press = pressReturn
+        if pasteHasLanded {
+            press()
+        } else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + TextInjector.pasteSettleDelay) { press() }
         }
     }
 

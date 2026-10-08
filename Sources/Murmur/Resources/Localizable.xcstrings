@@ -21,6 +21,96 @@
         }
       }
     },
+    "⏎ Insert": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⏎ Вставить"
+          }
+        }
+      }
+    },
+    "macOS also uses %@ to switch keyboard layouts, so pressing it can change your layout. Pick another shortcut, or turn the macOS one off in Keyboard Shortcuts → Input Sources.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS тоже переключает раскладку по %@, так что это сочетание может сменить раскладку. Выберите другое или отключите сочетание macOS в разделе «Сочетания клавиш» → «Источники ввода»."
+          }
+        }
+      }
+    },
+    "macOS also uses %@ for one of its own shortcuts, so it may not start dictation. Pick another shortcut, or turn the macOS one off in Keyboard Shortcuts.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS тоже использует %@ для своего сочетания клавиш, поэтому диктовка может не начаться. Выберите другое или отключите сочетание macOS в разделе «Сочетания клавиш»."
+          }
+        }
+      }
+    },
+    "Open Keyboard Settings…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Открыть настройки клавиатуры…"
+          }
+        }
+      }
+    },
+    "%@ also switches your keyboard layout": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ещё и переключает раскладку"
+          }
+        }
+      }
+    },
+    "macOS also uses %@": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ занято сочетанием macOS"
+          }
+        }
+      }
+    },
+    "Change…": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Изменить…"
+          }
+        }
+      }
+    },
+    "Press Return to insert, Escape to cancel": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Return — вставить, Esc — отменить"
+          }
+        }
+      }
+    },
+    "No chord needed: tap right ⌘, speak, then press Return to insert.": {
+      "localizations": {
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Можно без сочетания: нажмите правый ⌘, говорите, затем Return — и текст вставится."
+          }
+        }
+      }
+    },
     "Hi, I’m MurMur! Hold a key, talk, and I type the words right where your cursor is. Ready to set me up?": {
       "localizations": {
         "ru": {
@@ -571,12 +661,12 @@
         }
       }
     },
-    "Pick the keys you’ll hold down while speaking. A hold-to-talk combo like ⌃⌥Space feels best.": {
+    "Pick the keys you’ll hold down while speaking. A hold-to-talk combo like ⌥Space feels best.": {
       "localizations": {
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Выберите клавиши, которые будете удерживать во время речи. Сочетание для удержания, например ⌃⌥Space, ощущается лучше всего."
+            "value": "Выберите клавиши, которые будете удерживать во время речи. Сочетание для удержания, например ⌥Space, ощущается лучше всего."
           }
         }
       }

@@ -26,6 +26,10 @@ final class HUDModel {
     var submits = false           // this utterance ends with Return
     var recording = false
     var showStop = false          // toggle-mode: HUD shows a clickable Stop
+    /// Return finishes this utterance and Escape drops it. Said on the pill
+    /// because nothing else would tell you: the key you started with is not
+    /// the key you finish with.
+    var confirmsWithReturn = false
     var shortcutLabel = ""
     /// Two-line translate mode. Empty means the mode is off or the translation
     /// has not arrived, and the pill stays one line — the row is not reserved,
@@ -134,6 +138,7 @@ private struct HUDView: View {
             }
             Spacer(minLength: 8)
             if model.submits { submitBadge }
+            if model.confirmsWithReturn, model.recording { returnBadge }
             langBadge
             if model.showStop { stopButton }
         }
@@ -279,6 +284,7 @@ private struct HUDView: View {
                 .foregroundStyle(scheme == .dark ? Color.white.opacity(0.92) : Mur.ink)
             LevelBars(color: Mur.accent, count: 5, barHeight: 16)
             if model.submits { submitBadge }
+            if model.confirmsWithReturn { returnBadge }
             if model.showStop { stopButton } else { hotkeyBadge }
         }
         .padding(.horizontal, 17).padding(.vertical, 11)
@@ -349,6 +355,18 @@ private struct HUDView: View {
             .accessibilityLabel(Text("Release \(model.shortcutLabel) to finish"))
     }
 
+    /// How a tap-on dictation ends. The submit badge above is the accent ⏎
+    /// ("this will send"); this one is quiet and spelled out, so the two do
+    /// not read as the same promise.
+    private var returnBadge: some View {
+        Text("⏎ Insert").font(.system(size: 11, design: .monospaced))
+            .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
+            .padding(.horizontal, 6).padding(.vertical, 3)
+            .background(scheme == .dark ? Color.white.opacity(0.09) : Mur.ink.opacity(0.07),
+                        in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+            .accessibilityLabel(Text("Press Return to insert, Escape to cancel"))
+    }
+
     private var borderColor: Color {
         scheme == .dark ? Color.white.opacity(0.1) : Mur.ink.opacity(0.1)
     }
@@ -412,12 +430,14 @@ final class HUDController {
     /// Reveal the HUD for a new utterance. `interactive` (toggle mode) makes the
     /// panel accept clicks so the Stop button works.
     func begin(lang: String, target: String = "", interactive: Bool = false, submits: Bool = false,
+               confirmsWithReturn: Bool = false,
                shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
         let panel = ensurePanel()
         model.lang = lang
         model.target = target
         model.submits = submits
+        model.confirmsWithReturn = confirmsWithReturn
         model.shortcutLabel = shortcutLabel
         model.phase = .listening
         show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
@@ -475,6 +495,14 @@ final class HUDController {
         model.recording = false
         model.showStop = false
         model.phase = .finalizing
+    }
+
+    /// Return was pressed again before the text landed: it will be pressed for
+    /// the user once the paste is in, and the pill shows the same ⏎ badge a
+    /// dictate-and-send utterance does.
+    func willSubmit() {
+        guard panel != nil else { return }
+        model.submits = true
     }
 
     /// The transcript is ready and the translation is not. Shown as its own

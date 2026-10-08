@@ -124,6 +124,22 @@ enum TriggerMode: String, CaseIterable, Identifiable {
     }
 }
 
+/// Tap right ⌘ to start dictating, Return to insert, Escape to throw it away.
+///
+/// On by default: a lone right ⌘ means nothing to macOS or to the apps people
+/// dictate into, unlike a chord, which macOS may have a shortcut of its own
+/// for (`SystemShortcuts`). Off is for people who have given right ⌘ a job of
+/// their own (a layout switcher, Karabiner).
+enum RightCommandTrigger {
+    static let key = "murmur.rightCommandTap"
+    /// Defaults to `true` when unset.
+    static var isEnabled: Bool {
+        UserDefaults.standard.object(forKey: key) == nil ? true : UserDefaults.standard.bool(forKey: key)
+    }
+    /// What the menu and the HUD call the key.
+    static let label = "Right ⌘"
+}
+
 /// Language prompt for Nemotron's live draft. Parakeet final is multilingual.
 enum SpeechLanguage {
     static let defaultsKey = "murmur.language"

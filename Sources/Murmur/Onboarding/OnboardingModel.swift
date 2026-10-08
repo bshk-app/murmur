@@ -50,7 +50,8 @@ final class OnboardingModel {
 
     /// The current push-to-talk shortcut, for the Done screen's chips.
     var shortcutLabel: String {
-        KeyboardShortcuts.getShortcut(for: .dictate)?.description ?? "⌃⌥Space"
+        KeyboardShortcuts.getShortcut(for: .dictate)?.description
+            ?? KeyboardShortcuts.Name.dictate.defaultShortcut?.description ?? ""
     }
 
     func next() {

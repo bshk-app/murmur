@@ -40,7 +40,7 @@ public enum TextInjector {
     /// focused element over Accessibility is unreliable on the web fields this
     /// matters most for. Both the Return and the clipboard restore hang off this
     /// one assumption, so it is stated once instead of appearing twice as a number.
-    private static let pasteSettleDelay = 0.12
+    public static let pasteSettleDelay = 0.12
 
     /// Insert `text` by pasting, optionally pressing Return afterwards. Requires
     /// Accessibility trust to post ⌘V. On secure input the text is left on the
@@ -77,6 +77,12 @@ public enum TextInjector {
         }
         return .pasted
     }
+
+    /// Press Return now, for a send asked for after `paste` had already been
+    /// called without one. Call only once `pasteSettleDelay` has passed since a
+    /// `paste` that returned `.pasted` - the same rule that keeps `paste` from
+    /// sending a message the text never reached.
+    public static func pressReturn() { postReturn() }
 
     /// Deep-copy the current pasteboard items so we can put them back after paste.
     private static func snapshot(_ pb: NSPasteboard) -> [NSPasteboardItem]? {

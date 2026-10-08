@@ -26,12 +26,13 @@ On first launch a one-time setup downloads the two on-device models (~3.6 GB).
 
 ## Three keys, no friction
 
-1. **Hold the shortcut.** One global hotkey (default ⌃⌥Space), anywhere in macOS — the
-   menu-bar cat wakes up and starts listening.
+1. **Tap right ⌘ — or hold the shortcut.** Tap right ⌘ once, or hold one global hotkey
+   (default ⌥Space), anywhere in macOS — the menu-bar cat wakes up and starts listening.
 2. **Just speak.** Talk naturally. Murmur catches every word in real time — no
    "processing" spinner, no waiting.
-3. **It's typed for you.** Words land straight in whatever field has focus — Slack,
-   Notes, your terminal, a code comment.
+3. **It's typed for you.** Press Return (or let go of the shortcut) and the words land
+   straight in whatever field has focus — Slack, Notes, your terminal, a code comment.
+   Esc throws the take away; Return twice inserts and sends.
 
 ### Fast first, then perfect
 
