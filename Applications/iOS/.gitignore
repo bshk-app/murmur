@@ -1,4 +1,32 @@
-build-ui/
-results/maestro/
+# xcodebuild -derivedDataPath trees. build/ is covered by the root .gitignore;
+# build-ui/ comes from scripts/test-maestro.sh, the rest (build-grdb/,
+# build-release-live/, build-photo/, ...) are ad-hoc. One pattern so a new
+# build-<topic>/ does not leak into git again.
+/build-*/
 
-build-release-live/
+# Test and run output: Maestro reports (scripts/test-maestro.sh), xcresult
+# bundles, simulator screenshots and logs.
+/results/
+
+# Regression/: run evidence (Maestro output, screenshots, junit xml, logs,
+# xcresult, captured notes, proof zips) is ignored. The checks compiled by
+# scripts/test-*.sh (*.swift) and per-scenario READMEs stay visible.
+/Regression/**
+!/Regression/**/
+!/Regression/**/*.swift
+!/Regression/**/README.md
+
+# Marketing/: rendered videos, poster/QA frames, export logs and packaged zips
+# (package-demo.cjs). Editable Cap Studio projects (*.cap/, see
+# Marketing/Demo/README.md) stay visible: they are sources, not exports.
+/Marketing/**/*.mp4
+/Marketing/**/*.png
+/Marketing/**/*.jpg
+/Marketing/**/*.log
+/Marketing/**/*.zip
+!/Marketing/**/*.cap/**
+
+# AppStore/: the packaged upload kit is a byte-identical copy of the files
+# next to it.
+/AppStore/*/*-AppStore-*/
+/AppStore/**/*.zip
