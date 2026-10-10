@@ -153,14 +153,20 @@ final class KeyGestureControllerTests: XCTestCase {
         XCTAssertEqual(fake.stopCount, 1)
     }
 
-    /// Waits out the paste-settle window on the main run loop.
+    /// Waits out the delay a Return keeps after a window a new recording cut
+    /// short, on the main run loop.
     private func settle() async {
         try? await Task.sleep(for: .seconds(TextInjector.pasteSettleDelay + 0.15))
     }
 
+    /// What `TextInjector` reports for the current take's paste.
+    private func pasteSettles(_ controller: DictationController, landed: Bool = true) {
+        controller.pasteDidSettle(landed: landed, generation: controller.recordingGeneration)
+    }
+
     /// After the paste is posted the chat may not have applied it yet; a
     /// Return let through then would send the field without the text. It
-    /// stays held back for the window, then goes back to the app.
+    /// stays held back until the paste has landed, then goes back to the app.
     func testReturnStaysCapturedWhileThePasteLands() async {
         let (controller, _, recorder) = controller()
         controller.handle(.rightCommandTap)
@@ -171,15 +177,17 @@ final class KeyGestureControllerTests: XCTestCase {
         controller.holdReturnUntilPasteLands(alreadySubmitting: false)
         XCTAssertEqual(controller.keyCapture, .finishing)
         XCTAssertEqual(recorder.current, .finishing)
-
         await settle()
+        XCTAssertTrue(controller.pasteSettling, "no timer lets it go: only the paste landing does")
+
+        pasteSettles(controller)
         XCTAssertFalse(controller.pasteSettling)
         XCTAssertEqual(controller.keyCapture, .off)
         XCTAssertEqual(recorder.current, .off)
     }
 
-    /// Tapping straight into the next dictation: the old paste's window
-    /// closing must not release Return from under the new recording.
+    /// Tapping straight into the next dictation: the old paste landing
+    /// afterwards must not release Return from under the new recording.
     func testTheNextRecordingKeepsItsCaptureWhenTheOldPasteSettles() async {
         let (controller, _, recorder) = controller()
         controller.handle(.rightCommandTap)
@@ -187,24 +195,38 @@ final class KeyGestureControllerTests: XCTestCase {
         controller.handle(.confirm)
         await controller.recordingTask?.value
         controller.holdReturnUntilPasteLands(alreadySubmitting: false)
+        let oldTake = controller.recordingGeneration
 
         controller.handle(.rightCommandTap)
         await controller.recordingTask?.value
         XCTAssertEqual(recorder.current, .recording)
 
-        await settle()
+        controller.pasteDidSettle(landed: true, generation: oldTake)
         XCTAssertEqual(controller.state, .recording)
         XCTAssertEqual(recorder.current, .recording, "the old window closed over the new session")
     }
 
-    /// Return pressed while the paste lands: sent once the window closes.
+    /// Return pressed while the paste lands: sent once it has landed.
     func testAReturnHeldBackWhileThePasteLandsIsSentAfterIt() async {
         let (controller, _, recorder) = controller()
         await pasted(controller)
         recorder.heldBackReturn = true
-        XCTAssertEqual(returnsPressed, 0, "not before the paste has landed")
         await settle()
+        XCTAssertEqual(returnsPressed, 0, "not before the paste has landed, however slow the app")
+        pasteSettles(controller)
         XCTAssertEqual(returnsPressed, 1)
+    }
+
+    /// No app took the text: a Return held back for it would send the field
+    /// without it, so it is not sent - and Return is the app's again.
+    func testAReturnHeldBackForAPasteThatNeverLandedIsNotSent() async {
+        let (controller, _, recorder) = controller()
+        await pasted(controller)
+        recorder.heldBackReturn = true
+        pasteSettles(controller, landed: false)
+        XCTAssertEqual(returnsPressed, 0)
+        XCTAssertFalse(controller.pasteSettling)
+        XCTAssertEqual(recorder.current, .off)
     }
 
     /// Dictate-and-send already ends with a Return; a second would send an
@@ -213,23 +235,39 @@ final class KeyGestureControllerTests: XCTestCase {
         let (controller, _, recorder) = controller()
         await pasted(controller, alreadySubmitting: true)
         recorder.heldBackReturn = true
-        await settle()
+        pasteSettles(controller)
         XCTAssertEqual(returnsPressed, 0)
     }
 
     /// Return to send A, then straight into dictation B: B's capture must not
-    /// swallow A's send.
+    /// swallow A's send, and it waits for A's paste to land.
     func testTappingIntoTheNextDictationStillSendsThePreviousOne() async {
         let (controller, _, recorder) = controller()
         await pasted(controller)
         recorder.heldBackReturn = true
+        let takeA = controller.recordingGeneration
 
         controller.handle(.rightCommandTap)
         await controller.recordingTask?.value
         XCTAssertEqual(controller.state, .recording)
-        XCTAssertEqual(returnsPressed, 0, "A's paste may not have landed yet")
         await settle()
+        XCTAssertEqual(returnsPressed, 0, "A's paste may not have landed yet")
+        controller.pasteDidSettle(landed: true, generation: takeA)
         XCTAssertEqual(returnsPressed, 1)
+        XCTAssertEqual(recorder.current, .recording)
+    }
+
+    /// The same, but A's text never landed: its Return is not sent.
+    func testTheNextDictationDropsAReturnWhosePasteNeverLanded() async {
+        let (controller, _, recorder) = controller()
+        await pasted(controller)
+        recorder.heldBackReturn = true
+        let takeA = controller.recordingGeneration
+
+        controller.handle(.rightCommandTap)
+        await controller.recordingTask?.value
+        controller.pasteDidSettle(landed: false, generation: takeA)
+        XCTAssertEqual(returnsPressed, 0)
         XCTAssertEqual(recorder.current, .recording)
     }
 

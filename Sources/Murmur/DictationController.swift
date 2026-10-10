@@ -75,7 +75,10 @@ final class DictationController {
     @ObservationIgnored private(set) var pasteSettling = false
     /// Stamps each recording, so the end of one paste's settle window cannot
     /// release the capture a newer recording already owns.
-    @ObservationIgnored private var recordingGeneration = 0
+    @ObservationIgnored private(set) var recordingGeneration = 0
+    /// The take whose paste a held-back Return still waits for, its window
+    /// cut short by a new recording: it goes when that paste lands, or not.
+    @ObservationIgnored private var returnAwaitingPaste: Int?
     /// The settling paste already ends with its own Return.
     @ObservationIgnored private var settleAlreadySubmits = false
     /// Sends a Return held back during the settle window. A seam for tests: the
@@ -906,9 +909,9 @@ final class DictationController {
         }
     }
 
-    /// Keep Return held back until a just-posted paste has had time to land,
-    /// then let it go - and press Return for the user if they asked to send in
-    /// the meantime.
+    /// Keep Return held back until the paste has landed - `TextInjector` says
+    /// so through `pasteDidSettle` once an app has taken the text - then let
+    /// it go, and press Return for the user if they asked to send meanwhile.
     ///
     /// Asked of the tap, not of `submitRequested`: the tap's gesture for a
     /// Return travels to this thread on its own and can still be on its way.
@@ -922,29 +925,35 @@ final class DictationController {
         pasteSettling = true
         settleAlreadySubmits = alreadySubmitting
         syncKeyCapture()
-        let generation = recordingGeneration
-        DispatchQueue.main.asyncAfter(deadline: .now() + TextInjector.pasteSettleDelay) { [weak self] in
-            MainActor.assumeIsolated {
-                // A newer recording cut the window short and already closed it.
-                guard let self, self.recordingGeneration == generation, self.pasteSettling else { return }
-                self.closePasteSettle(pasteHasLanded: true)
-                self.syncKeyCapture()
-            }
+    }
+
+    /// What the injector says about the paste of take `generation`: an app
+    /// took the text, or none did. A Return held back for text that never
+    /// landed is not sent - it would send the field without it.
+    func pasteDidSettle(landed: Bool, generation: Int) {
+        if returnAwaitingPaste == generation {
+            returnAwaitingPaste = nil
+            if landed { pressReturn() }
+            return
         }
+        // A newer recording cut the window short and already closed it.
+        guard recordingGeneration == generation, pasteSettling else { return }
+        closePasteSettle(pasteHasLanded: true, send: landed)
+        syncKeyCapture()
     }
 
     /// End the settle window: release Return, and send a Return held back in
     /// it. A new recording can end the window early - tapping straight into
     /// the next dictation - and then the paste may not have landed yet, so
-    /// the Return waits out the rest of it on its own.
-    private func closePasteSettle(pasteHasLanded: Bool) {
+    /// the Return waits for it on its own (`returnAwaitingPaste`).
+    private func closePasteSettle(pasteHasLanded: Bool, send: Bool = true) {
         pasteSettling = false
-        guard keyCaptureSink?.endCapture() == true, !settleAlreadySubmits else { return }
-        let press = pressReturn
+        guard keyCaptureSink?.endCapture() == true, !settleAlreadySubmits, send else { return }
         if pasteHasLanded {
-            press()
+            pressReturn()
         } else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + TextInjector.pasteSettleDelay) { press() }
+            // Still the old take's number: the new one is stamped after this.
+            returnAwaitingPaste = recordingGeneration
         }
     }
 
@@ -963,9 +972,12 @@ final class DictationController {
     /// the HUD instead of dropping silently.
     ///
     /// Neither of those two paths can submit: Return is posted only on the branch of
-    /// `TextInjector.paste` that actually pressed ⌘V. Sending an empty message
-    /// because the text never landed is the worst thing this feature could do, so
-    /// that invariant is structural rather than a condition someone must remember.
+    /// `TextInjector.paste` that actually pressed ⌘V, after it, and only once the text
+    /// was read - which is also when a Return held back meanwhile goes
+    /// (`pasteDidSettle`). Sending an empty message because the text never landed is
+    /// the worst thing this feature could do, so that invariant is structural rather
+    /// than a condition someone must remember. (A read can be a clipboard manager's;
+    /// see `TextInjector.paste`.)
     private func insertFinal(_ text: String, submit: Bool) -> TranscriptDelivery {
         guard Accessibility.isTrusted else {
             NSPasteboard.general.clearContents()
@@ -973,7 +985,10 @@ final class DictationController {
             if !promptedAccessibility { promptedAccessibility = true; Accessibility.prompt() }
             return .failed(String(localized: "On the clipboard — grant Accessibility to type"))
         }
-        switch TextInjector.paste(text, submit: submit) {
+        let generation = recordingGeneration
+        switch TextInjector.paste(text, submit: submit, settled: { [weak self] landed in
+            MainActor.assumeIsolated { self?.pasteDidSettle(landed: landed, generation: generation) }
+        }) {
         case .pasted:
             return .typed
         case .failed:
