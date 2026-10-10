@@ -54,20 +54,41 @@ final class HUDModel {
     /// read as deliberate once the header says where it is going.
     var target = ""
     var onStop: () -> Void = {}
-    /// `HUDStyle.compact`, latched for the utterance at `begin`.
+    /// `HUDStyle.compact`, or `.caret` with no caret to sit by; latched for
+    /// the utterance at `begin`.
     var compact = false
+    /// `HUDStyle.caret` found the caret at `begin`: the draft is drawn there.
+    /// Latched for the utterance, like `compact`.
+    var caretAnchored = false
+    /// The draft at the caret, laid out.
+    var ghost: GhostState?
 
-    /// The small fixed capsule rather than the transcript pill. Only while
-    /// the take is live or finishing: an error must be read, and so must a
-    /// transcript that could not be delivered (`.finished` only shows when
-    /// the pill is the one place the words still are).
-    var showsCompactPill: Bool {
-        compact && (phase == .listening || phase == .transcribing || phase == .finalizing)
-    }
+    /// The take is live or finishing - the only phases the small presentations
+    /// cover. An error must be read, and so must a transcript that could not
+    /// be delivered (`.finished` only shows when the pill is the one place
+    /// the words still are).
+    private var isLive: Bool { phase == .listening || phase == .transcribing || phase == .finalizing }
+    /// The small fixed capsule rather than the transcript pill.
+    var showsCompactPill: Bool { compact && isLive }
+    /// The draft drawn at the caret.
+    var showsCaretIndicator: Bool { caretAnchored && isLive }
     /// The compact capsule's width, fixed for the utterance at `begin`: room
     /// for the bars and every badge this utterance can come to show, so one
     /// arriving never widens it.
     var compactWidth = HUDController.compactPillSize.width
+}
+
+/// The draft at the caret, as `HUDView` draws it: lines in screen
+/// coordinates, and the panel they are drawn in.
+struct GhostState: Equatable {
+    var font: NSFont
+    var lineHeight: CGFloat
+    var lines: [GhostLine]
+    /// The panel's frame. Fixed while the caret stays put, so the window does
+    /// not resize with every word.
+    var canvas: CGRect
+    /// Fixed for the utterance, like the compact capsule's width.
+    var markerWidth: CGFloat
 }
 
 /// How much text the pill can hold, derived from its own geometry: a 460pt column
@@ -140,24 +161,115 @@ private struct HUDView: View {
     @Environment(\.colorScheme) private var scheme
 
     var body: some View {
-        Group {
-            if model.showsCompactPill {
-                compactPill
-            } else {
-                switch model.phase {
-                case .error:        mascotBubble(.error) { errorPill }
-                case .listening:    mascotBubble(.listening) { listeningPill }
-                case .transcribing: mascotBubble(.transcribing) { transcribePill }
-                // Same face as live decoding: the work is the same, only the audio has
-                // stopped arriving. A dedicated mascot state can slot in here.
-                case .finalizing:   mascotBubble(.transcribing) { transcribePill }
-                case .finished:     mascotBubble(.success) { transcribePill }
+        if model.showsCaretIndicator, let ghost = model.ghost {
+            // Its panel is the area the lines can cover, and room for their
+            // shadow.
+            ghostText(ghost)
+        } else {
+            Group {
+                if model.showsCompactPill {
+                    compactPill
+                } else {
+                    switch model.phase {
+                    case .error:        mascotBubble(.error) { errorPill }
+                    case .listening:    mascotBubble(.listening) { listeningPill }
+                    case .transcribing: mascotBubble(.transcribing) { transcribePill }
+                    // Same face as live decoding: the work is the same, only the audio has
+                    // stopped arriving. A dedicated mascot state can slot in here.
+                    case .finalizing:   mascotBubble(.transcribing) { transcribePill }
+                    case .finished:     mascotBubble(.success) { transcribePill }
+                    }
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+            .padding(.bottom, HUDController.bottomInset)
+            .padding(.horizontal, HUDController.sideInset)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, HUDController.bottomInset)
-        .padding(.horizontal, HUDController.sideInset)
+    }
+
+    /// `HUDStyle.caret`: what is being heard, drawn where it will be
+    /// inserted, in the field's own type. Each line sits on a glass backing:
+    /// the field's colours are unknown, and the draft may be drawn over text
+    /// after the caret. No Stop button - the draft sits on what you are
+    /// writing, so it takes no clicks; the key that started the take ends it.
+    private func ghostText(_ ghost: GhostState) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(Array(ghost.lines.enumerated()), id: \.offset) { _, line in
+                ghostLine(line, ghost)
+                    .offset(x: line.origin.x - GhostText.padding - ghost.canvas.minX,
+                            y: ghost.canvas.maxY - line.origin.y - ghost.lineHeight)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // One shadow for the whole block, so lines that touch do not darken
+        // each other's edge.
+        .compositingGroup()
+        .shadow(color: .black.opacity(scheme == .dark ? 0.4 : 0.16), radius: 4, y: 1)
+    }
+
+    private func ghostLine(_ line: GhostLine, _ ghost: GhostState) -> some View {
+        let shape = RoundedRectangle(cornerRadius: min(6, ghost.lineHeight / 3), style: .continuous)
+        let hasText = line.elided || !line.words.isEmpty
+        return HStack(spacing: 0) {
+            if hasText {
+                if let clip = line.clip {
+                    ghostWords(line).font(Font(ghost.font)).lineLimit(1).truncationMode(.head)
+                        .frame(width: clip, alignment: .trailing)
+                } else {
+                    ghostWords(line).font(Font(ghost.font)).lineLimit(1).fixedSize()
+                }
+            }
+            if line.hasMarker {
+                if hasText { Color.clear.frame(width: GhostText.markerGap) }
+                ghostMarker(ghost)
+            }
+        }
+        .frame(height: ghost.lineHeight)
+        .padding(.horizontal, GhostText.padding)
+        .background(Mur.glass(scheme), in: shape)
+        .background(.ultraThinMaterial, in: shape)
+    }
+
+    /// Settled words in the transcript's ink, words that may still change in
+    /// its draft grey - the full pill's two tiers.
+    private func ghostWords(_ line: GhostLine) -> Text {
+        let draft = Mur.draft(scheme), crisp = Mur.crisp(scheme)
+        var text = line.elided ? Text(verbatim: GhostText.ellipsis).foregroundColor(draft) : Text(verbatim: "")
+        for (i, word) in line.words.enumerated() {
+            text = text + Text(verbatim: (i > 0 || line.elided ? " " : "") + word.text)
+                .foregroundColor(word.confirmed ? crisp : draft)
+        }
+        return text
+    }
+
+    /// Stands in for the app's caret, which the backing covers: bars while
+    /// listening, dots once the microphone is off, and how the take ends.
+    private func ghostMarker(_ ghost: GhostState) -> some View {
+        HStack(spacing: HUDController.markerGlyphGap) {
+            Group {
+                if model.phase == .finalizing {
+                    WaitDots(color: Mur.accent)
+                        .accessibilityLabel(Text("Finalizing…"))
+                } else {
+                    LevelBars(color: Mur.accent, count: 4, barHeight: min(11, ghost.lineHeight * 0.55))
+                        .accessibilityLabel(Text("Listening…"))
+                }
+            }
+            .frame(width: HUDController.markerBarsWidth)
+            Group {
+                if model.submits {
+                    Text("⏎").foregroundStyle(Mur.accent)
+                        .accessibilityLabel(Text("Will press Return when finished"))
+                } else if model.confirmsWithReturn, model.recording {
+                    Text("⏎")
+                        .foregroundStyle(scheme == .dark ? Color.white.opacity(0.5) : Mur.ink.opacity(0.55))
+                        .accessibilityLabel(Text("Press Return to insert, Escape to cancel"))
+                }
+            }
+            .font(.system(size: 11, weight: .semibold))
+            .fixedSize()
+        }
+        .frame(width: ghost.markerWidth, alignment: .leading)
     }
 
     /// `HUDStyle.compact`: one capsule that keeps its size for the whole
@@ -483,7 +595,29 @@ final class HUDController {
     // screenshot caught, where the fixed-height panel clipped the
     // translation's last line at the window edge.
     var panelSize: CGSize? { panel?.frame.size }
+    var panelFrame: CGRect? { panel?.frame }
+    var panelTakesClicks: Bool { panel.map { !$0.ignoresMouseEvents } ?? false }
+    var panelIsVisible: Bool { panel?.isVisible ?? false }
     private var hideWork: DispatchWorkItem?
+    /// Counts showings. A fade ends by ordering the panel out, and a take
+    /// started before it finished - tap right ⌘ straight after Return -
+    /// must not be hidden by it.
+    private var showing = 0
+    /// Finds the caret for `HUDStyle.caret`, and when asked the field's type.
+    /// Swapped in tests, which have no app to ask.
+    var locateCaret: @MainActor (_ readingFont: Bool) -> CaretLocator.Lookup = {
+        CaretLocator.locate(readingFont: $0)
+    }
+    /// How often the draft checks that the caret is where it was: the window
+    /// can scroll under it while you speak.
+    var caretTrackingInterval: Duration = .milliseconds(250)
+    /// Where the draft is drawn; nil while the panel sits at the bottom of
+    /// the screen.
+    private var spot: CaretSpot?
+    /// The draft's type, settled at `begin`.
+    private var ghostFont: NSFont?
+    private var ghostMarkerWidth: CGFloat = 0
+    private var caretTracking: Task<Void, Never>?
     private static let baseSize = NSSize(width: 940, height: 260)
     /// Where the pill sits inside the panel. Shared with `HUDView`, which
     /// pads by exactly these, so a panel sized from them fits its pill.
@@ -504,6 +638,15 @@ final class HUDController {
     /// reason.
     private static let compactPanelSize = NSSize(width: compactPillSize.width + 2 * sideInset,
                                                  height: compactPillSize.height + bottomInset + 30)
+    /// The draft's marker: the 24pt bars and, when it can show, 4pt and the
+    /// 12pt ⏎ glyph.
+    nonisolated static let markerBarsWidth: CGFloat = 24
+    nonisolated static let markerGlyphGap: CGFloat = 4
+    nonisolated static func markerWidth(returnGlyph: Bool) -> CGFloat {
+        markerBarsWidth + (returnGlyph ? markerGlyphGap + 12 : 0)
+    }
+    /// Room around the draft for its shadow.
+    nonisolated static let ghostMargin: CGFloat = 8
     /// Extra room the translation row needs at its worst case: the hairline,
     /// the 11pt of air either side of it, up to `HUDCapacity.maxLines` lines
     /// at the translation's own 17pt/1.5 (25.5pt each, per the design), and
@@ -522,6 +665,7 @@ final class HUDController {
     /// moment a resize actually happens, not whatever it was when the panel
     /// was first created.
     private var currentSize: NSSize {
+        if model.showsCaretIndicator, let ghost = model.ghost { return ghost.canvas.size }
         if model.showsCompactPill { return Self.compactPanelSize }
         return NSSize(width: Self.baseSize.width,
                       height: Self.baseSize.height + (model.showsTranslationRow ? Self.translationExtraHeight : 0))
@@ -534,31 +678,45 @@ final class HUDController {
                confirmsWithReturn: Bool = false, style: HUDStyle = .current,
                shortcutLabel: String = "", onStop: @escaping () -> Void = {}) {
         hideWork?.cancel(); hideWork = nil
+        stopTrackingCaret()
         let panel = ensurePanel()
+        // Looked for before anything is shown, and once: where to put the
+        // HUD is decided for the utterance, like its style.
+        var spot: CaretSpot?
+        if style == .caret, case .found(let found) = locateCaret(true) { spot = found }
+        self.spot = spot
+        ghostFont = spot.map { GhostText.font(for: $0.font, caretHeight: $0.caret.height) }
         model.lang = lang
         model.target = target
         model.submits = submits
         model.confirmsWithReturn = confirmsWithReturn
         model.shortcutLabel = shortcutLabel
-        model.compact = style == .compact
+        model.caretAnchored = spot != nil
+        // No caret to sit by: the compact capsule, which is what `.caret`
+        // falls back to rather than the full pill.
+        model.compact = style == .compact || (style == .caret && spot == nil)
         // A tap-on take can turn into one that sends (Return pressed twice)
         // after it starts, so its ⏎ slot is there from the start.
         model.compactWidth = Self.compactWidth(returnGlyph: submits || confirmsWithReturn, stop: interactive)
+        ghostMarkerWidth = Self.markerWidth(returnGlyph: submits || confirmsWithReturn)
+        model.ghost = nil
         model.phase = .listening
-        show(confirmed: "", partial: "")      // also clears a carried-over ellipsis
+        show(confirmed: "", partial: "")      // also clears a carried-over ellipsis, and lays out the draft
         // A translation left from the previous utterance under a fresh one
         // would read as a translation of it, and so would its quality label.
         model.translation = ""
         model.translationIsQuality = false
         model.translating = false
         model.recording = true
-        model.showStop = interactive
+        model.showStop = interactive && spot == nil
         model.onStop = onStop
-        panel.ignoresMouseEvents = !interactive
-        position(panel)
-        panel.alphaValue = 0
-        panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+        panel.ignoresMouseEvents = !model.showStop
+        if spot != nil {
+            trackCaret()
+        } else {
+            position(panel)
+        }
+        reveal(panel)
     }
 
     /// Live two-tier update.
@@ -577,6 +735,25 @@ final class HUDController {
         model.confirmed = fitted.confirmed
         model.partial = fitted.partial
         model.truncated = fitted.truncated
+        layoutGhost()
+    }
+
+    /// Lays the draft out at the caret, and puts the panel where it can be
+    /// drawn. The panel only moves when the caret does: its frame is the
+    /// area the lines can cover, whatever they hold.
+    private func layoutGhost() {
+        guard model.showsCaretIndicator, let spot, let font = ghostFont,
+              let visible = (Self.screen(containing: spot.caret) ?? NSScreen.main)?.visibleFrame else { return }
+        let lineHeight = GhostText.lineHeight(caret: spot.caret.height, font: font)
+        let geometry = GhostText.geometry(caret: spot.caret, field: spot.field, singleLine: spot.singleLine,
+                                          lineHeight: lineHeight, visible: visible)
+        let lines = GhostText.lines(GhostWord.words(confirmed: model.confirmed, partial: model.partial),
+                                    elided: model.truncated, in: geometry, marker: ghostMarkerWidth,
+                                    measure: { GhostText.measure($0, font: font) })
+        let canvas = geometry.region.insetBy(dx: -Self.ghostMargin, dy: -Self.ghostMargin)
+        model.ghost = GhostState(font: font, lineHeight: lineHeight, lines: lines, canvas: canvas,
+                                 markerWidth: ghostMarkerWidth)
+        if let panel, panel.frame != canvas { panel.setFrame(canvas, display: true) }
     }
 
     /// Surface a mic/permission error in the HUD.
@@ -585,10 +762,10 @@ final class HUDController {
         model.phase = .error
         if !text.isEmpty { model.errorText = text }
         model.recording = false
-        position(panel)
-        panel.alphaValue = 0
-        panel.orderFrontRegardless()
-        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+        let near = spot?.caret
+        leaveCaret()
+        position(panel, near: near)
+        reveal(panel)
         scheduleHide(after: 3.2)
     }
 
@@ -654,9 +831,80 @@ final class HUDController {
     }
 
     private func fadeOut() {
+        // The draft gives way to the pasted text under it: quickly, or the
+        // two would be read on top of each other.
+        let duration = model.showsCaretIndicator ? 0.12 : 0.25
+        stopTrackingCaret()
         guard let panel else { return }
-        NSAnimationContext.runAnimationGroup({ $0.duration = 0.25; panel.animator().alphaValue = 0 },
-                                             completionHandler: { panel.orderOut(nil) })
+        let fading = showing
+        NSAnimationContext.runAnimationGroup({ $0.duration = duration; panel.animator().alphaValue = 0 },
+                                             completionHandler: { [weak self] in
+            // Shown again while it faded: that showing owns the panel now.
+            guard self?.showing == fading else { return }
+            panel.orderOut(nil)
+        })
+    }
+
+    private func reveal(_ panel: NSPanel) {
+        showing += 1
+        panel.alphaValue = 0
+        panel.orderFrontRegardless()
+        NSAnimationContext.runAnimationGroup { $0.duration = 0.18; panel.animator().alphaValue = 1 }
+    }
+
+    /// Keeps the draft on the caret while the take is live: the window can
+    /// scroll under it, or the field move. While the caret cannot be found
+    /// the draft stays where the text last was, rather than jumping to the
+    /// bottom of the screen mid-sentence.
+    private func trackCaret() {
+        caretTracking = Task { [weak self] in
+            while true {
+                guard let interval = self?.caretTrackingInterval else { return }
+                try? await Task.sleep(for: interval)
+                guard !Task.isCancelled, let self, self.model.showsCaretIndicator,
+                      let spot = self.spot else { return }
+                switch self.locateCaret(false) {
+                case .found(let found):
+                    guard found.caret != spot.caret || found.field != spot.field else { continue }
+                    // The type stays the one read at the start.
+                    self.spot = CaretSpot(found.caret, field: found.field, font: spot.font,
+                                          singleLine: found.singleLine)
+                    self.layoutGhost()
+                case .notFound:
+                    continue
+                case .stalled:
+                    // Asking again would freeze Murmur for the timeout
+                    // each time; the draft stays where it is.
+                    return
+                }
+            }
+        }
+    }
+
+    private func stopTrackingCaret() {
+        caretTracking?.cancel()
+        caretTracking = nil
+    }
+
+    /// The panel is no longer at the caret.
+    private func leaveCaret() {
+        stopTrackingCaret()
+        spot = nil
+        model.ghost = nil
+    }
+
+    private static func screen(containing rect: CGRect) -> NSScreen? {
+        let screens = NSScreen.screens
+        return screenIndex(containing: rect, in: screens.map(\.frame)).map { screens[$0] }
+    }
+
+    /// The display a caret is on: the one holding its midpoint - a caret on
+    /// the seam between two displays is on the right-hand one, where its
+    /// text starts - or, for a caret on no display's area, the nearest edge.
+    nonisolated static func screenIndex(containing rect: CGRect, in frames: [CGRect]) -> Int? {
+        let mid = CGPoint(x: rect.midX, y: rect.midY)
+        return frames.firstIndex { $0.contains(mid) }
+            ?? frames.firstIndex { $0.intersects(rect.insetBy(dx: -1, dy: -1)) }
     }
 
     private func ensurePanel() -> NSPanel {
@@ -692,6 +940,16 @@ final class HUDController {
     /// display - would be a surprising reason for the panel to jump.
     private func fitPanel() {
         guard let panel else { return }
+        // Its size is fixed for the utterance, and its place is the caret's.
+        if model.showsCaretIndicator { return }
+        if let caret = spot?.caret {
+            // Handing over from the caret to the full pill, for an error or
+            // words that could not be typed: those belong at the bottom of
+            // the screen the text is on, not on top of the text.
+            leaveCaret()
+            position(panel, near: caret)
+            return
+        }
         let size = currentSize
         let old = panel.frame
         guard old.size != size else { return }
@@ -699,8 +957,10 @@ final class HUDController {
                               width: size.width, height: size.height), display: true)
     }
 
-    private func position(_ panel: NSPanel) {
-        guard let screen = NSScreen.underCursor else { return }
+    /// Bottom centre of the screen the caret was on, if the panel is leaving
+    /// it, or else of the screen under the mouse.
+    private func position(_ panel: NSPanel, near caret: CGRect? = nil) {
+        guard let screen = caret.flatMap(Self.screen(containing:)) ?? NSScreen.underCursor else { return }
         let v = screen.visibleFrame
         let size = currentSize
         panel.setFrame(NSRect(x: v.midX - size.width / 2, y: v.minY + 24,

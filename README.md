@@ -37,11 +37,11 @@ On first launch a one-time setup downloads the two on-device models (~3.6 GB).
 
 ### Fast first, then perfect
 
-The dual-model trick: a lightweight model types an instant draft so you never wait,
-and a split second later an accurate model catches up and quietly sharpens each word —
-fixing names, punctuation, and homophones in place. While you speak, a small pill at
-the bottom of the screen just shows that Murmur is listening; set it to Full in Settings
-to watch the text tidy itself up as you go.
+The dual-model trick: a lightweight model shows an instant draft so you never wait,
+and when you finish an accurate model goes over the whole take — fixing names,
+punctuation, and homophones — and that is the text that gets inserted. While you
+speak, the draft is drawn right at your cursor, as if it were already typed; apps that
+don't say where their cursor is get a small pill at the bottom of the screen instead.
 
 ### Speaks your language
 

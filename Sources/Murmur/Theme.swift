@@ -124,13 +124,17 @@ enum TriggerMode: String, CaseIterable, Identifiable {
     }
 }
 
-/// How much the on-screen pill shows while you dictate.
+/// How much the on-screen pill shows while you dictate, and where.
 ///
-/// Compact by default: the live transcript grows and rewrites itself as you
-/// speak, and in the corner of your eye that reads as something jumping
-/// around the screen. The text lands in the field anyway; the pill only has
-/// to say that Murmur is listening and how to finish.
+/// The words go where they will land by default. In a pill at the bottom of
+/// the screen, a transcript growing and rewriting itself reads, in the corner
+/// of your eye, as something jumping around; at the caret it reads as the
+/// text being typed.
 enum HUDStyle: String, CaseIterable, Identifiable {
+    /// The draft drawn at the caret, in the field's type, until the corrected
+    /// text is pasted over it (`GhostText`). Apps that do not say where their
+    /// caret is get `compact` instead.
+    case caret
     /// One small capsule that keeps its size and place for the whole
     /// utterance: level bars, then three dots while the text is finished.
     case compact
@@ -141,7 +145,7 @@ enum HUDStyle: String, CaseIterable, Identifiable {
 
     static let defaultsKey = "murmur.hudStyle"
     static var current: HUDStyle {
-        HUDStyle(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .compact
+        HUDStyle(rawValue: UserDefaults.standard.string(forKey: defaultsKey) ?? "") ?? .caret
     }
 }
 /// Tap right ⌘ to start dictating, Return to insert, Escape to throw it away.

@@ -18,9 +18,9 @@ final class HUDCompactPillTests: XCTestCase {
         UserDefaults.standard.set(saved, forKey: HUDStyle.defaultsKey)
     }
 
-    func testCompactIsTheDefault() {
+    func testTheCaretIsTheDefault() {
         UserDefaults.standard.removeObject(forKey: HUDStyle.defaultsKey)
-        XCTAssertEqual(HUDStyle.current, .compact)
+        XCTAssertEqual(HUDStyle.current, .caret)
         UserDefaults.standard.set(HUDStyle.full.rawValue, forKey: HUDStyle.defaultsKey)
         XCTAssertEqual(HUDStyle.current, .full)
     }

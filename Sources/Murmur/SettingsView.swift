@@ -8,7 +8,7 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage(AnalyticsConsent.key) private var analyticsEnabled = false
     @AppStorage(RightCommandTrigger.key) private var rightCommand = true
-    @AppStorage(HUDStyle.defaultsKey) private var hudStyle: HUDStyle = .compact
+    @AppStorage(HUDStyle.defaultsKey) private var hudStyle: HUDStyle = .caret
     @AppStorage(DictationSession.recordUtterancesKey) private var recordUtterances = false
     @State private var confirmingDelete = false
     /// Counted when the pane appears and after a delete, never inside `body`:
@@ -43,13 +43,14 @@ struct SettingsView: View {
 
             Section {
                 Picker("While you speak:", selection: $hudStyle) {
+                    Text("At the caret").tag(HUDStyle.caret)
                     Text("Compact").tag(HUDStyle.compact)
                     Text("Full").tag(HUDStyle.full)
                 }
             } header: {
                 Text("On-screen pill")
             } footer: {
-                Text("Compact is a small capsule that stays put while you speak. Full also shows your words as they are recognised and corrected.")
+                Text("At the caret draws your words where they will be inserted, as they are recognised; nothing is typed until you finish. Apps that don't say where their caret is get the compact capsule. Compact is a small capsule at the bottom of the screen that only shows Murmur is listening. Full shows your words in a larger pill at the bottom of the screen.")
             }
 
             Section {
