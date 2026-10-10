@@ -11,6 +11,42 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.5.0](https://github.com/bshk-app/murmur/compare/murmur-v0.4.0...murmur-v0.5.0) (2026-10-10)
+
+
+### Added
+
+* **ios:** animate mascot reactions on tap ([e44cf9d](https://github.com/bshk-app/murmur/commit/e44cf9de03ea09ad699538248666f3e942d1a636))
+* **ios:** Speech recognition makes fewer mistakes, especially in Finnish. The new model downloads once; delete "Previous speech recognition model" in Storage to free space ([cbbdf55](https://github.com/bshk-app/murmur/commit/cbbdf55da3003a5d5cb0f7aad2964765a67c0d31))
+* **ios:** Translate text in photos ([cae1bfb](https://github.com/bshk-app/murmur/commit/cae1bfbcab99153eb2050078422bce16e38255c4))
+* **macos:** Live captions get their own window you can keep on any display and restyle, and the menu can start and stop ([34fd8e8](https://github.com/bshk-app/murmur/commit/34fd8e8da525da61c00a8f950c6b15c0aa385867))
+* **macos:** Tap right ⌘ to dictate, then Return to insert or Esc to cancel; push-to-talk now defaults to ⌥Space and warns when macOS uses the same chord ([5473ed7](https://github.com/bshk-app/murmur/commit/5473ed75cdeb45ee15d550e4d8595c0a306daf2b))
+* **macos:** The on-screen pill is now a small capsule that stays put while you speak; hold right ⌘ to talk and let go to insert ([e9080cc](https://github.com/bshk-app/murmur/commit/e9080ccaf1fa67d896ef23c7234b37d4df18050d))
+* **macos:** While you dictate, the draft is drawn right at your cursor, as if already typed; Return inserts the corrected text in its place ([2266241](https://github.com/bshk-app/murmur/commit/22662418cb734679f62361980df6ce04b3763109))
+* **watch:** record voice notes on Apple Watch and get the text back ([30f072d](https://github.com/bshk-app/murmur/commit/30f072de655578923cac4b7e63d9a49b4683d7a9))
+
+
+### Fixed
+
+* **ios:** Buttons and labels on a note now match the rest of the app ([b89f95b](https://github.com/bshk-app/murmur/commit/b89f95b1d49ae28e547b3952272ea5f7a9ca96a7))
+* **ios:** ship the current Bergamot sources in the source offer ([2655455](https://github.com/bshk-app/murmur/commit/2655455503d3930d10ea3283293ef5c38a2f2e2e))
+* **ios:** The Translate sheet shows progress while it checks your language packs instead of staying blank ([0272fca](https://github.com/bshk-app/murmur/commit/0272fca47affda61f9724fdee301cafa265dbc12))
+* **ios:** track the build inputs the source offer ships ([708d2e9](https://github.com/bshk-app/murmur/commit/708d2e96fdae331f9a852d85f74aeed01ace833e))
+* **ios:** Translation in other apps no longer runs out of memory ([ef929bf](https://github.com/bshk-app/murmur/commit/ef929bf7b08650f458c7191897d98532980dc7f3))
+* **macos:** A dictation is no longer replaced by whatever was on your clipboard when the app is slow to paste ([48d920c](https://github.com/bshk-app/murmur/commit/48d920c5fc5cbaa61f67448cc291893641bcb061))
+* **macos:** The language menu offers only languages the Mac can recognize ([21f4bc7](https://github.com/bshk-app/murmur/commit/21f4bc734d7f234e9bd33c964137749ba436d613))
+* **macos:** The mascot holds its final pose after a one-time animation ([dc454d4](https://github.com/bshk-app/murmur/commit/dc454d40d338105cd8ccd2191951cd087a2ef1c2))
+* **speech:** A damaged live-dictation model is downloaded again, so the draft no longer silently stays empty ([b9ae6d5](https://github.com/bshk-app/murmur/commit/b9ae6d5299b85667b6c0c27a6410ae82e545ee50))
+* **speech:** fail recordings on capture conversion errors ([d1f1347](https://github.com/bshk-app/murmur/commit/d1f1347dbdc4fb94a5aedf357623d11a51bca98e))
+* **speech:** preserve capture boundaries and finalization errors ([e903148](https://github.com/bshk-app/murmur/commit/e903148bd81cb11b956744658f30843c018c59f7))
+* **speech:** release direct sessions and deferred routes ([e9ea324](https://github.com/bshk-app/murmur/commit/e9ea32491429f5c5f3ebfd5099de3dbcbe3df965))
+* **ui:** remove translation route badges ([17c193a](https://github.com/bshk-app/murmur/commit/17c193ac051dce3ada9d51b3e494e40628cc5859))
+
+
+### Changed
+
+* **ui:** remove standalone speech translation test ([ff18361](https://github.com/bshk-app/murmur/commit/ff18361189ecff8deea57063ebf0b9d02fc0ae31))
+
 ## [0.4.0](https://github.com/bshk-app/murmur/compare/murmur-v0.3.1...murmur-v0.4.0) (2026-09-05)
 
 
