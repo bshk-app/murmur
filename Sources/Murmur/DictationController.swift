@@ -241,7 +241,11 @@ final class DictationController {
         rightCommandWorks ? "\(RightCommandTrigger.label) · \(shortcutLabel)" : shortcutLabel
     }
 
-    var supportedLanguageCodes: [String] { [SpeechLanguage.automatic] + LanguagePair.qualityLanguages.sorted() }
+    /// What the Mac can recognize: Parakeet's languages. The translation list is
+    /// wider - Whisper on the iPhone covers Catalan or Belarusian, and Arabic has
+    /// its own model there - and offering those here gave text in the wrong
+    /// language.
+    var supportedLanguageCodes: [String] { [SpeechLanguage.automatic] + SpeechModelChoice.parakeetLanguages.sorted() }
 
     /// The binding actually held for this utterance, so the HUD names the key the
     /// user is on rather than a guess. An unbound send-shortcut falls back to the
