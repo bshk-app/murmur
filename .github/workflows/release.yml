@@ -112,14 +112,19 @@ jobs:
             || { echo "generate_appcast is not in the Sparkle ${SPARKLE_VERSION} tarball"; exit 1; }
           echo "$sparkle_bin" >> "$GITHUB_PATH"
 
-      - name: Let xcodebuild run package plugins and macros
-        # A fresh runner has never trusted them and xcodebuild cannot ask, so
-        # the build stops at "Validate plug-in CudaBuild in package mlx-swift".
-        # Every package is pinned by a committed Package.resolved. The first
-        # key's misspelling is Apple's.
+      - name: Prepare Xcode for the build
+        # A fresh runner has never trusted package plugins and macros, and
+        # xcodebuild cannot ask, so the build stops at "Validate plug-in
+        # CudaBuild in package mlx-swift". Every package is pinned by a
+        # committed Package.resolved. The first key's misspelling is Apple's.
+        # The Metal Toolchain is a separate download since Xcode 26; macos-26
+        # ships it, the xcode-27 preview image does not, and MLX's kernels
+        # need it.
         run: |
           defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
           defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+          xcodebuild -downloadComponent MetalToolchain
+          xcrun metal --version
 
       - name: Import the Developer ID
         if: ${{ !inputs.repair }}
