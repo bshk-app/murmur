@@ -3,6 +3,57 @@
     <channel>
         <title>Murmur</title>
         <item>
+            <title>0.5.0</title>
+            <pubDate>Sat, 10 Oct 2026 17:26:46 +0000</pubDate>
+            <sparkle:version>1090</sparkle:version>
+            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <description><![CDATA[<p>0.4.0 never went out as an update, so this release also brings what it added:<br>
+dictate in one language and paste in another, with the translation shown under<br>
+what you said; live captions that translate a talk as it is spoken; and an<br>
+optional, more careful translation of the finished text.</p>
+<h3>Added</h3>
+<ul>
+<li>While you dictate, the draft appears right at your cursor as if already<br>
+typed, and Return puts the corrected text in its place.</li>
+<li>Tap right ⌘ to start dictating, then Return to insert or Esc to cancel. Or<br>
+hold right ⌘ while you talk and let go to insert.</li>
+<li>Push-to-talk now defaults to ⌥Space, and Murmur warns you when macOS already<br>
+uses that shortcut.</li>
+<li>The on-screen indicator is a small capsule that stays put while you speak.</li>
+<li>Live captions have their own window: put it on any display, restyle it, and<br>
+start or stop captions from the menu.</li>
+</ul>
+<h3>Fixed</h3>
+<ul>
+<li>When an app is slow to paste, it gets your dictation, not whatever was on<br>
+your clipboard before.</li>
+<li>If the live-dictation model on disk is damaged, Murmur downloads it again<br>
+instead of quietly showing no draft.</li>
+</ul>
+<h3>iPhone and Apple Watch</h3>
+<p>These reach the iPhone app separately, not through this update.</p>
+<ul>
+<li>Record voice notes on Apple Watch and get the text back.</li>
+<li>Translate text in photos.</li>
+<li>Translate to and from Arabic offline; translated web pages switch to<br>
+right-to-left.</li>
+<li>Dictate in Catalan, Norwegian, Icelandic, Serbian, Bosnian, Macedonian and<br>
+Belarusian, and translate them offline to and from English.</li>
+<li>Optionally, speech is translated directly as you talk, where a direct model<br>
+exists.</li>
+<li>Fewer recognition mistakes, especially in Finnish. The new model downloads<br>
+once; delete "Previous speech recognition model" in Storage to free space.</li>
+<li>Tap the mascot and it reacts.</li>
+<li>Translating in other apps no longer runs out of memory, the Translate sheet<br>
+shows progress while it checks your language packs, the last moment of a<br>
+recording is no longer dropped, and the buttons and labels on a note match<br>
+the rest of the app.</li>
+</ul>]]></description>
+            <enclosure url="https://github.com/bshk-app/murmur/releases/download/murmur-v0.5.0/Murmur-0.5.0.dmg" length="27616405" type="application/octet-stream" sparkle:edSignature="YDYBbdZry6w0x6I28bYloQ+hQaB27rGM+T1xde4o9BYjX6Wj7NaXdAcQHFvUwtVqn1UGFM7elJ91iXodVmYPBg=="/>
+        </item>
+        <item>
             <title>0.3.1</title>
             <pubDate>Tue, 25 Aug 2026 18:55:30 +0000</pubDate>
             <sparkle:version>1029</sparkle:version>
