@@ -112,6 +112,15 @@ jobs:
             || { echo "generate_appcast is not in the Sparkle ${SPARKLE_VERSION} tarball"; exit 1; }
           echo "$sparkle_bin" >> "$GITHUB_PATH"
 
+      - name: Let xcodebuild run package plugins and macros
+        # A fresh runner has never trusted them and xcodebuild cannot ask, so
+        # the build stops at "Validate plug-in CudaBuild in package mlx-swift".
+        # Every package is pinned by a committed Package.resolved. The first
+        # key's misspelling is Apple's.
+        run: |
+          defaults write com.apple.dt.Xcode IDESkipPackagePluginFingerprintValidatation -bool YES
+          defaults write com.apple.dt.Xcode IDESkipMacroFingerprintValidation -bool YES
+
       - name: Import the Developer ID
         if: ${{ !inputs.repair }}
         env:
