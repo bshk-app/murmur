@@ -6,6 +6,17 @@ import XCTest
 /// handed over. On a private pasteboard: the developer's clipboard is not
 /// touched.
 final class TextInjectorClipboardTests: XCTestCase {
+    /// On a CI runner the first of these tests once ran 2.3 s long while the
+    /// rest kept time - enough to upset the timings below. Use a pasteboard
+    /// and the run loop once before any of them.
+    override class func setUp() {
+        super.setUp()
+        let pb = NSPasteboard(name: NSPasteboard.Name("murmur-test-warmup-\(UUID().uuidString)"))
+        defer { pb.releaseGlobally() }
+        PasteSource("warm up").write(to: pb)
+        _ = pb.string(forType: .string)
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+    }
     func test_the_clipboard_comes_back_a_moment_after_the_app_took_the_text() {
         XCTAssertEqual(TextInjector.clipboardRestoreTime(firstTaken: 0.6), 0.6 + TextInjector.pasteSettleDelay)
     }
@@ -152,22 +163,26 @@ final class TextInjectorClipboardTests: XCTestCase {
     }
 
     /// A paste landing before the last one's Return: that Return would send
-    /// both texts, so it is not pressed.
+    /// both texts, so it is not pressed. The second paste follows the first
+    /// with no turn of the run loop between, so the first one's Return cannot
+    /// have gone yet however slow the machine is.
     func test_a_later_paste_cancels_a_pending_return() {
         let pb = privatePasteboard(holding: "user's clipboard")
         defer { pb.releaseGlobally() }
-        let returns = Presses()
+        let returns = Presses(), settled = Presses()
         TextInjector.paste("first", submit: true, on: pb, pressPaste: {
             _ = pb.string(forType: .string)
             return true
-        }, pressReturn: { returns.record(clipboard: nil) })
-        spin(0.06)
+        }, pressReturn: { returns.record(clipboard: nil) },
+           settled: { settled.record(clipboard: $0 ? "landed" : "not landed") })
         TextInjector.paste("second ", submit: false, on: pb, pressPaste: {
             _ = pb.string(forType: .string)
             return true
         }, pressReturn: {})
         spin(TextInjector.minimumClipboardHold + 0.3)
         XCTAssertEqual(returns.count, 0)
+        XCTAssertEqual(settled.count, 1)
+        XCTAssertEqual(settled.clipboardAtFirst, "not landed")
         XCTAssertEqual(pb.string(forType: .string), "user's clipboard")
     }
 
