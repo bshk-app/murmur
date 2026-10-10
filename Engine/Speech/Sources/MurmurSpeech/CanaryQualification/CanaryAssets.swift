@@ -1,5 +1,4 @@
 import Foundation
-import CryptoKit
 import Darwin
 #if canImport(HuggingFace)
 import HuggingFace
@@ -14,7 +13,7 @@ public enum CanaryAssets {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("MurMur/Canary/" + revision, isDirectory: true)
     }
-    struct Asset: Sendable { let path: String; let bytes: Int; let sha256: String }
+    typealias Asset = PinnedAsset
     static let files: [Asset] = [
         .init(path: "DecoderInt4.mlmodelc/analytics/coremldata.bin", bytes: 243, sha256: "7891b0d2560a4dd42688707f4f19143d9ddc093e95ebfd057cac6d72004a6926"),
         .init(path: "DecoderInt4.mlmodelc/coremldata.bin", bytes: 535, sha256: "93bee0d2edd813e14e455c9f29985af3e0d14326e3dc0ea243614e12f6abeeee"),
@@ -65,21 +64,7 @@ public enum CanaryAssets {
         for file in files { try verify(file, at: directory.appendingPathComponent(file.path)) }
     }
     static func verify(_ file: Asset, at url: URL) throws {
-        try Task.checkCancellation()
-        guard try url.resourceValues(forKeys: [.fileSizeKey]).fileSize == file.bytes else { throw CocoaError(.fileReadCorruptFile) }
-        let handle = try FileHandle(forReadingFrom: url)
-        defer { try? handle.close() }
-        var hash = SHA256()
-        while true {
-            try Task.checkCancellation()
-            let count: Int = try autoreleasepool {
-                let data = try handle.read(upToCount: 1_048_576) ?? Data()
-                hash.update(data: data)
-                return data.count
-            }
-            if count == 0 { break }
-        }
-        guard hash.finalize().map({ String(format: "%02x", $0) }).joined() == file.sha256 else { throw CocoaError(.fileReadCorruptFile) }
+        try file.verify(at: url)
     }
 
     /// A bad cached inode is never overwritten in place: existing publications may

@@ -81,14 +81,7 @@ public enum ModelUtils {
 
         // Check if model already exists with required files
         if FileManager.default.fileExists(atPath: modelDir.path) {
-            let files = try? FileManager.default.contentsOfDirectory(at: modelDir, includingPropertiesForKeys: [.fileSizeKey])
-            let hasRequiredFile = files?.contains { file in
-                guard file.pathExtension == normalizedRequiredExtension else { return false }
-                let size = (try? file.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
-                return size > 0
-            } ?? false
-
-            if hasRequiredFile {
+            if SafetensorsIntegrity.hasCompleteWeights(in: modelDir, requiredExtension: normalizedRequiredExtension) {
                 // Validate that config.json is valid JSON
                 let configPath = modelDir.appendingPathComponent("config.json")
                 if FileManager.default.fileExists(atPath: configPath.path) {
@@ -131,17 +124,8 @@ public enum ModelUtils {
             }
         )
 
-        // Post-download validation: ensure required files are non-zero
-        let downloadedFiles = try? FileManager.default.contentsOfDirectory(
-            at: modelDir, includingPropertiesForKeys: [.fileSizeKey]
-        )
-        let hasValidFile = downloadedFiles?.contains { file in
-            guard file.pathExtension == normalizedRequiredExtension else { return false }
-            let size = (try? file.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0
-            return size > 0
-        } ?? false
-
-        if !hasValidFile {
+        // Post-download validation: every weight file must be present in full
+        if !SafetensorsIntegrity.hasCompleteWeights(in: modelDir, requiredExtension: normalizedRequiredExtension) {
             Self.clearCaches(modelDir: modelDir, repoID: repoID, hubCache: cache)
             throw ModelUtilsError.incompleteDownload(repoID.description)
         }
@@ -166,7 +150,7 @@ public enum ModelUtilsError: LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .incompleteDownload(let repo):
-            return "Downloaded model '\(repo)' has missing or zero-byte weight files. "
+            return "Downloaded model '\(repo)' has missing or incomplete weight files. "
                 + "The cache has been cleared — please try again."
         }
     }
