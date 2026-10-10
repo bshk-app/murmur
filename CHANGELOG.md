@@ -11,6 +11,52 @@ release-please drafts each section from conventional commits and opens a release
 PR. Rewrite those generated lines in the PR into concise prose a person should
 read in an update panel before merging it.
 
+## [0.5.0](https://github.com/bshk-app/murmur/compare/murmur-v0.4.0...murmur-v0.5.0) (2026-10-10)
+
+0.4.0 never went out as an update, so this release also brings what it added:
+dictate in one language and paste in another, with the translation shown under
+what you said; live captions that translate a talk as it is spoken; and an
+optional, more careful translation of the finished text.
+
+### Added
+
+- While you dictate, the draft appears right at your cursor as if already
+  typed, and Return puts the corrected text in its place.
+- Tap right ⌘ to start dictating, then Return to insert or Esc to cancel. Or
+  hold right ⌘ while you talk and let go to insert.
+- Push-to-talk now defaults to ⌥Space, and Murmur warns you when macOS already
+  uses that shortcut.
+- The on-screen indicator is a small capsule that stays put while you speak.
+- Live captions have their own window: put it on any display, restyle it, and
+  start or stop captions from the menu.
+
+### Fixed
+
+- When an app is slow to paste, it gets your dictation, not whatever was on
+  your clipboard before.
+- If the live-dictation model on disk is damaged, Murmur downloads it again
+  instead of quietly showing no draft.
+
+### iPhone and Apple Watch
+
+These reach the iPhone app separately, not through this update.
+
+- Record voice notes on Apple Watch and get the text back.
+- Translate text in photos.
+- Translate to and from Arabic offline; translated web pages switch to
+  right-to-left.
+- Dictate in Catalan, Norwegian, Icelandic, Serbian, Bosnian, Macedonian and
+  Belarusian, and translate them offline to and from English.
+- Optionally, speech is translated directly as you talk, where a direct model
+  exists.
+- Fewer recognition mistakes, especially in Finnish. The new model downloads
+  once; delete "Previous speech recognition model" in Storage to free space.
+- Tap the mascot and it reacts.
+- Translating in other apps no longer runs out of memory, the Translate sheet
+  shows progress while it checks your language packs, the last moment of a
+  recording is no longer dropped, and the buttons and labels on a note match
+  the rest of the app.
+
 ## [0.4.0](https://github.com/bshk-app/murmur/compare/murmur-v0.3.1...murmur-v0.4.0) (2026-09-05)
 
 
