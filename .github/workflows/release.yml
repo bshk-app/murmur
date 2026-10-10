@@ -51,7 +51,12 @@ permissions:
 
 jobs:
   release:
-    runs-on: macos-26
+    # Xcode 26.6, the newest on macos-26, crashes resolving this package graph
+    # ("count of array (24) differs from count of index set (23)" in
+    # xcodebuild -resolvePackageDependencies). Xcode 27.0 resolves it and is what
+    # the app is developed and tested with. xcode-27 is a GitHub preview image;
+    # move back to a macos-* label once one ships Xcode 27.
+    runs-on: xcode-27
     timeout-minutes: 120
     env:
       TAG: ${{ inputs.tag }}
